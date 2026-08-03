@@ -1,0 +1,469 @@
+INFO: [VRFC 10-2263] Analyzing Verilog file "D:/chiplab/chip/soc_demo/nscscc-team/xilinx_ip/clk_pll/gen/clk_pll_clk_wiz.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module clk_pll_clk_wiz
+INFO: [VRFC 10-2263] Analyzing Verilog file "D:/chiplab/chip/soc_demo/nscscc-team/xilinx_ip/clk_pll/gen/clk_pll.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module clk_pll
+INFO: [VRFC 10-2263] Analyzing Verilog file "D:/chiplab/chip/soc_demo/nscscc-team/xilinx_ip/mig_axi_32/gen/mig_axi_32_sim_netlist.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module mig_axi_32
+INFO: [VRFC 10-311] analyzing module mig_axi_32_mig
+INFO: [VRFC 10-311] analyzing module mig_axi_32_mig_7series_v4_2_arb_mux
+INFO: [VRFC 10-311] analyzing module mig_axi_32_mig_7series_v4_2_arb_row_col
+INFO: [VRFC 10-311] analyzing module mig_axi_32_mig_7series_v4_2_arb_select
+INFO: [VRFC 10-311] analyzing module mig_axi_32_mig_7series_v4_2_axi_mc
+INFO: [VRFC 10-311] analyzing module mig_axi_32_mig_7series_v4_2_axi_mc_ar_channel
+INFO: [VRFC 10-311] analyzing module mig_axi_32_mig_7series_v4_2_axi_mc_aw_channel
+INFO: [VRFC 10-311] analyzing module mig_axi_32_mig_7series_v4_2_axi_mc_b_channel
+INFO: [VRFC 10-311] analyzing module mig_axi_32_mig_7series_v4_2_axi_mc_cmd_arbiter
+INFO: [VRFC 10-311] analyzing module mig_axi_32_mig_7series_v4_2_axi_mc_cmd_fsm
+INFO: [VRFC 10-311] analyzing module mig_axi_32_mig_7series_v4_2_axi_mc_cmd_translator
+INFO: [VRFC 10-311] analyzing module mig_axi_32_mig_7series_v4_2_axi_mc_cmd_translator__parameterized0
+INFO: [VRFC 10-311] analyzing module mig_axi_32_mig_7series_v4_2_axi_mc_fifo
+INFO: [VRFC 10-311] analyzing module mig_axi_32_mig_7series_v4_2_axi_mc_fifo__parameterized0
+INFO: [VRFC 10-311] analyzing module mig_axi_32_mig_7series_v4_2_axi_mc_fifo__parameterized1
+INFO: [VRFC 10-311] analyzing module mig_axi_32_mig_7series_v4_2_axi_mc_incr_cmd
+INFO: [VRFC 10-311] analyzing module mig_axi_32_mig_7series_v4_2_axi_mc_incr_cmd__parameterized0
+INFO: [VRFC 10-311] analyzing module mig_axi_32_mig_7series_v4_2_axi_mc_r_channel
+INFO: [VRFC 10-311] analyzing module mig_axi_32_mig_7series_v4_2_axi_mc_w_channel
+INFO: [VRFC 10-311] analyzing module mig_axi_32_mig_7series_v4_2_axi_mc_wr_cmd_fsm
+INFO: [VRFC 10-311] analyzing module mig_axi_32_mig_7series_v4_2_axi_mc_wrap_cmd
+INFO: [VRFC 10-311] analyzing module mig_axi_32_mig_7series_v4_2_axi_mc_wrap_cmd__parameterized0
+INFO: [VRFC 10-311] analyzing module mig_axi_32_mig_7series_v4_2_bank_cntrl
+INFO: [VRFC 10-311] analyzing module mig_axi_32_mig_7series_v4_2_bank_cntrl__parameterized0
+INFO: [VRFC 10-311] analyzing module mig_axi_32_mig_7series_v4_2_bank_cntrl__parameterized1
+INFO: [VRFC 10-311] analyzing module mig_axi_32_mig_7series_v4_2_bank_cntrl__parameterized2
+INFO: [VRFC 10-311] analyzing module mig_axi_32_mig_7series_v4_2_bank_common
+INFO: [VRFC 10-311] analyzing module mig_axi_32_mig_7series_v4_2_bank_compare
+INFO: [VRFC 10-311] analyzing module mig_axi_32_mig_7series_v4_2_bank_compare_70
+INFO: [VRFC 10-311] analyzing module mig_axi_32_mig_7series_v4_2_bank_compare_71
+INFO: [VRFC 10-311] analyzing module mig_axi_32_mig_7series_v4_2_bank_compare_72
+INFO: [VRFC 10-311] analyzing module mig_axi_32_mig_7series_v4_2_bank_mach
+INFO: [VRFC 10-311] analyzing module mig_axi_32_mig_7series_v4_2_bank_queue
+INFO: [VRFC 10-311] analyzing module mig_axi_32_mig_7series_v4_2_bank_queue__parameterized0
+INFO: [VRFC 10-311] analyzing module mig_axi_32_mig_7series_v4_2_bank_queue__parameterized1
+INFO: [VRFC 10-311] analyzing module mig_axi_32_mig_7series_v4_2_bank_queue__parameterized2
+INFO: [VRFC 10-311] analyzing module mig_axi_32_mig_7series_v4_2_bank_state
+INFO: [VRFC 10-311] analyzing module mig_axi_32_mig_7series_v4_2_bank_state__parameterized0
+INFO: [VRFC 10-311] analyzing module mig_axi_32_mig_7series_v4_2_bank_state__parameterized1
+INFO: [VRFC 10-311] analyzing module mig_axi_32_mig_7series_v4_2_bank_state__parameterized2
+INFO: [VRFC 10-311] analyzing module mig_axi_32_mig_7series_v4_2_clk_ibuf
+INFO: [VRFC 10-311] analyzing module mig_axi_32_mig_7series_v4_2_col_mach
+INFO: [VRFC 10-311] analyzing module mig_axi_32_mig_7series_v4_2_ddr_a_upsizer
+INFO: [VRFC 10-311] analyzing module mig_axi_32_mig_7series_v4_2_ddr_a_upsizer__parameterized0
+INFO: [VRFC 10-311] analyzing module mig_axi_32_mig_7series_v4_2_ddr_axi_register_slice
+INFO: [VRFC 10-311] analyzing module mig_axi_32_mig_7series_v4_2_ddr_axi_register_slice__parameterized0
+INFO: [VRFC 10-311] analyzing module mig_axi_32_mig_7series_v4_2_ddr_axi_upsizer
+INFO: [VRFC 10-311] analyzing module mig_axi_32_mig_7series_v4_2_ddr_axic_register_slice
+INFO: [VRFC 10-311] analyzing module mig_axi_32_mig_7series_v4_2_ddr_axic_register_slice_0
+INFO: [VRFC 10-311] analyzing module mig_axi_32_mig_7series_v4_2_ddr_axic_register_slice__parameterized5
+INFO: [VRFC 10-311] analyzing module mig_axi_32_mig_7series_v4_2_ddr_byte_group_io
+INFO: [VRFC 10-311] analyzing module mig_axi_32_mig_7series_v4_2_ddr_byte_group_io_79
+INFO: [VRFC 10-311] analyzing module mig_axi_32_mig_7series_v4_2_ddr_byte_group_io__parameterized0
+INFO: [VRFC 10-311] analyzing module mig_axi_32_mig_7series_v4_2_ddr_byte_group_io__parameterized1
+INFO: [VRFC 10-311] analyzing module mig_axi_32_mig_7series_v4_2_ddr_byte_lane
+INFO: [VRFC 10-311] analyzing module mig_axi_32_mig_7series_v4_2_ddr_byte_lane__parameterized0
+INFO: [VRFC 10-311] analyzing module mig_axi_32_mig_7series_v4_2_ddr_byte_lane__parameterized1
+INFO: [VRFC 10-311] analyzing module mig_axi_32_mig_7series_v4_2_ddr_byte_lane__parameterized2
+INFO: [VRFC 10-311] analyzing module mig_axi_32_mig_7series_v4_2_ddr_calib_top
+INFO: [VRFC 10-311] analyzing module mig_axi_32_mig_7series_v4_2_ddr_carry_and
+INFO: [VRFC 10-311] analyzing module mig_axi_32_mig_7series_v4_2_ddr_carry_and_1
+INFO: [VRFC 10-311] analyzing module mig_axi_32_mig_7series_v4_2_ddr_carry_and_10
+INFO: [VRFC 10-311] analyzing module mig_axi_32_mig_7series_v4_2_ddr_carry_and_11
+INFO: [VRFC 10-311] analyzing module mig_axi_32_mig_7series_v4_2_ddr_carry_and_12
+INFO: [VRFC 10-311] analyzing module mig_axi_32_mig_7series_v4_2_ddr_carry_and_13
+INFO: [VRFC 10-311] analyzing module mig_axi_32_mig_7series_v4_2_ddr_carry_and_14
+INFO: [VRFC 10-311] analyzing module mig_axi_32_mig_7series_v4_2_ddr_carry_and_15
+INFO: [VRFC 10-311] analyzing module mig_axi_32_mig_7series_v4_2_ddr_carry_and_16
+INFO: [VRFC 10-311] analyzing module mig_axi_32_mig_7series_v4_2_ddr_carry_and_17
+INFO: [VRFC 10-311] analyzing module mig_axi_32_mig_7series_v4_2_ddr_carry_and_18
+INFO: [VRFC 10-311] analyzing module mig_axi_32_mig_7series_v4_2_ddr_carry_and_19
+INFO: [VRFC 10-311] analyzing module mig_axi_32_mig_7series_v4_2_ddr_carry_and_2
+INFO: [VRFC 10-311] analyzing module mig_axi_32_mig_7series_v4_2_ddr_carry_and_20
+INFO: [VRFC 10-311] analyzing module mig_axi_32_mig_7series_v4_2_ddr_carry_and_21
+INFO: [VRFC 10-311] analyzing module mig_axi_32_mig_7series_v4_2_ddr_carry_and_22
+INFO: [VRFC 10-311] analyzing module mig_axi_32_mig_7series_v4_2_ddr_carry_and_27
+INFO: [VRFC 10-311] analyzing module mig_axi_32_mig_7series_v4_2_ddr_carry_and_28
+INFO: [VRFC 10-311] analyzing module mig_axi_32_mig_7series_v4_2_ddr_carry_and_29
+INFO: [VRFC 10-311] analyzing module mig_axi_32_mig_7series_v4_2_ddr_carry_and_3
+INFO: [VRFC 10-311] analyzing module mig_axi_32_mig_7series_v4_2_ddr_carry_and_30
+INFO: [VRFC 10-311] analyzing module mig_axi_32_mig_7series_v4_2_ddr_carry_and_31
+INFO: [VRFC 10-311] analyzing module mig_axi_32_mig_7series_v4_2_ddr_carry_and_32
+INFO: [VRFC 10-311] analyzing module mig_axi_32_mig_7series_v4_2_ddr_carry_and_33
+INFO: [VRFC 10-311] analyzing module mig_axi_32_mig_7series_v4_2_ddr_carry_and_35
+INFO: [VRFC 10-311] analyzing module mig_axi_32_mig_7series_v4_2_ddr_carry_and_4
+INFO: [VRFC 10-311] analyzing module mig_axi_32_mig_7series_v4_2_ddr_carry_and_40
+INFO: [VRFC 10-311] analyzing module mig_axi_32_mig_7series_v4_2_ddr_carry_and_41
+INFO: [VRFC 10-311] analyzing module mig_axi_32_mig_7series_v4_2_ddr_carry_and_42
+INFO: [VRFC 10-311] analyzing module mig_axi_32_mig_7series_v4_2_ddr_carry_and_43
+INFO: [VRFC 10-311] analyzing module mig_axi_32_mig_7series_v4_2_ddr_carry_and_45
+INFO: [VRFC 10-311] analyzing module mig_axi_32_mig_7series_v4_2_ddr_carry_and_46
+INFO: [VRFC 10-311] analyzing module mig_axi_32_mig_7series_v4_2_ddr_carry_and_47
+INFO: [VRFC 10-311] analyzing module mig_axi_32_mig_7series_v4_2_ddr_carry_and_48
+INFO: [VRFC 10-311] analyzing module mig_axi_32_mig_7series_v4_2_ddr_carry_and_49
+INFO: [VRFC 10-311] analyzing module mig_axi_32_mig_7series_v4_2_ddr_carry_and_5
+INFO: [VRFC 10-311] analyzing module mig_axi_32_mig_7series_v4_2_ddr_carry_and_50
+INFO: [VRFC 10-311] analyzing module mig_axi_32_mig_7series_v4_2_ddr_carry_and_51
+INFO: [VRFC 10-311] analyzing module mig_axi_32_mig_7series_v4_2_ddr_carry_and_52
+INFO: [VRFC 10-311] analyzing module mig_axi_32_mig_7series_v4_2_ddr_carry_and_53
+INFO: [VRFC 10-311] analyzing module mig_axi_32_mig_7series_v4_2_ddr_carry_and_54
+INFO: [VRFC 10-311] analyzing module mig_axi_32_mig_7series_v4_2_ddr_carry_and_55
+INFO: [VRFC 10-311] analyzing module mig_axi_32_mig_7series_v4_2_ddr_carry_and_56
+INFO: [VRFC 10-311] analyzing module mig_axi_32_mig_7series_v4_2_ddr_carry_and_6
+INFO: [VRFC 10-311] analyzing module mig_axi_32_mig_7series_v4_2_ddr_carry_and_62
+INFO: [VRFC 10-311] analyzing module mig_axi_32_mig_7series_v4_2_ddr_carry_and_64
+INFO: [VRFC 10-311] analyzing module mig_axi_32_mig_7series_v4_2_ddr_carry_and_65
+INFO: [VRFC 10-311] analyzing module mig_axi_32_mig_7series_v4_2_ddr_carry_and_66
+INFO: [VRFC 10-311] analyzing module mig_axi_32_mig_7series_v4_2_ddr_carry_and_67
+INFO: [VRFC 10-311] analyzing module mig_axi_32_mig_7series_v4_2_ddr_carry_and_68
+INFO: [VRFC 10-311] analyzing module mig_axi_32_mig_7series_v4_2_ddr_carry_and_69
+INFO: [VRFC 10-311] analyzing module mig_axi_32_mig_7series_v4_2_ddr_carry_and_7
+INFO: [VRFC 10-311] analyzing module mig_axi_32_mig_7series_v4_2_ddr_carry_and_8
+INFO: [VRFC 10-311] analyzing module mig_axi_32_mig_7series_v4_2_ddr_carry_and_9
+INFO: [VRFC 10-311] analyzing module mig_axi_32_mig_7series_v4_2_ddr_carry_latch_and
+INFO: [VRFC 10-311] analyzing module mig_axi_32_mig_7series_v4_2_ddr_carry_latch_and_23
+INFO: [VRFC 10-311] analyzing module mig_axi_32_mig_7series_v4_2_ddr_carry_latch_and_24
+INFO: [VRFC 10-311] analyzing module mig_axi_32_mig_7series_v4_2_ddr_carry_latch_and_25
+INFO: [VRFC 10-311] analyzing module mig_axi_32_mig_7series_v4_2_ddr_carry_latch_and_26
+INFO: [VRFC 10-311] analyzing module mig_axi_32_mig_7series_v4_2_ddr_carry_latch_and_34
+INFO: [VRFC 10-311] analyzing module mig_axi_32_mig_7series_v4_2_ddr_carry_latch_and_58
+INFO: [VRFC 10-311] analyzing module mig_axi_32_mig_7series_v4_2_ddr_carry_latch_and_59
+INFO: [VRFC 10-311] analyzing module mig_axi_32_mig_7series_v4_2_ddr_carry_latch_and_60
+INFO: [VRFC 10-311] analyzing module mig_axi_32_mig_7series_v4_2_ddr_carry_latch_and_61
+INFO: [VRFC 10-311] analyzing module mig_axi_32_mig_7series_v4_2_ddr_carry_latch_or
+INFO: [VRFC 10-311] analyzing module mig_axi_32_mig_7series_v4_2_ddr_carry_latch_or_63
+INFO: [VRFC 10-311] analyzing module mig_axi_32_mig_7series_v4_2_ddr_carry_or
+INFO: [VRFC 10-311] analyzing module mig_axi_32_mig_7series_v4_2_ddr_carry_or_36
+INFO: [VRFC 10-311] analyzing module mig_axi_32_mig_7series_v4_2_ddr_carry_or_44
+INFO: [VRFC 10-311] analyzing module mig_axi_32_mig_7series_v4_2_ddr_command_fifo
+INFO: [VRFC 10-311] analyzing module mig_axi_32_mig_7series_v4_2_ddr_command_fifo_57
+INFO: [VRFC 10-311] analyzing module mig_axi_32_mig_7series_v4_2_ddr_comparator_sel
+INFO: [VRFC 10-311] analyzing module mig_axi_32_mig_7series_v4_2_ddr_comparator_sel_37
+INFO: [VRFC 10-311] analyzing module mig_axi_32_mig_7series_v4_2_ddr_comparator_sel_static
+INFO: [VRFC 10-311] analyzing module mig_axi_32_mig_7series_v4_2_ddr_comparator_sel_static_39
+INFO: [VRFC 10-311] analyzing module mig_axi_32_mig_7series_v4_2_ddr_comparator_sel_static__parameterized0
+INFO: [VRFC 10-311] analyzing module mig_axi_32_mig_7series_v4_2_ddr_comparator_sel_static__parameterized0_38
+INFO: [VRFC 10-311] analyzing module mig_axi_32_mig_7series_v4_2_ddr_if_post_fifo
+INFO: [VRFC 10-311] analyzing module mig_axi_32_mig_7series_v4_2_ddr_if_post_fifo_80
+INFO: [VRFC 10-311] analyzing module mig_axi_32_mig_7series_v4_2_ddr_mc_phy
+INFO: [VRFC 10-311] analyzing module mig_axi_32_mig_7series_v4_2_ddr_mc_phy_wrapper
+INFO: [VRFC 10-311] analyzing module mig_axi_32_mig_7series_v4_2_ddr_of_pre_fifo
+INFO: [VRFC 10-311] analyzing module mig_axi_32_mig_7series_v4_2_ddr_of_pre_fifo__parameterized0
+INFO: [VRFC 10-311] analyzing module mig_axi_32_mig_7series_v4_2_ddr_of_pre_fifo__parameterized0_76
+INFO: [VRFC 10-311] analyzing module mig_axi_32_mig_7series_v4_2_ddr_of_pre_fifo__parameterized1
+INFO: [VRFC 10-311] analyzing module mig_axi_32_mig_7series_v4_2_ddr_of_pre_fifo__parameterized1_77
+INFO: [VRFC 10-311] analyzing module mig_axi_32_mig_7series_v4_2_ddr_of_pre_fifo__parameterized1_78
+INFO: [VRFC 10-311] analyzing module mig_axi_32_mig_7series_v4_2_ddr_of_pre_fifo__parameterized1_81
+INFO: [VRFC 10-311] analyzing module mig_axi_32_mig_7series_v4_2_ddr_phy_4lanes
+INFO: [VRFC 10-311] analyzing module mig_axi_32_mig_7series_v4_2_ddr_phy_ck_addr_cmd_delay
+INFO: [VRFC 10-311] analyzing module mig_axi_32_mig_7series_v4_2_ddr_phy_dqs_found_cal_hr
+INFO: [VRFC 10-311] analyzing module mig_axi_32_mig_7series_v4_2_ddr_phy_init
+INFO: [VRFC 10-311] analyzing module mig_axi_32_mig_7series_v4_2_ddr_phy_prbs_rdlvl
+INFO: [VRFC 10-311] analyzing module mig_axi_32_mig_7series_v4_2_ddr_phy_rdlvl
+INFO: [VRFC 10-311] analyzing module mig_axi_32_mig_7series_v4_2_ddr_phy_tempmon
+INFO: [VRFC 10-311] analyzing module mig_axi_32_mig_7series_v4_2_ddr_phy_top
+INFO: [VRFC 10-311] analyzing module mig_axi_32_mig_7series_v4_2_ddr_phy_wrcal
+INFO: [VRFC 10-311] analyzing module mig_axi_32_mig_7series_v4_2_ddr_phy_wrlvl
+INFO: [VRFC 10-311] analyzing module mig_axi_32_mig_7series_v4_2_ddr_prbs_gen
+INFO: [VRFC 10-311] analyzing module mig_axi_32_mig_7series_v4_2_ddr_r_upsizer
+INFO: [VRFC 10-311] analyzing module mig_axi_32_mig_7series_v4_2_ddr_w_upsizer
+INFO: [VRFC 10-311] analyzing module mig_axi_32_mig_7series_v4_2_infrastructure
+INFO: [VRFC 10-311] analyzing module mig_axi_32_mig_7series_v4_2_iodelay_ctrl
+INFO: [VRFC 10-311] analyzing module mig_axi_32_mig_7series_v4_2_mc
+INFO: [VRFC 10-311] analyzing module mig_axi_32_mig_7series_v4_2_mem_intfc
+INFO: [VRFC 10-311] analyzing module mig_axi_32_mig_7series_v4_2_memc_ui_top_axi
+INFO: [VRFC 10-311] analyzing module mig_axi_32_mig_7series_v4_2_poc_pd
+INFO: [VRFC 10-311] analyzing module mig_axi_32_mig_7series_v4_2_poc_pd_75
+INFO: [VRFC 10-311] analyzing module mig_axi_32_mig_7series_v4_2_rank_cntrl
+INFO: [VRFC 10-311] analyzing module mig_axi_32_mig_7series_v4_2_rank_common
+INFO: [VRFC 10-311] analyzing module mig_axi_32_mig_7series_v4_2_rank_mach
+INFO: [VRFC 10-311] analyzing module mig_axi_32_mig_7series_v4_2_round_robin_arb
+INFO: [VRFC 10-311] analyzing module mig_axi_32_mig_7series_v4_2_round_robin_arb__parameterized1
+INFO: [VRFC 10-311] analyzing module mig_axi_32_mig_7series_v4_2_round_robin_arb__parameterized1_73
+INFO: [VRFC 10-311] analyzing module mig_axi_32_mig_7series_v4_2_round_robin_arb__parameterized1_74
+INFO: [VRFC 10-311] analyzing module mig_axi_32_mig_7series_v4_2_tempmon
+INFO: [VRFC 10-311] analyzing module mig_axi_32_mig_7series_v4_2_ui_cmd
+INFO: [VRFC 10-311] analyzing module mig_axi_32_mig_7series_v4_2_ui_rd_data
+INFO: [VRFC 10-311] analyzing module mig_axi_32_mig_7series_v4_2_ui_top
+INFO: [VRFC 10-311] analyzing module mig_axi_32_mig_7series_v4_2_ui_wr_data
+INFO: [VRFC 10-311] analyzing module glbl
+INFO: [VRFC 10-2263] Analyzing Verilog file "D:/chiplab/chip/soc_demo/nscscc-team/xilinx_ip/axi_crossbar_2x3/gen/axi_crossbar_2x3_sim_netlist.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module axi_crossbar_2x3
+INFO: [VRFC 10-311] analyzing module axi_crossbar_2x3_axi_crossbar_v2_1_30_addr_arbiter
+INFO: [VRFC 10-311] analyzing module axi_crossbar_2x3_axi_crossbar_v2_1_30_addr_arbiter_0
+INFO: [VRFC 10-311] analyzing module axi_crossbar_2x3_axi_crossbar_v2_1_30_arbiter_resp
+INFO: [VRFC 10-311] analyzing module axi_crossbar_2x3_axi_crossbar_v2_1_30_arbiter_resp_11
+INFO: [VRFC 10-311] analyzing module axi_crossbar_2x3_axi_crossbar_v2_1_30_arbiter_resp_16
+INFO: [VRFC 10-311] analyzing module axi_crossbar_2x3_axi_crossbar_v2_1_30_arbiter_resp_17
+INFO: [VRFC 10-311] analyzing module axi_crossbar_2x3_axi_crossbar_v2_1_30_axi_crossbar
+INFO: [VRFC 10-311] analyzing module axi_crossbar_2x3_axi_crossbar_v2_1_30_crossbar
+INFO: [VRFC 10-311] analyzing module axi_crossbar_2x3_axi_crossbar_v2_1_30_decerr_slave
+INFO: [VRFC 10-311] analyzing module axi_crossbar_2x3_axi_crossbar_v2_1_30_si_transactor
+INFO: [VRFC 10-311] analyzing module axi_crossbar_2x3_axi_crossbar_v2_1_30_si_transactor__parameterized0
+INFO: [VRFC 10-311] analyzing module axi_crossbar_2x3_axi_crossbar_v2_1_30_si_transactor__parameterized1
+INFO: [VRFC 10-311] analyzing module axi_crossbar_2x3_axi_crossbar_v2_1_30_si_transactor__parameterized2
+INFO: [VRFC 10-311] analyzing module axi_crossbar_2x3_axi_crossbar_v2_1_30_splitter
+INFO: [VRFC 10-311] analyzing module axi_crossbar_2x3_axi_crossbar_v2_1_30_splitter_6
+INFO: [VRFC 10-311] analyzing module axi_crossbar_2x3_axi_crossbar_v2_1_30_splitter_8
+INFO: [VRFC 10-311] analyzing module axi_crossbar_2x3_axi_crossbar_v2_1_30_wdata_mux
+INFO: [VRFC 10-311] analyzing module axi_crossbar_2x3_axi_crossbar_v2_1_30_wdata_mux_1
+INFO: [VRFC 10-311] analyzing module axi_crossbar_2x3_axi_crossbar_v2_1_30_wdata_mux_3
+INFO: [VRFC 10-311] analyzing module axi_crossbar_2x3_axi_crossbar_v2_1_30_wdata_mux__parameterized0
+INFO: [VRFC 10-311] analyzing module axi_crossbar_2x3_axi_crossbar_v2_1_30_wdata_router
+INFO: [VRFC 10-311] analyzing module axi_crossbar_2x3_axi_crossbar_v2_1_30_wdata_router_7
+INFO: [VRFC 10-311] analyzing module axi_crossbar_2x3_axi_data_fifo_v2_1_28_axic_reg_srl_fifo
+INFO: [VRFC 10-311] analyzing module axi_crossbar_2x3_axi_data_fifo_v2_1_28_axic_reg_srl_fifo_12
+INFO: [VRFC 10-311] analyzing module axi_crossbar_2x3_axi_data_fifo_v2_1_28_axic_reg_srl_fifo__parameterized0
+INFO: [VRFC 10-311] analyzing module axi_crossbar_2x3_axi_data_fifo_v2_1_28_axic_reg_srl_fifo__parameterized0_24
+INFO: [VRFC 10-311] analyzing module axi_crossbar_2x3_axi_data_fifo_v2_1_28_axic_reg_srl_fifo__parameterized0_28
+INFO: [VRFC 10-311] analyzing module axi_crossbar_2x3_axi_data_fifo_v2_1_28_axic_reg_srl_fifo__parameterized1
+INFO: [VRFC 10-311] analyzing module axi_crossbar_2x3_axi_data_fifo_v2_1_28_ndeep_srl
+INFO: [VRFC 10-311] analyzing module axi_crossbar_2x3_axi_data_fifo_v2_1_28_ndeep_srl_10
+INFO: [VRFC 10-311] analyzing module axi_crossbar_2x3_axi_data_fifo_v2_1_28_ndeep_srl_13
+INFO: [VRFC 10-311] analyzing module axi_crossbar_2x3_axi_data_fifo_v2_1_28_ndeep_srl_14
+INFO: [VRFC 10-311] analyzing module axi_crossbar_2x3_axi_data_fifo_v2_1_28_ndeep_srl_15
+INFO: [VRFC 10-311] analyzing module axi_crossbar_2x3_axi_data_fifo_v2_1_28_ndeep_srl_18
+INFO: [VRFC 10-311] analyzing module axi_crossbar_2x3_axi_data_fifo_v2_1_28_ndeep_srl_21
+INFO: [VRFC 10-311] analyzing module axi_crossbar_2x3_axi_data_fifo_v2_1_28_ndeep_srl_25
+INFO: [VRFC 10-311] analyzing module axi_crossbar_2x3_axi_data_fifo_v2_1_28_ndeep_srl_29
+INFO: [VRFC 10-311] analyzing module axi_crossbar_2x3_axi_data_fifo_v2_1_28_ndeep_srl_9
+INFO: [VRFC 10-311] analyzing module axi_crossbar_2x3_axi_register_slice_v2_1_29_axi_register_slice
+INFO: [VRFC 10-311] analyzing module axi_crossbar_2x3_axi_register_slice_v2_1_29_axi_register_slice_2
+INFO: [VRFC 10-311] analyzing module axi_crossbar_2x3_axi_register_slice_v2_1_29_axi_register_slice_4
+INFO: [VRFC 10-311] analyzing module axi_crossbar_2x3_axi_register_slice_v2_1_29_axi_register_slice_5
+INFO: [VRFC 10-311] analyzing module axi_crossbar_2x3_axi_register_slice_v2_1_29_axic_register_slice__parameterized1
+INFO: [VRFC 10-311] analyzing module axi_crossbar_2x3_axi_register_slice_v2_1_29_axic_register_slice__parameterized1_19
+INFO: [VRFC 10-311] analyzing module axi_crossbar_2x3_axi_register_slice_v2_1_29_axic_register_slice__parameterized1_22
+INFO: [VRFC 10-311] analyzing module axi_crossbar_2x3_axi_register_slice_v2_1_29_axic_register_slice__parameterized1_26
+INFO: [VRFC 10-311] analyzing module axi_crossbar_2x3_axi_register_slice_v2_1_29_axic_register_slice__parameterized2
+INFO: [VRFC 10-311] analyzing module axi_crossbar_2x3_axi_register_slice_v2_1_29_axic_register_slice__parameterized2_20
+INFO: [VRFC 10-311] analyzing module axi_crossbar_2x3_axi_register_slice_v2_1_29_axic_register_slice__parameterized2_23
+INFO: [VRFC 10-311] analyzing module axi_crossbar_2x3_axi_register_slice_v2_1_29_axic_register_slice__parameterized2_27
+INFO: [VRFC 10-2263] Analyzing Verilog file "D:/chiplab/chip/soc_demo/nscscc-team/xilinx_ip/jtag_axi/gen/jtag_axi_sim_netlist.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module jtag_axi
+INFO: [VRFC 10-311] analyzing module jtag_axi_xpm_cdc_gray
+INFO: [VRFC 10-311] analyzing module jtag_axi_xpm_cdc_gray__4
+INFO: [VRFC 10-311] analyzing module jtag_axi_xpm_cdc_gray__5
+INFO: [VRFC 10-311] analyzing module jtag_axi_xpm_cdc_gray__6
+INFO: [VRFC 10-311] analyzing module jtag_axi_xpm_cdc_gray__parameterized2
+INFO: [VRFC 10-311] analyzing module jtag_axi_xpm_cdc_gray__parameterized2__4
+INFO: [VRFC 10-311] analyzing module jtag_axi_xpm_cdc_gray__parameterized2__5
+INFO: [VRFC 10-311] analyzing module jtag_axi_xpm_cdc_gray__parameterized2__6
+INFO: [VRFC 10-311] analyzing module jtag_axi_v1_2_18_axi_bridge
+INFO: [VRFC 10-311] analyzing module jtag_axi_v1_2_18_cmd_decode
+INFO: [VRFC 10-311] analyzing module jtag_axi_v1_2_18_cmd_decode_0
+INFO: [VRFC 10-311] analyzing module jtag_axi_v1_2_18_jtag_axi
+INFO: [VRFC 10-311] analyzing module jtag_axi_v1_2_18_jtag_axi_engine
+INFO: [VRFC 10-311] analyzing module jtag_axi_v1_2_18_read_axi
+INFO: [VRFC 10-311] analyzing module jtag_axi_v1_2_18_rxfifo2xsdb
+INFO: [VRFC 10-311] analyzing module jtag_axi_v1_2_18_write_axi
+INFO: [VRFC 10-311] analyzing module jtag_axi_v1_2_18_xsdb2txfifo
+INFO: [VRFC 10-311] analyzing module jtag_axi_v1_2_18_xsdb2txfifo__parameterized0
+INFO: [VRFC 10-311] analyzing module jtag_axi_v1_2_18_xsdb2txfifo__parameterized0_1
+INFO: [VRFC 10-311] analyzing module jtag_axi_v1_2_18_xsdb_fifo_interface
+INFO: [VRFC 10-311] analyzing module jtag_axi_xsdbs_v1_0_3_xsdbs
+INFO: [VRFC 10-311] analyzing module jtag_axi_blk_mem_gen_generic_cstr
+INFO: [VRFC 10-311] analyzing module jtag_axi_blk_mem_gen_generic_cstr__parameterized0
+INFO: [VRFC 10-311] analyzing module jtag_axi_blk_mem_gen_generic_cstr__parameterized0_16
+INFO: [VRFC 10-311] analyzing module jtag_axi_blk_mem_gen_prim_width
+INFO: [VRFC 10-311] analyzing module jtag_axi_blk_mem_gen_prim_width__parameterized0
+INFO: [VRFC 10-311] analyzing module jtag_axi_blk_mem_gen_prim_width__parameterized0_17
+INFO: [VRFC 10-311] analyzing module jtag_axi_blk_mem_gen_prim_wrapper
+INFO: [VRFC 10-311] analyzing module jtag_axi_blk_mem_gen_prim_wrapper__parameterized0
+INFO: [VRFC 10-311] analyzing module jtag_axi_blk_mem_gen_prim_wrapper__parameterized0_18
+INFO: [VRFC 10-311] analyzing module jtag_axi_blk_mem_gen_top
+INFO: [VRFC 10-311] analyzing module jtag_axi_blk_mem_gen_top__parameterized0
+INFO: [VRFC 10-311] analyzing module jtag_axi_blk_mem_gen_top__parameterized0_15
+INFO: [VRFC 10-311] analyzing module jtag_axi_blk_mem_gen_v8_4_7
+INFO: [VRFC 10-311] analyzing module jtag_axi_blk_mem_gen_v8_4_7__parameterized1
+INFO: [VRFC 10-311] analyzing module jtag_axi_blk_mem_gen_v8_4_7__parameterized1_13
+INFO: [VRFC 10-311] analyzing module jtag_axi_blk_mem_gen_v8_4_7_synth
+INFO: [VRFC 10-311] analyzing module jtag_axi_blk_mem_gen_v8_4_7_synth__parameterized0
+INFO: [VRFC 10-311] analyzing module jtag_axi_blk_mem_gen_v8_4_7_synth__parameterized0_14
+INFO: [VRFC 10-311] analyzing module jtag_axi_clk_x_pntrs
+INFO: [VRFC 10-311] analyzing module jtag_axi_clk_x_pntrs__parameterized0
+INFO: [VRFC 10-311] analyzing module jtag_axi_clk_x_pntrs__parameterized0__xdcDup__1
+INFO: [VRFC 10-311] analyzing module jtag_axi_clk_x_pntrs__xdcDup__1
+INFO: [VRFC 10-311] analyzing module jtag_axi_dmem
+INFO: [VRFC 10-311] analyzing module jtag_axi_fifo_generator_ramfifo
+INFO: [VRFC 10-311] analyzing module jtag_axi_fifo_generator_ramfifo__parameterized0
+INFO: [VRFC 10-311] analyzing module jtag_axi_fifo_generator_ramfifo__parameterized1
+INFO: [VRFC 10-311] analyzing module jtag_axi_fifo_generator_ramfifo__parameterized1__xdcDup__1
+INFO: [VRFC 10-311] analyzing module jtag_axi_fifo_generator_top
+INFO: [VRFC 10-311] analyzing module jtag_axi_fifo_generator_top__parameterized0
+INFO: [VRFC 10-311] analyzing module jtag_axi_fifo_generator_top__parameterized1
+INFO: [VRFC 10-311] analyzing module jtag_axi_fifo_generator_top__parameterized1__xdcDup__1
+INFO: [VRFC 10-311] analyzing module jtag_axi_fifo_generator_v13_2_9
+INFO: [VRFC 10-311] analyzing module jtag_axi_fifo_generator_v13_2_9__parameterized0
+INFO: [VRFC 10-311] analyzing module jtag_axi_fifo_generator_v13_2_9__parameterized1
+INFO: [VRFC 10-311] analyzing module jtag_axi_fifo_generator_v13_2_9__parameterized1__xdcDup__1
+INFO: [VRFC 10-311] analyzing module jtag_axi_fifo_generator_v13_2_9_synth
+INFO: [VRFC 10-311] analyzing module jtag_axi_fifo_generator_v13_2_9_synth__parameterized0
+INFO: [VRFC 10-311] analyzing module jtag_axi_fifo_generator_v13_2_9_synth__parameterized1
+INFO: [VRFC 10-311] analyzing module jtag_axi_fifo_generator_v13_2_9_synth__parameterized1__xdcDup__1
+INFO: [VRFC 10-311] analyzing module jtag_axi_memory
+INFO: [VRFC 10-311] analyzing module jtag_axi_memory__parameterized0
+INFO: [VRFC 10-311] analyzing module jtag_axi_memory__parameterized1
+INFO: [VRFC 10-311] analyzing module jtag_axi_memory__parameterized1_12
+INFO: [VRFC 10-311] analyzing module jtag_axi_rd_bin_cntr
+INFO: [VRFC 10-311] analyzing module jtag_axi_rd_bin_cntr_9
+INFO: [VRFC 10-311] analyzing module jtag_axi_rd_bin_cntr__parameterized0
+INFO: [VRFC 10-311] analyzing module jtag_axi_rd_bin_cntr__parameterized0_23
+INFO: [VRFC 10-311] analyzing module jtag_axi_rd_fwft
+INFO: [VRFC 10-311] analyzing module jtag_axi_rd_fwft_2
+INFO: [VRFC 10-311] analyzing module jtag_axi_rd_fwft_21
+INFO: [VRFC 10-311] analyzing module jtag_axi_rd_fwft_7
+INFO: [VRFC 10-311] analyzing module jtag_axi_rd_logic
+INFO: [VRFC 10-311] analyzing module jtag_axi_rd_logic_3
+INFO: [VRFC 10-311] analyzing module jtag_axi_rd_logic__parameterized0
+INFO: [VRFC 10-311] analyzing module jtag_axi_rd_logic__parameterized0_10
+INFO: [VRFC 10-311] analyzing module jtag_axi_rd_status_flags_as
+INFO: [VRFC 10-311] analyzing module jtag_axi_rd_status_flags_as_8
+INFO: [VRFC 10-311] analyzing module jtag_axi_rd_status_flags_as__parameterized0
+INFO: [VRFC 10-311] analyzing module jtag_axi_rd_status_flags_as__parameterized0_22
+INFO: [VRFC 10-311] analyzing module jtag_axi_wr_bin_cntr
+INFO: [VRFC 10-311] analyzing module jtag_axi_wr_bin_cntr_6
+INFO: [VRFC 10-311] analyzing module jtag_axi_wr_bin_cntr__parameterized0
+INFO: [VRFC 10-311] analyzing module jtag_axi_wr_bin_cntr__parameterized0_20
+INFO: [VRFC 10-311] analyzing module jtag_axi_wr_logic
+INFO: [VRFC 10-311] analyzing module jtag_axi_wr_logic_4
+INFO: [VRFC 10-311] analyzing module jtag_axi_wr_logic__parameterized0
+INFO: [VRFC 10-311] analyzing module jtag_axi_wr_logic__parameterized0_11
+INFO: [VRFC 10-311] analyzing module jtag_axi_wr_status_flags_as
+INFO: [VRFC 10-311] analyzing module jtag_axi_wr_status_flags_as_5
+INFO: [VRFC 10-311] analyzing module jtag_axi_wr_status_flags_as__parameterized0
+INFO: [VRFC 10-311] analyzing module jtag_axi_wr_status_flags_as__parameterized0_19
+INFO: [VRFC 10-2263] Analyzing Verilog file "D:/chiplab/loongson.gen/sources_1/ip/data_bank_ram/data_bank_ram_sim_netlist.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module data_bank_ram
+INFO: [VRFC 10-311] analyzing module data_bank_ram_blk_mem_gen_generic_cstr
+INFO: [VRFC 10-311] analyzing module data_bank_ram_blk_mem_gen_prim_width
+INFO: [VRFC 10-311] analyzing module data_bank_ram_blk_mem_gen_prim_wrapper_init
+INFO: [VRFC 10-311] analyzing module data_bank_ram_blk_mem_gen_top
+INFO: [VRFC 10-311] analyzing module data_bank_ram_blk_mem_gen_v8_4_7
+INFO: [VRFC 10-311] analyzing module data_bank_ram_blk_mem_gen_v8_4_7_synth
+INFO: [VRFC 10-2263] Analyzing Verilog file "D:/chiplab/loongson.gen/sources_1/ip/tagv_ram/tagv_ram_sim_netlist.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module tagv_ram
+INFO: [VRFC 10-311] analyzing module tagv_ram_blk_mem_gen_generic_cstr
+INFO: [VRFC 10-311] analyzing module tagv_ram_blk_mem_gen_prim_width
+INFO: [VRFC 10-311] analyzing module tagv_ram_blk_mem_gen_prim_wrapper_init
+INFO: [VRFC 10-311] analyzing module tagv_ram_blk_mem_gen_top
+INFO: [VRFC 10-311] analyzing module tagv_ram_blk_mem_gen_v8_4_7
+INFO: [VRFC 10-311] analyzing module tagv_ram_blk_mem_gen_v8_4_7_synth
+INFO: [VRFC 10-2263] Analyzing Verilog file "D:/chiplab/chip/soc_demo/nscscc-team/xilinx_ip/vio/vio_0_sim_netlist.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module vio_0
+INFO: [VRFC 10-311] analyzing module vio_0_vio_v3_0_24_decoder
+INFO: [VRFC 10-311] analyzing module vio_0_vio_v3_0_24_probe_in_one
+INFO: [VRFC 10-311] analyzing module vio_0_vio_v3_0_24_probe_out_all
+INFO: [VRFC 10-311] analyzing module vio_0_vio_v3_0_24_probe_out_one
+INFO: [VRFC 10-311] analyzing module vio_0_vio_v3_0_24_probe_out_one__parameterized0
+INFO: [VRFC 10-311] analyzing module vio_0_vio_v3_0_24_probe_out_one__parameterized1
+INFO: [VRFC 10-311] analyzing module vio_0_vio_v3_0_24_probe_width
+INFO: [VRFC 10-311] analyzing module vio_0_vio_v3_0_24_probe_width__parameterized0
+INFO: [VRFC 10-311] analyzing module vio_0_vio_v3_0_24_vio
+INFO: [VRFC 10-311] analyzing module vio_0_xsdbs_v1_0_3_xsdbs
+INFO: [VRFC 10-2263] Analyzing Verilog file "D:/chiplab/chip/soc_demo/nscscc-team/AMBA/Axi_CDC.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module Axi_CDC
+INFO: [VRFC 10-311] analyzing module StreamFifoCC_4
+INFO: [VRFC 10-311] analyzing module StreamFifoCC_3
+INFO: [VRFC 10-311] analyzing module StreamFifoCC_2
+INFO: [VRFC 10-311] analyzing module StreamFifoCC_1
+INFO: [VRFC 10-311] analyzing module StreamFifoCC
+INFO: [VRFC 10-311] analyzing module BufferCC_1
+INFO: [VRFC 10-311] analyzing module BufferCC
+INFO: [VRFC 10-311] analyzing module BufferCC_6
+INFO: [VRFC 10-311] analyzing module BufferCC_5
+INFO: [VRFC 10-311] analyzing module BufferCC_4
+INFO: [VRFC 10-311] analyzing module BufferCC_8
+INFO: [VRFC 10-311] analyzing module BufferCC_7
+INFO: [VRFC 10-311] analyzing module BufferCC_11
+INFO: [VRFC 10-311] analyzing module BufferCC_10
+INFO: [VRFC 10-311] analyzing module BufferCC_9
+INFO: [VRFC 10-2263] Analyzing Verilog file "D:/chiplab/IP/myCPU/EXE1.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module exe1
+INFO: [VRFC 10-2263] Analyzing Verilog file "D:/chiplab/IP/myCPU/EXE2.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module exe2
+INFO: [VRFC 10-2263] Analyzing Verilog file "D:/chiplab/IP/myCPU/MEM.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module mem
+INFO: [VRFC 10-2263] Analyzing Verilog file "D:/chiplab/IP/myCPU/Pre_IF1.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module pre_IF1
+INFO: [VRFC 10-2263] Analyzing Verilog file "D:/chiplab/IP/myCPU/Pre_IF2.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module pre_IF2
+INFO: [VRFC 10-2263] Analyzing Verilog file "D:/chiplab/IP/myCPU/WB.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module wb
+INFO: [VRFC 10-2263] Analyzing Verilog file "D:/chiplab/IP/myCPU/alu.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module alu
+INFO: [VRFC 10-2263] Analyzing Verilog file "D:/chiplab/IP/APB_DEV/apb_dev_top_no_nand.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module axi2apb_misc
+INFO: [VRFC 10-2263] Analyzing Verilog file "D:/chiplab/IP/APB_DEV/apb_mux2.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module apb_mux2
+INFO: [VRFC 10-311] analyzing module arb_2_1
+INFO: [VRFC 10-2263] Analyzing Verilog file "D:/chiplab/IP/AMBA/axi2apb.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module axi2apb_bridge
+INFO: [VRFC 10-2263] Analyzing Verilog file "D:/chiplab/chip/soc_demo/nscscc-team/AMBA/axi3_to_axi4_bridge.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module axi3_to_axi4_bridge
+INFO: [VRFC 10-311] analyzing module first_one_4_4
+INFO: [VRFC 10-311] analyzing module encode_4_2
+INFO: [VRFC 10-311] analyzing module first_one_id
+INFO: [VRFC 10-2263] Analyzing Verilog file "D:/chiplab/chip/soc_demo/nscscc-team/ram_wrap/axi_wrap_ddr.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module axi_wrap_ddr
+INFO: [VRFC 10-2263] Analyzing Verilog file "D:/chiplab/chip/soc_demo/nscscc-team/ram_wrap/axi_wrap_ram.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module axi_wrap_ram
+INFO: [VRFC 10-2263] Analyzing Verilog file "D:/chiplab/IP/myCPU/bht.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module bht
+INFO: [VRFC 10-2263] Analyzing Verilog file "D:/chiplab/IP/myCPU/bridge_SRAM_AXI.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module bridge_SRAM_AXI
+INFO: [VRFC 10-2263] Analyzing Verilog file "D:/chiplab/IP/myCPU/btb.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module btb
+INFO: [VRFC 10-2263] Analyzing Verilog file "D:/chiplab/IP/myCPU/cache.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module cache
+INFO: [VRFC 10-2263] Analyzing Verilog file "D:/chiplab/chip/soc_demo/nscscc-team/CONFREG/confreg.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module confreg
+INFO: [VRFC 10-2263] Analyzing Verilog file "D:/chiplab/IP/myCPU/cpucfg.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module cpucfg
+INFO: [VRFC 10-2263] Analyzing Verilog file "D:/chiplab/IP/myCPU/csr_regfile.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module csr_regfile
+INFO: [VRFC 10-2263] Analyzing Verilog file "D:/chiplab/IP/myCPU/decode.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module decode
+INFO: [VRFC 10-2263] Analyzing Verilog file "D:/chiplab/IP/myCPU/decoder_2_4.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module decoder_2_4
+INFO: [VRFC 10-2263] Analyzing Verilog file "D:/chiplab/IP/myCPU/decoder_4_16.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module decoder_4_16
+INFO: [VRFC 10-2263] Analyzing Verilog file "D:/chiplab/IP/myCPU/decoder_5_32.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module decoder_5_32
+INFO: [VRFC 10-2263] Analyzing Verilog file "D:/chiplab/IP/myCPU/decoder_6_64.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module decoder_6_64
+INFO: [VRFC 10-2263] Analyzing Verilog file "D:/chiplab/IP/myCPU/fetch.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module fetch
+INFO: [VRFC 10-2263] Analyzing Verilog file "D:/chiplab/chip/soc_demo/nscscc-team/ram_wrap/fpga_sram_dp.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module fpga_sram_dp
+INFO: [VRFC 10-2263] Analyzing Verilog file "D:/chiplab/chip/soc_demo/nscscc-team/JTAG_wrap/jtag_axi_wrap.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module jtag_axi_wrap
+INFO: [VRFC 10-2263] Analyzing Verilog file "D:/chiplab/IP/myCPU/mycpu_core.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module mycpu_core
+INFO: [VRFC 10-2263] Analyzing Verilog file "D:/chiplab/IP/myCPU/mycpu_top.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module core_top
+INFO: [VRFC 10-2263] Analyzing Verilog file "D:/chiplab/IP/APB_DEV/URT/raminfr.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module raminfr
+INFO: [VRFC 10-2263] Analyzing Verilog file "D:/chiplab/IP/myCPU/ras.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module ras
+INFO: [VRFC 10-2263] Analyzing Verilog file "D:/chiplab/IP/myCPU/regfile.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module regfile
+INFO: [VRFC 10-2263] Analyzing Verilog file "D:/chiplab/chip/soc_demo/nscscc-team/uart_debug/rst_sync.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module rst_sync
+INFO: [VRFC 10-2263] Analyzing Verilog file "D:/chiplab/IP/AXI_SRAM_BRIDGE/soc_axi_sram_bridge.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module soc_axi_sram_bridge
+INFO: [VRFC 10-2263] Analyzing Verilog file "D:/chiplab/chip/soc_demo/nscscc-team/soc_top.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module soc_top
+INFO: [VRFC 10-2263] Analyzing Verilog file "D:/chiplab/IP/myCPU/tlb.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module tlb
+INFO: [VRFC 10-2263] Analyzing Verilog file "D:/chiplab/IP/APB_DEV/URT/uart_receiver.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module uart_receiver
+INFO: [VRFC 10-2263] Analyzing Verilog file "D:/chiplab/IP/APB_DEV/URT/uart_regs.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module uart_regs
+INFO: [VRFC 10-2263] Analyzing Verilog file "D:/chiplab/IP/APB_DEV/URT/uart_rfifo.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module uart_rfifo
+INFO: [VRFC 10-2263] Analyzing Verilog file "D:/chiplab/IP/APB_DEV/URT/uart_sync_flops.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module uart_sync_flops
+INFO: [VRFC 10-2263] Analyzing Verilog file "D:/chiplab/IP/APB_DEV/URT/uart_tfifo.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module uart_tfifo
+INFO: [VRFC 10-2263] Analyzing Verilog file "D:/chiplab/IP/APB_DEV/URT/uart_top.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module UART_TOP
+INFO: [VRFC 10-2263] Analyzing Verilog file "D:/chiplab/IP/APB_DEV/URT/uart_transmitter.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module uart_transmitter

@@ -1,0 +1,7 @@
+# compile vhdl design source files
+vhdl xil_defaultlib  \
+"../../../../../../../../loongson.gen/sources_1/ip/divider_unsigned/sim/divider_unsigned.vhd" \
+"../../../../../../../../loongson.gen/sources_1/ip/divider/sim/divider.vhd" \
+
+# Do not sort compile order
+nosort

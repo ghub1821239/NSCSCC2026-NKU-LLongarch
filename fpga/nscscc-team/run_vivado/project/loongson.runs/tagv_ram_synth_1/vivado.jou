@@ -1,0 +1,14 @@
+#-----------------------------------------------------------
+# Vivado v2023.2_AR000036317 (64-bit)
+# SW Build 4029153 on Fri Oct 13 20:14:34 MDT 2023
+# IP Build 4028589 on Sat Oct 14 00:45:43 MDT 2023
+# SharedData Build 4025554 on Tue Oct 10 17:18:54 MDT 2023
+# Start of session at: Sun Aug  2 15:45:51 2026
+# Process ID: 18728
+# Current directory: D:/chiplab/fpga/nscscc-team/run_vivado/project/loongson.runs/tagv_ram_synth_1
+# Command line: vivado.exe -log tagv_ram.vds -product Vivado -mode batch -messageDb vivado.pb -notrace -source tagv_ram.tcl
+# Log file: D:/chiplab/fpga/nscscc-team/run_vivado/project/loongson.runs/tagv_ram_synth_1/tagv_ram.vds
+# Journal file: D:/chiplab/fpga/nscscc-team/run_vivado/project/loongson.runs/tagv_ram_synth_1\vivado.jou
+# Running On: mini, OS: Windows, CPU Frequency: 2612 MHz, CPU Physical cores: 8, Host memory: 16891 MB
+#-----------------------------------------------------------
+source tagv_ram.tcl -notrace

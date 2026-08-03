@@ -1,0 +1,642 @@
+#-----------------------------------------------------------
+# Vivado v2023.2_AR000036317 (64-bit)
+# SW Build 4029153 on Fri Oct 13 20:14:34 MDT 2023
+# IP Build 4028589 on Sat Oct 14 00:45:43 MDT 2023
+# SharedData Build 4025554 on Tue Oct 10 17:18:54 MDT 2023
+# Start of session at: Mon Aug  3 12:11:34 2026
+# Process ID: 14240
+# Current directory: D:/chiplab/fpga/nscscc-team/run_vivado/result
+# Command line: vivado.exe -mode tcl -source ..\vio.tcl -tclargs ..\project\loongson.runs\impl_1\soc_top.bit ..\project\loongson.runs\impl_1\soc_top.ltx perf
+# Log file: D:/chiplab/fpga/nscscc-team/run_vivado/result/vivado.log
+# Journal file: D:/chiplab/fpga/nscscc-team/run_vivado/result\vivado.jou
+# Running On: mini, OS: Windows, CPU Frequency: 2612 MHz, CPU Physical cores: 8, Host memory: 16891 MB
+#-----------------------------------------------------------
+source {..\vio.tcl}
+# proc WaitForDdrReady {vio status_probe timeout_ms {quiet 0}} {
+#     set interval_ms 100
+#     set elapsed_ms 0
+#     set status 0
+# 
+#     while {$elapsed_ms <= $timeout_ms} {
+#         refresh_hw_vio $vio
+#         set status_raw [get_property INPUT_VALUE $status_probe]
+#         if {[scan $status_raw %x status] != 1} {
+#             error "Invalid DDR readiness value '$status_raw'"
+#         }
+# 
+#         if {($status & 0x7) == 0x7} {
+#             if {!$quiet} {
+#                 puts [format "DDR ready after %d ms: sys_resetn=1 calib=1 clock_pll=1" \
+#                     $elapsed_ms]
+#             }
+#             return
+#         }
+# 
+#         after $interval_ms
+#         incr elapsed_ms $interval_ms
+#     }
+# 
+#     error [format "DDR readiness timeout after %d ms: status=0x%X sys_resetn=%d calib=%d clock_pll=%d" \
+#         $timeout_ms $status \
+#         [expr {($status >> 2) & 1}] \
+#         [expr {($status >> 1) & 1}] \
+#         [expr {$status & 1}]]
+# }
+# proc ResetTestSystem {vio reset_probe status_probe timeout_ms {quiet 0}} {
+#     # Match a physical Reset press: reset PLL, MIG, AXI fabric and the complete
+#     # SoC. DDR contents are not rewritten, so the image downloaded once by
+#     # JTAG remains available after MIG recalibration on the competition board.
+#     set_property OUTPUT_VALUE 0 $reset_probe
+#     commit_hw_vio $reset_probe
+#     after 100
+#     set_property OUTPUT_VALUE 1 $reset_probe
+#     commit_hw_vio $reset_probe
+#     WaitForDdrReady $vio $status_probe $timeout_ms $quiet
+# }
+# proc WaitForFuncResult {vio result_probe flag_probe expected_result timeout_ms} {
+#     set interval_ms 250
+#     set elapsed_ms 0
+#     set result 0
+#     set correct_flag 0
+# 
+#     while {$elapsed_ms <= $timeout_ms} {
+#         refresh_hw_vio $vio
+#         set result_raw [get_property INPUT_VALUE $result_probe]
+#         set flag_raw [get_property INPUT_VALUE $flag_probe]
+#         if {[scan $result_raw %x result] != 1} {
+#             error "Invalid functional result value '$result_raw'"
+#         }
+#         if {[scan $flag_raw %x correct_flag] != 1} {
+#             error "Invalid functional flag value '$flag_raw'"
+#         }
+# 
+#         if {$result == $expected_result} {
+#             return [list pass $result $correct_flag $elapsed_ms]
+#         }
+#         if {$correct_flag == 0x2} {
+#             return [list fail $result $correct_flag $elapsed_ms]
+#         }
+# 
+#         after $interval_ms
+#         incr elapsed_ms $interval_ms
+#     }
+# 
+#     return [list timeout $result $correct_flag $timeout_ms]
+# }
+# proc WaitForPerfResult {vio flag_probe timeout_ms} {
+#     set interval_ms 250
+#     set elapsed_ms 0
+#     set correct_flag 0
+# 
+#     while {$elapsed_ms <= $timeout_ms} {
+#         refresh_hw_vio $vio
+#         set flag_raw [get_property INPUT_VALUE $flag_probe]
+#         if {[scan $flag_raw %x correct_flag] != 1} {
+#             error "Invalid performance flag value '$flag_raw'"
+#         }
+# 
+#         switch $correct_flag {
+#             0 {
+#                 # Reset, boot and in-progress all use zero. A CPU that hangs
+#                 # also remains zero and is distinguished by the timeout.
+#             }
+#             1 {
+#                 return [list pass $correct_flag $elapsed_ms]
+#             }
+#             2 {
+#                 return [list fail $correct_flag $elapsed_ms]
+#             }
+#             default {
+#                 return [list invalid $correct_flag $elapsed_ms]
+#             }
+#         }
+# 
+#         after $interval_ms
+#         incr elapsed_ms $interval_ms
+#     }
+# 
+#     return [list timeout $correct_flag $timeout_ms]
+# }
+# open_hw_manager
+open_hw_manager: Time (s): cpu = 00:00:05 ; elapsed = 00:00:06 . Memory (MB): peak = 476.344 ; gain = 181.332
+# connect_hw_server
+INFO: [Labtools 27-2285] Connecting to hw_server url TCP:localhost:3121
+INFO: [Labtools 27-3415] Connecting to cs_server url TCP:localhost:0
+INFO: [Labtools 27-3417] Launching cs_server...
+INFO: [Labtools 27-2221] Launch Output:
+ECHO ���ڹر�״̬��
+ECHO ���ڹر�״̬��
+
+
+******** Xilinx cs_server v2023.2.0
+  ****** Build date   : Oct 10 2023-12:01:56
+    **** Build number : 2023.2.1696910516
+      ** Copyright 2017-2022 Xilinx, Inc. All Rights Reserved.
+      ** Copyright 2022-2026 Advanced Micro Devices, Inc. All Rights Reserved.
+
+
+
+# open_hw_target
+INFO: [Labtoolstcl 44-466] Opening hw_target localhost:3121/xilinx_tcf/Xilinx/Port_#0001.Hub_#0002
+# set_property PROBES.FILE [lindex $argv 1] [get_hw_devices xc7a200t_0]
+# set_property FULL_PROBES.FILE [lindex $argv 1] [get_hw_devices xc7a200t_0]
+# set_property PROGRAM.FILE [lindex $argv 0] [get_hw_devices xc7a200t_0]
+# program_hw_devices [get_hw_devices xc7a200t_0]
+INFO: [Labtools 27-3164] End of startup status: HIGH
+program_hw_devices: Time (s): cpu = 00:00:21 ; elapsed = 00:00:21 . Memory (MB): peak = 483.562 ; gain = 0.000
+# refresh_hw_device [lindex [get_hw_devices xc7a200t_0] 0]
+INFO: [Labtools 27-2302] Device xc7a200t (JTAG device index = 0) is programmed with a design that has 1 JTAG AXI core(s).
+INFO: [Labtools 27-2302] Device xc7a200t (JTAG device index = 0) is programmed with a design that has 1 VIO core(s).
+INFO: [Labtools 27-1889] Uploading output probe values for VIO core [hw_vio_1]
+# set vio [lindex [get_hw_vios] 0]
+# set reset_probe [lindex [get_hw_probes -quiet resetn_vio] 0]
+# set status_probe [lindex [get_hw_probes -quiet ddr_status_vio] 0]
+# set switch_probe [lindex [get_hw_probes -quiet switch_vio] 0]
+# set result_probe [lindex [get_hw_probes -quiet num_data] 0]
+# set flag_probe [lindex [get_hw_probes -quiet led_rg0_OBUF] 0]
+# if {$vio eq "" || $reset_probe eq "" || $status_probe eq "" ||
+#     $switch_probe eq "" || $result_probe eq "" || $flag_probe eq ""} {
+#     error "Required VIO control, result or readiness probe was not found"
+# }
+# set test [lindex $argv 2]
+# switch $test {
+#     "perf" {
+#         set_property OUTPUT_VALUE 7E $switch_probe
+#     }
+#     "func" {
+#         set_property OUTPUT_VALUE F0 $switch_probe
+#     }
+# }
+# commit_hw_vio $switch_probe
+# ResetTestSystem $vio $reset_probe $status_probe 30000
+DDR ready after 100 ms: sys_resetn=1 calib=1 clock_pll=1
+# set_msg_config -id {Labtoolstcl 44-481} -suppress
+# source ../jtag_axi_master.tcl
+## proc ReadReg { address } {
+##     create_hw_axi_txn read_txn [get_hw_axis hw_axi_1] -address $address -type read
+##     run_hw_axi  read_txn
+##     set read_value [lindex [report_hw_axi_txn  read_txn] 1];
+##     delete_hw_axi_txn read_txn
+##     set tmp addr=0x
+##     append tmp $address
+##     append tmp , data=0x
+##     append tmp $read_value
+##     return $tmp
+## }
+## proc WriteReg { address data } {
+##     create_hw_axi_txn write_txn [get_hw_axis hw_axi_1] -address $address -data $data -type write
+##     run_hw_axi  write_txn
+##     set write_value [lindex [report_hw_axi_txn  write_txn] 1];
+##     delete_hw_axi_txn write_txn
+## }
+## proc ReadRegsToFile { start_addr num_regs filename } {
+##     # 检查文件是否存圡�,不存在则创建
+##     if {![file exists [file dirname $filename]]} {
+##         file mkdir [file dirname $filename]
+##         puts "Create a directory: [file dirname $filename]"
+##     }
+##     
+##     # 打开文件用于写入
+##     if {[catch {open $filename "w"} outfile]} {
+##         puts "Error: Unable to create or open a file $filename"
+##         return
+##     }
+##     
+##     # 从起始地址开始循�?读取指定数量的寄存器
+##     for {set i 0} {$i < $num_regs} {incr i} {
+##         # 计算当前地址
+##         set curr_addr [format "0x%08x" [expr $start_addr + $i * 4]]
+##         
+##         # 读取当前地址的�?
+##         create_hw_axi_txn read_txn [get_hw_axis hw_axi_1] -address $curr_addr -type read
+##         run_hw_axi read_txn
+##         set read_value [lindex [report_hw_axi_txn read_txn] 1]
+##         delete_hw_axi_txn read_txn
+##         
+##         # 写入文件:地址和数�?
+##         puts $outfile [format "addr=%s, data=0x%s" $curr_addr $read_value]
+##     }
+##     
+##     # 关闭文件
+##     close $outfile
+##     puts "Finish"
+## }
+## set bin_file [open "../../../../software/examples/nscscc_perf/obj/allbench/inst_data.bin" "rb"]
+## fconfigure $bin_file -translation binary
+## set addr_d 469762048
+## set addr_h [format "%08x" $addr_d]
+## set addr $addr_h
+## WriteReg 80000000 00000000
+## set chunk_size 1024
+## while {![eof $bin_file]} {
+##     set data [read $bin_file $chunk_size]
+##     set data_len [string length $data]
+##     if {$data_len == 0} break
+##     
+##     # 准��burst传输的数�?
+##     set burst_data ""
+##     set temp_data [list]
+##     
+##     # 首先收集所有数�?
+##     for {set i 0} {$i < $data_len} {incr i 4} {
+##         if {[expr $i + 3] >= $data_len} break
+##         
+##         # 提取4字节数据并调整字节顺�?(大�??�?小�??)
+##         set bytes_data [string range $data $i [expr $i + 3]]
+##         if {[string length $bytes_data] != 4} break
+##         
+##         # 使用二进制扫描获取无符号字节
+##         binary scan $bytes_data B* binary_data
+##         set bytes [list]
+##         for {set j 0} {$j < 32} {incr j 8} {
+##             set byte [string range $binary_data $j [expr $j + 7]]
+##             lappend bytes [expr "0b$byte"]
+##         }
+##         
+##         # 格式化数�?并添加到临时列表
+##         lappend temp_data [format "%02X%02X%02X%02X" \
+##             [lindex $bytes 3] \
+##             [lindex $bytes 2] \
+##             [lindex $bytes 1] \
+##             [lindex $bytes 0]]
+##     }
+##     
+##     # 反转数据顺序并构建burst_data字�?�串
+##     set temp_data [lreverse $temp_data]
+##     append burst_data [join $temp_data "_"]
+##     
+##     # 创建并执行burst写传�?
+##     create_hw_axi_txn burst_write_txn [get_hw_axis hw_axi_1] \
+##         -address $addr \
+##         -len [expr $data_len/4] \
+##         -type write \
+##         -data $burst_data
+##     run_hw_axi burst_write_txn
+##     delete_hw_axi_txn burst_write_txn
+##     
+##     # 更新地址
+##     incr addr_d $data_len
+##     set addr [format "%08x" $addr_d]
+## }
+## WriteReg 40000000 00000000
+## close $bin_file
+# switch $test {
+#     "perf" {
+#         set benchmark_names [list \
+#             bitcount bubble_sort coremark crc32 dhrystone quick_sort \
+#             select_sort sha stream_copy stringsearch fireye_A0 fireye_B2 \
+#             fireye_C0 fireye_D1 fireye_I2 inner_product lookup_table \
+#             loop_induction my_memcmp minmax_sequence]
+#         set benchmark_count [llength $benchmark_names]
+#         set runs_per_benchmark 2
+#         set total_runs [expr {$benchmark_count * $runs_per_benchmark}]
+#         set perf_timeout_ms 30000
+#         set result_settle_ms 500
+# 
+#         set selected_outfile [open "perf_vio.csv" w]
+#         puts $selected_outfile "correct_flag,soc_count,cpu_count"
+#         set runs_outfile [open "perf_vio_runs.csv" w]
+#         puts $runs_outfile \
+#             "benchmark_index,benchmark,run,switch,correct_flag,soc_count,cpu_count,valid,selected"
+# 
+#         for {set benchmark_number 1} {
+#             $benchmark_number <= $benchmark_count
+#         } {incr benchmark_number} {
+#             set benchmark [lindex $benchmark_names [expr {$benchmark_number - 1}]]
+#             set switch_value [expr {127 - $benchmark_number}]
+#             set run_records {}
+# 
+#             for {set run_number 1} {
+#                 $run_number <= $runs_per_benchmark
+#             } {incr run_number} {
+#                 set total_run_number [expr {
+#                     ($benchmark_number - 1) * $runs_per_benchmark + $run_number
+#                 }]
+#                 puts [format \
+#                     {PERF [%02d/%02d] %s run %d/%d} \
+#                     $total_run_number $total_runs $benchmark $run_number \
+#                     $runs_per_benchmark]
+#                 flush stdout
+# 
+#                 # Select a benchmark, pulse the complete system reset, and let
+#                 # the CPU start automatically when the reset tree is ready.
+#                 set_property OUTPUT_VALUE \
+#                     [format %02X $switch_value] $switch_probe
+#                 commit_hw_vio $switch_probe
+#                 ResetTestSystem \
+#                     $vio $reset_probe $status_probe 30000 1
+# 
+#                 lassign [WaitForPerfResult \
+#                     $vio $flag_probe $perf_timeout_ms] \
+#                     perf_status correct_flag perf_elapsed_ms
+#                 puts [format \
+#                     {PERF COMPLETION [%02d/%02d] %s run %d/%d status=%s flag=0x%X elapsed=%d ms} \
+#                     $total_run_number $total_runs $benchmark $run_number \
+#                     $runs_per_benchmark [string toupper $perf_status] \
+#                     $correct_flag $perf_elapsed_ms]
+#                 flush stdout
+# 
+#                 set soc_count 0
+#                 set cpu_count 0
+#                 if {$perf_status ne "timeout"} {
+#                     # The performance software currently publishes LED_RG0
+#                     # before writing CR0/CR1 and entering test_finish, where it
+#                     # copies the switch-selected counter into num_data. Allow
+#                     # that result service to become active before sampling.
+#                     after $result_settle_ms
+#                     refresh_hw_vio $vio
+#                     set soc_count_raw \
+#                         [get_property INPUT_VALUE $result_probe]
+#                     if {[scan $soc_count_raw %x soc_count] != 1} {
+#                         error "Invalid performance SoC count '$soc_count_raw'"
+#                     }
+# 
+#                     set_property OUTPUT_VALUE \
+#                         [format %02X [expr {$switch_value + 128}]] \
+#                         $switch_probe
+#                     commit_hw_vio $switch_probe
+# 
+#                     after $result_settle_ms
+#                     refresh_hw_vio $vio
+#                     set cpu_count_raw \
+#                         [get_property INPUT_VALUE $result_probe]
+#                     if {[scan $cpu_count_raw %x cpu_count] != 1} {
+#                         error "Invalid performance CPU count '$cpu_count_raw'"
+#                     }
+#                 }
+# 
+#                 set run_valid [expr {
+#                     $correct_flag == 1 && $soc_count > 0 && $cpu_count > 0
+#                 }]
+#                 lappend run_records [list \
+#                     $run_number $correct_flag $soc_count $cpu_count $run_valid]
+#             }
+# 
+#             # A benchmark is repeatable only if both independent runs pass.
+#             # When both pass, the larger CPU count is the conservative result.
+#             # Otherwise select the first failing run so perf_vio.csv cannot be
+#             # mistaken for a valid benchmark by the scoring script.
+#             set benchmark_valid 1
+#             set selected_record [lindex $run_records 0]
+#             set first_invalid_record {}
+#             foreach record $run_records {
+#                 lassign $record \
+#                     run_number correct_flag soc_count cpu_count run_valid
+#                 if {!$run_valid} {
+#                     set benchmark_valid 0
+#                     if {$first_invalid_record eq ""} {
+#                         set first_invalid_record $record
+#                     }
+#                 }
+#                 if {$run_valid &&
+#                     [lindex $selected_record 4] &&
+#                     $cpu_count > [lindex $selected_record 3]} {
+#                     set selected_record $record
+#                 }
+#             }
+#             if {!$benchmark_valid} {
+#                 set selected_record $first_invalid_record
+#             }
+# 
+#             lassign $selected_record \
+#                 selected_run selected_flag selected_soc selected_cpu \
+#                 selected_valid
+#             foreach record $run_records {
+#                 lassign $record \
+#                     run_number correct_flag soc_count cpu_count run_valid
+#                 puts $runs_outfile [format \
+#                     "%d,%s,%d,%02X,%X,%08X,%08X,%s,%d" \
+#                     $benchmark_number $benchmark $run_number $switch_value \
+#                     $correct_flag $soc_count $cpu_count \
+#                     [expr {$run_valid ? "pass" : "fail"}] \
+#                     [expr {$run_number == $selected_run}]]
+#             }
+#             flush $runs_outfile
+# 
+#             puts $selected_outfile [format "%X,%08X,%08X" \
+#                 $selected_flag $selected_soc $selected_cpu]
+#             flush $selected_outfile
+# 
+#             set run_summaries {}
+#             foreach record $run_records {
+#                 lassign $record \
+#                     run_number correct_flag soc_count cpu_count run_valid
+#                 if {$run_valid} {
+#                     lappend run_summaries [format \
+#                         "r%d=PASS cpu=0x%08X" \
+#                         $run_number $cpu_count]
+#                 } else {
+#                     lappend run_summaries [format \
+#                         "r%d=FAIL flag=0x%X soc=0x%08X cpu=0x%08X" \
+#                         $run_number $correct_flag $soc_count $cpu_count]
+#                 }
+#             }
+#             puts [format \
+#                 {PERF RESULT [%02d/%02d] %s %s | %s | selected=r%d} \
+#                 $benchmark_number $benchmark_count $benchmark \
+#                 [expr {$benchmark_valid ? "PASS" : "FAIL"}] \
+#                 [join $run_summaries " | "] $selected_run]
+#             flush stdout
+#         }
+#         close $selected_outfile
+#         close $runs_outfile
+#         puts [format \
+#             "Performance collection complete: %d benchmarks, %d independent runs, worst valid run selected" \
+#             $benchmark_count $total_runs]
+#     }
+#     "func" {
+#         set outfile [open "func_vio.csv" w]
+#         puts $outfile "seed,status,result,correct_flag,elapsed_ms"
+# 
+#         # Releasing confreg reset reloads its pseudo-random AXI delay generator
+#         # from switch_vio. After reset, the functional
+#         # program reads the live switch repeatedly in idle_1s to choose a
+#         # human-visible inter-test delay. Keep those two meanings separate:
+#         # preserve each reset seed, then select FF to remove only the software
+#         # delay. Always run a no-delay AXI baseline and the historical default,
+#         # plus one logged stress seed selected by CI (or A5 manually).
+#         set stress_seed [string toupper [lindex $argv 3]]
+#         if {$stress_seed eq ""} {
+#             set stress_seed A5
+#         }
+#         if {![regexp {^[0-9A-F]{2}$} $stress_seed]} {
+#             error "Functional stress seed must be exactly two hexadecimal digits"
+#         }
+#         set func_seeds {}
+#         foreach func_seed [list F0 FF $stress_seed] {
+#             if {[lsearch -exact $func_seeds $func_seed] < 0} {
+#                 lappend func_seeds $func_seed
+#             }
+#         }
+#         set expected_func_result 0x3A00003A
+#         set func_timeout_ms 60000
+#         set func_results {}
+#         set func_failures {}
+#         foreach func_seed $func_seeds {
+#             set_property OUTPUT_VALUE $func_seed $switch_probe
+#             commit_hw_vio $switch_probe
+#             puts "Running functional test with switch/random seed 0x$func_seed"
+#             ResetTestSystem \
+#                 $vio $reset_probe $status_probe 30000 1
+# 
+#             # The AXI LFSR seed is loaded while system reset is asserted.
+#             # Keep the seed stable until reset release has crossed sys_clk.
+#             after 1
+# 
+#             # The AXI LFSR seed has now been latched by confreg. FF makes
+#             # SW_INTER ^ 0xAAAA zero in the functional program's idle_1s
+#             # routine. It does not change the already-running AXI LFSR.
+#             set_property OUTPUT_VALUE FF $switch_probe
+#             commit_hw_vio $switch_probe
+#             puts "Functional seed 0x$func_seed latched; runtime wait switch set to 0xFF"
+# 
+#             lassign [WaitForFuncResult \
+#                 $vio $result_probe $flag_probe $expected_func_result \
+#                 $func_timeout_ms] \
+#                 func_status func_result func_flag func_elapsed_ms
+#             puts $outfile [format "%s,%s,%08X,%X,%d" \
+#                 $func_seed $func_status $func_result $func_flag \
+#                 $func_elapsed_ms]
+#             flush $outfile
+#             lappend func_results [list \
+#                 $func_seed $func_status $func_result $func_flag \
+#                 $func_elapsed_ms]
+#             if {$func_status ne "pass"} {
+#                 lappend func_failures $func_seed
+#             }
+#         }
+#         close $outfile
+# 
+#         puts "FUNCTIONAL TEST SUMMARY"
+#         foreach func_record $func_results {
+#             lassign $func_record \
+#                 func_seed func_status func_result func_flag \
+#                 func_elapsed_ms
+#             puts [format \
+#                 "  seed=0x%s status=%s elapsed=%d ms result=0x%08X flag=0x%X" \
+#                 $func_seed [string toupper $func_status] \
+#                 $func_elapsed_ms $func_result $func_flag]
+#         }
+#         if {[llength $func_failures] > 0} {
+#             set formatted_func_failures {}
+#             foreach failed_seed $func_failures {
+#                 lappend formatted_func_failures \
+#                     [format "0x%s" $failed_seed]
+#             }
+#             error [format \
+#                 "Functional test failed after all %d seeds completed: failed seeds=%s expected=0x%08X" \
+#                 [llength $func_seeds] \
+#                 [join $formatted_func_failures ","] \
+#                 $expected_func_result]
+#         }
+#         puts [format "All %d functional random seeds passed" \
+#             [llength $func_seeds]]
+#     }
+#     default {
+#         puts "No VIO result collection requested for '$test'"
+#     }
+# 
+# }
+PERF [01/40] bitcount run 1/2
+PERF COMPLETION [01/40] bitcount run 1/2 status=PASS flag=0x1 elapsed=750 ms
+PERF [02/40] bitcount run 2/2
+PERF COMPLETION [02/40] bitcount run 2/2 status=PASS flag=0x1 elapsed=750 ms
+PERF RESULT [01/20] bitcount PASS | r1=PASS cpu=0x0009E528 | r2=PASS cpu=0x0009E578 | selected=r2
+PERF [03/40] bubble_sort run 1/2
+PERF COMPLETION [03/40] bubble_sort run 1/2 status=PASS flag=0x1 elapsed=1000 ms
+PERF [04/40] bubble_sort run 2/2
+PERF COMPLETION [04/40] bubble_sort run 2/2 status=PASS flag=0x1 elapsed=1000 ms
+PERF RESULT [02/20] bubble_sort PASS | r1=PASS cpu=0x002943D2 | r2=PASS cpu=0x002943F2 | selected=r2
+PERF [05/40] coremark run 1/2
+PERF COMPLETION [05/40] coremark run 1/2 status=PASS flag=0x1 elapsed=1000 ms
+PERF [06/40] coremark run 2/2
+PERF COMPLETION [06/40] coremark run 2/2 status=PASS flag=0x1 elapsed=1000 ms
+PERF RESULT [03/20] coremark PASS | r1=PASS cpu=0x006FE18A | r2=PASS cpu=0x006FE37A | selected=r2
+PERF [07/40] crc32 run 1/2
+PERF COMPLETION [07/40] crc32 run 1/2 status=PASS flag=0x1 elapsed=1000 ms
+PERF [08/40] crc32 run 2/2
+PERF COMPLETION [08/40] crc32 run 2/2 status=PASS flag=0x1 elapsed=1000 ms
+PERF RESULT [04/20] crc32 PASS | r1=PASS cpu=0x003BBA54 | r2=PASS cpu=0x003BBAEA | selected=r2
+PERF [09/40] dhrystone run 1/2
+PERF COMPLETION [09/40] dhrystone run 1/2 status=PASS flag=0x1 elapsed=1000 ms
+PERF [10/40] dhrystone run 2/2
+PERF COMPLETION [10/40] dhrystone run 2/2 status=PASS flag=0x1 elapsed=1000 ms
+PERF RESULT [05/20] dhrystone PASS | r1=PASS cpu=0x00015C3E | r2=PASS cpu=0x00015C20 | selected=r1
+PERF [11/40] quick_sort run 1/2
+PERF COMPLETION [11/40] quick_sort run 1/2 status=PASS flag=0x1 elapsed=1000 ms
+PERF [12/40] quick_sort run 2/2
+PERF COMPLETION [12/40] quick_sort run 2/2 status=PASS flag=0x1 elapsed=1000 ms
+PERF RESULT [06/20] quick_sort PASS | r1=PASS cpu=0x003AE197 | r2=PASS cpu=0x003AE167 | selected=r1
+PERF [13/40] select_sort run 1/2
+PERF COMPLETION [13/40] select_sort run 1/2 status=PASS flag=0x1 elapsed=750 ms
+PERF [14/40] select_sort run 2/2
+PERF COMPLETION [14/40] select_sort run 2/2 status=PASS flag=0x1 elapsed=750 ms
+PERF RESULT [07/20] select_sort PASS | r1=PASS cpu=0x0018C6E0 | r2=PASS cpu=0x0018C72F | selected=r2
+PERF [15/40] sha run 1/2
+PERF COMPLETION [15/40] sha run 1/2 status=PASS flag=0x1 elapsed=1000 ms
+PERF [16/40] sha run 2/2
+PERF COMPLETION [16/40] sha run 2/2 status=PASS flag=0x1 elapsed=1000 ms
+PERF RESULT [08/20] sha PASS | r1=PASS cpu=0x003AA9E4 | r2=PASS cpu=0x003AAA3D | selected=r2
+PERF [17/40] stream_copy run 1/2
+PERF COMPLETION [17/40] stream_copy run 1/2 status=PASS flag=0x1 elapsed=750 ms
+PERF [18/40] stream_copy run 2/2
+PERF COMPLETION [18/40] stream_copy run 2/2 status=PASS flag=0x1 elapsed=750 ms
+PERF RESULT [09/20] stream_copy PASS | r1=PASS cpu=0x0003C825 | r2=PASS cpu=0x0003C802 | selected=r1
+PERF [19/40] stringsearch run 1/2
+PERF COMPLETION [19/40] stringsearch run 1/2 status=PASS flag=0x1 elapsed=3500 ms
+PERF [20/40] stringsearch run 2/2
+PERF COMPLETION [20/40] stringsearch run 2/2 status=PASS flag=0x1 elapsed=3500 ms
+PERF RESULT [10/20] stringsearch PASS | r1=PASS cpu=0x00124E83 | r2=PASS cpu=0x00124E83 | selected=r1
+PERF [21/40] fireye_A0 run 1/2
+PERF COMPLETION [21/40] fireye_A0 run 1/2 status=PASS flag=0x1 elapsed=1000 ms
+PERF [22/40] fireye_A0 run 2/2
+PERF COMPLETION [22/40] fireye_A0 run 2/2 status=PASS flag=0x1 elapsed=1000 ms
+PERF RESULT [11/20] fireye_A0 PASS | r1=PASS cpu=0x007673A7 | r2=PASS cpu=0x00766CCF | selected=r1
+PERF [23/40] fireye_B2 run 1/2
+PERF COMPLETION [23/40] fireye_B2 run 1/2 status=PASS flag=0x1 elapsed=750 ms
+PERF [24/40] fireye_B2 run 2/2
+PERF COMPLETION [24/40] fireye_B2 run 2/2 status=PASS flag=0x1 elapsed=750 ms
+PERF RESULT [12/20] fireye_B2 PASS | r1=PASS cpu=0x0010184D | r2=PASS cpu=0x001017BE | selected=r1
+PERF [25/40] fireye_C0 run 1/2
+PERF COMPLETION [25/40] fireye_C0 run 1/2 status=PASS flag=0x1 elapsed=750 ms
+PERF [26/40] fireye_C0 run 2/2
+PERF COMPLETION [26/40] fireye_C0 run 2/2 status=PASS flag=0x1 elapsed=750 ms
+PERF RESULT [13/20] fireye_C0 PASS | r1=PASS cpu=0x0011A802 | r2=PASS cpu=0x0011A760 | selected=r1
+PERF [27/40] fireye_D1 run 1/2
+PERF COMPLETION [27/40] fireye_D1 run 1/2 status=PASS flag=0x1 elapsed=1000 ms
+PERF [28/40] fireye_D1 run 2/2
+PERF COMPLETION [28/40] fireye_D1 run 2/2 status=PASS flag=0x1 elapsed=1000 ms
+PERF RESULT [14/20] fireye_D1 PASS | r1=PASS cpu=0x00BA169F | r2=PASS cpu=0x00BA1A80 | selected=r2
+PERF [29/40] fireye_I2 run 1/2
+PERF COMPLETION [29/40] fireye_I2 run 1/2 status=PASS flag=0x1 elapsed=1000 ms
+PERF [30/40] fireye_I2 run 2/2
+PERF COMPLETION [30/40] fireye_I2 run 2/2 status=PASS flag=0x1 elapsed=1000 ms
+PERF RESULT [15/20] fireye_I2 PASS | r1=PASS cpu=0x006C7BF4 | r2=PASS cpu=0x006C7D24 | selected=r2
+PERF [31/40] inner_product run 1/2
+PERF COMPLETION [31/40] inner_product run 1/2 status=PASS flag=0x1 elapsed=1250 ms
+PERF [32/40] inner_product run 2/2
+PERF COMPLETION [32/40] inner_product run 2/2 status=PASS flag=0x1 elapsed=1250 ms
+PERF RESULT [16/20] inner_product PASS | r1=PASS cpu=0x01E2C96C | r2=PASS cpu=0x01E2DBB7 | selected=r2
+PERF [33/40] lookup_table run 1/2
+PERF COMPLETION [33/40] lookup_table run 1/2 status=PASS flag=0x1 elapsed=1000 ms
+PERF [34/40] lookup_table run 2/2
+PERF COMPLETION [34/40] lookup_table run 2/2 status=PASS flag=0x1 elapsed=1000 ms
+PERF RESULT [17/20] lookup_table PASS | r1=PASS cpu=0x0055F6C8 | r2=PASS cpu=0x0055F76E | selected=r2
+PERF [35/40] loop_induction run 1/2
+PERF COMPLETION [35/40] loop_induction run 1/2 status=PASS flag=0x1 elapsed=1250 ms
+PERF [36/40] loop_induction run 2/2
+PERF COMPLETION [36/40] loop_induction run 2/2 status=PASS flag=0x1 elapsed=1250 ms
+PERF RESULT [18/20] loop_induction PASS | r1=PASS cpu=0x01457FB7 | r2=PASS cpu=0x01457E3F | selected=r1
+PERF [37/40] my_memcmp run 1/2
+PERF COMPLETION [37/40] my_memcmp run 1/2 status=PASS flag=0x1 elapsed=1000 ms
+PERF [38/40] my_memcmp run 2/2
+PERF COMPLETION [38/40] my_memcmp run 2/2 status=PASS flag=0x1 elapsed=1000 ms
+PERF RESULT [19/20] my_memcmp PASS | r1=PASS cpu=0x0067111A | r2=PASS cpu=0x00670FB4 | selected=r1
+PERF [39/40] minmax_sequence run 1/2
+PERF COMPLETION [39/40] minmax_sequence run 1/2 status=PASS flag=0x1 elapsed=1000 ms
+PERF [40/40] minmax_sequence run 2/2
+PERF COMPLETION [40/40] minmax_sequence run 2/2 status=PASS flag=0x1 elapsed=1000 ms
+PERF RESULT [20/20] minmax_sequence PASS | r1=PASS cpu=0x00669CD6 | r2=PASS cpu=0x00669DC3 | selected=r2
+Performance collection complete: 20 benchmarks, 40 independent runs, worst valid run selected
+# close_hw_manager
+Vivado% 

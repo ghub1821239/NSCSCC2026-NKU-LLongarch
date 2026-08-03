@@ -1,0 +1,1018 @@
+
+*** Running vivado
+    with args -log soc_top.vds -m64 -product Vivado -mode batch -messageDb vivado.pb -notrace -source soc_top.tcl
+
+
+ECHO 处于关闭状态。
+ECHO 处于关闭状态。
+
+****** Vivado v2023.2_AR000036317 (64-bit)
+  **** SW Build 4029153 on Fri Oct 13 20:14:34 MDT 2023
+  **** IP Build 4028589 on Sat Oct 14 00:45:43 MDT 2023
+  **** SharedData Build 4025554 on Tue Oct 10 17:18:54 MDT 2023
+    ** Copyright 1986-2022 Xilinx, Inc. All Rights Reserved.
+    ** Copyright 2022-2023 Advanced Micro Devices, Inc. All Rights Reserved.
+
+source soc_top.tcl -notrace
+create_project: Time (s): cpu = 00:00:05 ; elapsed = 00:00:06 . Memory (MB): peak = 472.773 ; gain = 177.820
+Command: read_checkpoint -auto_incremental -incremental D:/chiplab/fpga/nscscc-team/run_vivado/project/loongson.srcs/utils_1/imports/synth_1/soc_top.dcp
+INFO: [Vivado 12-5825] Read reference checkpoint from D:/chiplab/fpga/nscscc-team/run_vivado/project/loongson.srcs/utils_1/imports/synth_1/soc_top.dcp for incremental synthesis
+INFO: [Vivado 12-7989] Please ensure there are no constraint changes
+Command: synth_design -top soc_top -part xc7a200tfbg676-2 -directive PerformanceOptimized -fsm_extraction one_hot -keep_equivalent_registers -resource_sharing off -no_lc -shreg_min_size 5
+Starting synth_design
+Attempting to get a license for feature 'Synthesis' and/or device 'xc7a200t'
+INFO: [Common 17-349] Got license for feature 'Synthesis' and/or device 'xc7a200t'
+INFO: [Device 21-403] Loading part xc7a200tfbg676-2
+INFO: [Designutils 20-5440] No compile time benefit to using incremental synthesis; A full resynthesis will be run
+INFO: [Designutils 20-4379] Flow is switching to default flow due to incremental criteria not met. If you would like to alter this behaviour and have the flow terminate instead, please set the following parameter config_implementation {autoIncr.Synth.RejectBehavior Terminate}
+INFO: [Synth 8-7079] Multithreading enabled for synth_design using a maximum of 2 processes.
+INFO: [Synth 8-7078] Launching helper process for spawning children vivado processes
+INFO: [Synth 8-7075] Helper process launched with PID 7504
+---------------------------------------------------------------------------------
+Starting RTL Elaboration : Time (s): cpu = 00:00:04 ; elapsed = 00:00:04 . Memory (MB): peak = 1410.848 ; gain = 440.402
+---------------------------------------------------------------------------------
+INFO: [Synth 8-11241] undeclared symbol 'nand_dma_ack_i', assumed default net type 'wire' [D:/chiplab/IP/APB_DEV/apb_dev_top_no_nand.v:183]
+INFO: [Synth 8-11241] undeclared symbol 'data_sram_addr_ok', assumed default net type 'wire' [D:/chiplab/IP/myCPU/bridge_SRAM_AXI.v:192]
+INFO: [Synth 8-11241] undeclared symbol 'inst_sram_return_data', assumed default net type 'wire' [D:/chiplab/IP/myCPU/bridge_SRAM_AXI.v:194]
+INFO: [Synth 8-11241] undeclared symbol 'data_sram_return_data', assumed default net type 'wire' [D:/chiplab/IP/myCPU/bridge_SRAM_AXI.v:195]
+INFO: [Synth 8-11241] undeclared symbol 'data_sram_data_ok', assumed default net type 'wire' [D:/chiplab/IP/myCPU/bridge_SRAM_AXI.v:200]
+INFO: [Synth 8-11241] undeclared symbol 'is_jirl_call', assumed default net type 'wire' [D:/chiplab/IP/myCPU/decode.v:479]
+INFO: [Synth 8-11241] undeclared symbol 'm_axi_awqos', assumed default net type 'wire' [D:/chiplab/chip/soc_demo/nscscc-team/JTAG_wrap/jtag_axi_wrap.v:64]
+INFO: [Synth 8-11241] undeclared symbol 'm_axi_arqos', assumed default net type 'wire' [D:/chiplab/chip/soc_demo/nscscc-team/JTAG_wrap/jtag_axi_wrap.v:84]
+INFO: [Synth 8-11241] undeclared symbol 'inst_wr', assumed default net type 'wire' [D:/chiplab/IP/myCPU/mycpu_core.v:807]
+INFO: [Synth 8-11241] undeclared symbol 'data_wr', assumed default net type 'wire' [D:/chiplab/IP/myCPU/mycpu_core.v:976]
+INFO: [Synth 8-6157] synthesizing module 'soc_top' [D:/chiplab/chip/soc_demo/nscscc-team/soc_top.v:58]
+INFO: [Synth 8-6157] synthesizing module 'clk_pll' [D:/chiplab/fpga/nscscc-team/run_vivado/project/loongson.runs/synth_1/.Xil/Vivado-28368-mini/realtime/clk_pll_stub.v:6]
+INFO: [Synth 8-6155] done synthesizing module 'clk_pll' (0#1) [D:/chiplab/fpga/nscscc-team/run_vivado/project/loongson.runs/synth_1/.Xil/Vivado-28368-mini/realtime/clk_pll_stub.v:6]
+INFO: [Synth 8-6157] synthesizing module 'rst_sync' [D:/chiplab/chip/soc_demo/nscscc-team/uart_debug/rst_sync.v:1]
+INFO: [Synth 8-6155] done synthesizing module 'rst_sync' (0#1) [D:/chiplab/chip/soc_demo/nscscc-team/uart_debug/rst_sync.v:1]
+INFO: [Synth 8-6157] synthesizing module 'axi_wrap_ddr' [D:/chiplab/chip/soc_demo/nscscc-team/ram_wrap/axi_wrap_ddr.v:35]
+INFO: [Synth 8-6157] synthesizing module 'first_one_4_4' [D:/chiplab/chip/soc_demo/nscscc-team/AMBA/axi3_to_axi4_bridge.v:345]
+INFO: [Synth 8-6155] done synthesizing module 'first_one_4_4' (0#1) [D:/chiplab/chip/soc_demo/nscscc-team/AMBA/axi3_to_axi4_bridge.v:345]
+INFO: [Synth 8-6157] synthesizing module 'Axi_CDC' [D:/chiplab/chip/soc_demo/nscscc-team/AMBA/Axi_CDC.v:4]
+INFO: [Synth 8-6157] synthesizing module 'StreamFifoCC' [D:/chiplab/chip/soc_demo/nscscc-team/AMBA/Axi_CDC.v:1120]
+INFO: [Synth 8-6157] synthesizing module 'BufferCC_9' [D:/chiplab/chip/soc_demo/nscscc-team/AMBA/Axi_CDC.v:1584]
+INFO: [Synth 8-6155] done synthesizing module 'BufferCC_9' (0#1) [D:/chiplab/chip/soc_demo/nscscc-team/AMBA/Axi_CDC.v:1584]
+INFO: [Synth 8-6157] synthesizing module 'BufferCC_10' [D:/chiplab/chip/soc_demo/nscscc-team/AMBA/Axi_CDC.v:1560]
+INFO: [Synth 8-6155] done synthesizing module 'BufferCC_10' (0#1) [D:/chiplab/chip/soc_demo/nscscc-team/AMBA/Axi_CDC.v:1560]
+INFO: [Synth 8-6157] synthesizing module 'BufferCC_11' [D:/chiplab/chip/soc_demo/nscscc-team/AMBA/Axi_CDC.v:1536]
+INFO: [Synth 8-6155] done synthesizing module 'BufferCC_11' (0#1) [D:/chiplab/chip/soc_demo/nscscc-team/AMBA/Axi_CDC.v:1536]
+INFO: [Synth 8-6155] done synthesizing module 'StreamFifoCC' (0#1) [D:/chiplab/chip/soc_demo/nscscc-team/AMBA/Axi_CDC.v:1120]
+INFO: [Synth 8-6157] synthesizing module 'StreamFifoCC_1' [D:/chiplab/chip/soc_demo/nscscc-team/AMBA/Axi_CDC.v:919]
+INFO: [Synth 8-6157] synthesizing module 'BufferCC_7' [D:/chiplab/chip/soc_demo/nscscc-team/AMBA/Axi_CDC.v:1512]
+INFO: [Synth 8-6155] done synthesizing module 'BufferCC_7' (0#1) [D:/chiplab/chip/soc_demo/nscscc-team/AMBA/Axi_CDC.v:1512]
+INFO: [Synth 8-6157] synthesizing module 'BufferCC_8' [D:/chiplab/chip/soc_demo/nscscc-team/AMBA/Axi_CDC.v:1488]
+INFO: [Synth 8-6155] done synthesizing module 'BufferCC_8' (0#1) [D:/chiplab/chip/soc_demo/nscscc-team/AMBA/Axi_CDC.v:1488]
+INFO: [Synth 8-6155] done synthesizing module 'StreamFifoCC_1' (0#1) [D:/chiplab/chip/soc_demo/nscscc-team/AMBA/Axi_CDC.v:919]
+INFO: [Synth 8-6157] synthesizing module 'StreamFifoCC_2' [D:/chiplab/chip/soc_demo/nscscc-team/AMBA/Axi_CDC.v:717]
+INFO: [Synth 8-6157] synthesizing module 'BufferCC_4' [D:/chiplab/chip/soc_demo/nscscc-team/AMBA/Axi_CDC.v:1464]
+INFO: [Synth 8-6155] done synthesizing module 'BufferCC_4' (0#1) [D:/chiplab/chip/soc_demo/nscscc-team/AMBA/Axi_CDC.v:1464]
+INFO: [Synth 8-6157] synthesizing module 'BufferCC_5' [D:/chiplab/chip/soc_demo/nscscc-team/AMBA/Axi_CDC.v:1440]
+INFO: [Synth 8-6155] done synthesizing module 'BufferCC_5' (0#1) [D:/chiplab/chip/soc_demo/nscscc-team/AMBA/Axi_CDC.v:1440]
+INFO: [Synth 8-6157] synthesizing module 'BufferCC_6' [D:/chiplab/chip/soc_demo/nscscc-team/AMBA/Axi_CDC.v:1416]
+INFO: [Synth 8-6155] done synthesizing module 'BufferCC_6' (0#1) [D:/chiplab/chip/soc_demo/nscscc-team/AMBA/Axi_CDC.v:1416]
+INFO: [Synth 8-6155] done synthesizing module 'StreamFifoCC_2' (0#1) [D:/chiplab/chip/soc_demo/nscscc-team/AMBA/Axi_CDC.v:717]
+INFO: [Synth 8-6157] synthesizing module 'StreamFifoCC_3' [D:/chiplab/chip/soc_demo/nscscc-team/AMBA/Axi_CDC.v:485]
+INFO: [Synth 8-6155] done synthesizing module 'StreamFifoCC_3' (0#1) [D:/chiplab/chip/soc_demo/nscscc-team/AMBA/Axi_CDC.v:485]
+INFO: [Synth 8-6157] synthesizing module 'StreamFifoCC_4' [D:/chiplab/chip/soc_demo/nscscc-team/AMBA/Axi_CDC.v:277]
+INFO: [Synth 8-6157] synthesizing module 'BufferCC' [D:/chiplab/chip/soc_demo/nscscc-team/AMBA/Axi_CDC.v:1388]
+INFO: [Synth 8-6155] done synthesizing module 'BufferCC' (0#1) [D:/chiplab/chip/soc_demo/nscscc-team/AMBA/Axi_CDC.v:1388]
+INFO: [Synth 8-6157] synthesizing module 'BufferCC_1' [D:/chiplab/chip/soc_demo/nscscc-team/AMBA/Axi_CDC.v:1364]
+INFO: [Synth 8-6155] done synthesizing module 'BufferCC_1' (0#1) [D:/chiplab/chip/soc_demo/nscscc-team/AMBA/Axi_CDC.v:1364]
+INFO: [Synth 8-6155] done synthesizing module 'StreamFifoCC_4' (0#1) [D:/chiplab/chip/soc_demo/nscscc-team/AMBA/Axi_CDC.v:277]
+INFO: [Synth 8-6155] done synthesizing module 'Axi_CDC' (0#1) [D:/chiplab/chip/soc_demo/nscscc-team/AMBA/Axi_CDC.v:4]
+INFO: [Synth 8-6157] synthesizing module 'mig_axi_32' [D:/chiplab/fpga/nscscc-team/run_vivado/project/loongson.runs/synth_1/.Xil/Vivado-28368-mini/realtime/mig_axi_32_stub.v:6]
+INFO: [Synth 8-6155] done synthesizing module 'mig_axi_32' (0#1) [D:/chiplab/fpga/nscscc-team/run_vivado/project/loongson.runs/synth_1/.Xil/Vivado-28368-mini/realtime/mig_axi_32_stub.v:6]
+WARNING: [Synth 8-689] width (4) of port connection 's_axi_bid' does not match port width (8) of module 'mig_axi_32' [D:/chiplab/chip/soc_demo/nscscc-team/ram_wrap/axi_wrap_ddr.v:778]
+WARNING: [Synth 8-689] width (4) of port connection 's_axi_rid' does not match port width (8) of module 'mig_axi_32' [D:/chiplab/chip/soc_demo/nscscc-team/ram_wrap/axi_wrap_ddr.v:793]
+WARNING: [Synth 8-7071] port 'device_temp' of module 'mig_axi_32' is unconnected for instance 'mig_axi' [D:/chiplab/chip/soc_demo/nscscc-team/ram_wrap/axi_wrap_ddr.v:727]
+WARNING: [Synth 8-7023] instance 'mig_axi' of module 'mig_axi_32' has 66 connections declared, but only 65 given [D:/chiplab/chip/soc_demo/nscscc-team/ram_wrap/axi_wrap_ddr.v:727]
+INFO: [Synth 8-6155] done synthesizing module 'axi_wrap_ddr' (0#1) [D:/chiplab/chip/soc_demo/nscscc-team/ram_wrap/axi_wrap_ddr.v:35]
+INFO: [Synth 8-6157] synthesizing module 'vio_0' [D:/chiplab/fpga/nscscc-team/run_vivado/project/loongson.runs/synth_1/.Xil/Vivado-28368-mini/realtime/vio_0_stub.v:6]
+INFO: [Synth 8-6155] done synthesizing module 'vio_0' (0#1) [D:/chiplab/fpga/nscscc-team/run_vivado/project/loongson.runs/synth_1/.Xil/Vivado-28368-mini/realtime/vio_0_stub.v:6]
+INFO: [Synth 8-6157] synthesizing module 'core_top' [D:/chiplab/IP/myCPU/mycpu_top.v:1]
+INFO: [Synth 8-6157] synthesizing module 'mycpu_core' [D:/chiplab/IP/myCPU/mycpu_core.v:2]
+INFO: [Synth 8-6157] synthesizing module 'regfile' [D:/chiplab/IP/myCPU/regfile.v:1]
+INFO: [Synth 8-6155] done synthesizing module 'regfile' (0#1) [D:/chiplab/IP/myCPU/regfile.v:1]
+INFO: [Synth 8-6157] synthesizing module 'tlb' [D:/chiplab/IP/myCPU/tlb.v:4]
+INFO: [Synth 8-6155] done synthesizing module 'tlb' (0#1) [D:/chiplab/IP/myCPU/tlb.v:4]
+INFO: [Synth 8-6157] synthesizing module 'btb' [D:/chiplab/IP/myCPU/btb.v:1]
+INFO: [Synth 8-6155] done synthesizing module 'btb' (0#1) [D:/chiplab/IP/myCPU/btb.v:1]
+INFO: [Synth 8-6157] synthesizing module 'bht' [D:/chiplab/IP/myCPU/bht.v:1]
+INFO: [Synth 8-6155] done synthesizing module 'bht' (0#1) [D:/chiplab/IP/myCPU/bht.v:1]
+INFO: [Synth 8-6157] synthesizing module 'ras' [D:/chiplab/IP/myCPU/ras.v:1]
+INFO: [Synth 8-6155] done synthesizing module 'ras' (0#1) [D:/chiplab/IP/myCPU/ras.v:1]
+INFO: [Synth 8-6157] synthesizing module 'csr_regfile' [D:/chiplab/IP/myCPU/csr_regfile.v:2]
+	Parameter TLBNUM bound to: 16 - type: integer 
+INFO: [Synth 8-6155] done synthesizing module 'csr_regfile' (0#1) [D:/chiplab/IP/myCPU/csr_regfile.v:2]
+INFO: [Synth 8-6157] synthesizing module 'pre_IF1' [D:/chiplab/IP/myCPU/Pre_IF1.v:1]
+	Parameter outbus_width bound to: 147 - type: integer 
+INFO: [Synth 8-6155] done synthesizing module 'pre_IF1' (0#1) [D:/chiplab/IP/myCPU/Pre_IF1.v:1]
+INFO: [Synth 8-6157] synthesizing module 'pre_IF2' [D:/chiplab/IP/myCPU/Pre_IF2.v:1]
+	Parameter inbus_width bound to: 147 - type: integer 
+	Parameter outbus_width bound to: 105 - type: integer 
+INFO: [Synth 8-6155] done synthesizing module 'pre_IF2' (0#1) [D:/chiplab/IP/myCPU/Pre_IF2.v:1]
+INFO: [Synth 8-6157] synthesizing module 'fetch' [D:/chiplab/IP/myCPU/fetch.v:1]
+	Parameter inbus_width bound to: 105 - type: integer 
+	Parameter outbus_width bound to: 137 - type: integer 
+INFO: [Synth 8-6155] done synthesizing module 'fetch' (0#1) [D:/chiplab/IP/myCPU/fetch.v:1]
+INFO: [Synth 8-6157] synthesizing module 'decode' [D:/chiplab/IP/myCPU/decode.v:1]
+	Parameter inbus_width bound to: 137 - type: integer 
+	Parameter outbus_width bound to: 237 - type: integer 
+INFO: [Synth 8-6157] synthesizing module 'decoder_6_64' [D:/chiplab/IP/myCPU/decoder_6_64.v:1]
+INFO: [Synth 8-6155] done synthesizing module 'decoder_6_64' (0#1) [D:/chiplab/IP/myCPU/decoder_6_64.v:1]
+INFO: [Synth 8-6157] synthesizing module 'decoder_4_16' [D:/chiplab/IP/myCPU/decoder_4_16.v:1]
+INFO: [Synth 8-6155] done synthesizing module 'decoder_4_16' (0#1) [D:/chiplab/IP/myCPU/decoder_4_16.v:1]
+INFO: [Synth 8-6157] synthesizing module 'decoder_2_4' [D:/chiplab/IP/myCPU/decoder_2_4.v:1]
+INFO: [Synth 8-6155] done synthesizing module 'decoder_2_4' (0#1) [D:/chiplab/IP/myCPU/decoder_2_4.v:1]
+INFO: [Synth 8-6157] synthesizing module 'decoder_5_32' [D:/chiplab/IP/myCPU/decoder_5_32.v:1]
+INFO: [Synth 8-6155] done synthesizing module 'decoder_5_32' (0#1) [D:/chiplab/IP/myCPU/decoder_5_32.v:1]
+INFO: [Synth 8-6157] synthesizing module 'cpucfg' [D:/chiplab/IP/myCPU/cpucfg.v:1]
+INFO: [Synth 8-6155] done synthesizing module 'cpucfg' (0#1) [D:/chiplab/IP/myCPU/cpucfg.v:1]
+INFO: [Synth 8-6155] done synthesizing module 'decode' (0#1) [D:/chiplab/IP/myCPU/decode.v:1]
+INFO: [Synth 8-6157] synthesizing module 'exe1' [D:/chiplab/IP/myCPU/EXE1.v:2]
+	Parameter inbus_width bound to: 237 - type: integer 
+	Parameter outbus_width bound to: 271 - type: integer 
+INFO: [Synth 8-6157] synthesizing module 'alu' [D:/chiplab/IP/myCPU/alu.v:1]
+INFO: [Synth 8-6157] synthesizing module 'divider' [D:/chiplab/fpga/nscscc-team/run_vivado/project/loongson.runs/synth_1/.Xil/Vivado-28368-mini/realtime/divider_stub.v:6]
+INFO: [Synth 8-6155] done synthesizing module 'divider' (0#1) [D:/chiplab/fpga/nscscc-team/run_vivado/project/loongson.runs/synth_1/.Xil/Vivado-28368-mini/realtime/divider_stub.v:6]
+INFO: [Synth 8-6157] synthesizing module 'divider_unsigned' [D:/chiplab/fpga/nscscc-team/run_vivado/project/loongson.runs/synth_1/.Xil/Vivado-28368-mini/realtime/divider_unsigned_stub.v:6]
+INFO: [Synth 8-6155] done synthesizing module 'divider_unsigned' (0#1) [D:/chiplab/fpga/nscscc-team/run_vivado/project/loongson.runs/synth_1/.Xil/Vivado-28368-mini/realtime/divider_unsigned_stub.v:6]
+INFO: [Synth 8-6155] done synthesizing module 'alu' (0#1) [D:/chiplab/IP/myCPU/alu.v:1]
+INFO: [Synth 8-6155] done synthesizing module 'exe1' (0#1) [D:/chiplab/IP/myCPU/EXE1.v:2]
+INFO: [Synth 8-6157] synthesizing module 'exe2' [D:/chiplab/IP/myCPU/EXE2.v:2]
+	Parameter inbus_width bound to: 271 - type: integer 
+	Parameter outbus_width bound to: 194 - type: integer 
+INFO: [Synth 8-6155] done synthesizing module 'exe2' (0#1) [D:/chiplab/IP/myCPU/EXE2.v:2]
+INFO: [Synth 8-6157] synthesizing module 'mem' [D:/chiplab/IP/myCPU/MEM.v:1]
+	Parameter inbus_width bound to: 194 - type: integer 
+	Parameter outbus_width bound to: 219 - type: integer 
+INFO: [Synth 8-6155] done synthesizing module 'mem' (0#1) [D:/chiplab/IP/myCPU/MEM.v:1]
+INFO: [Synth 8-6157] synthesizing module 'wb' [D:/chiplab/IP/myCPU/WB.v:2]
+	Parameter inbus_width bound to: 219 - type: integer 
+INFO: [Synth 8-6155] done synthesizing module 'wb' (0#1) [D:/chiplab/IP/myCPU/WB.v:2]
+INFO: [Synth 8-6155] done synthesizing module 'mycpu_core' (0#1) [D:/chiplab/IP/myCPU/mycpu_core.v:2]
+INFO: [Synth 8-6157] synthesizing module 'bridge_SRAM_AXI' [D:/chiplab/IP/myCPU/bridge_SRAM_AXI.v:1]
+INFO: [Synth 8-6155] done synthesizing module 'bridge_SRAM_AXI' (0#1) [D:/chiplab/IP/myCPU/bridge_SRAM_AXI.v:1]
+INFO: [Synth 8-6157] synthesizing module 'cache' [D:/chiplab/IP/myCPU/cache.v:3]
+	Parameter code2_0 bound to: 3'b000 
+INFO: [Synth 8-6157] synthesizing module 'tagv_ram' [D:/chiplab/fpga/nscscc-team/run_vivado/project/loongson.runs/synth_1/.Xil/Vivado-28368-mini/realtime/tagv_ram_stub.v:6]
+INFO: [Synth 8-6155] done synthesizing module 'tagv_ram' (0#1) [D:/chiplab/fpga/nscscc-team/run_vivado/project/loongson.runs/synth_1/.Xil/Vivado-28368-mini/realtime/tagv_ram_stub.v:6]
+INFO: [Synth 8-6157] synthesizing module 'data_bank_ram' [D:/chiplab/fpga/nscscc-team/run_vivado/project/loongson.runs/synth_1/.Xil/Vivado-28368-mini/realtime/data_bank_ram_stub.v:6]
+INFO: [Synth 8-6155] done synthesizing module 'data_bank_ram' (0#1) [D:/chiplab/fpga/nscscc-team/run_vivado/project/loongson.runs/synth_1/.Xil/Vivado-28368-mini/realtime/data_bank_ram_stub.v:6]
+INFO: [Synth 8-226] default block is never used [D:/chiplab/IP/myCPU/cache.v:813]
+INFO: [Synth 8-6155] done synthesizing module 'cache' (0#1) [D:/chiplab/IP/myCPU/cache.v:3]
+INFO: [Synth 8-6157] synthesizing module 'cache__parameterized0' [D:/chiplab/IP/myCPU/cache.v:3]
+	Parameter code2_0 bound to: 3'b001 
+INFO: [Synth 8-226] default block is never used [D:/chiplab/IP/myCPU/cache.v:813]
+INFO: [Synth 8-6155] done synthesizing module 'cache__parameterized0' (0#1) [D:/chiplab/IP/myCPU/cache.v:3]
+INFO: [Synth 8-6155] done synthesizing module 'core_top' (0#1) [D:/chiplab/IP/myCPU/mycpu_top.v:1]
+WARNING: [Synth 8-689] width (4) of port connection 'arlen' does not match port width (8) of module 'core_top' [D:/chiplab/chip/soc_demo/nscscc-team/soc_top.v:555]
+WARNING: [Synth 8-689] width (4) of port connection 'awlen' does not match port width (8) of module 'core_top' [D:/chiplab/chip/soc_demo/nscscc-team/soc_top.v:573]
+INFO: [Synth 8-6157] synthesizing module 'axi3_to_axi4_bridge' [D:/chiplab/chip/soc_demo/nscscc-team/AMBA/axi3_to_axi4_bridge.v:1]
+	Parameter ADDR_WIDTH bound to: 32 - type: integer 
+	Parameter DATA_WIDTH bound to: 32 - type: integer 
+	Parameter ID_WIDTH bound to: 4 - type: integer 
+	Parameter W_Burst_Length_MAX bound to: 16 - type: integer 
+INFO: [Synth 8-6157] synthesizing module 'encode_4_2' [D:/chiplab/chip/soc_demo/nscscc-team/AMBA/axi3_to_axi4_bridge.v:357]
+INFO: [Synth 8-6155] done synthesizing module 'encode_4_2' (0#1) [D:/chiplab/chip/soc_demo/nscscc-team/AMBA/axi3_to_axi4_bridge.v:357]
+INFO: [Synth 8-6157] synthesizing module 'first_one_id' [D:/chiplab/chip/soc_demo/nscscc-team/AMBA/axi3_to_axi4_bridge.v:365]
+INFO: [Synth 8-6155] done synthesizing module 'first_one_id' (0#1) [D:/chiplab/chip/soc_demo/nscscc-team/AMBA/axi3_to_axi4_bridge.v:365]
+INFO: [Synth 8-6155] done synthesizing module 'axi3_to_axi4_bridge' (0#1) [D:/chiplab/chip/soc_demo/nscscc-team/AMBA/axi3_to_axi4_bridge.v:1]
+INFO: [Synth 8-6157] synthesizing module 'jtag_axi_wrap' [D:/chiplab/chip/soc_demo/nscscc-team/JTAG_wrap/jtag_axi_wrap.v:1]
+INFO: [Synth 8-6157] synthesizing module 'jtag_axi' [D:/chiplab/fpga/nscscc-team/run_vivado/project/loongson.runs/synth_1/.Xil/Vivado-28368-mini/realtime/jtag_axi_stub.v:6]
+INFO: [Synth 8-6155] done synthesizing module 'jtag_axi' (0#1) [D:/chiplab/fpga/nscscc-team/run_vivado/project/loongson.runs/synth_1/.Xil/Vivado-28368-mini/realtime/jtag_axi_stub.v:6]
+WARNING: [Synth 8-689] width (1) of port connection 'm_axi_awqos' does not match port width (4) of module 'jtag_axi' [D:/chiplab/chip/soc_demo/nscscc-team/JTAG_wrap/jtag_axi_wrap.v:64]
+WARNING: [Synth 8-689] width (1) of port connection 'm_axi_arqos' does not match port width (4) of module 'jtag_axi' [D:/chiplab/chip/soc_demo/nscscc-team/JTAG_wrap/jtag_axi_wrap.v:84]
+INFO: [Synth 8-6155] done synthesizing module 'jtag_axi_wrap' (0#1) [D:/chiplab/chip/soc_demo/nscscc-team/JTAG_wrap/jtag_axi_wrap.v:1]
+INFO: [Synth 8-6157] synthesizing module 'axi_crossbar_2x3' [D:/chiplab/fpga/nscscc-team/run_vivado/project/loongson.runs/synth_1/.Xil/Vivado-28368-mini/realtime/axi_crossbar_2x3_stub.v:6]
+INFO: [Synth 8-6155] done synthesizing module 'axi_crossbar_2x3' (0#1) [D:/chiplab/fpga/nscscc-team/run_vivado/project/loongson.runs/synth_1/.Xil/Vivado-28368-mini/realtime/axi_crossbar_2x3_stub.v:6]
+WARNING: [Synth 8-7071] port 'm_axi_awregion' of module 'axi_crossbar_2x3' is unconnected for instance 'u_axi_crossbar_2x3' [D:/chiplab/chip/soc_demo/nscscc-team/soc_top.v:811]
+WARNING: [Synth 8-7071] port 'm_axi_arregion' of module 'axi_crossbar_2x3' is unconnected for instance 'u_axi_crossbar_2x3' [D:/chiplab/chip/soc_demo/nscscc-team/soc_top.v:811]
+WARNING: [Synth 8-7023] instance 'u_axi_crossbar_2x3' of module 'axi_crossbar_2x3' has 78 connections declared, but only 76 given [D:/chiplab/chip/soc_demo/nscscc-team/soc_top.v:811]
+INFO: [Synth 8-6157] synthesizing module 'confreg' [D:/chiplab/chip/soc_demo/nscscc-team/CONFREG/confreg.v:74]
+	Parameter SIMULATION bound to: 1'b0 
+INFO: [Synth 8-6155] done synthesizing module 'confreg' (0#1) [D:/chiplab/chip/soc_demo/nscscc-team/CONFREG/confreg.v:74]
+INFO: [Synth 8-6157] synthesizing module 'axi2apb_misc' [D:/chiplab/IP/APB_DEV/apb_dev_top_no_nand.v:36]
+INFO: [Synth 8-6157] synthesizing module 'axi2apb_bridge' [D:/chiplab/IP/AMBA/axi2apb.v:36]
+INFO: [Synth 8-226] default block is never used [D:/chiplab/IP/AMBA/axi2apb.v:337]
+INFO: [Synth 8-6155] done synthesizing module 'axi2apb_bridge' (0#1) [D:/chiplab/IP/AMBA/axi2apb.v:36]
+INFO: [Synth 8-6157] synthesizing module 'apb_mux2' [D:/chiplab/IP/APB_DEV/apb_mux2.v:38]
+INFO: [Synth 8-6157] synthesizing module 'arb_2_1' [D:/chiplab/IP/APB_DEV/apb_mux2.v:185]
+INFO: [Synth 8-6155] done synthesizing module 'arb_2_1' (0#1) [D:/chiplab/IP/APB_DEV/apb_mux2.v:185]
+INFO: [Synth 8-6155] done synthesizing module 'apb_mux2' (0#1) [D:/chiplab/IP/APB_DEV/apb_mux2.v:38]
+INFO: [Synth 8-6157] synthesizing module 'UART_TOP' [D:/chiplab/IP/APB_DEV/URT/uart_top.v:36]
+INFO: [Synth 8-6157] synthesizing module 'uart_regs' [D:/chiplab/IP/APB_DEV/URT/uart_regs.v:39]
+INFO: [Synth 8-6157] synthesizing module 'uart_transmitter' [D:/chiplab/IP/APB_DEV/URT/uart_transmitter.v:36]
+INFO: [Synth 8-6157] synthesizing module 'uart_tfifo' [D:/chiplab/IP/APB_DEV/URT/uart_tfifo.v:36]
+INFO: [Synth 8-6157] synthesizing module 'raminfr' [D:/chiplab/IP/APB_DEV/URT/raminfr.v:34]
+	Parameter addr_width bound to: 4 - type: integer 
+	Parameter data_width bound to: 8 - type: integer 
+	Parameter depth bound to: 16 - type: integer 
+INFO: [Synth 8-6155] done synthesizing module 'raminfr' (0#1) [D:/chiplab/IP/APB_DEV/URT/raminfr.v:34]
+INFO: [Synth 8-6155] done synthesizing module 'uart_tfifo' (0#1) [D:/chiplab/IP/APB_DEV/URT/uart_tfifo.v:36]
+INFO: [Synth 8-6155] done synthesizing module 'uart_transmitter' (0#1) [D:/chiplab/IP/APB_DEV/URT/uart_transmitter.v:36]
+INFO: [Synth 8-6157] synthesizing module 'uart_sync_flops' [D:/chiplab/IP/APB_DEV/URT/uart_sync_flops.v:34]
+	Parameter width bound to: 1 - type: integer 
+	Parameter init_value bound to: 1'b1 
+INFO: [Synth 8-6155] done synthesizing module 'uart_sync_flops' (0#1) [D:/chiplab/IP/APB_DEV/URT/uart_sync_flops.v:34]
+INFO: [Synth 8-6157] synthesizing module 'uart_receiver' [D:/chiplab/IP/APB_DEV/URT/uart_receiver.v:36]
+INFO: [Synth 8-6157] synthesizing module 'uart_rfifo' [D:/chiplab/IP/APB_DEV/URT/uart_rfifo.v:36]
+	Parameter fifo_width bound to: 11 - type: integer 
+INFO: [Synth 8-6155] done synthesizing module 'uart_rfifo' (0#1) [D:/chiplab/IP/APB_DEV/URT/uart_rfifo.v:36]
+INFO: [Synth 8-6155] done synthesizing module 'uart_receiver' (0#1) [D:/chiplab/IP/APB_DEV/URT/uart_receiver.v:36]
+INFO: [Synth 8-6155] done synthesizing module 'uart_regs' (0#1) [D:/chiplab/IP/APB_DEV/URT/uart_regs.v:39]
+INFO: [Synth 8-6155] done synthesizing module 'UART_TOP' (0#1) [D:/chiplab/IP/APB_DEV/URT/uart_top.v:36]
+INFO: [Synth 8-6155] done synthesizing module 'axi2apb_misc' (0#1) [D:/chiplab/IP/APB_DEV/apb_dev_top_no_nand.v:36]
+INFO: [Synth 8-6155] done synthesizing module 'soc_top' (0#1) [D:/chiplab/chip/soc_demo/nscscc-team/soc_top.v:58]
+WARNING: [Synth 8-6014] Unused sequential element popCC_addressGen_rData_reg was removed.  [D:/chiplab/chip/soc_demo/nscscc-team/AMBA/Axi_CDC.v:1280]
+WARNING: [Synth 8-6014] Unused sequential element popCC_addressGen_rData_reg was removed.  [D:/chiplab/chip/soc_demo/nscscc-team/AMBA/Axi_CDC.v:1051]
+WARNING: [Synth 8-6014] Unused sequential element popCC_addressGen_rData_reg was removed.  [D:/chiplab/chip/soc_demo/nscscc-team/AMBA/Axi_CDC.v:853]
+WARNING: [Synth 8-6014] Unused sequential element popCC_addressGen_rData_reg was removed.  [D:/chiplab/chip/soc_demo/nscscc-team/AMBA/Axi_CDC.v:634]
+WARNING: [Synth 8-6014] Unused sequential element popCC_addressGen_rData_reg was removed.  [D:/chiplab/chip/soc_demo/nscscc-team/AMBA/Axi_CDC.v:413]
+WARNING: [Synth 8-6014] Unused sequential element ar_nomask_reg was removed.  [D:/chiplab/chip/soc_demo/nscscc-team/ram_wrap/axi_wrap_ddr.v:158]
+WARNING: [Synth 8-6014] Unused sequential element aw_nomask_reg was removed.  [D:/chiplab/chip/soc_demo/nscscc-team/ram_wrap/axi_wrap_ddr.v:162]
+WARNING: [Synth 8-6014] Unused sequential element w_nomask_reg was removed.  [D:/chiplab/chip/soc_demo/nscscc-team/ram_wrap/axi_wrap_ddr.v:166]
+WARNING: [Synth 8-6014] Unused sequential element pf_r2r_reg was removed.  [D:/chiplab/chip/soc_demo/nscscc-team/ram_wrap/axi_wrap_ddr.v:131]
+WARNING: [Synth 8-6014] Unused sequential element pf_b2b_reg was removed.  [D:/chiplab/chip/soc_demo/nscscc-team/ram_wrap/axi_wrap_ddr.v:132]
+WARNING: [Synth 8-3848] Net ws_valid in module/entity core_top does not have driver. [D:/chiplab/IP/myCPU/mycpu_top.v:56]
+WARNING: [Synth 8-3848] Net rf_rdata in module/entity core_top does not have driver. [D:/chiplab/IP/myCPU/mycpu_top.v:57]
+WARNING: [Synth 8-6014] Unused sequential element buf_len_reg was removed.  [D:/chiplab/chip/soc_demo/nscscc-team/CONFREG/confreg.v:193]
+WARNING: [Synth 8-6014] Unused sequential element buf_size_reg was removed.  [D:/chiplab/chip/soc_demo/nscscc-team/CONFREG/confreg.v:194]
+WARNING: [Synth 8-6014] Unused sequential element apb_wr_size_reg was removed.  [D:/chiplab/IP/AMBA/axi2apb.v:201]
+WARNING: [Synth 8-6014] Unused sequential element rbit_in_reg was removed.  [D:/chiplab/IP/APB_DEV/URT/uart_receiver.v:115]
+INFO: [Synth 8-6071] Mark debug on the nets applies keep_hierarchy on instance 'vio'. This will prevent further optimization [D:/chiplab/chip/soc_demo/nscscc-team/soc_top.v:115]
+INFO: [Synth 8-6071] Mark debug on the nets applies keep_hierarchy on instance 'u_confreg'. This will prevent further optimization [D:/chiplab/chip/soc_demo/nscscc-team/soc_top.v:1014]
+WARNING: [Synth 8-7129] Port lcr[7] in module uart_receiver is either unconnected or has no load
+WARNING: [Synth 8-7129] Port lcr[6] in module uart_receiver is either unconnected or has no load
+WARNING: [Synth 8-7129] Port lcr[7] in module uart_transmitter is either unconnected or has no load
+WARNING: [Synth 8-7129] Port PADDR[7] in module UART_TOP is either unconnected or has no load
+WARNING: [Synth 8-7129] Port PADDR[6] in module UART_TOP is either unconnected or has no load
+WARNING: [Synth 8-7129] Port PADDR[5] in module UART_TOP is either unconnected or has no load
+WARNING: [Synth 8-7129] Port PADDR[4] in module UART_TOP is either unconnected or has no load
+WARNING: [Synth 8-7129] Port PADDR[3] in module UART_TOP is either unconnected or has no load
+WARNING: [Synth 8-7129] Port axi_s_awid[3] in module axi2apb_bridge is either unconnected or has no load
+WARNING: [Synth 8-7129] Port axi_s_awid[2] in module axi2apb_bridge is either unconnected or has no load
+WARNING: [Synth 8-7129] Port axi_s_awid[1] in module axi2apb_bridge is either unconnected or has no load
+WARNING: [Synth 8-7129] Port axi_s_awid[0] in module axi2apb_bridge is either unconnected or has no load
+WARNING: [Synth 8-7129] Port axi_s_awaddr[31] in module axi2apb_bridge is either unconnected or has no load
+WARNING: [Synth 8-7129] Port axi_s_awaddr[30] in module axi2apb_bridge is either unconnected or has no load
+WARNING: [Synth 8-7129] Port axi_s_awaddr[29] in module axi2apb_bridge is either unconnected or has no load
+WARNING: [Synth 8-7129] Port axi_s_awaddr[28] in module axi2apb_bridge is either unconnected or has no load
+WARNING: [Synth 8-7129] Port axi_s_awaddr[27] in module axi2apb_bridge is either unconnected or has no load
+WARNING: [Synth 8-7129] Port axi_s_awaddr[26] in module axi2apb_bridge is either unconnected or has no load
+WARNING: [Synth 8-7129] Port axi_s_awaddr[25] in module axi2apb_bridge is either unconnected or has no load
+WARNING: [Synth 8-7129] Port axi_s_awaddr[24] in module axi2apb_bridge is either unconnected or has no load
+WARNING: [Synth 8-7129] Port axi_s_awaddr[23] in module axi2apb_bridge is either unconnected or has no load
+WARNING: [Synth 8-7129] Port axi_s_awaddr[22] in module axi2apb_bridge is either unconnected or has no load
+WARNING: [Synth 8-7129] Port axi_s_awaddr[21] in module axi2apb_bridge is either unconnected or has no load
+WARNING: [Synth 8-7129] Port axi_s_awaddr[20] in module axi2apb_bridge is either unconnected or has no load
+WARNING: [Synth 8-7129] Port axi_s_awlen[7] in module axi2apb_bridge is either unconnected or has no load
+WARNING: [Synth 8-7129] Port axi_s_awlen[6] in module axi2apb_bridge is either unconnected or has no load
+WARNING: [Synth 8-7129] Port axi_s_awlen[5] in module axi2apb_bridge is either unconnected or has no load
+WARNING: [Synth 8-7129] Port axi_s_awlen[4] in module axi2apb_bridge is either unconnected or has no load
+WARNING: [Synth 8-7129] Port axi_s_awlen[3] in module axi2apb_bridge is either unconnected or has no load
+WARNING: [Synth 8-7129] Port axi_s_awlen[2] in module axi2apb_bridge is either unconnected or has no load
+WARNING: [Synth 8-7129] Port axi_s_awlen[1] in module axi2apb_bridge is either unconnected or has no load
+WARNING: [Synth 8-7129] Port axi_s_awlen[0] in module axi2apb_bridge is either unconnected or has no load
+WARNING: [Synth 8-7129] Port axi_s_awsize[2] in module axi2apb_bridge is either unconnected or has no load
+WARNING: [Synth 8-7129] Port axi_s_awsize[1] in module axi2apb_bridge is either unconnected or has no load
+WARNING: [Synth 8-7129] Port axi_s_awsize[0] in module axi2apb_bridge is either unconnected or has no load
+WARNING: [Synth 8-7129] Port axi_s_awburst[1] in module axi2apb_bridge is either unconnected or has no load
+WARNING: [Synth 8-7129] Port axi_s_awburst[0] in module axi2apb_bridge is either unconnected or has no load
+WARNING: [Synth 8-7129] Port axi_s_awlock[0] in module axi2apb_bridge is either unconnected or has no load
+WARNING: [Synth 8-7129] Port axi_s_awcache[3] in module axi2apb_bridge is either unconnected or has no load
+WARNING: [Synth 8-7129] Port axi_s_awcache[2] in module axi2apb_bridge is either unconnected or has no load
+WARNING: [Synth 8-7129] Port axi_s_awcache[1] in module axi2apb_bridge is either unconnected or has no load
+WARNING: [Synth 8-7129] Port axi_s_awcache[0] in module axi2apb_bridge is either unconnected or has no load
+WARNING: [Synth 8-7129] Port axi_s_awprot[2] in module axi2apb_bridge is either unconnected or has no load
+WARNING: [Synth 8-7129] Port axi_s_awprot[1] in module axi2apb_bridge is either unconnected or has no load
+WARNING: [Synth 8-7129] Port axi_s_awprot[0] in module axi2apb_bridge is either unconnected or has no load
+WARNING: [Synth 8-7129] Port axi_s_wlast in module axi2apb_bridge is either unconnected or has no load
+WARNING: [Synth 8-7129] Port axi_s_araddr[31] in module axi2apb_bridge is either unconnected or has no load
+WARNING: [Synth 8-7129] Port axi_s_araddr[30] in module axi2apb_bridge is either unconnected or has no load
+WARNING: [Synth 8-7129] Port axi_s_araddr[29] in module axi2apb_bridge is either unconnected or has no load
+WARNING: [Synth 8-7129] Port axi_s_araddr[28] in module axi2apb_bridge is either unconnected or has no load
+WARNING: [Synth 8-7129] Port axi_s_araddr[27] in module axi2apb_bridge is either unconnected or has no load
+WARNING: [Synth 8-7129] Port axi_s_araddr[26] in module axi2apb_bridge is either unconnected or has no load
+WARNING: [Synth 8-7129] Port axi_s_araddr[25] in module axi2apb_bridge is either unconnected or has no load
+WARNING: [Synth 8-7129] Port axi_s_araddr[24] in module axi2apb_bridge is either unconnected or has no load
+WARNING: [Synth 8-7129] Port axi_s_araddr[23] in module axi2apb_bridge is either unconnected or has no load
+WARNING: [Synth 8-7129] Port axi_s_araddr[22] in module axi2apb_bridge is either unconnected or has no load
+WARNING: [Synth 8-7129] Port axi_s_araddr[21] in module axi2apb_bridge is either unconnected or has no load
+WARNING: [Synth 8-7129] Port axi_s_araddr[20] in module axi2apb_bridge is either unconnected or has no load
+WARNING: [Synth 8-7129] Port axi_s_arlen[7] in module axi2apb_bridge is either unconnected or has no load
+WARNING: [Synth 8-7129] Port axi_s_arlen[6] in module axi2apb_bridge is either unconnected or has no load
+WARNING: [Synth 8-7129] Port axi_s_arlen[5] in module axi2apb_bridge is either unconnected or has no load
+WARNING: [Synth 8-7129] Port axi_s_arlen[4] in module axi2apb_bridge is either unconnected or has no load
+WARNING: [Synth 8-7129] Port axi_s_arlen[3] in module axi2apb_bridge is either unconnected or has no load
+WARNING: [Synth 8-7129] Port axi_s_arlen[2] in module axi2apb_bridge is either unconnected or has no load
+WARNING: [Synth 8-7129] Port axi_s_arlen[1] in module axi2apb_bridge is either unconnected or has no load
+WARNING: [Synth 8-7129] Port axi_s_arlen[0] in module axi2apb_bridge is either unconnected or has no load
+WARNING: [Synth 8-7129] Port axi_s_arburst[1] in module axi2apb_bridge is either unconnected or has no load
+WARNING: [Synth 8-7129] Port axi_s_arburst[0] in module axi2apb_bridge is either unconnected or has no load
+WARNING: [Synth 8-7129] Port axi_s_arlock[0] in module axi2apb_bridge is either unconnected or has no load
+WARNING: [Synth 8-7129] Port axi_s_arcache[3] in module axi2apb_bridge is either unconnected or has no load
+WARNING: [Synth 8-7129] Port axi_s_arcache[2] in module axi2apb_bridge is either unconnected or has no load
+WARNING: [Synth 8-7129] Port axi_s_arcache[1] in module axi2apb_bridge is either unconnected or has no load
+WARNING: [Synth 8-7129] Port axi_s_arcache[0] in module axi2apb_bridge is either unconnected or has no load
+WARNING: [Synth 8-7129] Port axi_s_arprot[2] in module axi2apb_bridge is either unconnected or has no load
+WARNING: [Synth 8-7129] Port axi_s_arprot[1] in module axi2apb_bridge is either unconnected or has no load
+WARNING: [Synth 8-7129] Port axi_s_arprot[0] in module axi2apb_bridge is either unconnected or has no load
+WARNING: [Synth 8-7129] Port dma_ack_i in module axi2apb_misc is either unconnected or has no load
+WARNING: [Synth 8-7129] Port arlen[7] in module confreg is either unconnected or has no load
+WARNING: [Synth 8-7129] Port arlen[6] in module confreg is either unconnected or has no load
+WARNING: [Synth 8-7129] Port arlen[5] in module confreg is either unconnected or has no load
+WARNING: [Synth 8-7129] Port arlen[4] in module confreg is either unconnected or has no load
+WARNING: [Synth 8-7129] Port arlen[3] in module confreg is either unconnected or has no load
+WARNING: [Synth 8-7129] Port arlen[2] in module confreg is either unconnected or has no load
+WARNING: [Synth 8-7129] Port arlen[1] in module confreg is either unconnected or has no load
+WARNING: [Synth 8-7129] Port arlen[0] in module confreg is either unconnected or has no load
+WARNING: [Synth 8-7129] Port arsize[2] in module confreg is either unconnected or has no load
+WARNING: [Synth 8-7129] Port arsize[1] in module confreg is either unconnected or has no load
+WARNING: [Synth 8-7129] Port arsize[0] in module confreg is either unconnected or has no load
+WARNING: [Synth 8-7129] Port arburst[1] in module confreg is either unconnected or has no load
+WARNING: [Synth 8-7129] Port arburst[0] in module confreg is either unconnected or has no load
+WARNING: [Synth 8-7129] Port arlock in module confreg is either unconnected or has no load
+WARNING: [Synth 8-7129] Port arcache[3] in module confreg is either unconnected or has no load
+WARNING: [Synth 8-7129] Port arcache[2] in module confreg is either unconnected or has no load
+WARNING: [Synth 8-7129] Port arcache[1] in module confreg is either unconnected or has no load
+WARNING: [Synth 8-7129] Port arcache[0] in module confreg is either unconnected or has no load
+WARNING: [Synth 8-7129] Port arprot[2] in module confreg is either unconnected or has no load
+WARNING: [Synth 8-7129] Port arprot[1] in module confreg is either unconnected or has no load
+WARNING: [Synth 8-7129] Port arprot[0] in module confreg is either unconnected or has no load
+WARNING: [Synth 8-7129] Port awlen[7] in module confreg is either unconnected or has no load
+WARNING: [Synth 8-7129] Port awlen[6] in module confreg is either unconnected or has no load
+INFO: [Common 17-14] Message 'Synth 8-7129' appears 100 times and further instances of the messages will be disabled. Use the Tcl command set_msg_config to change the current settings.
+---------------------------------------------------------------------------------
+Finished RTL Elaboration : Time (s): cpu = 00:00:19 ; elapsed = 00:00:20 . Memory (MB): peak = 2199.562 ; gain = 1229.117
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Handling Custom Attributes
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished Handling Custom Attributes : Time (s): cpu = 00:00:20 ; elapsed = 00:00:21 . Memory (MB): peak = 2214.285 ; gain = 1243.840
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished RTL Optimization Phase 1 : Time (s): cpu = 00:00:20 ; elapsed = 00:00:21 . Memory (MB): peak = 2214.285 ; gain = 1243.840
+---------------------------------------------------------------------------------
+Netlist sorting complete. Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.330 . Memory (MB): peak = 2228.340 ; gain = 0.000
+INFO: [Project 1-570] Preparing netlist for logic optimization
+
+Processing XDC Constraints
+Initializing timing engine
+Parsing XDC File [d:/chiplab/chip/soc_demo/nscscc-team/xilinx_ip/clk_pll/gen/clk_pll/clk_pll_in_context.xdc] for cell 'fpga_pll.u_clk_pll'
+Finished Parsing XDC File [d:/chiplab/chip/soc_demo/nscscc-team/xilinx_ip/clk_pll/gen/clk_pll/clk_pll_in_context.xdc] for cell 'fpga_pll.u_clk_pll'
+Parsing XDC File [d:/chiplab/chip/soc_demo/nscscc-team/xilinx_ip/axi_crossbar_2x3/gen/axi_crossbar_2x3/axi_crossbar_2x3_in_context.xdc] for cell 'u_axi_crossbar_2x3'
+Finished Parsing XDC File [d:/chiplab/chip/soc_demo/nscscc-team/xilinx_ip/axi_crossbar_2x3/gen/axi_crossbar_2x3/axi_crossbar_2x3_in_context.xdc] for cell 'u_axi_crossbar_2x3'
+Parsing XDC File [d:/chiplab/chip/soc_demo/nscscc-team/xilinx_ip/vio/vio_0/vio_0_in_context.xdc] for cell 'vio'
+Finished Parsing XDC File [d:/chiplab/chip/soc_demo/nscscc-team/xilinx_ip/vio/vio_0/vio_0_in_context.xdc] for cell 'vio'
+Parsing XDC File [d:/chiplab/chip/soc_demo/nscscc-team/xilinx_ip/jtag_axi/gen/jtag_axi/jtag_axi_in_context.xdc] for cell 'u_jtag_axi_wrap/u_jtag_axi'
+Finished Parsing XDC File [d:/chiplab/chip/soc_demo/nscscc-team/xilinx_ip/jtag_axi/gen/jtag_axi/jtag_axi_in_context.xdc] for cell 'u_jtag_axi_wrap/u_jtag_axi'
+Parsing XDC File [d:/chiplab/chip/soc_demo/nscscc-team/xilinx_ip/mig_axi_32/gen/mig_axi_32/mig_axi_32_in_context.xdc] for cell 'ddr3.u_axi_wrap_ddr/mig_axi'
+Finished Parsing XDC File [d:/chiplab/chip/soc_demo/nscscc-team/xilinx_ip/mig_axi_32/gen/mig_axi_32/mig_axi_32_in_context.xdc] for cell 'ddr3.u_axi_wrap_ddr/mig_axi'
+Parsing XDC File [d:/chiplab/loongson.gen/sources_1/ip/tagv_ram/tagv_ram/tagv_ram_in_context.xdc] for cell 'u_cpu/u_Icache/tagv_way0'
+Finished Parsing XDC File [d:/chiplab/loongson.gen/sources_1/ip/tagv_ram/tagv_ram/tagv_ram_in_context.xdc] for cell 'u_cpu/u_Icache/tagv_way0'
+Parsing XDC File [d:/chiplab/loongson.gen/sources_1/ip/tagv_ram/tagv_ram/tagv_ram_in_context.xdc] for cell 'u_cpu/u_Icache/tagv_way1'
+Finished Parsing XDC File [d:/chiplab/loongson.gen/sources_1/ip/tagv_ram/tagv_ram/tagv_ram_in_context.xdc] for cell 'u_cpu/u_Icache/tagv_way1'
+Parsing XDC File [d:/chiplab/loongson.gen/sources_1/ip/tagv_ram/tagv_ram/tagv_ram_in_context.xdc] for cell 'u_cpu/u_Dcache/tagv_way0'
+Finished Parsing XDC File [d:/chiplab/loongson.gen/sources_1/ip/tagv_ram/tagv_ram/tagv_ram_in_context.xdc] for cell 'u_cpu/u_Dcache/tagv_way0'
+Parsing XDC File [d:/chiplab/loongson.gen/sources_1/ip/tagv_ram/tagv_ram/tagv_ram_in_context.xdc] for cell 'u_cpu/u_Dcache/tagv_way1'
+Finished Parsing XDC File [d:/chiplab/loongson.gen/sources_1/ip/tagv_ram/tagv_ram/tagv_ram_in_context.xdc] for cell 'u_cpu/u_Dcache/tagv_way1'
+Parsing XDC File [d:/chiplab/loongson.gen/sources_1/ip/data_bank_ram/data_bank_ram/data_bank_ram_in_context.xdc] for cell 'u_cpu/u_Icache/data_way0_bank0'
+Finished Parsing XDC File [d:/chiplab/loongson.gen/sources_1/ip/data_bank_ram/data_bank_ram/data_bank_ram_in_context.xdc] for cell 'u_cpu/u_Icache/data_way0_bank0'
+Parsing XDC File [d:/chiplab/loongson.gen/sources_1/ip/data_bank_ram/data_bank_ram/data_bank_ram_in_context.xdc] for cell 'u_cpu/u_Icache/data_way0_bank1'
+Finished Parsing XDC File [d:/chiplab/loongson.gen/sources_1/ip/data_bank_ram/data_bank_ram/data_bank_ram_in_context.xdc] for cell 'u_cpu/u_Icache/data_way0_bank1'
+Parsing XDC File [d:/chiplab/loongson.gen/sources_1/ip/data_bank_ram/data_bank_ram/data_bank_ram_in_context.xdc] for cell 'u_cpu/u_Icache/data_way0_bank2'
+Finished Parsing XDC File [d:/chiplab/loongson.gen/sources_1/ip/data_bank_ram/data_bank_ram/data_bank_ram_in_context.xdc] for cell 'u_cpu/u_Icache/data_way0_bank2'
+Parsing XDC File [d:/chiplab/loongson.gen/sources_1/ip/data_bank_ram/data_bank_ram/data_bank_ram_in_context.xdc] for cell 'u_cpu/u_Icache/data_way0_bank3'
+Finished Parsing XDC File [d:/chiplab/loongson.gen/sources_1/ip/data_bank_ram/data_bank_ram/data_bank_ram_in_context.xdc] for cell 'u_cpu/u_Icache/data_way0_bank3'
+Parsing XDC File [d:/chiplab/loongson.gen/sources_1/ip/data_bank_ram/data_bank_ram/data_bank_ram_in_context.xdc] for cell 'u_cpu/u_Icache/data_way1_bank0'
+Finished Parsing XDC File [d:/chiplab/loongson.gen/sources_1/ip/data_bank_ram/data_bank_ram/data_bank_ram_in_context.xdc] for cell 'u_cpu/u_Icache/data_way1_bank0'
+Parsing XDC File [d:/chiplab/loongson.gen/sources_1/ip/data_bank_ram/data_bank_ram/data_bank_ram_in_context.xdc] for cell 'u_cpu/u_Icache/data_way1_bank1'
+Finished Parsing XDC File [d:/chiplab/loongson.gen/sources_1/ip/data_bank_ram/data_bank_ram/data_bank_ram_in_context.xdc] for cell 'u_cpu/u_Icache/data_way1_bank1'
+Parsing XDC File [d:/chiplab/loongson.gen/sources_1/ip/data_bank_ram/data_bank_ram/data_bank_ram_in_context.xdc] for cell 'u_cpu/u_Icache/data_way1_bank2'
+Finished Parsing XDC File [d:/chiplab/loongson.gen/sources_1/ip/data_bank_ram/data_bank_ram/data_bank_ram_in_context.xdc] for cell 'u_cpu/u_Icache/data_way1_bank2'
+Parsing XDC File [d:/chiplab/loongson.gen/sources_1/ip/data_bank_ram/data_bank_ram/data_bank_ram_in_context.xdc] for cell 'u_cpu/u_Icache/data_way1_bank3'
+Finished Parsing XDC File [d:/chiplab/loongson.gen/sources_1/ip/data_bank_ram/data_bank_ram/data_bank_ram_in_context.xdc] for cell 'u_cpu/u_Icache/data_way1_bank3'
+Parsing XDC File [d:/chiplab/loongson.gen/sources_1/ip/data_bank_ram/data_bank_ram/data_bank_ram_in_context.xdc] for cell 'u_cpu/u_Dcache/data_way0_bank0'
+Finished Parsing XDC File [d:/chiplab/loongson.gen/sources_1/ip/data_bank_ram/data_bank_ram/data_bank_ram_in_context.xdc] for cell 'u_cpu/u_Dcache/data_way0_bank0'
+Parsing XDC File [d:/chiplab/loongson.gen/sources_1/ip/data_bank_ram/data_bank_ram/data_bank_ram_in_context.xdc] for cell 'u_cpu/u_Dcache/data_way0_bank1'
+Finished Parsing XDC File [d:/chiplab/loongson.gen/sources_1/ip/data_bank_ram/data_bank_ram/data_bank_ram_in_context.xdc] for cell 'u_cpu/u_Dcache/data_way0_bank1'
+Parsing XDC File [d:/chiplab/loongson.gen/sources_1/ip/data_bank_ram/data_bank_ram/data_bank_ram_in_context.xdc] for cell 'u_cpu/u_Dcache/data_way0_bank2'
+Finished Parsing XDC File [d:/chiplab/loongson.gen/sources_1/ip/data_bank_ram/data_bank_ram/data_bank_ram_in_context.xdc] for cell 'u_cpu/u_Dcache/data_way0_bank2'
+Parsing XDC File [d:/chiplab/loongson.gen/sources_1/ip/data_bank_ram/data_bank_ram/data_bank_ram_in_context.xdc] for cell 'u_cpu/u_Dcache/data_way0_bank3'
+Finished Parsing XDC File [d:/chiplab/loongson.gen/sources_1/ip/data_bank_ram/data_bank_ram/data_bank_ram_in_context.xdc] for cell 'u_cpu/u_Dcache/data_way0_bank3'
+Parsing XDC File [d:/chiplab/loongson.gen/sources_1/ip/data_bank_ram/data_bank_ram/data_bank_ram_in_context.xdc] for cell 'u_cpu/u_Dcache/data_way1_bank0'
+Finished Parsing XDC File [d:/chiplab/loongson.gen/sources_1/ip/data_bank_ram/data_bank_ram/data_bank_ram_in_context.xdc] for cell 'u_cpu/u_Dcache/data_way1_bank0'
+Parsing XDC File [d:/chiplab/loongson.gen/sources_1/ip/data_bank_ram/data_bank_ram/data_bank_ram_in_context.xdc] for cell 'u_cpu/u_Dcache/data_way1_bank1'
+Finished Parsing XDC File [d:/chiplab/loongson.gen/sources_1/ip/data_bank_ram/data_bank_ram/data_bank_ram_in_context.xdc] for cell 'u_cpu/u_Dcache/data_way1_bank1'
+Parsing XDC File [d:/chiplab/loongson.gen/sources_1/ip/data_bank_ram/data_bank_ram/data_bank_ram_in_context.xdc] for cell 'u_cpu/u_Dcache/data_way1_bank2'
+Finished Parsing XDC File [d:/chiplab/loongson.gen/sources_1/ip/data_bank_ram/data_bank_ram/data_bank_ram_in_context.xdc] for cell 'u_cpu/u_Dcache/data_way1_bank2'
+Parsing XDC File [d:/chiplab/loongson.gen/sources_1/ip/data_bank_ram/data_bank_ram/data_bank_ram_in_context.xdc] for cell 'u_cpu/u_Dcache/data_way1_bank3'
+Finished Parsing XDC File [d:/chiplab/loongson.gen/sources_1/ip/data_bank_ram/data_bank_ram/data_bank_ram_in_context.xdc] for cell 'u_cpu/u_Dcache/data_way1_bank3'
+Parsing XDC File [d:/chiplab/loongson.gen/sources_1/ip/divider/divider/divider_in_context.xdc] for cell 'u_cpu/u_mycpu_core/u_exe1/u_alu/u_divider'
+Finished Parsing XDC File [d:/chiplab/loongson.gen/sources_1/ip/divider/divider/divider_in_context.xdc] for cell 'u_cpu/u_mycpu_core/u_exe1/u_alu/u_divider'
+Parsing XDC File [d:/chiplab/loongson.gen/sources_1/ip/divider_unsigned/divider_unsigned/divider_unsigned_in_context.xdc] for cell 'u_cpu/u_mycpu_core/u_exe1/u_alu/u_divideru'
+Finished Parsing XDC File [d:/chiplab/loongson.gen/sources_1/ip/divider_unsigned/divider_unsigned/divider_unsigned_in_context.xdc] for cell 'u_cpu/u_mycpu_core/u_exe1/u_alu/u_divideru'
+Parsing XDC File [D:/chiplab/fpga/nscscc-team/constraints/soc_lite.xdc]
+WARNING: [Vivado 12-508] No pins matched 'fpga_pll.u_clk_pll/inst/plle2_adv_inst/CLKOUT0'. [D:/chiplab/fpga/nscscc-team/constraints/soc_lite.xdc:100]
+WARNING: [Vivado 12-508] No pins matched 'fpga_pll.u_clk_pll/inst/plle2_adv_inst/CLKOUT1'. [D:/chiplab/fpga/nscscc-team/constraints/soc_lite.xdc:101]
+WARNING: [Vivado 12-508] No pins matched 'fpga_pll.u_clk_pll/inst/plle2_adv_inst/CLKOUT2'. [D:/chiplab/fpga/nscscc-team/constraints/soc_lite.xdc:102]
+WARNING: [Vivado 12-627] No clocks matched 'cpu_clk'. [D:/chiplab/fpga/nscscc-team/constraints/soc_lite.xdc:104]
+INFO: [Vivado 12-626] No clocks found. Please use 'create_clock' or 'create_generated_clock' command to create clocks. [D:/chiplab/fpga/nscscc-team/constraints/soc_lite.xdc:104]
+WARNING: [Vivado 12-627] No clocks matched 'sys_clk'. [D:/chiplab/fpga/nscscc-team/constraints/soc_lite.xdc:104]
+INFO: [Vivado 12-626] No clocks found. Please use 'create_clock' or 'create_generated_clock' command to create clocks. [D:/chiplab/fpga/nscscc-team/constraints/soc_lite.xdc:104]
+WARNING: [Vivado 12-627] No clocks matched 'ddr_clk'. [D:/chiplab/fpga/nscscc-team/constraints/soc_lite.xdc:104]
+INFO: [Vivado 12-626] No clocks found. Please use 'create_clock' or 'create_generated_clock' command to create clocks. [D:/chiplab/fpga/nscscc-team/constraints/soc_lite.xdc:104]
+CRITICAL WARNING: [Vivado 12-4739] set_clock_groups:No valid object(s) found for '-group [get_clocks cpu_clk]'. [D:/chiplab/fpga/nscscc-team/constraints/soc_lite.xdc:104]
+Resolution: Check if the specified object(s) exists in the current design. If it does, ensure that the correct design hierarchy was specified for the object. If you are working with clocks, make sure create_clock was used to create the clock object before it is referenced.
+CRITICAL WARNING: [Vivado 12-4739] set_clock_groups:No valid object(s) found for '-group '. [D:/chiplab/fpga/nscscc-team/constraints/soc_lite.xdc:104]
+Resolution: Check if the specified object(s) exists in the current design. If it does, ensure that the correct design hierarchy was specified for the object. If you are working with clocks, make sure create_clock was used to create the clock object before it is referenced.
+CRITICAL WARNING: [Vivado 12-4739] set_clock_groups:No valid object(s) found for '-group [get_clocks sys_clk]'. [D:/chiplab/fpga/nscscc-team/constraints/soc_lite.xdc:104]
+Resolution: Check if the specified object(s) exists in the current design. If it does, ensure that the correct design hierarchy was specified for the object. If you are working with clocks, make sure create_clock was used to create the clock object before it is referenced.
+CRITICAL WARNING: [Vivado 12-4739] set_clock_groups:No valid object(s) found for '-group '. [D:/chiplab/fpga/nscscc-team/constraints/soc_lite.xdc:104]
+Resolution: Check if the specified object(s) exists in the current design. If it does, ensure that the correct design hierarchy was specified for the object. If you are working with clocks, make sure create_clock was used to create the clock object before it is referenced.
+CRITICAL WARNING: [Vivado 12-4739] set_clock_groups:No valid object(s) found for '-group [get_clocks ddr_clk]'. [D:/chiplab/fpga/nscscc-team/constraints/soc_lite.xdc:104]
+Resolution: Check if the specified object(s) exists in the current design. If it does, ensure that the correct design hierarchy was specified for the object. If you are working with clocks, make sure create_clock was used to create the clock object before it is referenced.
+CRITICAL WARNING: [Vivado 12-4739] set_clock_groups:No valid object(s) found for '-group '. [D:/chiplab/fpga/nscscc-team/constraints/soc_lite.xdc:104]
+Resolution: Check if the specified object(s) exists in the current design. If it does, ensure that the correct design hierarchy was specified for the object. If you are working with clocks, make sure create_clock was used to create the clock object before it is referenced.
+Finished Parsing XDC File [D:/chiplab/fpga/nscscc-team/constraints/soc_lite.xdc]
+WARNING: [Project 1-498] One or more constraints failed evaluation while reading constraint file [D:/chiplab/fpga/nscscc-team/constraints/soc_lite.xdc] and the design contains unresolved black boxes. These constraints will be read post-synthesis (as long as their source constraint file is marked as used_in_implementation) and should be applied correctly then. You should review the constraints listed in the file [.Xil/soc_top_propImpl.xdc] and check the run log file to verify that these constraints were correctly applied.
+INFO: [Project 1-236] Implementation specific constraints were found while reading constraint file [D:/chiplab/fpga/nscscc-team/constraints/soc_lite.xdc]. These constraints will be ignored for synthesis but will be used in implementation. Impacted constraints are listed in the file [.Xil/soc_top_propImpl.xdc].
+Resolution: To avoid this warning, move constraints listed in [.Xil/soc_top_propImpl.xdc] to another XDC file and exclude this new file from synthesis with the used_in_synthesis property (File Properties dialog in GUI) and re-run elaboration/synthesis.
+Completed Processing XDC Constraints
+
+Netlist sorting complete. Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.008 . Memory (MB): peak = 2336.664 ; gain = 0.000
+INFO: [Project 1-111] Unisim Transformation Summary:
+No Unisim elements were transformed.
+
+系统找不到指定的路径。
+Constraint Validation Runtime : Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.145 . Memory (MB): peak = 2336.664 ; gain = 0.000
+WARNING: [Timing 38-316] Clock period '100.000' specified during out-of-context synthesis of instance 'u_axi_crossbar_2x3' at clock pin 'aclk' is different from the actual clock period '10.000', this can lead to different synthesis results.
+WARNING: [Timing 38-316] Clock period '20.000' specified during out-of-context synthesis of instance 'u_cpu/u_Dcache/data_way0_bank0' at clock pin 'clka' is different from the actual clock period '15.714', this can lead to different synthesis results.
+WARNING: [Timing 38-316] Clock period '20.000' specified during out-of-context synthesis of instance 'u_cpu/u_Dcache/data_way0_bank1' at clock pin 'clka' is different from the actual clock period '15.714', this can lead to different synthesis results.
+WARNING: [Timing 38-316] Clock period '20.000' specified during out-of-context synthesis of instance 'u_cpu/u_Dcache/data_way0_bank2' at clock pin 'clka' is different from the actual clock period '15.714', this can lead to different synthesis results.
+WARNING: [Timing 38-316] Clock period '20.000' specified during out-of-context synthesis of instance 'u_cpu/u_Dcache/data_way0_bank3' at clock pin 'clka' is different from the actual clock period '15.714', this can lead to different synthesis results.
+WARNING: [Timing 38-316] Clock period '20.000' specified during out-of-context synthesis of instance 'u_cpu/u_Dcache/data_way1_bank0' at clock pin 'clka' is different from the actual clock period '15.714', this can lead to different synthesis results.
+WARNING: [Timing 38-316] Clock period '20.000' specified during out-of-context synthesis of instance 'u_cpu/u_Dcache/data_way1_bank1' at clock pin 'clka' is different from the actual clock period '15.714', this can lead to different synthesis results.
+WARNING: [Timing 38-316] Clock period '20.000' specified during out-of-context synthesis of instance 'u_cpu/u_Dcache/data_way1_bank2' at clock pin 'clka' is different from the actual clock period '15.714', this can lead to different synthesis results.
+WARNING: [Timing 38-316] Clock period '20.000' specified during out-of-context synthesis of instance 'u_cpu/u_Dcache/data_way1_bank3' at clock pin 'clka' is different from the actual clock period '15.714', this can lead to different synthesis results.
+WARNING: [Timing 38-316] Clock period '20.000' specified during out-of-context synthesis of instance 'u_cpu/u_Dcache/tagv_way0' at clock pin 'clka' is different from the actual clock period '15.714', this can lead to different synthesis results.
+WARNING: [Timing 38-316] Clock period '20.000' specified during out-of-context synthesis of instance 'u_cpu/u_Dcache/tagv_way1' at clock pin 'clka' is different from the actual clock period '15.714', this can lead to different synthesis results.
+WARNING: [Timing 38-316] Clock period '20.000' specified during out-of-context synthesis of instance 'u_cpu/u_Icache/data_way0_bank0' at clock pin 'clka' is different from the actual clock period '15.714', this can lead to different synthesis results.
+WARNING: [Timing 38-316] Clock period '20.000' specified during out-of-context synthesis of instance 'u_cpu/u_Icache/data_way0_bank1' at clock pin 'clka' is different from the actual clock period '15.714', this can lead to different synthesis results.
+WARNING: [Timing 38-316] Clock period '20.000' specified during out-of-context synthesis of instance 'u_cpu/u_Icache/data_way0_bank2' at clock pin 'clka' is different from the actual clock period '15.714', this can lead to different synthesis results.
+WARNING: [Timing 38-316] Clock period '20.000' specified during out-of-context synthesis of instance 'u_cpu/u_Icache/data_way0_bank3' at clock pin 'clka' is different from the actual clock period '15.714', this can lead to different synthesis results.
+WARNING: [Timing 38-316] Clock period '20.000' specified during out-of-context synthesis of instance 'u_cpu/u_Icache/data_way1_bank0' at clock pin 'clka' is different from the actual clock period '15.714', this can lead to different synthesis results.
+WARNING: [Timing 38-316] Clock period '20.000' specified during out-of-context synthesis of instance 'u_cpu/u_Icache/data_way1_bank1' at clock pin 'clka' is different from the actual clock period '15.714', this can lead to different synthesis results.
+WARNING: [Timing 38-316] Clock period '20.000' specified during out-of-context synthesis of instance 'u_cpu/u_Icache/data_way1_bank2' at clock pin 'clka' is different from the actual clock period '15.714', this can lead to different synthesis results.
+WARNING: [Timing 38-316] Clock period '20.000' specified during out-of-context synthesis of instance 'u_cpu/u_Icache/data_way1_bank3' at clock pin 'clka' is different from the actual clock period '15.714', this can lead to different synthesis results.
+WARNING: [Timing 38-316] Clock period '20.000' specified during out-of-context synthesis of instance 'u_cpu/u_Icache/tagv_way0' at clock pin 'clka' is different from the actual clock period '15.714', this can lead to different synthesis results.
+WARNING: [Timing 38-316] Clock period '20.000' specified during out-of-context synthesis of instance 'u_cpu/u_Icache/tagv_way1' at clock pin 'clka' is different from the actual clock period '15.714', this can lead to different synthesis results.
+WARNING: [Timing 38-316] Clock period '1000.000' specified during out-of-context synthesis of instance 'u_cpu/u_mycpu_core/u_exe1/u_alu/u_divider' at clock pin 'aclk' is different from the actual clock period '15.714', this can lead to different synthesis results.
+WARNING: [Timing 38-316] Clock period '1000.000' specified during out-of-context synthesis of instance 'u_cpu/u_mycpu_core/u_exe1/u_alu/u_divideru' at clock pin 'aclk' is different from the actual clock period '15.714', this can lead to different synthesis results.
+INFO: [Designutils 20-5440] No compile time benefit to using incremental synthesis; A full resynthesis will be run
+INFO: [Designutils 20-4379] Flow is switching to default flow due to incremental criteria not met. If you would like to alter this behaviour and have the flow terminate instead, please set the following parameter config_implementation {autoIncr.Synth.RejectBehavior Terminate}
+---------------------------------------------------------------------------------
+Finished Constraint Validation : Time (s): cpu = 00:00:32 ; elapsed = 00:00:33 . Memory (MB): peak = 2336.664 ; gain = 1366.219
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Loading Part and Timing Information
+---------------------------------------------------------------------------------
+Loading part: xc7a200tfbg676-2
+---------------------------------------------------------------------------------
+Finished Loading Part and Timing Information : Time (s): cpu = 00:00:32 ; elapsed = 00:00:33 . Memory (MB): peak = 2336.664 ; gain = 1366.219
+INFO: [Synth 8-802] inferred FSM for state register 'main_state_reg' in module 'cache'
+INFO: [Synth 8-802] inferred FSM for state register 'main_state_reg' in module 'cache__parameterized0'
+WARNING: [Synth 8-3936] Found unconnected internal register 'genblk1[0].buffer_awlock_reg[0]' and it is trimmed from '2' to '1' bits. [D:/chiplab/chip/soc_demo/nscscc-team/AMBA/axi3_to_axi4_bridge.v:219]
+WARNING: [Synth 8-3936] Found unconnected internal register 'genblk1[3].buffer_awlock_reg[3]' and it is trimmed from '2' to '1' bits. [D:/chiplab/chip/soc_demo/nscscc-team/AMBA/axi3_to_axi4_bridge.v:219]
+WARNING: [Synth 8-3936] Found unconnected internal register 'genblk1[2].buffer_awlock_reg[2]' and it is trimmed from '2' to '1' bits. [D:/chiplab/chip/soc_demo/nscscc-team/AMBA/axi3_to_axi4_bridge.v:219]
+WARNING: [Synth 8-3936] Found unconnected internal register 'genblk1[1].buffer_awlock_reg[1]' and it is trimmed from '2' to '1' bits. [D:/chiplab/chip/soc_demo/nscscc-team/AMBA/axi3_to_axi4_bridge.v:219]
+INFO: [Synth 8-802] inferred FSM for state register 'genblk1[0].state_reg[0]' in module 'axi3_to_axi4_bridge'
+INFO: [Synth 8-802] inferred FSM for state register 'genblk1[1].state_reg[1]' in module 'axi3_to_axi4_bridge'
+INFO: [Synth 8-802] inferred FSM for state register 'genblk1[2].state_reg[2]' in module 'axi3_to_axi4_bridge'
+INFO: [Synth 8-802] inferred FSM for state register 'genblk1[3].state_reg[3]' in module 'axi3_to_axi4_bridge'
+INFO: [Synth 8-802] inferred FSM for state register 'state_reg' in module 'confreg'
+INFO: [Synth 8-802] inferred FSM for state register 'csr_rw_sm_reg' in module 'axi2apb_bridge'
+INFO: [Synth 8-802] inferred FSM for state register 'tstate_reg' in module 'uart_transmitter'
+INFO: [Synth 8-802] inferred FSM for state register 'rstate_reg' in module 'uart_receiver'
+---------------------------------------------------------------------------------------------------
+                   State |                     New Encoding |                Previous Encoding 
+---------------------------------------------------------------------------------------------------
+                 iSTATE3 |                            00001 |                              000
+                  iSTATE |                            10000 |                              001
+                 iSTATE0 |                            01000 |                              010
+                 iSTATE1 |                            00100 |                              011
+                 iSTATE2 |                            00010 |                              100
+---------------------------------------------------------------------------------------------------
+INFO: [Synth 8-3354] encoded FSM with state register 'main_state_reg' using encoding 'one-hot' in module 'cache'
+---------------------------------------------------------------------------------------------------
+                   State |                     New Encoding |                Previous Encoding 
+---------------------------------------------------------------------------------------------------
+                 iSTATE3 |                            00001 |                              000
+                  iSTATE |                            10000 |                              001
+                 iSTATE0 |                            01000 |                              010
+                 iSTATE1 |                            00100 |                              011
+                 iSTATE2 |                            00010 |                              100
+---------------------------------------------------------------------------------------------------
+INFO: [Synth 8-3354] encoded FSM with state register 'main_state_reg' using encoding 'one-hot' in module 'cache__parameterized0'
+---------------------------------------------------------------------------------------------------
+                   State |                     New Encoding |                Previous Encoding 
+---------------------------------------------------------------------------------------------------
+                  S_IDLE |                            00001 |                              000
+              S_AW_ENTER |                            10000 |                              001
+               S_W_ENTER |                            01000 |                              010
+            S_AW_SENDING |                            00100 |                              011
+             S_W_SENDING |                            00010 |                              100
+---------------------------------------------------------------------------------------------------
+INFO: [Synth 8-3354] encoded FSM with state register 'genblk1[3].state_reg[3]' using encoding 'one-hot' in module 'axi3_to_axi4_bridge'
+---------------------------------------------------------------------------------------------------
+                   State |                     New Encoding |                Previous Encoding 
+---------------------------------------------------------------------------------------------------
+                  S_IDLE |                            00001 |                              000
+              S_AW_ENTER |                            10000 |                              001
+               S_W_ENTER |                            01000 |                              010
+            S_AW_SENDING |                            00100 |                              011
+             S_W_SENDING |                            00010 |                              100
+---------------------------------------------------------------------------------------------------
+INFO: [Synth 8-3354] encoded FSM with state register 'genblk1[2].state_reg[2]' using encoding 'one-hot' in module 'axi3_to_axi4_bridge'
+---------------------------------------------------------------------------------------------------
+                   State |                     New Encoding |                Previous Encoding 
+---------------------------------------------------------------------------------------------------
+                  S_IDLE |                            00001 |                              000
+              S_AW_ENTER |                            10000 |                              001
+               S_W_ENTER |                            01000 |                              010
+            S_AW_SENDING |                            00100 |                              011
+             S_W_SENDING |                            00010 |                              100
+---------------------------------------------------------------------------------------------------
+INFO: [Synth 8-3354] encoded FSM with state register 'genblk1[1].state_reg[1]' using encoding 'one-hot' in module 'axi3_to_axi4_bridge'
+---------------------------------------------------------------------------------------------------
+                   State |                     New Encoding |                Previous Encoding 
+---------------------------------------------------------------------------------------------------
+                  S_IDLE |                            00001 |                              000
+              S_AW_ENTER |                            10000 |                              001
+               S_W_ENTER |                            01000 |                              010
+            S_AW_SENDING |                            00100 |                              011
+             S_W_SENDING |                            00010 |                              100
+---------------------------------------------------------------------------------------------------
+INFO: [Synth 8-3354] encoded FSM with state register 'genblk1[0].state_reg[0]' using encoding 'one-hot' in module 'axi3_to_axi4_bridge'
+---------------------------------------------------------------------------------------------------
+                   State |                     New Encoding |                Previous Encoding 
+---------------------------------------------------------------------------------------------------
+                 iSTATE4 |                           000001 |                              000
+                  iSTATE |                           100000 |                              001
+                 iSTATE0 |                           010000 |                              010
+                 iSTATE1 |                           001000 |                              011
+                 iSTATE2 |                           000100 |                              100
+                 iSTATE3 |                           000010 |                              111
+---------------------------------------------------------------------------------------------------
+INFO: [Synth 8-3354] encoded FSM with state register 'state_reg' using encoding 'one-hot' in module 'confreg'
+---------------------------------------------------------------------------------------------------
+                   State |                     New Encoding |                Previous Encoding 
+---------------------------------------------------------------------------------------------------
+*
+          CSR_RW_SM_IDLE |                             0001 |                             0001
+  CSR_RW_SM_GET_AXI_ADDR |                             0010 |                             0010
+  CSR_RW_SM_SEND_AXI_RSP |                             1000 |                             1000
+---------------------------------------------------------------------------------------------------
+INFO: [Synth 8-3898] No Re-encoding of one hot register 'csr_rw_sm_reg' in module 'axi2apb_bridge'
+---------------------------------------------------------------------------------------------------
+                   State |                     New Encoding |                Previous Encoding 
+---------------------------------------------------------------------------------------------------
+                  s_idle |                          0000001 |                              000
+              s_pop_byte |                          0000010 |                              101
+            s_send_start |                          0000100 |                              001
+             s_send_byte |                          0001000 |                              010
+           s_send_parity |                          0010000 |                              011
+           s_send_guard1 |                          0100000 |                              110
+             s_send_stop |                          1000000 |                              100
+---------------------------------------------------------------------------------------------------
+INFO: [Synth 8-3354] encoded FSM with state register 'tstate_reg' using encoding 'one-hot' in module 'uart_transmitter'
+---------------------------------------------------------------------------------------------------
+                   State |                     New Encoding |                Previous Encoding 
+---------------------------------------------------------------------------------------------------
+                 sr_idle |                      00000000001 |                             0000
+            sr_rec_start |                      00000000010 |                             0001
+          sr_rec_prepare |                      00000000100 |                             0110
+              sr_rec_bit |                      00000001000 |                             0010
+              sr_end_bit |                      00000010000 |                             0111
+           sr_rec_parity |                      00000100000 |                             0011
+         sr_ca_lc_parity |                      00001000000 |                             1000
+         sr_check_parity |                      00010000000 |                             0101
+                sr_wait1 |                      00100000000 |                             1001
+             sr_rec_stop |                      01000000000 |                             0100
+                 sr_push |                      10000000000 |                             1010
+---------------------------------------------------------------------------------------------------
+INFO: [Synth 8-3354] encoded FSM with state register 'rstate_reg' using encoding 'one-hot' in module 'uart_receiver'
+---------------------------------------------------------------------------------
+Finished RTL Optimization Phase 2 : Time (s): cpu = 00:01:04 ; elapsed = 00:01:09 . Memory (MB): peak = 2336.664 ; gain = 1366.219
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start RTL Component Statistics 
+---------------------------------------------------------------------------------
+Detailed RTL Component Info : 
++---Adders : 
+	   2 Input   64 Bit       Adders := 2     
+	   3 Input   33 Bit       Adders := 1     
+	   2 Input   32 Bit       Adders := 16    
+	   2 Input   20 Bit       Adders := 7     
+	   2 Input   16 Bit       Adders := 1     
+	   3 Input   16 Bit       Adders := 1     
+	   2 Input   10 Bit       Adders := 1     
+	   2 Input    9 Bit       Adders := 1     
+	   2 Input    8 Bit       Adders := 4     
+	   2 Input    5 Bit       Adders := 6     
+	   2 Input    4 Bit       Adders := 20    
+	   3 Input    4 Bit       Adders := 8     
+	   2 Input    3 Bit       Adders := 17    
+	   3 Input    3 Bit       Adders := 12    
+	   2 Input    2 Bit       Adders := 4     
++---XORs : 
+	   2 Input     32 Bit         XORs := 1     
+	   2 Input      4 Bit         XORs := 15    
+	   2 Input      3 Bit         XORs := 12    
+	   2 Input      1 Bit         XORs := 60    
++---XORs : 
+	                9 Bit    Wide XORs := 1     
+	                8 Bit    Wide XORs := 2     
+	                7 Bit    Wide XORs := 2     
+	                6 Bit    Wide XORs := 2     
+	                5 Bit    Wide XORs := 2     
++---Registers : 
+	              271 Bit    Registers := 1     
+	              237 Bit    Registers := 1     
+	              219 Bit    Registers := 1     
+	              194 Bit    Registers := 1     
+	              147 Bit    Registers := 1     
+	              137 Bit    Registers := 1     
+	              128 Bit    Registers := 4     
+	              105 Bit    Registers := 1     
+	               64 Bit    Registers := 1     
+	               57 Bit    Registers := 4     
+	               39 Bit    Registers := 2     
+	               37 Bit    Registers := 2     
+	               32 Bit    Registers := 162   
+	               24 Bit    Registers := 1     
+	               23 Bit    Registers := 1     
+	               20 Bit    Registers := 43    
+	               19 Bit    Registers := 16    
+	               16 Bit    Registers := 4     
+	               15 Bit    Registers := 1     
+	               13 Bit    Registers := 1     
+	               11 Bit    Registers := 1     
+	               10 Bit    Registers := 17    
+	                9 Bit    Registers := 1     
+	                8 Bit    Registers := 17    
+	                7 Bit    Registers := 2     
+	                6 Bit    Registers := 3     
+	                5 Bit    Registers := 6     
+	                4 Bit    Registers := 137   
+	                3 Bit    Registers := 81    
+	                2 Bit    Registers := 144   
+	                1 Bit    Registers := 1915  
++---Multipliers : 
+	               3x32  Multipliers := 8     
++---RAMs : 
+	               2K Bit	(64 X 32 bit)          RAMs := 1     
+	               1K Bit	(64 X 24 bit)          RAMs := 1     
+	              512 Bit	(16 X 32 bit)          RAMs := 1     
+	              312 Bit	(8 X 39 bit)          RAMs := 2     
+	              296 Bit	(8 X 37 bit)          RAMs := 2     
+	              228 Bit	(4 X 57 bit)          RAMs := 4     
+	              128 Bit	(64 X 2 bit)          RAMs := 1     
+	              128 Bit	(16 X 8 bit)          RAMs := 2     
+	               24 Bit	(4 X 6 bit)          RAMs := 2     
++---Muxes : 
+	   2 Input  137 Bit        Muxes := 1     
+	   5 Input  128 Bit        Muxes := 6     
+	   2 Input  128 Bit        Muxes := 14    
+	   8 Input  128 Bit        Muxes := 2     
+	   2 Input   33 Bit        Muxes := 2     
+	   2 Input   32 Bit        Muxes := 139   
+	   4 Input   32 Bit        Muxes := 28    
+	  33 Input   32 Bit        Muxes := 2     
+	   3 Input   32 Bit        Muxes := 1     
+	   5 Input   32 Bit        Muxes := 1     
+	   2 Input   29 Bit        Muxes := 1     
+	   7 Input   29 Bit        Muxes := 1     
+	   2 Input   28 Bit        Muxes := 1     
+	   2 Input   27 Bit        Muxes := 1     
+	   5 Input   27 Bit        Muxes := 1     
+	   2 Input   24 Bit        Muxes := 2     
+	   3 Input   23 Bit        Muxes := 1     
+	   2 Input   23 Bit        Muxes := 1     
+	   2 Input   21 Bit        Muxes := 12    
+	   2 Input   20 Bit        Muxes := 12    
+	   2 Input   19 Bit        Muxes := 9     
+	   2 Input   16 Bit        Muxes := 20    
+	   5 Input   16 Bit        Muxes := 1     
+	  17 Input   16 Bit        Muxes := 1     
+	  18 Input   14 Bit        Muxes := 1     
+	   2 Input   13 Bit        Muxes := 1     
+	   2 Input   11 Bit        Muxes := 8     
+	  11 Input   11 Bit        Muxes := 2     
+	   2 Input   10 Bit        Muxes := 6     
+	   8 Input   10 Bit        Muxes := 1     
+	   2 Input    9 Bit        Muxes := 1     
+	   5 Input    8 Bit        Muxes := 2     
+	   2 Input    8 Bit        Muxes := 53    
+	   4 Input    8 Bit        Muxes := 3     
+	   8 Input    8 Bit        Muxes := 2     
+	  11 Input    8 Bit        Muxes := 2     
+	   2 Input    7 Bit        Muxes := 7     
+	   7 Input    7 Bit        Muxes := 3     
+	   2 Input    6 Bit        Muxes := 9     
+	  15 Input    6 Bit        Muxes := 1     
+	   6 Input    6 Bit        Muxes := 1     
+	   5 Input    5 Bit        Muxes := 6     
+	   2 Input    5 Bit        Muxes := 61    
+	   4 Input    5 Bit        Muxes := 2     
+	   6 Input    5 Bit        Muxes := 1     
+	   7 Input    5 Bit        Muxes := 1     
+	   2 Input    4 Bit        Muxes := 50    
+	   8 Input    4 Bit        Muxes := 1     
+	   4 Input    4 Bit        Muxes := 23    
+	   6 Input    4 Bit        Muxes := 2     
+	  11 Input    4 Bit        Muxes := 2     
+	   2 Input    3 Bit        Muxes := 15    
+	   4 Input    3 Bit        Muxes := 4     
+	   6 Input    3 Bit        Muxes := 2     
+	   7 Input    3 Bit        Muxes := 3     
+	  11 Input    3 Bit        Muxes := 1     
+	   5 Input    2 Bit        Muxes := 5     
+	   2 Input    2 Bit        Muxes := 70    
+	   3 Input    2 Bit        Muxes := 2     
+	   4 Input    2 Bit        Muxes := 9     
+	   2 Input    1 Bit        Muxes := 9737  
+	   5 Input    1 Bit        Muxes := 1598  
+	   4 Input    1 Bit        Muxes := 47    
+	   3 Input    1 Bit        Muxes := 1     
+	   7 Input    1 Bit        Muxes := 15    
+	  11 Input    1 Bit        Muxes := 9     
+---------------------------------------------------------------------------------
+Finished RTL Component Statistics 
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Part Resource Summary
+---------------------------------------------------------------------------------
+Part Resources:
+DSPs: 740 (col length:100)
+BRAMs: 730 (col length: RAMB18 100 RAMB36 50)
+---------------------------------------------------------------------------------
+Finished Part Resource Summary
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Cross Boundary and Area Optimization
+---------------------------------------------------------------------------------
+WARNING: [Synth 8-7080] Parallel synthesis criteria is not met
+DSP Report: Generating DSP u_alu/mul_result, operation Mode is: A*B.
+DSP Report: operator u_alu/mul_result is absorbed into DSP u_alu/mul_result.
+DSP Report: operator u_alu/mul_result is absorbed into DSP u_alu/mul_result.
+DSP Report: Generating DSP u_alu/mul_result, operation Mode is: (PCIN>>17)+A*B.
+DSP Report: operator u_alu/mul_result is absorbed into DSP u_alu/mul_result.
+DSP Report: operator u_alu/mul_result is absorbed into DSP u_alu/mul_result.
+DSP Report: Generating DSP u_alu/mul_result, operation Mode is: A*B.
+DSP Report: operator u_alu/mul_result is absorbed into DSP u_alu/mul_result.
+DSP Report: operator u_alu/mul_result is absorbed into DSP u_alu/mul_result.
+DSP Report: Generating DSP u_alu/mul_result, operation Mode is: (PCIN>>17)+A*B.
+DSP Report: operator u_alu/mul_result is absorbed into DSP u_alu/mul_result.
+DSP Report: operator u_alu/mul_result is absorbed into DSP u_alu/mul_result.
+---------------------------------------------------------------------------------
+Finished Cross Boundary and Area Optimization : Time (s): cpu = 00:05:12 ; elapsed = 00:05:44 . Memory (MB): peak = 2336.664 ; gain = 1366.219
+---------------------------------------------------------------------------------
+ Sort Area is core_top__GB0 u_alu/mul_result_0 : 0 0 : 2701 5008 : Used 1 time 0
+ Sort Area is core_top__GB0 u_alu/mul_result_0 : 0 1 : 2307 5008 : Used 1 time 0
+ Sort Area is core_top__GB0 u_alu/mul_result_3 : 0 0 : 2304 4330 : Used 1 time 0
+ Sort Area is core_top__GB0 u_alu/mul_result_3 : 0 1 : 2026 4330 : Used 1 time 0
+---------------------------------------------------------------------------------
+Start ROM, RAM, DSP, Shift Register and Retiming Reporting
+---------------------------------------------------------------------------------
+
+Distributed RAM: Preliminary Mapping Report (see note below)
++----------------------------+----------------------------------------------+-----------+----------------------+--------------+
+|Module Name                 | RTL Object                                   | Inference | Size (Depth x Width) | Primitives   | 
++----------------------------+----------------------------------------------+-----------+----------------------+--------------+
+|u_cpui_1/u_mycpu_core/u_btb | btb_tag_reg                                  | Implied   | 64 x 24              | RAM64M x 8   | 
+|u_cpui_1/u_mycpu_core/u_btb | btb_target_reg                               | Implied   | 64 x 32              | RAM64M x 11  | 
+|u_cpui_1/u_mycpu_core/u_btb | btb_type_reg                                 | Implied   | 64 x 2               | RAM64M x 1   | 
+|u_cpui_1/u_mycpu_core/u_ras | ras_stack_reg                                | Implied   | 16 x 32              | RAM32M x 6   | 
+|i_0/\ddr3.u_axi_wrap_ddr    | u_Axi_CDC/awFifo/ram_reg                     | Implied   | 4 x 57               | RAM32M x 10  | 
+|i_0/\ddr3.u_axi_wrap_ddr    | u_Axi_CDC/wFifo/ram_reg                      | Implied   | 8 x 37               | RAM32M x 7   | 
+|i_0/\ddr3.u_axi_wrap_ddr    | u_Axi_CDC/bFifo/ram_reg                      | Implied   | 4 x 6                | RAM32M x 1   | 
+|i_0/\ddr3.u_axi_wrap_ddr    | u_Axi_CDC/arFifo/ram_reg                     | Implied   | 4 x 57               | RAM32M x 10  | 
+|i_0/\ddr3.u_axi_wrap_ddr    | u_Axi_CDC/rFifo/ram_reg                      | Implied   | 8 x 39               | RAM32M x 7   | 
+|i_0/APB_DEV                 | uart0/regs/transmitter/fifo_tx/tfifo/ram_reg | Implied   | 16 x 8               | RAM32M x 2   | 
+|i_0/APB_DEV                 | uart0/regs/receiver/fifo_rx/rfifo/ram_reg    | Implied   | 16 x 8               | RAM32M x 2   | 
+|soc_top                     | u_axi_clock_sync/awFifo/ram_reg              | Implied   | 4 x 57               | RAM32M x 10  | 
+|soc_top                     | u_axi_clock_sync/wFifo/ram_reg               | Implied   | 8 x 37               | RAM32M x 7   | 
+|soc_top                     | u_axi_clock_sync/arFifo/ram_reg              | Implied   | 4 x 57               | RAM32M x 10  | 
+|soc_top                     | u_axi_clock_sync/rFifo/ram_reg               | Implied   | 8 x 39               | RAM32M x 7   | 
++----------------------------+----------------------------------------------+-----------+----------------------+--------------+
+
+Note: The table above is a preliminary report that shows the Distributed RAMs at the current stage of the synthesis flow. Some Distributed RAMs may be reimplemented as non Distributed RAM primitives later in the synthesis flow. Multiple instantiated RAMs are reported only once.
+
+DSP: Preliminary Mapping Report (see note below. The ' indicates corresponding REG is set)
++------------+----------------+--------+--------+--------+--------+--------+------+------+------+------+-------+------+------+
+|Module Name | DSP Mapping    | A Size | B Size | C Size | D Size | P Size | AREG | BREG | CREG | DREG | ADREG | MREG | PREG | 
++------------+----------------+--------+--------+--------+--------+--------+------+------+------+------+-------+------+------+
+|alu         | A*B            | 18     | 16     | -      | -      | 48     | 0    | 0    | -    | -    | -     | 0    | 0    | 
+|alu         | (PCIN>>17)+A*B | 16     | 16     | -      | -      | 30     | 0    | 0    | -    | -    | -     | 0    | 0    | 
+|alu         | A*B            | 18     | 18     | -      | -      | 48     | 0    | 0    | -    | -    | -     | 0    | 0    | 
+|alu         | (PCIN>>17)+A*B | 18     | 16     | -      | -      | 47     | 0    | 0    | -    | -    | -     | 0    | 0    | 
++------------+----------------+--------+--------+--------+--------+--------+------+------+------+------+-------+------+------+
+
+Note: The table above is a preliminary report that shows the DSPs inferred at the current stage of the synthesis flow. Some DSP may be reimplemented as non DSP primitives later in the synthesis flow. Multiple instantiated DSPs are reported only once.
+---------------------------------------------------------------------------------
+Finished ROM, RAM, DSP, Shift Register and Retiming Reporting
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Applying XDC Timing Constraints
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished Applying XDC Timing Constraints : Time (s): cpu = 00:05:34 ; elapsed = 00:06:07 . Memory (MB): peak = 2336.664 ; gain = 1366.219
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Timing Optimization
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished Timing Optimization : Time (s): cpu = 00:05:43 ; elapsed = 00:06:17 . Memory (MB): peak = 2336.664 ; gain = 1366.219
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start ROM, RAM, DSP, Shift Register and Retiming Reporting
+---------------------------------------------------------------------------------
+
+Distributed RAM: Final Mapping Report
++----------------------------+----------------------------------------------+-----------+----------------------+--------------+
+|Module Name                 | RTL Object                                   | Inference | Size (Depth x Width) | Primitives   | 
++----------------------------+----------------------------------------------+-----------+----------------------+--------------+
+|u_cpui_1/u_mycpu_core/u_btb | btb_tag_reg                                  | Implied   | 64 x 24              | RAM64M x 8   | 
+|u_cpui_1/u_mycpu_core/u_btb | btb_target_reg                               | Implied   | 64 x 32              | RAM64M x 11  | 
+|u_cpui_1/u_mycpu_core/u_btb | btb_type_reg                                 | Implied   | 64 x 2               | RAM64M x 1   | 
+|u_cpui_1/u_mycpu_core/u_ras | ras_stack_reg                                | Implied   | 16 x 32              | RAM32M x 6   | 
+|i_0/\ddr3.u_axi_wrap_ddr    | u_Axi_CDC/awFifo/ram_reg                     | Implied   | 4 x 57               | RAM32M x 10  | 
+|i_0/\ddr3.u_axi_wrap_ddr    | u_Axi_CDC/wFifo/ram_reg                      | Implied   | 8 x 37               | RAM32M x 7   | 
+|i_0/\ddr3.u_axi_wrap_ddr    | u_Axi_CDC/bFifo/ram_reg                      | Implied   | 4 x 6                | RAM32M x 1   | 
+|i_0/\ddr3.u_axi_wrap_ddr    | u_Axi_CDC/arFifo/ram_reg                     | Implied   | 4 x 57               | RAM32M x 10  | 
+|i_0/\ddr3.u_axi_wrap_ddr    | u_Axi_CDC/rFifo/ram_reg                      | Implied   | 8 x 39               | RAM32M x 7   | 
+|i_0/APB_DEV                 | uart0/regs/transmitter/fifo_tx/tfifo/ram_reg | Implied   | 16 x 8               | RAM32M x 2   | 
+|i_0/APB_DEV                 | uart0/regs/receiver/fifo_rx/rfifo/ram_reg    | Implied   | 16 x 8               | RAM32M x 2   | 
+|soc_top                     | u_axi_clock_sync/awFifo/ram_reg              | Implied   | 4 x 57               | RAM32M x 10  | 
+|soc_top                     | u_axi_clock_sync/wFifo/ram_reg               | Implied   | 8 x 37               | RAM32M x 7   | 
+|soc_top                     | u_axi_clock_sync/arFifo/ram_reg              | Implied   | 4 x 57               | RAM32M x 10  | 
+|soc_top                     | u_axi_clock_sync/rFifo/ram_reg               | Implied   | 8 x 39               | RAM32M x 7   | 
++----------------------------+----------------------------------------------+-----------+----------------------+--------------+
+
+---------------------------------------------------------------------------------
+Finished ROM, RAM, DSP, Shift Register and Retiming Reporting
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Technology Mapping
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished Technology Mapping : Time (s): cpu = 00:06:12 ; elapsed = 00:06:49 . Memory (MB): peak = 2336.664 ; gain = 1366.219
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start IO Insertion
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Flattening Before IO Insertion
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished Flattening Before IO Insertion
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Final Netlist Cleanup
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished Final Netlist Cleanup
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished IO Insertion : Time (s): cpu = 00:06:27 ; elapsed = 00:07:05 . Memory (MB): peak = 2336.664 ; gain = 1366.219
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Renaming Generated Instances
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished Renaming Generated Instances : Time (s): cpu = 00:06:27 ; elapsed = 00:07:05 . Memory (MB): peak = 2336.664 ; gain = 1366.219
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Rebuilding User Hierarchy
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished Rebuilding User Hierarchy : Time (s): cpu = 00:06:30 ; elapsed = 00:07:09 . Memory (MB): peak = 2336.664 ; gain = 1366.219
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Renaming Generated Ports
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished Renaming Generated Ports : Time (s): cpu = 00:06:30 ; elapsed = 00:07:09 . Memory (MB): peak = 2336.664 ; gain = 1366.219
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Handling Custom Attributes
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished Handling Custom Attributes : Time (s): cpu = 00:06:31 ; elapsed = 00:07:10 . Memory (MB): peak = 2336.664 ; gain = 1366.219
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Renaming Generated Nets
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished Renaming Generated Nets : Time (s): cpu = 00:06:31 ; elapsed = 00:07:10 . Memory (MB): peak = 2336.664 ; gain = 1366.219
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Writing Synthesis Report
+---------------------------------------------------------------------------------
+
+DSP Final Report (the ' indicates corresponding REG is set)
++------------+---------------+--------+--------+--------+--------+--------+------+------+------+------+-------+------+------+
+|Module Name | DSP Mapping   | A Size | B Size | C Size | D Size | P Size | AREG | BREG | CREG | DREG | ADREG | MREG | PREG | 
++------------+---------------+--------+--------+--------+--------+--------+------+------+------+------+-------+------+------+
+|alu         | A'*B          | 17     | 18     | -      | -      | 48     | 1    | 0    | -    | -    | -     | 0    | 0    | 
+|alu         | PCIN>>17+A*B  | 30     | 18     | -      | -      | 30     | 0    | 0    | -    | -    | -     | 0    | 0    | 
+|alu         | A'*B'         | 17     | 17     | -      | -      | 48     | 1    | 1    | -    | -    | -     | 0    | 0    | 
+|alu         | PCIN>>17+A'*B | 17     | 18     | -      | -      | 47     | 1    | 0    | -    | -    | -     | 0    | 0    | 
++------------+---------------+--------+--------+--------+--------+--------+------+------+------+------+-------+------+------+
+
+
+Report BlackBoxes: 
++------+-----------------+----------+
+|      |BlackBox name    |Instances |
++------+-----------------+----------+
+|1     |clk_pll          |         1|
+|2     |vio_0            |         1|
+|3     |axi_crossbar_2x3 |         1|
+|4     |mig_axi_32       |         1|
+|5     |tagv_ram         |         4|
+|6     |data_bank_ram    |        16|
+|7     |divider          |         1|
+|8     |divider_unsigned |         1|
+|9     |jtag_axi         |         1|
++------+-----------------+----------+
+
+Report Cell Usage: 
++------+-----------------+------+
+|      |Cell             |Count |
++------+-----------------+------+
+|1     |axi_crossbar_2x3 |     1|
+|2     |clk_pll          |     1|
+|3     |data_bank_ram    |    16|
+|19    |divider          |     1|
+|20    |divider_unsigned |     1|
+|21    |jtag_axi         |     1|
+|22    |mig_axi          |     1|
+|23    |tagv_ram         |     4|
+|27    |vio              |     1|
+|28    |BUFG             |     1|
+|29    |CARRY4           |   437|
+|30    |DSP48E1          |     4|
+|33    |LUT1             |   148|
+|34    |LUT2             |  1375|
+|35    |LUT3             |  1070|
+|36    |LUT4             |  1463|
+|37    |LUT5             |  3577|
+|38    |LUT6             |  9374|
+|39    |MUXF7            |   642|
+|40    |MUXF8            |   227|
+|41    |RAM32M           |    68|
+|42    |RAM32X1D         |     8|
+|43    |RAM64M           |    20|
+|44    |FDCE             |  3047|
+|45    |FDPE             |     6|
+|46    |FDRE             |  8508|
+|47    |FDSE             |   168|
+|48    |IBUF             |    16|
+|49    |IOBUF            |     2|
+|50    |OBUF             |    39|
++------+-----------------+------+
+---------------------------------------------------------------------------------
+Finished Writing Synthesis Report : Time (s): cpu = 00:06:31 ; elapsed = 00:07:10 . Memory (MB): peak = 2336.664 ; gain = 1366.219
+---------------------------------------------------------------------------------
+Synthesis finished with 0 errors, 0 critical warnings and 5 warnings.
+Synthesis Optimization Runtime : Time (s): cpu = 00:06:06 ; elapsed = 00:07:07 . Memory (MB): peak = 2336.664 ; gain = 1243.840
+Synthesis Optimization Complete : Time (s): cpu = 00:06:32 ; elapsed = 00:07:12 . Memory (MB): peak = 2336.664 ; gain = 1366.219
+INFO: [Project 1-571] Translating synthesized netlist
+Netlist sorting complete. Time (s): cpu = 00:00:01 ; elapsed = 00:00:00.645 . Memory (MB): peak = 2336.664 ; gain = 0.000
+INFO: [Netlist 29-17] Analyzing 1408 Unisim elements for replacement
+INFO: [Netlist 29-28] Unisim Transformation completed in 0 CPU seconds
+INFO: [Project 1-570] Preparing netlist for logic optimization
+INFO: [Opt 31-138] Pushed 0 inverter(s) to 0 load pin(s).
+Netlist sorting complete. Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.026 . Memory (MB): peak = 2336.664 ; gain = 0.000
+INFO: [Project 1-111] Unisim Transformation Summary:
+  A total of 98 instances were transformed.
+  IOBUF => IOBUF (IBUF, OBUFT): 2 instances
+  RAM32M => RAM32M (RAMD32(x6), RAMS32(x2)): 68 instances
+  RAM32X1D => RAM32X1D (RAMD32(x2)): 8 instances
+  RAM64M => RAM64M (RAMD64E(x4)): 20 instances
+
+系统找不到指定的路径。
+Synth Design complete | Checksum: e59481b2
+INFO: [Common 17-83] Releasing license: Synthesis
+202 Infos, 162 Warnings, 6 Critical Warnings and 0 Errors encountered.
+synth_design completed successfully
+synth_design: Time (s): cpu = 00:06:46 ; elapsed = 00:07:30 . Memory (MB): peak = 2336.664 ; gain = 1816.289
+INFO: [runtcl-6] Synthesis results are not added to the cache due to CRITICAL_WARNING
+Write ShapeDB Complete: Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.059 . Memory (MB): peak = 2336.664 ; gain = 0.000
+INFO: [Common 17-1381] The checkpoint 'D:/chiplab/fpga/nscscc-team/run_vivado/project/loongson.runs/synth_1/soc_top.dcp' has been generated.
+INFO: [runtcl-4] Executing : report_utilization -file soc_top_utilization_synth.rpt -pb soc_top_utilization_synth.pb
+INFO: [Common 17-206] Exiting Vivado at Mon Aug  3 22:01:47 2026...

@@ -1,0 +1,235 @@
+Vivado Simulator v2023.2
+Copyright 1986-2022 Xilinx, Inc. All Rights Reserved.
+Copyright 2022-2023 Advanced Micro Devices, Inc. All Rights Reserved.
+Running: D:/Vivado/2023.2/bin/unwrapped/win64.o/xelab.exe --incr --debug typical --relax --mt 2 -L xil_defaultlib -L xbip_utils_v3_0_11 -L axi_utils_v2_0_7 -L xbip_pipe_v3_0_7 -L xbip_dsp48_wrapper_v3_0_5 -L xbip_dsp48_addsub_v3_0_7 -L xbip_bram18k_v3_0_7 -L mult_gen_v12_0_19 -L floating_point_v7_0_21 -L xbip_dsp48_mult_v3_0_7 -L xbip_dsp48_multadd_v3_0_7 -L div_gen_v5_1_20 -L uvm -L unisims_ver -L unimacro_ver -L secureip -L xpm --snapshot tb_top_behav xil_defaultlib.tb_top xil_defaultlib.glbl -log elaborate.log 
+Using 2 slave threads.
+Starting static elaboration
+Pass Through NonSizing Optimizer
+WARNING: [VRFC 10-3091] actual bit length 4 differs from formal bit length 8 for port 'arlen' [D:/chiplab/chip/soc_demo/nscscc-team/soc_top.v:555]
+WARNING: [VRFC 10-3091] actual bit length 4 differs from formal bit length 8 for port 'awlen' [D:/chiplab/chip/soc_demo/nscscc-team/soc_top.v:573]
+WARNING: [VRFC 10-3091] actual bit length 1 differs from formal bit length 4 for port 'm_axi_awqos' [D:/chiplab/chip/soc_demo/nscscc-team/JTAG_wrap/jtag_axi_wrap.v:64]
+WARNING: [VRFC 10-3091] actual bit length 1 differs from formal bit length 4 for port 'm_axi_arqos' [D:/chiplab/chip/soc_demo/nscscc-team/JTAG_wrap/jtag_axi_wrap.v:84]
+WARNING: [VRFC 10-3091] actual bit length 1 differs from formal bit length 2 for port 'axi_arlock' [D:/chiplab/chip/soc_demo/nscscc-team/soc_top.v:906]
+WARNING: [VRFC 10-3091] actual bit length 1 differs from formal bit length 2 for port 'axi_awlock' [D:/chiplab/chip/soc_demo/nscscc-team/soc_top.v:924]
+WARNING: [VRFC 10-3091] actual bit length 8 differs from formal bit length 4 for port 'm_arlen' [D:/chiplab/chip/soc_demo/nscscc-team/ram_wrap/axi_wrap_ram.v:579]
+WARNING: [VRFC 10-3091] actual bit length 8 differs from formal bit length 4 for port 'm_awlen' [D:/chiplab/chip/soc_demo/nscscc-team/ram_wrap/axi_wrap_ram.v:597]
+Completed static elaboration
+Starting simulation data flow analysis
+Completed simulation data flow analysis
+Time Resolution for simulation is 1ps
+Compiling package std.standard
+Compiling package std.textio
+Compiling package ieee.std_logic_1164
+Compiling package ieee.numeric_std
+Compiling package xbip_utils_v3_0_11.xbip_utils_v3_0_11_pkg
+Compiling package div_gen_v5_1_20.div_gen_v5_1_20_viv_comp
+Compiling package xbip_pipe_v3_0_7.xbip_pipe_v3_0_7_viv_comp
+Compiling package axi_utils_v2_0_7.axi_utils_v2_0_7_pkg
+Compiling package ieee.math_real
+Compiling package axi_utils_v2_0_7.global_util_pkg
+Compiling package axi_utils_v2_0_7.axi_utils_comps
+Compiling package ieee.std_logic_arith
+Compiling package ieee.std_logic_unsigned
+Compiling package xbip_bram18k_v3_0_7.xbip_bram18k_v3_0_7_pkg
+Compiling package div_gen_v5_1_20.div_gen_pkg
+Compiling package ieee.std_logic_signed
+Compiling package unisim.vcomponents
+Compiling package div_gen_v5_1_20.pkg_addsub
+Compiling module unisims_ver.LUT6
+Compiling module unisims_ver.x_lut2_mux4
+Compiling module unisims_ver.LUT2
+Compiling module unisims_ver.LUT5
+Compiling module unisims_ver.LUT4
+Compiling module unisims_ver.FDRE_default
+Compiling module unisims_ver.x_lut1_mux2
+Compiling module unisims_ver.LUT1
+Compiling module unisims_ver.x_lut3_mux8
+Compiling module unisims_ver.LUT3
+Compiling module unisims_ver.GND
+Compiling module unisims_ver.FDSE_default
+Compiling module xil_defaultlib.vio_0
+Compiling module xil_defaultlib.rst_sync
+Compiling module xil_defaultlib.regfile
+Compiling module xil_defaultlib.tlb_default
+Compiling module xil_defaultlib.btb
+Compiling module xil_defaultlib.bht
+Compiling module xil_defaultlib.ras
+Compiling module xil_defaultlib.csr_regfile
+Compiling module xil_defaultlib.pre_IF1(outbus_width=147)
+Compiling module xil_defaultlib.pre_IF2(inbus_width=147,outbus_w...
+Compiling module xil_defaultlib.fetch(inbus_width=105,outbus_wid...
+Compiling module xil_defaultlib.decoder_6_64
+Compiling module xil_defaultlib.decoder_4_16
+Compiling module xil_defaultlib.decoder_2_4
+Compiling module xil_defaultlib.decoder_5_32
+Compiling module xil_defaultlib.cpucfg
+Compiling module xil_defaultlib.decode(inbus_width=137,outbus_wi...
+Compiling architecture synth of entity div_gen_v5_1_20.c_twos_comp_viv [\c_twos_comp_viv(c_width=32,c_ai...]
+Compiling architecture virtex of entity div_gen_v5_1_20.cmp2s_v [\cmp2s_v(c_bus_width=32,c_regist...]
+Compiling architecture synth of entity div_gen_v5_1_20.c_twos_comp_viv [\c_twos_comp_viv(c_width=32,c_ai...]
+Compiling architecture virtex of entity div_gen_v5_1_20.cmp2s_v [\cmp2s_v(c_bus_width=32,c_ainit_...]
+Compiling architecture synth of entity xbip_pipe_v3_0_7.xbip_pipe_v3_0_7_viv [\xbip_pipe_v3_0_7_viv(c_latency=...]
+Compiling architecture synth of entity xbip_pipe_v3_0_7.xbip_pipe_v3_0_7_viv [\xbip_pipe_v3_0_7_viv(c_latency=...]
+Compiling architecture synth of entity xbip_pipe_v3_0_7.xbip_pipe_v3_0_7_viv [\xbip_pipe_v3_0_7_viv(c_latency=...]
+Compiling architecture synth of entity xbip_pipe_v3_0_7.xbip_pipe_v3_0_7_viv [\xbip_pipe_v3_0_7_viv(c_latency=...]
+Compiling architecture synth of entity xbip_pipe_v3_0_7.xbip_pipe_v3_0_7_viv [\xbip_pipe_v3_0_7_viv(c_latency=...]
+Compiling architecture synth of entity xbip_pipe_v3_0_7.xbip_pipe_v3_0_7_viv [\xbip_pipe_v3_0_7_viv(c_latency=...]
+Compiling architecture synth of entity xbip_pipe_v3_0_7.xbip_pipe_v3_0_7_viv [\xbip_pipe_v3_0_7_viv(c_latency=...]
+Compiling architecture synth of entity xbip_pipe_v3_0_7.xbip_pipe_v3_0_7_viv [\xbip_pipe_v3_0_7_viv(c_latency=...]
+Compiling architecture synth of entity xbip_pipe_v3_0_7.xbip_pipe_v3_0_7_viv [\xbip_pipe_v3_0_7_viv(c_latency=...]
+Compiling architecture muxcy_v of entity unisim.MUXCY [muxcy_default]
+Compiling architecture xorcy_v of entity unisim.XORCY [xorcy_default]
+Compiling architecture rtl of entity div_gen_v5_1_20.c_addsub_lut6 [\c_addsub_lut6(c_width=33,c_add_...]
+Compiling architecture synth of entity div_gen_v5_1_20.c_addsub_viv [\c_addsub_viv(c_a_width=33,c_b_w...]
+Compiling architecture virtex of entity div_gen_v5_1_20.addsubreg_v [\addsubreg_v(c_bus_width=33,c_ha...]
+Compiling architecture synth of entity xbip_pipe_v3_0_7.xbip_pipe_v3_0_7_viv [\xbip_pipe_v3_0_7_viv(c_latency=...]
+Compiling architecture synth of entity xbip_pipe_v3_0_7.xbip_pipe_v3_0_7_viv [\xbip_pipe_v3_0_7_viv(c_latency=...]
+Compiling architecture synth of entity xbip_pipe_v3_0_7.xbip_pipe_v3_0_7_viv [\xbip_pipe_v3_0_7_viv(c_latency=...]
+Compiling architecture synth of entity xbip_pipe_v3_0_7.xbip_pipe_v3_0_7_viv [\xbip_pipe_v3_0_7_viv(c_latency=...]
+Compiling architecture synth of entity xbip_pipe_v3_0_7.xbip_pipe_v3_0_7_viv [\xbip_pipe_v3_0_7_viv(c_latency=...]
+Compiling architecture synth of entity xbip_pipe_v3_0_7.xbip_pipe_v3_0_7_viv [\xbip_pipe_v3_0_7_viv(c_latency=...]
+Compiling architecture synth of entity xbip_pipe_v3_0_7.xbip_pipe_v3_0_7_viv [\xbip_pipe_v3_0_7_viv(c_latency=...]
+Compiling architecture synth of entity xbip_pipe_v3_0_7.xbip_pipe_v3_0_7_viv [\xbip_pipe_v3_0_7_viv(c_latency=...]
+Compiling architecture rtl of entity div_gen_v5_1_20.c_addsub_lut6 [\c_addsub_lut6(c_width=33,c_add_...]
+Compiling architecture synth of entity div_gen_v5_1_20.c_addsub_viv [\c_addsub_viv(c_a_width=33,c_b_w...]
+Compiling architecture virtex of entity div_gen_v5_1_20.addsubreg_v [\addsubreg_v(c_bus_width=33,c_ha...]
+Compiling architecture synth of entity xbip_pipe_v3_0_7.xbip_pipe_v3_0_7_viv [\xbip_pipe_v3_0_7_viv(c_latency=...]
+Compiling architecture virtex of entity div_gen_v5_1_20.dividervdc_v [\dividervdc_v(bus_num=32,bus_div...]
+Compiling architecture synth of entity div_gen_v5_1_20.c_twos_comp_viv [\c_twos_comp_viv(c_width=33,c_ai...]
+Compiling architecture virtex of entity div_gen_v5_1_20.cmp2s_v [\cmp2s_v(c_bus_width=33,c_regist...]
+Compiling architecture synth of entity div_gen_v5_1_20.bip_sdivider_synth [\bip_sdivider_synth(c_xdevicefam...]
+Compiling architecture synth of entity div_gen_v5_1_20.div_gen_synth [\div_gen_synth(c_xdevicefamily="...]
+Compiling architecture synth of entity xbip_pipe_v3_0_7.xbip_pipe_v3_0_7_viv [\xbip_pipe_v3_0_7_viv(c_latency=...]
+Compiling architecture synth of entity div_gen_v5_1_20.div_gen_v5_1_20_viv [\div_gen_v5_1_20_viv(c_xdevicefa...]
+Compiling architecture xilinx of entity div_gen_v5_1_20.div_gen_v5_1_20 [\div_gen_v5_1_20(c_xdevicefamily...]
+Compiling architecture divider_arch of entity xil_defaultlib.divider [divider_default]
+Compiling architecture virtex of entity div_gen_v5_1_20.dividervdc_v [\dividervdc_v(bus_num=32,bus_div...]
+Compiling architecture synth of entity div_gen_v5_1_20.bip_sdivider_synth [\bip_sdivider_synth(c_xdevicefam...]
+Compiling architecture synth of entity div_gen_v5_1_20.div_gen_synth [\div_gen_synth(c_xdevicefamily="...]
+Compiling architecture synth of entity xbip_pipe_v3_0_7.xbip_pipe_v3_0_7_viv [\xbip_pipe_v3_0_7_viv(c_latency=...]
+Compiling architecture synth of entity div_gen_v5_1_20.div_gen_v5_1_20_viv [\div_gen_v5_1_20_viv(c_xdevicefa...]
+Compiling architecture xilinx of entity div_gen_v5_1_20.div_gen_v5_1_20 [\div_gen_v5_1_20(c_xdevicefamily...]
+Compiling architecture divider_unsigned_arch of entity xil_defaultlib.divider_unsigned [divider_unsigned_default]
+Compiling module xil_defaultlib.alu
+Compiling module xil_defaultlib.exe1(inbus_width=237,outbus_widt...
+Compiling module xil_defaultlib.exe2(inbus_width=271,outbus_widt...
+Compiling module xil_defaultlib.mem(inbus_width=194,outbus_width...
+Compiling module xil_defaultlib.wb(inbus_width=219)
+Compiling module xil_defaultlib.mycpu_core
+Compiling module xil_defaultlib.bridge_SRAM_AXI
+Compiling module unisims_ver.RB18_INTERNAL_VLOG(RDADDR_COLLIS...
+Compiling module unisims_ver.RAMB18E1(RDADDR_COLLISION_HWCONF...
+Compiling module xil_defaultlib.tagv_ram
+Compiling module xil_defaultlib.data_bank_ram
+Compiling module xil_defaultlib.cache
+Compiling module xil_defaultlib.cache(code2_0=3'b01)
+Compiling module xil_defaultlib.core_top
+Compiling module xil_defaultlib.first_one_4_4
+Compiling module xil_defaultlib.encode_4_2
+Compiling module xil_defaultlib.first_one_id
+Compiling module xil_defaultlib.axi3_to_axi4_bridge(W_Burst_Leng...
+Compiling module xil_defaultlib.BufferCC_9
+Compiling module xil_defaultlib.BufferCC_10
+Compiling module xil_defaultlib.BufferCC_11
+Compiling module xil_defaultlib.StreamFifoCC
+Compiling module xil_defaultlib.BufferCC_7
+Compiling module xil_defaultlib.BufferCC_8
+Compiling module xil_defaultlib.StreamFifoCC_1
+Compiling module xil_defaultlib.BufferCC_4
+Compiling module xil_defaultlib.BufferCC_5
+Compiling module xil_defaultlib.BufferCC_6
+Compiling module xil_defaultlib.StreamFifoCC_2
+Compiling module xil_defaultlib.StreamFifoCC_3
+Compiling module xil_defaultlib.BufferCC
+Compiling module xil_defaultlib.BufferCC_1
+Compiling module xil_defaultlib.StreamFifoCC_4
+Compiling module xil_defaultlib.Axi_CDC
+Compiling module unisims_ver.VCC
+Compiling module xil_defaultlib.jtag_axi_xpm_cdc_gray__parameter...
+Compiling module xil_defaultlib.jtag_axi_xpm_cdc_gray__parameter...
+Compiling module unisims_ver.RB36_INTERNAL_VLOG(RAM_MODE="SDP...
+Compiling module unisims_ver.RAMB36E1(RAM_MODE="SDP",READ_WID...
+Compiling module xil_defaultlib.jtag_axi_xpm_cdc_gray
+Compiling module xil_defaultlib.jtag_axi_xpm_cdc_gray__6
+Compiling module unisims_ver.RB18_INTERNAL_VLOG(RAM_MODE="SDP...
+Compiling module unisims_ver.RAMB18E1(RAM_MODE="SDP",READ_WID...
+Compiling module xil_defaultlib.jtag_axi_xpm_cdc_gray__5
+Compiling module xil_defaultlib.jtag_axi_xpm_cdc_gray__4
+Compiling module unisims_ver.RAM64M
+Compiling module xil_defaultlib.jtag_axi_xpm_cdc_gray__parameter...
+Compiling module xil_defaultlib.jtag_axi_xpm_cdc_gray__parameter...
+Compiling module unisims_ver.SRL16E_default
+Compiling module xil_defaultlib.jtag_axi
+Compiling module xil_defaultlib.jtag_axi_wrap
+Compiling module xil_defaultlib.axi_crossbar_2x3_axi_crossbar_v2...
+Compiling module xil_defaultlib.axi_crossbar_2x3_axi_crossbar_v2...
+Compiling module xil_defaultlib.axi_crossbar_2x3_axi_crossbar_v2...
+Compiling module unisims_ver.SRLC32E_default
+Compiling module xil_defaultlib.axi_crossbar_2x3_axi_data_fifo_v...
+Compiling module xil_defaultlib.axi_crossbar_2x3_axi_data_fifo_v...
+Compiling module xil_defaultlib.axi_crossbar_2x3_axi_crossbar_v2...
+Compiling module xil_defaultlib.axi_crossbar_2x3_axi_register_sl...
+Compiling module xil_defaultlib.axi_crossbar_2x3_axi_register_sl...
+Compiling module xil_defaultlib.axi_crossbar_2x3_axi_register_sl...
+Compiling module xil_defaultlib.axi_crossbar_2x3_axi_data_fifo_v...
+Compiling module xil_defaultlib.axi_crossbar_2x3_axi_data_fifo_v...
+Compiling module xil_defaultlib.axi_crossbar_2x3_axi_crossbar_v2...
+Compiling module xil_defaultlib.axi_crossbar_2x3_axi_register_sl...
+Compiling module xil_defaultlib.axi_crossbar_2x3_axi_register_sl...
+Compiling module xil_defaultlib.axi_crossbar_2x3_axi_register_sl...
+Compiling module xil_defaultlib.axi_crossbar_2x3_axi_data_fifo_v...
+Compiling module xil_defaultlib.axi_crossbar_2x3_axi_data_fifo_v...
+Compiling module xil_defaultlib.axi_crossbar_2x3_axi_crossbar_v2...
+Compiling module xil_defaultlib.axi_crossbar_2x3_axi_register_sl...
+Compiling module xil_defaultlib.axi_crossbar_2x3_axi_register_sl...
+Compiling module xil_defaultlib.axi_crossbar_2x3_axi_register_sl...
+Compiling module xil_defaultlib.axi_crossbar_2x3_axi_data_fifo_v...
+Compiling module xil_defaultlib.axi_crossbar_2x3_axi_data_fifo_v...
+Compiling module xil_defaultlib.axi_crossbar_2x3_axi_crossbar_v2...
+Compiling module xil_defaultlib.axi_crossbar_2x3_axi_register_sl...
+Compiling module xil_defaultlib.axi_crossbar_2x3_axi_register_sl...
+Compiling module xil_defaultlib.axi_crossbar_2x3_axi_register_sl...
+Compiling module xil_defaultlib.axi_crossbar_2x3_axi_crossbar_v2...
+Compiling module xil_defaultlib.axi_crossbar_2x3_axi_crossbar_v2...
+Compiling module xil_defaultlib.axi_crossbar_2x3_axi_crossbar_v2...
+Compiling module xil_defaultlib.axi_crossbar_2x3_axi_crossbar_v2...
+Compiling module xil_defaultlib.axi_crossbar_2x3_axi_crossbar_v2...
+Compiling module xil_defaultlib.axi_crossbar_2x3_axi_data_fifo_v...
+Compiling module xil_defaultlib.axi_crossbar_2x3_axi_data_fifo_v...
+Compiling module xil_defaultlib.axi_crossbar_2x3_axi_data_fifo_v...
+Compiling module xil_defaultlib.axi_crossbar_2x3_axi_data_fifo_v...
+Compiling module xil_defaultlib.axi_crossbar_2x3_axi_crossbar_v2...
+Compiling module xil_defaultlib.axi_crossbar_2x3_axi_crossbar_v2...
+Compiling module xil_defaultlib.axi_crossbar_2x3_axi_crossbar_v2...
+Compiling module xil_defaultlib.axi_crossbar_2x3_axi_crossbar_v2...
+Compiling module xil_defaultlib.axi_crossbar_2x3_axi_crossbar_v2...
+Compiling module xil_defaultlib.axi_crossbar_2x3_axi_crossbar_v2...
+Compiling module xil_defaultlib.axi_crossbar_2x3_axi_data_fifo_v...
+Compiling module xil_defaultlib.axi_crossbar_2x3_axi_data_fifo_v...
+Compiling module xil_defaultlib.axi_crossbar_2x3_axi_data_fifo_v...
+Compiling module xil_defaultlib.axi_crossbar_2x3_axi_data_fifo_v...
+Compiling module xil_defaultlib.axi_crossbar_2x3_axi_crossbar_v2...
+Compiling module xil_defaultlib.axi_crossbar_2x3_axi_crossbar_v2...
+Compiling module xil_defaultlib.axi_crossbar_2x3_axi_crossbar_v2...
+Compiling module xil_defaultlib.axi_crossbar_2x3_axi_crossbar_v2...
+Compiling module xil_defaultlib.axi_crossbar_2x3
+Compiling module xil_defaultlib.soc_axi_sram_bridge(DATA_WIDTH=3...
+Compiling module xil_defaultlib.fpga_sram_dp(AW=18)
+Compiling module xil_defaultlib.axi_wrap_ram
+Compiling module xil_defaultlib.confreg(SIMULATION=1'b1)
+Compiling module xil_defaultlib.axi2apb_bridge
+Compiling module xil_defaultlib.arb_2_1
+Compiling module xil_defaultlib.apb_mux2
+Compiling module xil_defaultlib.raminfr
+Compiling module xil_defaultlib.uart_tfifo
+Compiling module xil_defaultlib.uart_transmitter
+Compiling module xil_defaultlib.uart_sync_flops(width=1,init_val...
+Compiling module xil_defaultlib.uart_rfifo(fifo_width=11)
+Compiling module xil_defaultlib.uart_receiver
+Compiling module xil_defaultlib.uart_regs
+Compiling module xil_defaultlib.UART_TOP
+Compiling module xil_defaultlib.axi2apb_misc
+Compiling module xil_defaultlib.soc_top(SIMULATION=1'b1)
+Compiling module xil_defaultlib.tb_top
+Compiling module xil_defaultlib.glbl
+Built simulation snapshot tb_top_behav

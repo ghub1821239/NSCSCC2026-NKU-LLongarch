@@ -1,0 +1,41 @@
+Vivado Simulator v2023.2
+Copyright 1986-2022 Xilinx, Inc. All Rights Reserved.
+Copyright 2022-2023 Advanced Micro Devices, Inc. All Rights Reserved.
+Running: D:/Vivado/2023.2/bin/unwrapped/win64.o/xelab.exe --relax mycpu_core -s mycpu_core_elab 
+Multi-threading is on. Using 10 slave threads.
+Starting static elaboration
+Pass Through NonSizing Optimizer
+Completed static elaboration
+Starting simulation data flow analysis
+WARNING: [XSIM 43-4099] "D:/chiplab/IP/myCPU/btb.v" Line 1. Module btb doesn't have a timescale but at least one module in design has a timescale.
+WARNING: [XSIM 43-4099] "D:/chiplab/IP/myCPU/bht.v" Line 1. Module bht doesn't have a timescale but at least one module in design has a timescale.
+WARNING: [XSIM 43-4099] "D:/chiplab/IP/myCPU/alu.v" Line 1. Module alu doesn't have a timescale but at least one module in design has a timescale.
+WARNING: [XSIM 43-4099] "D:/chiplab/IP/myCPU/btb.v" Line 1. Module btb doesn't have a timescale but at least one module in design has a timescale.
+WARNING: [XSIM 43-4099] "D:/chiplab/IP/myCPU/bht.v" Line 1. Module bht doesn't have a timescale but at least one module in design has a timescale.
+WARNING: [XSIM 43-4099] "D:/chiplab/IP/myCPU/alu.v" Line 1. Module alu doesn't have a timescale but at least one module in design has a timescale.
+Completed simulation data flow analysis
+Time Resolution for simulation is 1ps
+Compiling module work.regfile
+Compiling module work.tlb_default
+Compiling module work.btb
+Compiling module work.bht
+Compiling module work.ras
+Compiling module work.csr_regfile
+Compiling module work.pre_IF1(outbus_width=147)
+Compiling module work.pre_IF2(inbus_width=147,outbus_w...
+Compiling module work.fetch(inbus_width=105,outbus_wid...
+Compiling module work.decoder_6_64
+Compiling module work.decoder_4_16
+Compiling module work.decoder_2_4
+Compiling module work.decoder_5_32
+Compiling module work.cpucfg
+Compiling module work.decode(inbus_width=137,outbus_wi...
+Compiling module work.divider
+Compiling module work.divider_unsigned
+Compiling module work.alu
+Compiling module work.exe1(inbus_width=237,outbus_widt...
+Compiling module work.exe2(inbus_width=271,outbus_widt...
+Compiling module work.mem(inbus_width=194,outbus_width...
+Compiling module work.wb(inbus_width=219)
+Compiling module work.mycpu_core
+Built simulation snapshot mycpu_core_elab

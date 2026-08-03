@@ -1,0 +1,65 @@
+# compile verilog/system verilog design source files
+verilog xil_defaultlib  --include "../../../../../../../../IP/myCPU" --include "../../../../../../../../chip/soc_demo/nscscc-team" --include "../../../../../../../../IP/APB_DEV/URT" --include "../../../../../../testbench" --include "../../../../../../../../chip/soc_demo/nscscc-team/xilinx_ip/clk_pll/gen/gen/c2c6" \
+"../../../../../../../../chip/soc_demo/nscscc-team/xilinx_ip/clk_pll/gen/clk_pll_clk_wiz.v" \
+"../../../../../../../../chip/soc_demo/nscscc-team/xilinx_ip/clk_pll/gen/clk_pll.v" \
+"../../../../../../../../chip/soc_demo/nscscc-team/xilinx_ip/mig_axi_32/gen/mig_axi_32_sim_netlist.v" \
+"../../../../../../../../chip/soc_demo/nscscc-team/xilinx_ip/axi_crossbar_2x3/gen/axi_crossbar_2x3_sim_netlist.v" \
+"../../../../../../../../chip/soc_demo/nscscc-team/xilinx_ip/jtag_axi/gen/jtag_axi_sim_netlist.v" \
+"../../../../../../../../loongson.gen/sources_1/ip/data_bank_ram/data_bank_ram_sim_netlist.v" \
+"../../../../../../../../loongson.gen/sources_1/ip/tagv_ram/tagv_ram_sim_netlist.v" \
+"../../../../../../../../chip/soc_demo/nscscc-team/xilinx_ip/vio/vio_0_sim_netlist.v" \
+"../../../../../../../../chip/soc_demo/nscscc-team/AMBA/Axi_CDC.v" \
+"../../../../../../../../IP/myCPU/EXE1.v" \
+"../../../../../../../../IP/myCPU/EXE2.v" \
+"../../../../../../../../IP/myCPU/MEM.v" \
+"../../../../../../../../IP/myCPU/Pre_IF1.v" \
+"../../../../../../../../IP/myCPU/Pre_IF2.v" \
+"../../../../../../../../IP/myCPU/WB.v" \
+"../../../../../../../../IP/myCPU/alu.v" \
+"../../../../../../../../IP/APB_DEV/apb_dev_top_no_nand.v" \
+"../../../../../../../../IP/APB_DEV/apb_mux2.v" \
+"../../../../../../../../IP/AMBA/axi2apb.v" \
+"../../../../../../../../chip/soc_demo/nscscc-team/AMBA/axi3_to_axi4_bridge.v" \
+"../../../../../../../../chip/soc_demo/nscscc-team/ram_wrap/axi_wrap_ddr.v" \
+"../../../../../../../../chip/soc_demo/nscscc-team/ram_wrap/axi_wrap_ram.v" \
+"../../../../../../../../IP/myCPU/bht.v" \
+"../../../../../../../../IP/myCPU/bridge_SRAM_AXI.v" \
+"../../../../../../../../IP/myCPU/btb.v" \
+"../../../../../../../../IP/myCPU/cache.v" \
+"../../../../../../../../chip/soc_demo/nscscc-team/CONFREG/confreg.v" \
+"../../../../../../../../IP/myCPU/cpucfg.v" \
+"../../../../../../../../IP/myCPU/csr_regfile.v" \
+"../../../../../../../../IP/myCPU/decode.v" \
+"../../../../../../../../IP/myCPU/decoder_2_4.v" \
+"../../../../../../../../IP/myCPU/decoder_4_16.v" \
+"../../../../../../../../IP/myCPU/decoder_5_32.v" \
+"../../../../../../../../IP/myCPU/decoder_6_64.v" \
+"../../../../../../../../IP/myCPU/fetch.v" \
+"../../../../../../../../chip/soc_demo/nscscc-team/ram_wrap/fpga_sram_dp.v" \
+"../../../../../../../../chip/soc_demo/nscscc-team/JTAG_wrap/jtag_axi_wrap.v" \
+"../../../../../../../../IP/myCPU/mycpu_core.v" \
+"../../../../../../../../IP/myCPU/mycpu_top.v" \
+"../../../../../../../../IP/APB_DEV/URT/raminfr.v" \
+"../../../../../../../../IP/myCPU/ras.v" \
+"../../../../../../../../IP/myCPU/regfile.v" \
+"../../../../../../../../chip/soc_demo/nscscc-team/uart_debug/rst_sync.v" \
+"../../../../../../../../IP/AXI_SRAM_BRIDGE/soc_axi_sram_bridge.v" \
+"../../../../../../../../chip/soc_demo/nscscc-team/soc_top.v" \
+"../../../../../../../../IP/myCPU/tlb.v" \
+"../../../../../../../../IP/APB_DEV/URT/uart_receiver.v" \
+"../../../../../../../../IP/APB_DEV/URT/uart_regs.v" \
+"../../../../../../../../IP/APB_DEV/URT/uart_rfifo.v" \
+"../../../../../../../../IP/APB_DEV/URT/uart_sync_flops.v" \
+"../../../../../../../../IP/APB_DEV/URT/uart_tfifo.v" \
+"../../../../../../../../IP/APB_DEV/URT/uart_top.v" \
+"../../../../../../../../IP/APB_DEV/URT/uart_transmitter.v" \
+
+sv xil_defaultlib  --include "../../../../../../../../IP/myCPU" --include "../../../../../../../../chip/soc_demo/nscscc-team" --include "../../../../../../../../IP/APB_DEV/URT" --include "../../../../../../testbench" --include "../../../../../../../../chip/soc_demo/nscscc-team/xilinx_ip/clk_pll/gen/gen/c2c6" \
+"../../../../../../testbench/ddr3_model.sv" \
+"../../../../../../testbench/mycpu_tb.sv" \
+
+# compile glbl module
+verilog xil_defaultlib "glbl.v"
+
+# Do not sort compile order
+nosort
