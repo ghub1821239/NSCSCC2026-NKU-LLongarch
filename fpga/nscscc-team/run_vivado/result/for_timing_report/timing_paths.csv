@@ -1,0 +1,82 @@
+﻿stage,rank,status,slack_ns,requirement_ns,data_delay_ns,logic_delay_ns,logic_percent,route_delay_ns,route_percent,logic_levels,diagnosis,source,destination,logic_breakdown
+preIF1,1,MET,2.184,15.714,13.500,2.469,18.288,11.031,81.712,12,布线主导,u_cpu/u_mycpu_core/u_pre_IF1/pc_reg[13]/C,u_cpu/u_mycpu_core/u_pre_IF2/bus_reg[111]/D,CARRY4=1 LUT3=2 LUT4=2 LUT5=2 LUT6=5
+preIF1,2,MET,2.195,15.714,13.489,2.469,18.303,11.020,81.697,12,布线主导,u_cpu/u_mycpu_core/u_pre_IF1/pc_reg[13]/C,u_cpu/u_mycpu_core/u_pre_IF2/bus_reg[111]/D,CARRY4=1 LUT3=2 LUT4=2 LUT5=2 LUT6=5
+preIF2,1,MET,8.833,15.714,6.864,1.391,20.265,5.473,79.735,6,布线主导,u_cpu/u_mycpu_core/u_pre_IF2/bus_reg[122]/C,u_cpu/u_Icache/dirty_way1_r_reg/D,LUT3=1 LUT5=1 LUT6=1 MUXF7=1 MUXF8=2
+preIF2,2,MET,8.926,15.714,6.759,1.783,26.380,4.976,73.620,8,布线主导,u_cpu/u_mycpu_core/u_pre_IF2/bus_reg[110]/C,u_cpu/u_Icache/dirty_way1_r_reg/D,LUT3=1 LUT5=1 LUT6=2 MUXF7=2 MUXF8=2
+preIF2,3,MET,8.926,15.714,6.759,1.526,22.578,5.233,77.422,7,布线主导,u_cpu/u_mycpu_core/u_pre_IF2/bus_reg[110]/C,u_cpu/u_Icache/dirty_way1_r_reg/D,LUT3=1 LUT5=1 LUT6=1 MUXF7=2 MUXF8=2
+preIF2,4,MET,8.927,15.714,6.758,1.778,26.310,4.980,73.690,8,布线主导,u_cpu/u_mycpu_core/u_pre_IF2/bus_reg[110]/C,u_cpu/u_Icache/dirty_way1_r_reg/D,LUT3=1 LUT5=1 LUT6=2 MUXF7=2 MUXF8=2
+preIF2,5,MET,8.996,15.714,6.689,1.443,21.573,5.246,78.427,6,布线主导,u_cpu/u_mycpu_core/u_pre_IF2/bus_reg[110]/C,u_cpu/u_Icache/dirty_way1_r_reg/D,LUT3=1 LUT5=1 LUT6=1 MUXF7=1 MUXF8=2
+preIF2,6,MET,8.998,15.714,6.687,1.552,23.210,5.135,76.790,7,布线主导,u_cpu/u_mycpu_core/u_pre_IF2/bus_reg[110]/C,u_cpu/u_Icache/dirty_way1_r_reg/D,LUT3=1 LUT5=1 LUT6=1 MUXF7=2 MUXF8=2
+preIF2,7,MET,9.006,15.714,6.679,1.778,26.622,4.901,73.378,8,布线主导,u_cpu/u_mycpu_core/u_pre_IF2/bus_reg[110]/C,u_cpu/u_Icache/dirty_way1_r_reg/D,LUT3=1 LUT5=1 LUT6=2 MUXF7=2 MUXF8=2
+preIF2,8,MET,9.035,15.714,6.650,1.742,26.196,4.908,73.804,8,布线主导,u_cpu/u_mycpu_core/u_pre_IF2/bus_reg[110]/C,u_cpu/u_Icache/dirty_way1_r_reg/D,LUT3=1 LUT5=1 LUT6=2 MUXF7=2 MUXF8=2
+IF,1,MET,11.322,15.714,4.168,0.904,21.687,3.264,78.313,5,布线主导,u_cpu/u_mycpu_core/u_fetch/inst_reg_valid_reg/C,u_cpu/u_Icache/dirty_way0_r_reg/CE,LUT3=1 LUT5=2 LUT6=2
+IF,2,MET,11.396,15.714,4.061,0.904,22.258,3.157,77.742,5,布线主导,u_cpu/u_mycpu_core/u_fetch/inst_reg_valid_reg/C,u_cpu/u_Icache/dirty_way1_r_reg/CE,LUT3=1 LUT5=2 LUT6=2
+IF,3,MET,11.450,15.714,4.008,0.904,22.556,3.104,77.444,5,布线主导,u_cpu/u_mycpu_core/u_fetch/inst_reg_valid_reg/C,u_cpu/u_Icache/req_index_r_reg[1]/CE,LUT3=1 LUT5=2 LUT6=2
+IF,4,MET,11.450,15.714,4.008,0.904,22.556,3.104,77.444,5,布线主导,u_cpu/u_mycpu_core/u_fetch/inst_reg_valid_reg/C,u_cpu/u_Icache/req_index_r_reg[2]/CE,LUT3=1 LUT5=2 LUT6=2
+IF,5,MET,11.450,15.714,4.008,0.904,22.556,3.104,77.444,5,布线主导,u_cpu/u_mycpu_core/u_fetch/inst_reg_valid_reg/C,u_cpu/u_Icache/req_index_r_reg[3]/CE,LUT3=1 LUT5=2 LUT6=2
+IF,6,MET,11.450,15.714,4.008,0.904,22.556,3.104,77.444,5,布线主导,u_cpu/u_mycpu_core/u_fetch/inst_reg_valid_reg/C,u_cpu/u_Icache/req_index_r_reg[4]/CE,LUT3=1 LUT5=2 LUT6=2
+IF,7,MET,11.450,15.714,4.008,0.904,22.556,3.104,77.444,5,布线主导,u_cpu/u_mycpu_core/u_fetch/inst_reg_valid_reg/C,u_cpu/u_Icache/req_index_r_reg[5]/CE,LUT3=1 LUT5=2 LUT6=2
+IF,8,MET,11.450,15.714,4.008,0.904,22.556,3.104,77.444,5,布线主导,u_cpu/u_mycpu_core/u_fetch/inst_reg_valid_reg/C,u_cpu/u_Icache/req_index_r_reg[7]/CE,LUT3=1 LUT5=2 LUT6=2
+IF,9,MET,11.464,15.714,3.992,0.904,22.645,3.088,77.355,5,布线主导,u_cpu/u_mycpu_core/u_fetch/inst_reg_valid_reg/C,u_cpu/u_Icache/req_tag_r_reg[15]/CE,LUT3=1 LUT5=2 LUT6=2
+IF,10,MET,11.464,15.714,3.992,0.904,22.645,3.088,77.355,5,布线主导,u_cpu/u_mycpu_core/u_fetch/inst_reg_valid_reg/C,u_cpu/u_Icache/req_tag_r_reg[2]/CE,LUT3=1 LUT5=2 LUT6=2
+IF,11,MET,11.464,15.714,3.992,0.904,22.645,3.088,77.355,5,布线主导,u_cpu/u_mycpu_core/u_fetch/inst_reg_valid_reg/C,u_cpu/u_Icache/req_tag_r_reg[3]/CE,LUT3=1 LUT5=2 LUT6=2
+IF,12,MET,11.464,15.714,3.992,0.904,22.645,3.088,77.355,5,布线主导,u_cpu/u_mycpu_core/u_fetch/inst_reg_valid_reg/C,u_cpu/u_Icache/req_tag_r_reg[8]/CE,LUT3=1 LUT5=2 LUT6=2
+IF,13,MET,11.482,15.714,4.008,0.904,22.556,3.104,77.444,5,布线主导,u_cpu/u_mycpu_core/u_fetch/inst_reg_valid_reg/C,u_cpu/u_Icache/req_index_r_reg[0]/CE,LUT3=1 LUT5=2 LUT6=2
+IF,14,MET,11.482,15.714,4.008,0.904,22.556,3.104,77.444,5,布线主导,u_cpu/u_mycpu_core/u_fetch/inst_reg_valid_reg/C,u_cpu/u_Icache/req_tag_r_reg[11]/CE,LUT3=1 LUT5=2 LUT6=2
+IF,15,MET,11.482,15.714,4.008,0.904,22.556,3.104,77.444,5,布线主导,u_cpu/u_mycpu_core/u_fetch/inst_reg_valid_reg/C,u_cpu/u_Icache/req_tag_r_reg[16]/CE,LUT3=1 LUT5=2 LUT6=2
+IF,16,MET,11.482,15.714,4.008,0.904,22.556,3.104,77.444,5,布线主导,u_cpu/u_mycpu_core/u_fetch/inst_reg_valid_reg/C,u_cpu/u_Icache/req_tag_r_reg[1]/CE,LUT3=1 LUT5=2 LUT6=2
+IF,17,MET,11.492,15.714,3.997,0.904,22.617,3.093,77.383,5,布线主导,u_cpu/u_mycpu_core/u_fetch/inst_reg_valid_reg/C,u_cpu/u_Icache/req_index_r_reg[6]/CE,LUT3=1 LUT5=2 LUT6=2
+IF,18,MET,11.492,15.714,3.997,0.904,22.617,3.093,77.383,5,布线主导,u_cpu/u_mycpu_core/u_fetch/inst_reg_valid_reg/C,u_cpu/u_Icache/req_offset_r_reg[0]/CE,LUT3=1 LUT5=2 LUT6=2
+IF,19,MET,11.492,15.714,3.997,0.904,22.617,3.093,77.383,5,布线主导,u_cpu/u_mycpu_core/u_fetch/inst_reg_valid_reg/C,u_cpu/u_Icache/req_offset_r_reg[2]/CE,LUT3=1 LUT5=2 LUT6=2
+IF,20,MET,11.492,15.714,3.997,0.904,22.617,3.093,77.383,5,布线主导,u_cpu/u_mycpu_core/u_fetch/inst_reg_valid_reg/C,u_cpu/u_Icache/req_op_r_reg/CE,LUT3=1 LUT5=2 LUT6=2
+IF,21,MET,11.492,15.714,3.997,0.904,22.617,3.093,77.383,5,布线主导,u_cpu/u_mycpu_core/u_fetch/inst_reg_valid_reg/C,u_cpu/u_Icache/req_tag_r_reg[14]/CE,LUT3=1 LUT5=2 LUT6=2
+IF,22,MET,11.492,15.714,3.997,0.904,22.617,3.093,77.383,5,布线主导,u_cpu/u_mycpu_core/u_fetch/inst_reg_valid_reg/C,u_cpu/u_Icache/req_tag_r_reg[5]/CE,LUT3=1 LUT5=2 LUT6=2
+IF,23,MET,11.521,15.714,3.968,0.904,22.780,3.064,77.221,5,布线主导,u_cpu/u_mycpu_core/u_fetch/inst_reg_valid_reg/C,u_cpu/u_Icache/req_tag_r_reg[10]/CE,LUT3=1 LUT5=2 LUT6=2
+IF,24,MET,11.521,15.714,3.968,0.904,22.780,3.064,77.221,5,布线主导,u_cpu/u_mycpu_core/u_fetch/inst_reg_valid_reg/C,u_cpu/u_Icache/req_tag_r_reg[12]/CE,LUT3=1 LUT5=2 LUT6=2
+IF,25,MET,11.521,15.714,3.968,0.904,22.780,3.064,77.221,5,布线主导,u_cpu/u_mycpu_core/u_fetch/inst_reg_valid_reg/C,u_cpu/u_Icache/req_tag_r_reg[6]/CE,LUT3=1 LUT5=2 LUT6=2
+IF,26,MET,11.521,15.714,3.968,0.904,22.780,3.064,77.221,5,布线主导,u_cpu/u_mycpu_core/u_fetch/inst_reg_valid_reg/C,u_cpu/u_Icache/req_tag_r_reg[9]/CE,LUT3=1 LUT5=2 LUT6=2
+IF,27,MET,11.598,15.714,3.859,0.904,23.428,2.955,76.572,5,布线主导,u_cpu/u_mycpu_core/u_fetch/inst_reg_valid_reg/C,u_cpu/u_Icache/req_offset_r_reg[3]/CE,LUT3=1 LUT5=2 LUT6=2
+IF,28,MET,11.598,15.714,3.859,0.904,23.428,2.955,76.572,5,布线主导,u_cpu/u_mycpu_core/u_fetch/inst_reg_valid_reg/C,u_cpu/u_Icache/req_tag_r_reg[13]/CE,LUT3=1 LUT5=2 LUT6=2
+IF,29,MET,11.598,15.714,3.859,0.904,23.428,2.955,76.572,5,布线主导,u_cpu/u_mycpu_core/u_fetch/inst_reg_valid_reg/C,u_cpu/u_Icache/req_tag_r_reg[17]/CE,LUT3=1 LUT5=2 LUT6=2
+IF,30,MET,11.598,15.714,3.859,0.904,23.428,2.955,76.572,5,布线主导,u_cpu/u_mycpu_core/u_fetch/inst_reg_valid_reg/C,u_cpu/u_Icache/req_tag_r_reg[7]/CE,LUT3=1 LUT5=2 LUT6=2
+ID,1,MET,0.782,15.714,14.414,3.610,25.045,10.804,74.955,22,裕量偏小、布线主导、逻辑级数较深,u_cpu/u_mycpu_core/u_decode/bus_reg[100]/C,u_cpu/u_mycpu_core/u_btb/btb_tag_reg_0_63_18_20/RAMA/WE,CARRY4=3 LUT2=2 LUT3=2 LUT4=2 LUT5=6 LUT6=7
+EXE1,1,MET,0.148,15.714,15.326,3.872,25.264,11.454,74.736,26,裕量极小、布线主导、逻辑级数较深,u_cpu/u_mycpu_core/u_exe1/bus_reg[156]/C,u_cpu/u_Icache/dirty_way0_r_reg/CE,CARRY4=9 LUT3=1 LUT4=3 LUT5=6 LUT6=7
+EXE2,1,MET,4.660,15.714,10.515,2.437,23.175,8.078,76.825,13,布线主导,u_cpu/u_mycpu_core/u_exe2/bus_reg[104]/C,u_cpu/u_mycpu_core/u_btb/btb_tag_reg_0_63_18_20/RAMA/WE,CARRY4=3 LUT2=2 LUT3=1 LUT4=1 LUT5=1 LUT6=5
+MEM,1,MET,4.692,15.714,10.792,2.243,20.784,8.549,79.216,13,布线主导,u_cpu/u_mycpu_core/u_mem/bus_reg[80]/C,u_cpu/u_Icache/dirty_way0_r_reg/CE,LUT2=1 LUT3=2 LUT4=1 LUT5=5 LUT6=4
+MEM,2,MET,4.718,15.714,10.768,2.094,19.447,8.674,80.553,13,布线主导,u_cpu/u_mycpu_core/u_mem/bus_reg[6]/C,u_cpu/u_Icache/dirty_way0_r_reg/CE,LUT2=1 LUT3=2 LUT4=1 LUT5=5 LUT6=4
+MEM,3,MET,4.746,15.714,10.743,2.148,19.995,8.595,80.005,13,布线主导,u_cpu/u_mycpu_core/u_mem/bus_reg[4]/C,u_cpu/u_Icache/dirty_way0_r_reg/CE,LUT2=1 LUT3=2 LUT4=1 LUT5=5 LUT6=4
+MEM,4,MET,4.767,15.714,10.685,2.243,20.992,8.442,79.008,13,布线主导,u_cpu/u_mycpu_core/u_mem/bus_reg[80]/C,u_cpu/u_Icache/dirty_way1_r_reg/CE,LUT2=1 LUT3=2 LUT4=1 LUT5=5 LUT6=4
+MEM,5,MET,4.793,15.714,10.661,2.094,19.642,8.567,80.358,13,布线主导,u_cpu/u_mycpu_core/u_mem/bus_reg[6]/C,u_cpu/u_Icache/dirty_way1_r_reg/CE,LUT2=1 LUT3=2 LUT4=1 LUT5=5 LUT6=4
+MEM,6,MET,4.821,15.714,10.636,2.148,20.195,8.488,79.805,13,布线主导,u_cpu/u_mycpu_core/u_mem/bus_reg[4]/C,u_cpu/u_Icache/dirty_way1_r_reg/CE,LUT2=1 LUT3=2 LUT4=1 LUT5=5 LUT6=4
+MEM,7,MET,4.821,15.714,10.631,2.243,21.098,8.388,78.902,13,布线主导,u_cpu/u_mycpu_core/u_mem/bus_reg[80]/C,u_cpu/u_Icache/req_index_r_reg[1]/CE,LUT2=1 LUT3=2 LUT4=1 LUT5=5 LUT6=4
+MEM,8,MET,4.821,15.714,10.631,2.243,21.098,8.388,78.902,13,布线主导,u_cpu/u_mycpu_core/u_mem/bus_reg[80]/C,u_cpu/u_Icache/req_index_r_reg[2]/CE,LUT2=1 LUT3=2 LUT4=1 LUT5=5 LUT6=4
+MEM,9,MET,4.821,15.714,10.631,2.243,21.098,8.388,78.902,13,布线主导,u_cpu/u_mycpu_core/u_mem/bus_reg[80]/C,u_cpu/u_Icache/req_index_r_reg[3]/CE,LUT2=1 LUT3=2 LUT4=1 LUT5=5 LUT6=4
+MEM,10,MET,4.821,15.714,10.631,2.243,21.098,8.388,78.902,13,布线主导,u_cpu/u_mycpu_core/u_mem/bus_reg[80]/C,u_cpu/u_Icache/req_index_r_reg[4]/CE,LUT2=1 LUT3=2 LUT4=1 LUT5=5 LUT6=4
+MEM,11,MET,4.821,15.714,10.631,2.243,21.098,8.388,78.902,13,布线主导,u_cpu/u_mycpu_core/u_mem/bus_reg[80]/C,u_cpu/u_Icache/req_index_r_reg[5]/CE,LUT2=1 LUT3=2 LUT4=1 LUT5=5 LUT6=4
+MEM,12,MET,4.821,15.714,10.631,2.243,21.098,8.388,78.902,13,布线主导,u_cpu/u_mycpu_core/u_mem/bus_reg[80]/C,u_cpu/u_Icache/req_index_r_reg[7]/CE,LUT2=1 LUT3=2 LUT4=1 LUT5=5 LUT6=4
+MEM,13,MET,4.834,15.714,10.616,2.243,21.129,8.373,78.871,13,布线主导,u_cpu/u_mycpu_core/u_mem/bus_reg[80]/C,u_cpu/u_Icache/req_tag_r_reg[15]/CE,LUT2=1 LUT3=2 LUT4=1 LUT5=5 LUT6=4
+MEM,14,MET,4.834,15.714,10.616,2.243,21.129,8.373,78.871,13,布线主导,u_cpu/u_mycpu_core/u_mem/bus_reg[80]/C,u_cpu/u_Icache/req_tag_r_reg[2]/CE,LUT2=1 LUT3=2 LUT4=1 LUT5=5 LUT6=4
+MEM,15,MET,4.834,15.714,10.616,2.243,21.129,8.373,78.871,13,布线主导,u_cpu/u_mycpu_core/u_mem/bus_reg[80]/C,u_cpu/u_Icache/req_tag_r_reg[3]/CE,LUT2=1 LUT3=2 LUT4=1 LUT5=5 LUT6=4
+MEM,16,MET,4.834,15.714,10.616,2.243,21.129,8.373,78.871,13,布线主导,u_cpu/u_mycpu_core/u_mem/bus_reg[80]/C,u_cpu/u_Icache/req_tag_r_reg[8]/CE,LUT2=1 LUT3=2 LUT4=1 LUT5=5 LUT6=4
+MEM,17,MET,4.847,15.714,10.639,2.094,19.682,8.545,80.318,13,布线主导,u_cpu/u_mycpu_core/u_mem/bus_reg[1]/C,u_cpu/u_Icache/dirty_way0_r_reg/CE,LUT2=1 LUT3=2 LUT4=1 LUT5=5 LUT6=4
+MEM,18,MET,4.847,15.714,10.607,2.094,19.741,8.513,80.259,13,布线主导,u_cpu/u_mycpu_core/u_mem/bus_reg[6]/C,u_cpu/u_Icache/req_index_r_reg[1]/CE,LUT2=1 LUT3=2 LUT4=1 LUT5=5 LUT6=4
+MEM,19,MET,4.847,15.714,10.607,2.094,19.741,8.513,80.259,13,布线主导,u_cpu/u_mycpu_core/u_mem/bus_reg[6]/C,u_cpu/u_Icache/req_index_r_reg[2]/CE,LUT2=1 LUT3=2 LUT4=1 LUT5=5 LUT6=4
+MEM,20,MET,4.847,15.714,10.607,2.094,19.741,8.513,80.259,13,布线主导,u_cpu/u_mycpu_core/u_mem/bus_reg[6]/C,u_cpu/u_Icache/req_index_r_reg[3]/CE,LUT2=1 LUT3=2 LUT4=1 LUT5=5 LUT6=4
+MEM,21,MET,4.847,15.714,10.607,2.094,19.741,8.513,80.259,13,布线主导,u_cpu/u_mycpu_core/u_mem/bus_reg[6]/C,u_cpu/u_Icache/req_index_r_reg[4]/CE,LUT2=1 LUT3=2 LUT4=1 LUT5=5 LUT6=4
+MEM,22,MET,4.847,15.714,10.607,2.094,19.741,8.513,80.259,13,布线主导,u_cpu/u_mycpu_core/u_mem/bus_reg[6]/C,u_cpu/u_Icache/req_index_r_reg[5]/CE,LUT2=1 LUT3=2 LUT4=1 LUT5=5 LUT6=4
+MEM,23,MET,4.847,15.714,10.607,2.094,19.741,8.513,80.259,13,布线主导,u_cpu/u_mycpu_core/u_mem/bus_reg[6]/C,u_cpu/u_Icache/req_index_r_reg[7]/CE,LUT2=1 LUT3=2 LUT4=1 LUT5=5 LUT6=4
+MEM,24,MET,4.853,15.714,10.631,2.243,21.098,8.388,78.902,13,布线主导,u_cpu/u_mycpu_core/u_mem/bus_reg[80]/C,u_cpu/u_Icache/req_index_r_reg[0]/CE,LUT2=1 LUT3=2 LUT4=1 LUT5=5 LUT6=4
+MEM,25,MET,4.853,15.714,10.631,2.243,21.098,8.388,78.902,13,布线主导,u_cpu/u_mycpu_core/u_mem/bus_reg[80]/C,u_cpu/u_Icache/req_tag_r_reg[11]/CE,LUT2=1 LUT3=2 LUT4=1 LUT5=5 LUT6=4
+MEM,26,MET,4.853,15.714,10.631,2.243,21.098,8.388,78.902,13,布线主导,u_cpu/u_mycpu_core/u_mem/bus_reg[80]/C,u_cpu/u_Icache/req_tag_r_reg[16]/CE,LUT2=1 LUT3=2 LUT4=1 LUT5=5 LUT6=4
+MEM,27,MET,4.853,15.714,10.631,2.243,21.098,8.388,78.902,13,布线主导,u_cpu/u_mycpu_core/u_mem/bus_reg[80]/C,u_cpu/u_Icache/req_tag_r_reg[1]/CE,LUT2=1 LUT3=2 LUT4=1 LUT5=5 LUT6=4
+MEM,28,MET,4.861,15.714,10.591,2.094,19.771,8.497,80.229,13,布线主导,u_cpu/u_mycpu_core/u_mem/bus_reg[6]/C,u_cpu/u_Icache/req_tag_r_reg[15]/CE,LUT2=1 LUT3=2 LUT4=1 LUT5=5 LUT6=4
+MEM,29,MET,4.861,15.714,10.591,2.094,19.771,8.497,80.229,13,布线主导,u_cpu/u_mycpu_core/u_mem/bus_reg[6]/C,u_cpu/u_Icache/req_tag_r_reg[2]/CE,LUT2=1 LUT3=2 LUT4=1 LUT5=5 LUT6=4
+MEM,30,MET,4.861,15.714,10.591,2.094,19.771,8.497,80.229,13,布线主导,u_cpu/u_mycpu_core/u_mem/bus_reg[6]/C,u_cpu/u_Icache/req_tag_r_reg[3]/CE,LUT2=1 LUT3=2 LUT4=1 LUT5=5 LUT6=4
+WB,1,MET,0.794,15.714,14.335,3.038,21.192,11.297,78.808,19,裕量偏小、布线主导,u_cpu/u_mycpu_core/u_wb/bus_reg[5]/C,u_cpu/u_mycpu_core/u_btb/btb_tag_reg_0_63_18_20/RAMA/WE,CARRY4=1 LUT2=3 LUT3=1 LUT4=3 LUT5=3 LUT6=8
+WB,2,MET,0.794,15.714,14.335,3.038,21.192,11.297,78.808,19,裕量偏小、布线主导,u_cpu/u_mycpu_core/u_wb/bus_reg[5]/C,u_cpu/u_mycpu_core/u_btb/btb_tag_reg_0_63_18_20/RAMB/WE,CARRY4=1 LUT2=3 LUT3=1 LUT4=3 LUT5=3 LUT6=8
+WB,3,MET,0.794,15.714,14.335,3.038,21.192,11.297,78.808,19,裕量偏小、布线主导,u_cpu/u_mycpu_core/u_wb/bus_reg[5]/C,u_cpu/u_mycpu_core/u_btb/btb_tag_reg_0_63_18_20/RAMC/WE,CARRY4=1 LUT2=3 LUT3=1 LUT4=3 LUT5=3 LUT6=8
+WB,4,MET,0.794,15.714,14.335,3.038,21.192,11.297,78.808,19,裕量偏小、布线主导,u_cpu/u_mycpu_core/u_wb/bus_reg[5]/C,u_cpu/u_mycpu_core/u_btb/btb_tag_reg_0_63_18_20/RAMD/WE,CARRY4=1 LUT2=3 LUT3=1 LUT4=3 LUT5=3 LUT6=8
+WB,5,MET,0.803,15.714,14.326,3.050,21.290,11.276,78.710,19,裕量偏小、布线主导,u_cpu/u_mycpu_core/u_wb/bus_reg[5]/C,u_cpu/u_mycpu_core/u_btb/btb_tag_reg_0_63_18_20/RAMA/WE,CARRY4=1 LUT2=3 LUT3=1 LUT4=3 LUT5=3 LUT6=8
+WB,6,MET,0.803,15.714,14.326,3.050,21.290,11.276,78.710,19,裕量偏小、布线主导,u_cpu/u_mycpu_core/u_wb/bus_reg[5]/C,u_cpu/u_mycpu_core/u_btb/btb_tag_reg_0_63_18_20/RAMB/WE,CARRY4=1 LUT2=3 LUT3=1 LUT4=3 LUT5=3 LUT6=8
+WB,7,MET,0.803,15.714,14.326,3.050,21.290,11.276,78.710,19,裕量偏小、布线主导,u_cpu/u_mycpu_core/u_wb/bus_reg[5]/C,u_cpu/u_mycpu_core/u_btb/btb_tag_reg_0_63_18_20/RAMC/WE,CARRY4=1 LUT2=3 LUT3=1 LUT4=3 LUT5=3 LUT6=8
+WB,8,MET,0.803,15.714,14.326,3.050,21.290,11.276,78.710,19,裕量偏小、布线主导,u_cpu/u_mycpu_core/u_wb/bus_reg[5]/C,u_cpu/u_mycpu_core/u_btb/btb_tag_reg_0_63_18_20/RAMD/WE,CARRY4=1 LUT2=3 LUT3=1 LUT4=3 LUT5=3 LUT6=8

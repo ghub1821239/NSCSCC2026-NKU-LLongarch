@@ -1,0 +1,2 @@
+divider_unsigned.vhd,vhdl,xil_defaultlib,../../../../../../../../loongson.gen/sources_1/ip/divider_unsigned/sim/divider_unsigned.vhd,
+glbl.v,Verilog,xil_defaultlib,glbl.v
