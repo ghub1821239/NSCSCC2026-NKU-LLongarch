@@ -460,7 +460,10 @@ btb u_btb(
     .update_valid       (update_valid ),
     .update_pc          (update_pc    ),
     .update_target      (update_target),//real target
-    .update_type        (update_type  )
+    .update_type        (update_type  ),
+    .update_type   (update_type),
+    // Èç¹ûÈ¡Ïû¾Í²»Í¬²½¸üÐÂ
+    .update_cancel (need_cancel | cacop_need_cancel)
 );
 
 wire query_taken;
@@ -501,7 +504,7 @@ ras u_ras(
 );
 //------------------------{branch prediction}end---------------------------//
 
-//------------------------{Ô¤ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Òªï¿½ï¿½×ªï¿½ï¿½ï¿½Åºï¿½ï¿½ï¿½ï¿½ï¿½}begin-------------------------//
+//------------------------{Ô¤ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ò?ï¿½ï¿½×ªï¿½ï¿½ï¿½Åºï¿½ï¿½ï¿½ï¿½ï¿½}begin-------------------------//
 wire        br_taken;
 wire [31:0] br_target;
 
@@ -540,7 +543,7 @@ end
 assign br_taken       = br_afterpred_taken_r;
 assign br_target      = br_afterpred_target_r;
 assign need_br_cancel = br_afterpred_taken_r;
-//------------------------{Ô¤ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Òªï¿½ï¿½×ªï¿½ï¿½ï¿½Åºï¿½ï¿½ï¿½ï¿½ï¿½}end-------------------------//
+//------------------------{Ô¤ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ò?ï¿½ï¿½×ªï¿½ï¿½ï¿½Åºï¿½ï¿½ï¿½ï¿½ï¿½}end-------------------------//
 
 
 //------------------------{5 pipeline bus + inst ram control}begin-------------------------//
