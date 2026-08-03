@@ -3,8 +3,8 @@
 # SW Build 4029153 on Fri Oct 13 20:14:34 MDT 2023
 # IP Build 4028589 on Sat Oct 14 00:45:43 MDT 2023
 # SharedData Build 4025554 on Tue Oct 10 17:18:54 MDT 2023
-# Start of session at: Mon Aug  3 20:45:19 2026
-# Process ID: 15128
+# Start of session at: Mon Aug  3 22:53:22 2026
+# Process ID: 5320
 # Current directory: D:/chiplab/fpga/nscscc-team/run_vivado/result
 # Command line: vivado.exe -mode tcl -source ..\vio.tcl -tclargs ..\project\loongson.runs\impl_1\soc_top.bit ..\project\loongson.runs\impl_1\soc_top.ltx perf
 # Log file: D:/chiplab/fpga/nscscc-team/run_vivado/result/vivado.log
@@ -118,9 +118,19 @@ source {..\vio.tcl}
 #     return [list timeout $correct_flag $timeout_ms]
 # }
 # open_hw_manager
-open_hw_manager: Time (s): cpu = 00:00:06 ; elapsed = 00:00:06 . Memory (MB): peak = 475.137 ; gain = 182.199
+open_hw_manager: Time (s): cpu = 00:00:07 ; elapsed = 00:00:09 . Memory (MB): peak = 477.105 ; gain = 182.367
 # connect_hw_server
 INFO: [Labtools 27-2285] Connecting to hw_server url TCP:localhost:3121
+INFO: [Labtools 27-2222] Launching hw_server...
+INFO: [Labtools 27-2221] Launch Output:
+ECHO 处于关闭状态。
+ECHO 处于关闭状态。
+
+****** Xilinx hw_server v2023.2
+  **** Build date : Oct 13 2023 at 21:31:40
+    ** Copyright 1986-2022 Xilinx, Inc. All Rights Reserved.
+
+
 INFO: [Labtools 27-3415] Connecting to cs_server url TCP:localhost:0
 INFO: [Labtools 27-3417] Launching cs_server...
 INFO: [Labtools 27-2221] Launch Output:
@@ -136,6 +146,7 @@ ECHO 处于关闭状态。
 
 
 
+connect_hw_server: Time (s): cpu = 00:00:00 ; elapsed = 00:00:06 . Memory (MB): peak = 481.074 ; gain = 3.969
 # open_hw_target
 INFO: [Labtoolstcl 44-466] Opening hw_target localhost:3121/xilinx_tcf/Xilinx/Port_#0001.Hub_#0002
 # set_property PROBES.FILE [lindex $argv 1] [get_hw_devices xc7a200t_0]
@@ -143,7 +154,7 @@ INFO: [Labtoolstcl 44-466] Opening hw_target localhost:3121/xilinx_tcf/Xilinx/Po
 # set_property PROGRAM.FILE [lindex $argv 0] [get_hw_devices xc7a200t_0]
 # program_hw_devices [get_hw_devices xc7a200t_0]
 INFO: [Labtools 27-3164] End of startup status: HIGH
-program_hw_devices: Time (s): cpu = 00:00:21 ; elapsed = 00:00:21 . Memory (MB): peak = 481.344 ; gain = 0.000
+program_hw_devices: Time (s): cpu = 00:00:20 ; elapsed = 00:00:21 . Memory (MB): peak = 482.324 ; gain = 0.000
 # refresh_hw_device [lindex [get_hw_devices xc7a200t_0] 0]
 INFO: [Labtools 27-2302] Device xc7a200t (JTAG device index = 0) is programmed with a design that has 1 JTAG AXI core(s).
 INFO: [Labtools 27-2302] Device xc7a200t (JTAG device index = 0) is programmed with a design that has 1 VIO core(s).
@@ -541,103 +552,103 @@ PERF [01/40] bitcount run 1/2
 PERF COMPLETION [01/40] bitcount run 1/2 status=PASS flag=0x1 elapsed=750 ms
 PERF [02/40] bitcount run 2/2
 PERF COMPLETION [02/40] bitcount run 2/2 status=PASS flag=0x1 elapsed=750 ms
-PERF RESULT [01/20] bitcount PASS | r1=PASS cpu=0x0009E073 | r2=PASS cpu=0x0009E041 | selected=r1
+PERF RESULT [01/20] bitcount PASS | r1=PASS cpu=0x0009E01F | r2=PASS cpu=0x0009E05A | selected=r2
 PERF [03/40] bubble_sort run 1/2
-PERF COMPLETION [03/40] bubble_sort run 1/2 status=PASS flag=0x1 elapsed=750 ms
+PERF COMPLETION [03/40] bubble_sort run 1/2 status=PASS flag=0x1 elapsed=1000 ms
 PERF [04/40] bubble_sort run 2/2
 PERF COMPLETION [04/40] bubble_sort run 2/2 status=PASS flag=0x1 elapsed=1000 ms
-PERF RESULT [02/20] bubble_sort PASS | r1=PASS cpu=0x0028FAF6 | r2=PASS cpu=0x0028FAF6 | selected=r1
+PERF RESULT [02/20] bubble_sort PASS | r1=PASS cpu=0x0028FBF2 | r2=PASS cpu=0x0028FB72 | selected=r1
 PERF [05/40] coremark run 1/2
 PERF COMPLETION [05/40] coremark run 1/2 status=PASS flag=0x1 elapsed=1000 ms
 PERF [06/40] coremark run 2/2
 PERF COMPLETION [06/40] coremark run 2/2 status=PASS flag=0x1 elapsed=1000 ms
-PERF RESULT [03/20] coremark PASS | r1=PASS cpu=0x006FC138 | r2=PASS cpu=0x006FC138 | selected=r1
+PERF RESULT [03/20] coremark PASS | r1=PASS cpu=0x006FC177 | r2=PASS cpu=0x006FC1B5 | selected=r2
 PERF [07/40] crc32 run 1/2
 PERF COMPLETION [07/40] crc32 run 1/2 status=PASS flag=0x1 elapsed=1000 ms
 PERF [08/40] crc32 run 2/2
 PERF COMPLETION [08/40] crc32 run 2/2 status=PASS flag=0x1 elapsed=1000 ms
-PERF RESULT [04/20] crc32 PASS | r1=PASS cpu=0x003BA26A | r2=PASS cpu=0x003BA315 | selected=r2
+PERF RESULT [04/20] crc32 PASS | r1=PASS cpu=0x003BA29C | r2=PASS cpu=0x003BA2CA | selected=r2
 PERF [09/40] dhrystone run 1/2
 PERF COMPLETION [09/40] dhrystone run 1/2 status=PASS flag=0x1 elapsed=1000 ms
 PERF [10/40] dhrystone run 2/2
 PERF COMPLETION [10/40] dhrystone run 2/2 status=PASS flag=0x1 elapsed=1000 ms
-PERF RESULT [05/20] dhrystone PASS | r1=PASS cpu=0x0001578A | r2=PASS cpu=0x0001574D | selected=r1
+PERF RESULT [05/20] dhrystone PASS | r1=PASS cpu=0x0001574E | r2=PASS cpu=0x0001578C | selected=r2
 PERF [11/40] quick_sort run 1/2
 PERF COMPLETION [11/40] quick_sort run 1/2 status=PASS flag=0x1 elapsed=1000 ms
 PERF [12/40] quick_sort run 2/2
-PERF COMPLETION [12/40] quick_sort run 2/2 status=PASS flag=0x1 elapsed=1000 ms
-PERF RESULT [06/20] quick_sort PASS | r1=PASS cpu=0x003A8FEE | r2=PASS cpu=0x003A8CED | selected=r1
+PERF COMPLETION [12/40] quick_sort run 2/2 status=PASS flag=0x1 elapsed=750 ms
+PERF RESULT [06/20] quick_sort PASS | r1=PASS cpu=0x003A8EC9 | r2=PASS cpu=0x003A8FEB | selected=r2
 PERF [13/40] select_sort run 1/2
 PERF COMPLETION [13/40] select_sort run 1/2 status=PASS flag=0x1 elapsed=750 ms
 PERF [14/40] select_sort run 2/2
 PERF COMPLETION [14/40] select_sort run 2/2 status=PASS flag=0x1 elapsed=750 ms
-PERF RESULT [07/20] select_sort PASS | r1=PASS cpu=0x0018790A | r2=PASS cpu=0x00187950 | selected=r2
+PERF RESULT [07/20] select_sort PASS | r1=PASS cpu=0x0018797F | r2=PASS cpu=0x001878AA | selected=r1
 PERF [15/40] sha run 1/2
 PERF COMPLETION [15/40] sha run 1/2 status=PASS flag=0x1 elapsed=1000 ms
 PERF [16/40] sha run 2/2
 PERF COMPLETION [16/40] sha run 2/2 status=PASS flag=0x1 elapsed=1000 ms
-PERF RESULT [08/20] sha PASS | r1=PASS cpu=0x003ABA35 | r2=PASS cpu=0x003ABAAD | selected=r2
+PERF RESULT [08/20] sha PASS | r1=PASS cpu=0x003AB98B | r2=PASS cpu=0x003AB934 | selected=r1
 PERF [17/40] stream_copy run 1/2
 PERF COMPLETION [17/40] stream_copy run 1/2 status=PASS flag=0x1 elapsed=750 ms
 PERF [18/40] stream_copy run 2/2
 PERF COMPLETION [18/40] stream_copy run 2/2 status=PASS flag=0x1 elapsed=750 ms
-PERF RESULT [09/20] stream_copy PASS | r1=PASS cpu=0x0003D077 | r2=PASS cpu=0x0003D054 | selected=r1
+PERF RESULT [09/20] stream_copy PASS | r1=PASS cpu=0x0003D010 | r2=PASS cpu=0x0003D054 | selected=r2
 PERF [19/40] stringsearch run 1/2
 PERF COMPLETION [19/40] stringsearch run 1/2 status=PASS flag=0x1 elapsed=3500 ms
 PERF [20/40] stringsearch run 2/2
 PERF COMPLETION [20/40] stringsearch run 2/2 status=PASS flag=0x1 elapsed=3500 ms
-PERF RESULT [10/20] stringsearch PASS | r1=PASS cpu=0x0012420E | r2=PASS cpu=0x001242BC | selected=r2
+PERF RESULT [10/20] stringsearch PASS | r1=PASS cpu=0x001241AE | r2=PASS cpu=0x001242E0 | selected=r2
 PERF [21/40] fireye_A0 run 1/2
 PERF COMPLETION [21/40] fireye_A0 run 1/2 status=PASS flag=0x1 elapsed=1000 ms
 PERF [22/40] fireye_A0 run 2/2
 PERF COMPLETION [22/40] fireye_A0 run 2/2 status=PASS flag=0x1 elapsed=1000 ms
-PERF RESULT [11/20] fireye_A0 PASS | r1=PASS cpu=0x0079DB4D | r2=PASS cpu=0x0079DB13 | selected=r1
+PERF RESULT [11/20] fireye_A0 PASS | r1=PASS cpu=0x0079DA52 | r2=PASS cpu=0x0079DB4D | selected=r2
 PERF [23/40] fireye_B2 run 1/2
 PERF COMPLETION [23/40] fireye_B2 run 1/2 status=PASS flag=0x1 elapsed=750 ms
 PERF [24/40] fireye_B2 run 2/2
 PERF COMPLETION [24/40] fireye_B2 run 2/2 status=PASS flag=0x1 elapsed=750 ms
-PERF RESULT [12/20] fireye_B2 PASS | r1=PASS cpu=0x00104ACD | r2=PASS cpu=0x00104AB6 | selected=r1
+PERF RESULT [12/20] fireye_B2 PASS | r1=PASS cpu=0x00104ACD | r2=PASS cpu=0x00104B9B | selected=r2
 PERF [25/40] fireye_C0 run 1/2
 PERF COMPLETION [25/40] fireye_C0 run 1/2 status=PASS flag=0x1 elapsed=750 ms
 PERF [26/40] fireye_C0 run 2/2
 PERF COMPLETION [26/40] fireye_C0 run 2/2 status=PASS flag=0x1 elapsed=750 ms
-PERF RESULT [13/20] fireye_C0 PASS | r1=PASS cpu=0x00119966 | r2=PASS cpu=0x0011988A | selected=r1
+PERF RESULT [13/20] fireye_C0 PASS | r1=PASS cpu=0x00119966 | r2=PASS cpu=0x001198AF | selected=r1
 PERF [27/40] fireye_D1 run 1/2
 PERF COMPLETION [27/40] fireye_D1 run 1/2 status=PASS flag=0x1 elapsed=1000 ms
 PERF [28/40] fireye_D1 run 2/2
 PERF COMPLETION [28/40] fireye_D1 run 2/2 status=PASS flag=0x1 elapsed=1000 ms
-PERF RESULT [14/20] fireye_D1 PASS | r1=PASS cpu=0x00BDC91A | r2=PASS cpu=0x00BDCCBD | selected=r2
+PERF RESULT [14/20] fireye_D1 PASS | r1=PASS cpu=0x00BDCBF9 | r2=PASS cpu=0x00BDC91A | selected=r1
 PERF [29/40] fireye_I2 run 1/2
 PERF COMPLETION [29/40] fireye_I2 run 1/2 status=PASS flag=0x1 elapsed=1000 ms
 PERF [30/40] fireye_I2 run 2/2
 PERF COMPLETION [30/40] fireye_I2 run 2/2 status=PASS flag=0x1 elapsed=1000 ms
-PERF RESULT [15/20] fireye_I2 PASS | r1=PASS cpu=0x006CA02D | r2=PASS cpu=0x006CA09A | selected=r2
+PERF RESULT [15/20] fireye_I2 PASS | r1=PASS cpu=0x006C9FC4 | r2=PASS cpu=0x006C9F85 | selected=r1
 PERF [31/40] inner_product run 1/2
 PERF COMPLETION [31/40] inner_product run 1/2 status=PASS flag=0x1 elapsed=1250 ms
 PERF [32/40] inner_product run 2/2
 PERF COMPLETION [32/40] inner_product run 2/2 status=PASS flag=0x1 elapsed=1250 ms
-PERF RESULT [16/20] inner_product PASS | r1=PASS cpu=0x01ED3F22 | r2=PASS cpu=0x01ED1D86 | selected=r1
+PERF RESULT [16/20] inner_product PASS | r1=PASS cpu=0x01ED2880 | r2=PASS cpu=0x01ED2DCE | selected=r2
 PERF [33/40] lookup_table run 1/2
 PERF COMPLETION [33/40] lookup_table run 1/2 status=PASS flag=0x1 elapsed=1000 ms
 PERF [34/40] lookup_table run 2/2
 PERF COMPLETION [34/40] lookup_table run 2/2 status=PASS flag=0x1 elapsed=1000 ms
-PERF RESULT [17/20] lookup_table PASS | r1=PASS cpu=0x005725AA | r2=PASS cpu=0x005720B5 | selected=r1
+PERF RESULT [17/20] lookup_table PASS | r1=PASS cpu=0x0057252D | r2=PASS cpu=0x0057252D | selected=r1
 PERF [35/40] loop_induction run 1/2
 PERF COMPLETION [35/40] loop_induction run 1/2 status=PASS flag=0x1 elapsed=1250 ms
 PERF [36/40] loop_induction run 2/2
 PERF COMPLETION [36/40] loop_induction run 2/2 status=PASS flag=0x1 elapsed=1250 ms
-PERF RESULT [18/20] loop_induction PASS | r1=PASS cpu=0x014A430D | r2=PASS cpu=0x014A3E70 | selected=r1
+PERF RESULT [18/20] loop_induction PASS | r1=PASS cpu=0x014A3E70 | r2=PASS cpu=0x014A40F4 | selected=r2
 PERF [37/40] my_memcmp run 1/2
 PERF COMPLETION [37/40] my_memcmp run 1/2 status=PASS flag=0x1 elapsed=1000 ms
 PERF [38/40] my_memcmp run 2/2
 PERF COMPLETION [38/40] my_memcmp run 2/2 status=PASS flag=0x1 elapsed=1000 ms
-PERF RESULT [19/20] my_memcmp PASS | r1=PASS cpu=0x0068E003 | r2=PASS cpu=0x0068E280 | selected=r2
+PERF RESULT [19/20] my_memcmp PASS | r1=PASS cpu=0x0068E71A | r2=PASS cpu=0x0068E188 | selected=r1
 PERF [39/40] minmax_sequence run 1/2
 PERF COMPLETION [39/40] minmax_sequence run 1/2 status=PASS flag=0x1 elapsed=1000 ms
 PERF [40/40] minmax_sequence run 2/2
 PERF COMPLETION [40/40] minmax_sequence run 2/2 status=PASS flag=0x1 elapsed=1000 ms
-PERF RESULT [20/20] minmax_sequence PASS | r1=PASS cpu=0x006729FF | r2=PASS cpu=0x00672EAC | selected=r2
+PERF RESULT [20/20] minmax_sequence PASS | r1=PASS cpu=0x00672C57 | r2=PASS cpu=0x00672971 | selected=r1
 Performance collection complete: 20 benchmarks, 40 independent runs, worst valid run selected
 # close_hw_manager
-Vivado% Vivado% Vivado% Vivado% Vivado% Vivado% Vivado% Vivado% Vivado% Vivado% Vivado% Vivado% Vivado% Vivado% Vivado% Vivado% Vivado% Vivado% Vivado% Vivado% Vivado% Vivado% Vivado% Vivado% Vivado% Vivado% Vivado% Vivado% Vivado% Vivado% Vivado% Vivado% Vivado% Vivado% Vivado% Vivado% Vivado% Vivado% Vivado% Vivado% Vivado% Vivado% Vivado% Vivado% Vivado% Vivado% Vivado% Vivado% Vivado% Vivado% Vivado% Vivado% Vivado% Vivado% Vivado% Vivado% Vivado% Vivado% Vivado% Vivado% Vivado% Vivado% Vivado% Vivado% Vivado% Vivado% Vivado% Vivado% Vivado% Vivado% Vivado% Vivado% Vivado% Vivado% Vivado% Vivado% Vivado% Vivado% Vivado% Vivado% Vivado% Vivado% q
-INFO: [Common 17-206] Exiting Vivado at Mon Aug  3 20:47:51 2026...
+Vivado% cd D:/chiplab/mytool
+Vivado% 
