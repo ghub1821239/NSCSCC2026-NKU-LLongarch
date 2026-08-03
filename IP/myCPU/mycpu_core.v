@@ -461,7 +461,6 @@ btb u_btb(
     .update_pc          (update_pc    ),
     .update_target      (update_target),//real target
     .update_type        (update_type  ),
-    .update_type   (update_type),
     // 如果取消就不同步更新
     .update_cancel (need_cancel | cacop_need_cancel)
 );

@@ -14,7 +14,6 @@ module btb (
     input  wire [31:0] update_pc,
     input  wire [31:0] update_target,//真实目标地址
     input  wire [ 1:0] update_type,
-    input wire  [1:0]  update_type,
     input wire         update_cancel
 );
 //------------------------{reg 锁存提升主频}begin-------------------------//
