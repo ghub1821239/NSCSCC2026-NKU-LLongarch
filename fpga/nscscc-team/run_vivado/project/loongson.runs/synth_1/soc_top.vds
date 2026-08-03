@@ -3,8 +3,8 @@
 # SW Build 4029153 on Fri Oct 13 20:14:34 MDT 2023
 # IP Build 4028589 on Sat Oct 14 00:45:43 MDT 2023
 # SharedData Build 4025554 on Tue Oct 10 17:18:54 MDT 2023
-# Start of session at: Mon Aug  3 21:54:03 2026
-# Process ID: 28368
+# Start of session at: Mon Aug  3 22:41:51 2026
+# Process ID: 18560
 # Current directory: D:/chiplab/fpga/nscscc-team/run_vivado/project/loongson.runs/synth_1
 # Command line: vivado.exe -log soc_top.vds -product Vivado -mode batch -messageDb vivado.pb -notrace -source soc_top.tcl
 # Log file: D:/chiplab/fpga/nscscc-team/run_vivado/project/loongson.runs/synth_1/soc_top.vds
@@ -12,7 +12,7 @@
 # Running On: mini, OS: Windows, CPU Frequency: 2612 MHz, CPU Physical cores: 8, Host memory: 16891 MB
 #-----------------------------------------------------------
 source soc_top.tcl -notrace
-create_project: Time (s): cpu = 00:00:05 ; elapsed = 00:00:06 . Memory (MB): peak = 472.773 ; gain = 177.820
+create_project: Time (s): cpu = 00:00:05 ; elapsed = 00:00:06 . Memory (MB): peak = 474.945 ; gain = 178.629
 Command: read_checkpoint -auto_incremental -incremental D:/chiplab/fpga/nscscc-team/run_vivado/project/loongson.srcs/utils_1/imports/synth_1/soc_top.dcp
 INFO: [Vivado 12-5825] Read reference checkpoint from D:/chiplab/fpga/nscscc-team/run_vivado/project/loongson.srcs/utils_1/imports/synth_1/soc_top.dcp for incremental synthesis
 INFO: [Vivado 12-7989] Please ensure there are no constraint changes
@@ -25,9 +25,9 @@ INFO: [Designutils 20-5440] No compile time benefit to using incremental synthes
 INFO: [Designutils 20-4379] Flow is switching to default flow due to incremental criteria not met. If you would like to alter this behaviour and have the flow terminate instead, please set the following parameter config_implementation {autoIncr.Synth.RejectBehavior Terminate}
 INFO: [Synth 8-7079] Multithreading enabled for synth_design using a maximum of 2 processes.
 INFO: [Synth 8-7078] Launching helper process for spawning children vivado processes
-INFO: [Synth 8-7075] Helper process launched with PID 7504
+INFO: [Synth 8-7075] Helper process launched with PID 8128
 ---------------------------------------------------------------------------------
-Starting RTL Elaboration : Time (s): cpu = 00:00:04 ; elapsed = 00:00:04 . Memory (MB): peak = 1410.848 ; gain = 440.402
+Starting RTL Elaboration : Time (s): cpu = 00:00:04 ; elapsed = 00:00:04 . Memory (MB): peak = 1409.996 ; gain = 439.207
 ---------------------------------------------------------------------------------
 INFO: [Synth 8-11241] undeclared symbol 'nand_dma_ack_i', assumed default net type 'wire' [D:/chiplab/IP/APB_DEV/apb_dev_top_no_nand.v:183]
 INFO: [Synth 8-11241] undeclared symbol 'data_sram_addr_ok', assumed default net type 'wire' [D:/chiplab/IP/myCPU/bridge_SRAM_AXI.v:192]
@@ -37,11 +37,13 @@ INFO: [Synth 8-11241] undeclared symbol 'data_sram_data_ok', assumed default net
 INFO: [Synth 8-11241] undeclared symbol 'is_jirl_call', assumed default net type 'wire' [D:/chiplab/IP/myCPU/decode.v:479]
 INFO: [Synth 8-11241] undeclared symbol 'm_axi_awqos', assumed default net type 'wire' [D:/chiplab/chip/soc_demo/nscscc-team/JTAG_wrap/jtag_axi_wrap.v:64]
 INFO: [Synth 8-11241] undeclared symbol 'm_axi_arqos', assumed default net type 'wire' [D:/chiplab/chip/soc_demo/nscscc-team/JTAG_wrap/jtag_axi_wrap.v:84]
-INFO: [Synth 8-11241] undeclared symbol 'inst_wr', assumed default net type 'wire' [D:/chiplab/IP/myCPU/mycpu_core.v:807]
-INFO: [Synth 8-11241] undeclared symbol 'data_wr', assumed default net type 'wire' [D:/chiplab/IP/myCPU/mycpu_core.v:976]
+INFO: [Synth 8-11241] undeclared symbol 'need_cancel', assumed default net type 'wire' [D:/chiplab/IP/myCPU/mycpu_core.v:465]
+WARNING: [Synth 8-8895] 'need_cancel' is already implicitly declared on line 465 [D:/chiplab/IP/myCPU/mycpu_core.v:518]
+INFO: [Synth 8-11241] undeclared symbol 'inst_wr', assumed default net type 'wire' [D:/chiplab/IP/myCPU/mycpu_core.v:810]
+INFO: [Synth 8-11241] undeclared symbol 'data_wr', assumed default net type 'wire' [D:/chiplab/IP/myCPU/mycpu_core.v:979]
 INFO: [Synth 8-6157] synthesizing module 'soc_top' [D:/chiplab/chip/soc_demo/nscscc-team/soc_top.v:58]
-INFO: [Synth 8-6157] synthesizing module 'clk_pll' [D:/chiplab/fpga/nscscc-team/run_vivado/project/loongson.runs/synth_1/.Xil/Vivado-28368-mini/realtime/clk_pll_stub.v:6]
-INFO: [Synth 8-6155] done synthesizing module 'clk_pll' (0#1) [D:/chiplab/fpga/nscscc-team/run_vivado/project/loongson.runs/synth_1/.Xil/Vivado-28368-mini/realtime/clk_pll_stub.v:6]
+INFO: [Synth 8-6157] synthesizing module 'clk_pll' [D:/chiplab/fpga/nscscc-team/run_vivado/project/loongson.runs/synth_1/.Xil/Vivado-18560-mini/realtime/clk_pll_stub.v:6]
+INFO: [Synth 8-6155] done synthesizing module 'clk_pll' (0#1) [D:/chiplab/fpga/nscscc-team/run_vivado/project/loongson.runs/synth_1/.Xil/Vivado-18560-mini/realtime/clk_pll_stub.v:6]
 INFO: [Synth 8-6157] synthesizing module 'rst_sync' [D:/chiplab/chip/soc_demo/nscscc-team/uart_debug/rst_sync.v:1]
 INFO: [Synth 8-6155] done synthesizing module 'rst_sync' (0#1) [D:/chiplab/chip/soc_demo/nscscc-team/uart_debug/rst_sync.v:1]
 INFO: [Synth 8-6157] synthesizing module 'axi_wrap_ddr' [D:/chiplab/chip/soc_demo/nscscc-team/ram_wrap/axi_wrap_ddr.v:35]
@@ -79,15 +81,15 @@ INFO: [Synth 8-6157] synthesizing module 'BufferCC_1' [D:/chiplab/chip/soc_demo/
 INFO: [Synth 8-6155] done synthesizing module 'BufferCC_1' (0#1) [D:/chiplab/chip/soc_demo/nscscc-team/AMBA/Axi_CDC.v:1364]
 INFO: [Synth 8-6155] done synthesizing module 'StreamFifoCC_4' (0#1) [D:/chiplab/chip/soc_demo/nscscc-team/AMBA/Axi_CDC.v:277]
 INFO: [Synth 8-6155] done synthesizing module 'Axi_CDC' (0#1) [D:/chiplab/chip/soc_demo/nscscc-team/AMBA/Axi_CDC.v:4]
-INFO: [Synth 8-6157] synthesizing module 'mig_axi_32' [D:/chiplab/fpga/nscscc-team/run_vivado/project/loongson.runs/synth_1/.Xil/Vivado-28368-mini/realtime/mig_axi_32_stub.v:6]
-INFO: [Synth 8-6155] done synthesizing module 'mig_axi_32' (0#1) [D:/chiplab/fpga/nscscc-team/run_vivado/project/loongson.runs/synth_1/.Xil/Vivado-28368-mini/realtime/mig_axi_32_stub.v:6]
+INFO: [Synth 8-6157] synthesizing module 'mig_axi_32' [D:/chiplab/fpga/nscscc-team/run_vivado/project/loongson.runs/synth_1/.Xil/Vivado-18560-mini/realtime/mig_axi_32_stub.v:6]
+INFO: [Synth 8-6155] done synthesizing module 'mig_axi_32' (0#1) [D:/chiplab/fpga/nscscc-team/run_vivado/project/loongson.runs/synth_1/.Xil/Vivado-18560-mini/realtime/mig_axi_32_stub.v:6]
 WARNING: [Synth 8-689] width (4) of port connection 's_axi_bid' does not match port width (8) of module 'mig_axi_32' [D:/chiplab/chip/soc_demo/nscscc-team/ram_wrap/axi_wrap_ddr.v:778]
 WARNING: [Synth 8-689] width (4) of port connection 's_axi_rid' does not match port width (8) of module 'mig_axi_32' [D:/chiplab/chip/soc_demo/nscscc-team/ram_wrap/axi_wrap_ddr.v:793]
 WARNING: [Synth 8-7071] port 'device_temp' of module 'mig_axi_32' is unconnected for instance 'mig_axi' [D:/chiplab/chip/soc_demo/nscscc-team/ram_wrap/axi_wrap_ddr.v:727]
 WARNING: [Synth 8-7023] instance 'mig_axi' of module 'mig_axi_32' has 66 connections declared, but only 65 given [D:/chiplab/chip/soc_demo/nscscc-team/ram_wrap/axi_wrap_ddr.v:727]
 INFO: [Synth 8-6155] done synthesizing module 'axi_wrap_ddr' (0#1) [D:/chiplab/chip/soc_demo/nscscc-team/ram_wrap/axi_wrap_ddr.v:35]
-INFO: [Synth 8-6157] synthesizing module 'vio_0' [D:/chiplab/fpga/nscscc-team/run_vivado/project/loongson.runs/synth_1/.Xil/Vivado-28368-mini/realtime/vio_0_stub.v:6]
-INFO: [Synth 8-6155] done synthesizing module 'vio_0' (0#1) [D:/chiplab/fpga/nscscc-team/run_vivado/project/loongson.runs/synth_1/.Xil/Vivado-28368-mini/realtime/vio_0_stub.v:6]
+INFO: [Synth 8-6157] synthesizing module 'vio_0' [D:/chiplab/fpga/nscscc-team/run_vivado/project/loongson.runs/synth_1/.Xil/Vivado-18560-mini/realtime/vio_0_stub.v:6]
+INFO: [Synth 8-6155] done synthesizing module 'vio_0' (0#1) [D:/chiplab/fpga/nscscc-team/run_vivado/project/loongson.runs/synth_1/.Xil/Vivado-18560-mini/realtime/vio_0_stub.v:6]
 INFO: [Synth 8-6157] synthesizing module 'core_top' [D:/chiplab/IP/myCPU/mycpu_top.v:1]
 INFO: [Synth 8-6157] synthesizing module 'mycpu_core' [D:/chiplab/IP/myCPU/mycpu_core.v:2]
 INFO: [Synth 8-6157] synthesizing module 'regfile' [D:/chiplab/IP/myCPU/regfile.v:1]
@@ -132,10 +134,10 @@ INFO: [Synth 8-6157] synthesizing module 'exe1' [D:/chiplab/IP/myCPU/EXE1.v:2]
 	Parameter inbus_width bound to: 237 - type: integer 
 	Parameter outbus_width bound to: 271 - type: integer 
 INFO: [Synth 8-6157] synthesizing module 'alu' [D:/chiplab/IP/myCPU/alu.v:1]
-INFO: [Synth 8-6157] synthesizing module 'divider' [D:/chiplab/fpga/nscscc-team/run_vivado/project/loongson.runs/synth_1/.Xil/Vivado-28368-mini/realtime/divider_stub.v:6]
-INFO: [Synth 8-6155] done synthesizing module 'divider' (0#1) [D:/chiplab/fpga/nscscc-team/run_vivado/project/loongson.runs/synth_1/.Xil/Vivado-28368-mini/realtime/divider_stub.v:6]
-INFO: [Synth 8-6157] synthesizing module 'divider_unsigned' [D:/chiplab/fpga/nscscc-team/run_vivado/project/loongson.runs/synth_1/.Xil/Vivado-28368-mini/realtime/divider_unsigned_stub.v:6]
-INFO: [Synth 8-6155] done synthesizing module 'divider_unsigned' (0#1) [D:/chiplab/fpga/nscscc-team/run_vivado/project/loongson.runs/synth_1/.Xil/Vivado-28368-mini/realtime/divider_unsigned_stub.v:6]
+INFO: [Synth 8-6157] synthesizing module 'divider' [D:/chiplab/fpga/nscscc-team/run_vivado/project/loongson.runs/synth_1/.Xil/Vivado-18560-mini/realtime/divider_stub.v:6]
+INFO: [Synth 8-6155] done synthesizing module 'divider' (0#1) [D:/chiplab/fpga/nscscc-team/run_vivado/project/loongson.runs/synth_1/.Xil/Vivado-18560-mini/realtime/divider_stub.v:6]
+INFO: [Synth 8-6157] synthesizing module 'divider_unsigned' [D:/chiplab/fpga/nscscc-team/run_vivado/project/loongson.runs/synth_1/.Xil/Vivado-18560-mini/realtime/divider_unsigned_stub.v:6]
+INFO: [Synth 8-6155] done synthesizing module 'divider_unsigned' (0#1) [D:/chiplab/fpga/nscscc-team/run_vivado/project/loongson.runs/synth_1/.Xil/Vivado-18560-mini/realtime/divider_unsigned_stub.v:6]
 INFO: [Synth 8-6155] done synthesizing module 'alu' (0#1) [D:/chiplab/IP/myCPU/alu.v:1]
 INFO: [Synth 8-6155] done synthesizing module 'exe1' (0#1) [D:/chiplab/IP/myCPU/EXE1.v:2]
 INFO: [Synth 8-6157] synthesizing module 'exe2' [D:/chiplab/IP/myCPU/EXE2.v:2]
@@ -154,10 +156,10 @@ INFO: [Synth 8-6157] synthesizing module 'bridge_SRAM_AXI' [D:/chiplab/IP/myCPU/
 INFO: [Synth 8-6155] done synthesizing module 'bridge_SRAM_AXI' (0#1) [D:/chiplab/IP/myCPU/bridge_SRAM_AXI.v:1]
 INFO: [Synth 8-6157] synthesizing module 'cache' [D:/chiplab/IP/myCPU/cache.v:3]
 	Parameter code2_0 bound to: 3'b000 
-INFO: [Synth 8-6157] synthesizing module 'tagv_ram' [D:/chiplab/fpga/nscscc-team/run_vivado/project/loongson.runs/synth_1/.Xil/Vivado-28368-mini/realtime/tagv_ram_stub.v:6]
-INFO: [Synth 8-6155] done synthesizing module 'tagv_ram' (0#1) [D:/chiplab/fpga/nscscc-team/run_vivado/project/loongson.runs/synth_1/.Xil/Vivado-28368-mini/realtime/tagv_ram_stub.v:6]
-INFO: [Synth 8-6157] synthesizing module 'data_bank_ram' [D:/chiplab/fpga/nscscc-team/run_vivado/project/loongson.runs/synth_1/.Xil/Vivado-28368-mini/realtime/data_bank_ram_stub.v:6]
-INFO: [Synth 8-6155] done synthesizing module 'data_bank_ram' (0#1) [D:/chiplab/fpga/nscscc-team/run_vivado/project/loongson.runs/synth_1/.Xil/Vivado-28368-mini/realtime/data_bank_ram_stub.v:6]
+INFO: [Synth 8-6157] synthesizing module 'tagv_ram' [D:/chiplab/fpga/nscscc-team/run_vivado/project/loongson.runs/synth_1/.Xil/Vivado-18560-mini/realtime/tagv_ram_stub.v:6]
+INFO: [Synth 8-6155] done synthesizing module 'tagv_ram' (0#1) [D:/chiplab/fpga/nscscc-team/run_vivado/project/loongson.runs/synth_1/.Xil/Vivado-18560-mini/realtime/tagv_ram_stub.v:6]
+INFO: [Synth 8-6157] synthesizing module 'data_bank_ram' [D:/chiplab/fpga/nscscc-team/run_vivado/project/loongson.runs/synth_1/.Xil/Vivado-18560-mini/realtime/data_bank_ram_stub.v:6]
+INFO: [Synth 8-6155] done synthesizing module 'data_bank_ram' (0#1) [D:/chiplab/fpga/nscscc-team/run_vivado/project/loongson.runs/synth_1/.Xil/Vivado-18560-mini/realtime/data_bank_ram_stub.v:6]
 INFO: [Synth 8-226] default block is never used [D:/chiplab/IP/myCPU/cache.v:813]
 INFO: [Synth 8-6155] done synthesizing module 'cache' (0#1) [D:/chiplab/IP/myCPU/cache.v:3]
 INFO: [Synth 8-6157] synthesizing module 'cache__parameterized0' [D:/chiplab/IP/myCPU/cache.v:3]
@@ -178,13 +180,13 @@ INFO: [Synth 8-6157] synthesizing module 'first_one_id' [D:/chiplab/chip/soc_dem
 INFO: [Synth 8-6155] done synthesizing module 'first_one_id' (0#1) [D:/chiplab/chip/soc_demo/nscscc-team/AMBA/axi3_to_axi4_bridge.v:365]
 INFO: [Synth 8-6155] done synthesizing module 'axi3_to_axi4_bridge' (0#1) [D:/chiplab/chip/soc_demo/nscscc-team/AMBA/axi3_to_axi4_bridge.v:1]
 INFO: [Synth 8-6157] synthesizing module 'jtag_axi_wrap' [D:/chiplab/chip/soc_demo/nscscc-team/JTAG_wrap/jtag_axi_wrap.v:1]
-INFO: [Synth 8-6157] synthesizing module 'jtag_axi' [D:/chiplab/fpga/nscscc-team/run_vivado/project/loongson.runs/synth_1/.Xil/Vivado-28368-mini/realtime/jtag_axi_stub.v:6]
-INFO: [Synth 8-6155] done synthesizing module 'jtag_axi' (0#1) [D:/chiplab/fpga/nscscc-team/run_vivado/project/loongson.runs/synth_1/.Xil/Vivado-28368-mini/realtime/jtag_axi_stub.v:6]
+INFO: [Synth 8-6157] synthesizing module 'jtag_axi' [D:/chiplab/fpga/nscscc-team/run_vivado/project/loongson.runs/synth_1/.Xil/Vivado-18560-mini/realtime/jtag_axi_stub.v:6]
+INFO: [Synth 8-6155] done synthesizing module 'jtag_axi' (0#1) [D:/chiplab/fpga/nscscc-team/run_vivado/project/loongson.runs/synth_1/.Xil/Vivado-18560-mini/realtime/jtag_axi_stub.v:6]
 WARNING: [Synth 8-689] width (1) of port connection 'm_axi_awqos' does not match port width (4) of module 'jtag_axi' [D:/chiplab/chip/soc_demo/nscscc-team/JTAG_wrap/jtag_axi_wrap.v:64]
 WARNING: [Synth 8-689] width (1) of port connection 'm_axi_arqos' does not match port width (4) of module 'jtag_axi' [D:/chiplab/chip/soc_demo/nscscc-team/JTAG_wrap/jtag_axi_wrap.v:84]
 INFO: [Synth 8-6155] done synthesizing module 'jtag_axi_wrap' (0#1) [D:/chiplab/chip/soc_demo/nscscc-team/JTAG_wrap/jtag_axi_wrap.v:1]
-INFO: [Synth 8-6157] synthesizing module 'axi_crossbar_2x3' [D:/chiplab/fpga/nscscc-team/run_vivado/project/loongson.runs/synth_1/.Xil/Vivado-28368-mini/realtime/axi_crossbar_2x3_stub.v:6]
-INFO: [Synth 8-6155] done synthesizing module 'axi_crossbar_2x3' (0#1) [D:/chiplab/fpga/nscscc-team/run_vivado/project/loongson.runs/synth_1/.Xil/Vivado-28368-mini/realtime/axi_crossbar_2x3_stub.v:6]
+INFO: [Synth 8-6157] synthesizing module 'axi_crossbar_2x3' [D:/chiplab/fpga/nscscc-team/run_vivado/project/loongson.runs/synth_1/.Xil/Vivado-18560-mini/realtime/axi_crossbar_2x3_stub.v:6]
+INFO: [Synth 8-6155] done synthesizing module 'axi_crossbar_2x3' (0#1) [D:/chiplab/fpga/nscscc-team/run_vivado/project/loongson.runs/synth_1/.Xil/Vivado-18560-mini/realtime/axi_crossbar_2x3_stub.v:6]
 WARNING: [Synth 8-7071] port 'm_axi_awregion' of module 'axi_crossbar_2x3' is unconnected for instance 'u_axi_crossbar_2x3' [D:/chiplab/chip/soc_demo/nscscc-team/soc_top.v:811]
 WARNING: [Synth 8-7071] port 'm_axi_arregion' of module 'axi_crossbar_2x3' is unconnected for instance 'u_axi_crossbar_2x3' [D:/chiplab/chip/soc_demo/nscscc-team/soc_top.v:811]
 WARNING: [Synth 8-7023] instance 'u_axi_crossbar_2x3' of module 'axi_crossbar_2x3' has 78 connections declared, but only 76 given [D:/chiplab/chip/soc_demo/nscscc-team/soc_top.v:811]
@@ -343,18 +345,18 @@ WARNING: [Synth 8-7129] Port awlen[7] in module confreg is either unconnected or
 WARNING: [Synth 8-7129] Port awlen[6] in module confreg is either unconnected or has no load
 INFO: [Common 17-14] Message 'Synth 8-7129' appears 100 times and further instances of the messages will be disabled. Use the Tcl command set_msg_config to change the current settings.
 ---------------------------------------------------------------------------------
-Finished RTL Elaboration : Time (s): cpu = 00:00:19 ; elapsed = 00:00:20 . Memory (MB): peak = 2199.562 ; gain = 1229.117
+Finished RTL Elaboration : Time (s): cpu = 00:00:18 ; elapsed = 00:00:19 . Memory (MB): peak = 2201.070 ; gain = 1230.281
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
 Start Handling Custom Attributes
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
-Finished Handling Custom Attributes : Time (s): cpu = 00:00:20 ; elapsed = 00:00:21 . Memory (MB): peak = 2214.285 ; gain = 1243.840
+Finished Handling Custom Attributes : Time (s): cpu = 00:00:19 ; elapsed = 00:00:20 . Memory (MB): peak = 2215.797 ; gain = 1245.008
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
-Finished RTL Optimization Phase 1 : Time (s): cpu = 00:00:20 ; elapsed = 00:00:21 . Memory (MB): peak = 2214.285 ; gain = 1243.840
+Finished RTL Optimization Phase 1 : Time (s): cpu = 00:00:19 ; elapsed = 00:00:20 . Memory (MB): peak = 2215.797 ; gain = 1245.008
 ---------------------------------------------------------------------------------
-Netlist sorting complete. Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.330 . Memory (MB): peak = 2228.340 ; gain = 0.000
+Netlist sorting complete. Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.337 . Memory (MB): peak = 2229.867 ; gain = 0.000
 INFO: [Project 1-570] Preparing netlist for logic optimization
 
 Processing XDC Constraints
@@ -441,11 +443,11 @@ INFO: [Project 1-236] Implementation specific constraints were found while readi
 Resolution: To avoid this warning, move constraints listed in [.Xil/soc_top_propImpl.xdc] to another XDC file and exclude this new file from synthesis with the used_in_synthesis property (File Properties dialog in GUI) and re-run elaboration/synthesis.
 Completed Processing XDC Constraints
 
-Netlist sorting complete. Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.008 . Memory (MB): peak = 2336.664 ; gain = 0.000
+Netlist sorting complete. Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.008 . Memory (MB): peak = 2338.168 ; gain = 0.000
 INFO: [Project 1-111] Unisim Transformation Summary:
 No Unisim elements were transformed.
 
-Constraint Validation Runtime : Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.145 . Memory (MB): peak = 2336.664 ; gain = 0.000
+Constraint Validation Runtime : Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.155 . Memory (MB): peak = 2338.168 ; gain = 0.000
 WARNING: [Timing 38-316] Clock period '100.000' specified during out-of-context synthesis of instance 'u_axi_crossbar_2x3' at clock pin 'aclk' is different from the actual clock period '10.000', this can lead to different synthesis results.
 WARNING: [Timing 38-316] Clock period '20.000' specified during out-of-context synthesis of instance 'u_cpu/u_Dcache/data_way0_bank0' at clock pin 'clka' is different from the actual clock period '15.714', this can lead to different synthesis results.
 WARNING: [Timing 38-316] Clock period '20.000' specified during out-of-context synthesis of instance 'u_cpu/u_Dcache/data_way0_bank1' at clock pin 'clka' is different from the actual clock period '15.714', this can lead to different synthesis results.
@@ -472,14 +474,14 @@ WARNING: [Timing 38-316] Clock period '1000.000' specified during out-of-context
 INFO: [Designutils 20-5440] No compile time benefit to using incremental synthesis; A full resynthesis will be run
 INFO: [Designutils 20-4379] Flow is switching to default flow due to incremental criteria not met. If you would like to alter this behaviour and have the flow terminate instead, please set the following parameter config_implementation {autoIncr.Synth.RejectBehavior Terminate}
 ---------------------------------------------------------------------------------
-Finished Constraint Validation : Time (s): cpu = 00:00:32 ; elapsed = 00:00:33 . Memory (MB): peak = 2336.664 ; gain = 1366.219
+Finished Constraint Validation : Time (s): cpu = 00:00:31 ; elapsed = 00:00:33 . Memory (MB): peak = 2338.168 ; gain = 1367.379
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
 Start Loading Part and Timing Information
 ---------------------------------------------------------------------------------
 Loading part: xc7a200tfbg676-2
 ---------------------------------------------------------------------------------
-Finished Loading Part and Timing Information : Time (s): cpu = 00:00:32 ; elapsed = 00:00:33 . Memory (MB): peak = 2336.664 ; gain = 1366.219
+Finished Loading Part and Timing Information : Time (s): cpu = 00:00:31 ; elapsed = 00:00:33 . Memory (MB): peak = 2338.168 ; gain = 1367.379
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
 Start Applying 'set_property' XDC Constraints
@@ -604,7 +606,7 @@ Applied set_property KEEP_HIERARCHY = SOFT for u_cpu/u_Dcache/data_way1_bank3. (
 Applied set_property KEEP_HIERARCHY = SOFT for u_cpu/u_mycpu_core/u_exe1/u_alu/u_divider. (constraint file  auto generated constraint).
 Applied set_property KEEP_HIERARCHY = SOFT for u_cpu/u_mycpu_core/u_exe1/u_alu/u_divideru. (constraint file  auto generated constraint).
 ---------------------------------------------------------------------------------
-Finished applying 'set_property' XDC Constraints : Time (s): cpu = 00:00:32 ; elapsed = 00:00:34 . Memory (MB): peak = 2336.664 ; gain = 1366.219
+Finished applying 'set_property' XDC Constraints : Time (s): cpu = 00:00:32 ; elapsed = 00:00:34 . Memory (MB): peak = 2338.168 ; gain = 1367.379
 ---------------------------------------------------------------------------------
 INFO: [Synth 8-802] inferred FSM for state register 'main_state_reg' in module 'cache'
 INFO: [Synth 8-802] inferred FSM for state register 'main_state_reg' in module 'cache__parameterized0'
@@ -729,7 +731,7 @@ INFO: [Synth 8-3354] encoded FSM with state register 'tstate_reg' using encoding
 ---------------------------------------------------------------------------------------------------
 INFO: [Synth 8-3354] encoded FSM with state register 'rstate_reg' using encoding 'one-hot' in module 'uart_receiver'
 ---------------------------------------------------------------------------------
-Finished RTL Optimization Phase 2 : Time (s): cpu = 00:01:04 ; elapsed = 00:01:09 . Memory (MB): peak = 2336.664 ; gain = 1366.219
+Finished RTL Optimization Phase 2 : Time (s): cpu = 00:01:04 ; elapsed = 00:01:12 . Memory (MB): peak = 2338.168 ; gain = 1367.379
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
 Start RTL Component Statistics 
@@ -775,7 +777,7 @@ Detailed RTL Component Info :
 	               57 Bit    Registers := 4     
 	               39 Bit    Registers := 2     
 	               37 Bit    Registers := 2     
-	               32 Bit    Registers := 162   
+	               32 Bit    Registers := 164   
 	               24 Bit    Registers := 1     
 	               23 Bit    Registers := 1     
 	               20 Bit    Registers := 43    
@@ -793,7 +795,7 @@ Detailed RTL Component Info :
 	                4 Bit    Registers := 137   
 	                3 Bit    Registers := 81    
 	                2 Bit    Registers := 144   
-	                1 Bit    Registers := 1915  
+	                1 Bit    Registers := 1918  
 +---Multipliers : 
 	               3x32  Multipliers := 8     
 +---RAMs : 
@@ -867,7 +869,7 @@ Detailed RTL Component Info :
 	   2 Input    2 Bit        Muxes := 70    
 	   3 Input    2 Bit        Muxes := 2     
 	   4 Input    2 Bit        Muxes := 9     
-	   2 Input    1 Bit        Muxes := 9737  
+	   2 Input    1 Bit        Muxes := 9739  
 	   5 Input    1 Bit        Muxes := 1598  
 	   4 Input    1 Bit        Muxes := 47    
 	   3 Input    1 Bit        Muxes := 1     
@@ -902,7 +904,7 @@ DSP Report: Generating DSP u_alu/mul_result, operation Mode is: (PCIN>>17)+A*B.
 DSP Report: operator u_alu/mul_result is absorbed into DSP u_alu/mul_result.
 DSP Report: operator u_alu/mul_result is absorbed into DSP u_alu/mul_result.
 ---------------------------------------------------------------------------------
-Finished Cross Boundary and Area Optimization : Time (s): cpu = 00:05:12 ; elapsed = 00:05:44 . Memory (MB): peak = 2336.664 ; gain = 1366.219
+Finished Cross Boundary and Area Optimization : Time (s): cpu = 00:02:26 ; elapsed = 00:02:42 . Memory (MB): peak = 2338.168 ; gain = 1367.379
 ---------------------------------------------------------------------------------
  Sort Area is core_top__GB0 u_alu/mul_result_0 : 0 0 : 2701 5008 : Used 1 time 0
  Sort Area is core_top__GB0 u_alu/mul_result_0 : 0 1 : 2307 5008 : Used 1 time 0
@@ -953,13 +955,13 @@ Finished ROM, RAM, DSP, Shift Register and Retiming Reporting
 Start Applying XDC Timing Constraints
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
-Finished Applying XDC Timing Constraints : Time (s): cpu = 00:05:34 ; elapsed = 00:06:07 . Memory (MB): peak = 2336.664 ; gain = 1366.219
+Finished Applying XDC Timing Constraints : Time (s): cpu = 00:02:32 ; elapsed = 00:02:49 . Memory (MB): peak = 2338.168 ; gain = 1367.379
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
 Start Timing Optimization
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
-Finished Timing Optimization : Time (s): cpu = 00:05:43 ; elapsed = 00:06:17 . Memory (MB): peak = 2336.664 ; gain = 1366.219
+Finished Timing Optimization : Time (s): cpu = 00:02:34 ; elapsed = 00:02:51 . Memory (MB): peak = 2338.168 ; gain = 1367.379
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
 Start ROM, RAM, DSP, Shift Register and Retiming Reporting
@@ -993,7 +995,7 @@ Finished ROM, RAM, DSP, Shift Register and Retiming Reporting
 Start Technology Mapping
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
-Finished Technology Mapping : Time (s): cpu = 00:06:12 ; elapsed = 00:06:49 . Memory (MB): peak = 2336.664 ; gain = 1366.219
+Finished Technology Mapping : Time (s): cpu = 00:02:42 ; elapsed = 00:02:59 . Memory (MB): peak = 2338.168 ; gain = 1367.379
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
 Start IO Insertion
@@ -1011,37 +1013,37 @@ Start Final Netlist Cleanup
 Finished Final Netlist Cleanup
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
-Finished IO Insertion : Time (s): cpu = 00:06:27 ; elapsed = 00:07:05 . Memory (MB): peak = 2336.664 ; gain = 1366.219
+Finished IO Insertion : Time (s): cpu = 00:02:46 ; elapsed = 00:03:04 . Memory (MB): peak = 2338.168 ; gain = 1367.379
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
 Start Renaming Generated Instances
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
-Finished Renaming Generated Instances : Time (s): cpu = 00:06:27 ; elapsed = 00:07:05 . Memory (MB): peak = 2336.664 ; gain = 1366.219
+Finished Renaming Generated Instances : Time (s): cpu = 00:02:46 ; elapsed = 00:03:04 . Memory (MB): peak = 2338.168 ; gain = 1367.379
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
 Start Rebuilding User Hierarchy
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
-Finished Rebuilding User Hierarchy : Time (s): cpu = 00:06:30 ; elapsed = 00:07:09 . Memory (MB): peak = 2336.664 ; gain = 1366.219
+Finished Rebuilding User Hierarchy : Time (s): cpu = 00:02:47 ; elapsed = 00:03:05 . Memory (MB): peak = 2338.168 ; gain = 1367.379
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
 Start Renaming Generated Ports
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
-Finished Renaming Generated Ports : Time (s): cpu = 00:06:30 ; elapsed = 00:07:09 . Memory (MB): peak = 2336.664 ; gain = 1366.219
+Finished Renaming Generated Ports : Time (s): cpu = 00:02:47 ; elapsed = 00:03:05 . Memory (MB): peak = 2338.168 ; gain = 1367.379
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
 Start Handling Custom Attributes
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
-Finished Handling Custom Attributes : Time (s): cpu = 00:06:31 ; elapsed = 00:07:10 . Memory (MB): peak = 2336.664 ; gain = 1366.219
+Finished Handling Custom Attributes : Time (s): cpu = 00:02:47 ; elapsed = 00:03:05 . Memory (MB): peak = 2338.168 ; gain = 1367.379
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
 Start Renaming Generated Nets
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
-Finished Renaming Generated Nets : Time (s): cpu = 00:06:31 ; elapsed = 00:07:10 . Memory (MB): peak = 2336.664 ; gain = 1366.219
+Finished Renaming Generated Nets : Time (s): cpu = 00:02:47 ; elapsed = 00:03:05 . Memory (MB): peak = 2338.168 ; gain = 1367.379
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
 Start Writing Synthesis Report
@@ -1089,38 +1091,38 @@ Report Cell Usage:
 |28    |BUFG             |     1|
 |29    |CARRY4           |   437|
 |30    |DSP48E1          |     4|
-|33    |LUT1             |   148|
-|34    |LUT2             |  1375|
-|35    |LUT3             |  1070|
-|36    |LUT4             |  1463|
-|37    |LUT5             |  3577|
-|38    |LUT6             |  9374|
-|39    |MUXF7            |   642|
-|40    |MUXF8            |   227|
+|33    |LUT1             |   149|
+|34    |LUT2             |  1369|
+|35    |LUT3             |  1101|
+|36    |LUT4             |  1473|
+|37    |LUT5             |  3588|
+|38    |LUT6             |  9344|
+|39    |MUXF7            |   640|
+|40    |MUXF8            |   226|
 |41    |RAM32M           |    68|
 |42    |RAM32X1D         |     8|
 |43    |RAM64M           |    20|
 |44    |FDCE             |  3047|
 |45    |FDPE             |     6|
-|46    |FDRE             |  8508|
+|46    |FDRE             |  8581|
 |47    |FDSE             |   168|
 |48    |IBUF             |    16|
 |49    |IOBUF            |     2|
 |50    |OBUF             |    39|
 +------+-----------------+------+
 ---------------------------------------------------------------------------------
-Finished Writing Synthesis Report : Time (s): cpu = 00:06:31 ; elapsed = 00:07:10 . Memory (MB): peak = 2336.664 ; gain = 1366.219
+Finished Writing Synthesis Report : Time (s): cpu = 00:02:47 ; elapsed = 00:03:05 . Memory (MB): peak = 2338.168 ; gain = 1367.379
 ---------------------------------------------------------------------------------
 Synthesis finished with 0 errors, 0 critical warnings and 5 warnings.
-Synthesis Optimization Runtime : Time (s): cpu = 00:06:06 ; elapsed = 00:07:07 . Memory (MB): peak = 2336.664 ; gain = 1243.840
-Synthesis Optimization Complete : Time (s): cpu = 00:06:32 ; elapsed = 00:07:12 . Memory (MB): peak = 2336.664 ; gain = 1366.219
+Synthesis Optimization Runtime : Time (s): cpu = 00:02:23 ; elapsed = 00:03:00 . Memory (MB): peak = 2338.168 ; gain = 1245.008
+Synthesis Optimization Complete : Time (s): cpu = 00:02:48 ; elapsed = 00:03:06 . Memory (MB): peak = 2338.168 ; gain = 1367.379
 INFO: [Project 1-571] Translating synthesized netlist
-Netlist sorting complete. Time (s): cpu = 00:00:01 ; elapsed = 00:00:00.645 . Memory (MB): peak = 2336.664 ; gain = 0.000
-INFO: [Netlist 29-17] Analyzing 1408 Unisim elements for replacement
+Netlist sorting complete. Time (s): cpu = 00:00:01 ; elapsed = 00:00:00.182 . Memory (MB): peak = 2338.168 ; gain = 0.000
+INFO: [Netlist 29-17] Analyzing 1405 Unisim elements for replacement
 INFO: [Netlist 29-28] Unisim Transformation completed in 0 CPU seconds
 INFO: [Project 1-570] Preparing netlist for logic optimization
 INFO: [Opt 31-138] Pushed 0 inverter(s) to 0 load pin(s).
-Netlist sorting complete. Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.026 . Memory (MB): peak = 2336.664 ; gain = 0.000
+Netlist sorting complete. Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.004 . Memory (MB): peak = 2338.168 ; gain = 0.000
 INFO: [Project 1-111] Unisim Transformation Summary:
   A total of 98 instances were transformed.
   IOBUF => IOBUF (IBUF, OBUFT): 2 instances
@@ -1128,13 +1130,13 @@ INFO: [Project 1-111] Unisim Transformation Summary:
   RAM32X1D => RAM32X1D (RAMD32(x2)): 8 instances
   RAM64M => RAM64M (RAMD64E(x4)): 20 instances
 
-Synth Design complete | Checksum: e59481b2
+Synth Design complete | Checksum: c3f7c75e
 INFO: [Common 17-83] Releasing license: Synthesis
-202 Infos, 162 Warnings, 6 Critical Warnings and 0 Errors encountered.
+203 Infos, 163 Warnings, 6 Critical Warnings and 0 Errors encountered.
 synth_design completed successfully
-synth_design: Time (s): cpu = 00:06:46 ; elapsed = 00:07:30 . Memory (MB): peak = 2336.664 ; gain = 1816.289
+synth_design: Time (s): cpu = 00:02:53 ; elapsed = 00:03:12 . Memory (MB): peak = 2338.168 ; gain = 1817.699
 INFO: [runtcl-6] Synthesis results are not added to the cache due to CRITICAL_WARNING
-Write ShapeDB Complete: Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.059 . Memory (MB): peak = 2336.664 ; gain = 0.000
+Write ShapeDB Complete: Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.015 . Memory (MB): peak = 2338.168 ; gain = 0.000
 INFO: [Common 17-1381] The checkpoint 'D:/chiplab/fpga/nscscc-team/run_vivado/project/loongson.runs/synth_1/soc_top.dcp' has been generated.
 INFO: [runtcl-4] Executing : report_utilization -file soc_top_utilization_synth.rpt -pb soc_top_utilization_synth.pb
-INFO: [Common 17-206] Exiting Vivado at Mon Aug  3 22:01:47 2026...
+INFO: [Common 17-206] Exiting Vivado at Mon Aug  3 22:45:14 2026...
