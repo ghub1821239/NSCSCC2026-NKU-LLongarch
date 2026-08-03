@@ -479,7 +479,8 @@ bht u_bht(
     // update port
     .update_valid   (bht_update_valid),//update BHT
     .update_pc      (update_pc   ),//branch pc
-    .update_taken   (update_taken)//real taken
+    .update_taken   (update_taken),//real taken
+    .update_cancel  (need_cancel | cacop_need_cancel)//如果取消就不同步更新
 );
 
 //ras
