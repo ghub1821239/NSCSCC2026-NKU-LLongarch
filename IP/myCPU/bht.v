@@ -18,19 +18,14 @@ reg [31:0] update_pc_r;
 reg        update_taken_r;
 always @(posedge clk) begin
     if (!resetn) begin
-        update_valid_r  <= 1'b0;
-        update_pc_r     <= 32'b0;
+        update_valid_r <= 1'b0;
+        update_pc_r    <= 32'b0;
         update_taken_r <= 1'b0;
     end
-    else if (update_cancel) begin
-        update_valid_r <= 1'b0;
-    end
     else begin
-        update_valid_r <= update_valid;
-        if (update_valid) begin
-            update_pc_r     <= update_pc;
-            update_taken_r <= update_taken;
-        end
+        update_valid_r <= update_cancel ? 1'b0 : update_valid;
+        update_pc_r    <= update_pc;
+        update_taken_r <= update_taken;
     end
 end
 

@@ -1,5 +1,5 @@
 //功能测试与�?�能测试二�?�一
-// `define RUN_FUNC_TEST
+//`define RUN_FUNC_TEST
 `define RUN_PERF_TEST
 
 //性能测试中，选择是否打开内存的延时�?�增机制，开启宏后无额外延迟

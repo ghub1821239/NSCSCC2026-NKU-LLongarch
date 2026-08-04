@@ -2,7 +2,7 @@
 -- Copyright 2022-2023 Advanced Micro Devices, Inc. All Rights Reserved.
 -- --------------------------------------------------------------------------------
 -- Tool Version: Vivado v.2023.2_AR000036317 (win64) Build 4029153 Fri Oct 13 20:14:34 MDT 2023
--- Date        : Mon Aug  3 19:53:52 2026
+-- Date        : Tue Aug  4 16:59:16 2026
 -- Host        : mini running 64-bit major release  (build 9200)
 -- Command     : write_vhdl -force -mode synth_stub
 --               d:/chiplab/chip/soc_demo/nscscc-team/xilinx_ip/clk_pll/gen/clk_pll_stub.vhdl

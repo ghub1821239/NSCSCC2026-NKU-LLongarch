@@ -188,12 +188,6 @@ wire [31:0] alu_src2;
 
 wire [4:0]  cache_code;
 
-wire        real_taken;
-wire [31:0] real_target;
-wire        pred_taken;
-wire [31:0] pred_target;
-wire        redirect;
-
 //------------------------{Decode match}begin-------------------------//
 assign op_31_26  = inst[31:26];
 assign op_25_22  = inst[25:22];
@@ -466,27 +460,50 @@ localparam TYPE_COND = 2'b00;//2'b00  COND   条件分支 beq/bne/blt/bge/bltu/bgeu
 localparam TYPE_JUMP = 2'b01;//2'b01  JUMP   无条件直接跳 b
 localparam TYPE_CALL = 2'b10;//2'b10  CALL   bl，或 jirl 且 rd!=0
 localparam TYPE_RET  = 2'b11;//2'b11  RET    jirl 且 rd==0
-wire is_cond ;
-wire is_jirl_;
-wire is_jump ;
-wire is_call ;
-wire is_ret  ;
-wire is_cf   ;
-wire pred_ok ;
-wire is_indirect_jump;
 
-assign is_cond = inst_beq|inst_bne|inst_blt|inst_bge|inst_bltu|inst_bgeu;
-assign is_jirl_call = inst_jirl && (rd == 5'd1);
-assign is_jump = inst_b | is_indirect_jump;
-assign is_call = inst_bl | (inst_jirl & (rd == 5'b1));
-assign is_ret  = inst_jirl & (rd == 5'd0) & (rj == 5'b1) & (i16 == 16'b0);
-assign is_cf   = is_cond | is_jump | is_call | is_ret;//要判定
-assign pred_ok = is_cf & (real_taken == pred_taken) &
-               (!real_taken || (real_target == pred_target));
-// 其他 jirl 是间接跳转，包括跳转表。
-assign is_indirect_jump = inst_jirl
-                        && !is_jirl_call
-                        && !is_ret;
+wire        real_taken;
+wire [31:0] real_target;
+wire        pred_taken;
+wire [31:0] pred_target;
+wire        redirect;
+wire [31:0] direct_target;
+
+    //---------------{跳转分类}begin---------------//
+    wire is_cond ;
+    wire is_jirl_call;// jirl $rd==$r1 时大概率为函数call
+    wire is_jump ;// b 或 jirl 且 rd!=0
+    wire is_call ;
+    wire is_ret  ;
+    wire is_indirect_jump;
+    assign is_cond = inst_beq | inst_bne | inst_blt | inst_bge | inst_bltu | inst_bgeu;
+    assign is_jirl_call = inst_jirl && (rd == 5'd1);
+    assign is_jump = inst_b | is_indirect_jump;
+    assign is_call = inst_bl | is_jirl_call;
+    assign is_ret  = inst_jirl & (rd == 5'd0) & (rj == 5'b1) & (i16 == 16'b0);
+    assign is_indirect_jump = inst_jirl && !is_jirl_call && !is_ret;//除了call和return的jirl都是间接跳转
+    //---------------{跳转分类}end---------------//
+
+    //---------------{跳转和表对比 有效 & 匹配}begin---------------//
+    wire pred_valid;// 表示是上面几种
+    wire pred_ok ;
+    /*
+        之前这种会是 dcache->rj->rj+imm->对比real->btb
+        可以拆分成
+            dache->rj
+                        ->对比real-imm & rj ->btb
+            real-imm
+        因此新增jirl_pred_rj target_match
+        assign pred_ok = pred_valid & (real_taken == pred_taken) & (!real_taken || (real_target == pred_target));//预测一致
+    */
+    wire [31:0] jirl_pred_rj;
+    wire        target_match;
+    assign jirl_pred_rj = pred_target - jirl_offs;
+    assign target_match = inst_jirl ? (rj_value == jirl_pred_rj) : (direct_target == pred_target);
+    assign pred_valid   = is_cond | is_jump | is_call | is_ret;//只需要记这几种的br
+    assign pred_ok = pred_valid & (real_taken == pred_taken) & (!real_taken || target_match);//预测一致
+    //---------------{跳转和表对比 有效 & 匹配}begin---------------//
+
+
 assign pred_taken = (ras_query_hit && (query_type == TYPE_RET)) ||
                     (btb_query_hit && (query_type == TYPE_CALL || query_type == TYPE_JUMP)) ||
                     (query_taken && btb_query_hit && (query_type == TYPE_COND));
@@ -497,13 +514,13 @@ assign pred_target = (ras_query_hit && (query_type == TYPE_RET)) ? ras_query_tar
                      (pc + 32'd4);
 assign redirect = ID_valid & ID_ready_go & ~need_cancel & ID_allow_in 
                  & ~ex_ADEF & (
-                 (is_cf & (real_taken != pred_taken)) |
-                 (is_cf & real_taken & (real_target != pred_target)) |
-                 (~is_cf & pred_taken)
+                    (pred_valid & (real_taken != pred_taken)) |
+                    (pred_valid & real_taken & ~target_match) |
+                    (~pred_valid & pred_taken)
                  );
 assign br_afterpred_taken = redirect;
 assign br_afterpred_target = real_taken ? real_target : pc + 4;
-assign update_valid =ID_valid & ID_ready_go & ~need_cancel & ID_allow_in & is_cf & ~ex_ADEF & ~pred_ok;
+assign update_valid =ID_valid & ID_ready_go & ~need_cancel & ID_allow_in & pred_valid & ~ex_ADEF & ~pred_ok;
 assign bht_update_valid = ID_valid && ID_ready_go &&
                           !need_cancel && ID_allow_in &&
                           is_cond && !ex_ADEF; 
@@ -518,6 +535,19 @@ assign update_taken = real_taken;
 assign push_valid   = ID_valid & ID_ready_go & ~need_cancel & ID_allow_in  & is_call & ~ex_ADEF;//真实call 要 push
 assign push_target  = pc + 32'd4;
 assign pop_valid    = is_ret & ID_valid & ID_ready_go & ~need_cancel & ID_allow_in  & ~ex_ADEF;//真实return 要 pop
+//assign real_target = inst_jirl ? rf_rdata1 + jirl_offs : pc + br_offs;
+//写这种只有inst_jirl来了之后才会计算pc+br_offs
+assign direct_target = pc + br_offs;
+assign real_target = inst_jirl ? rf_rdata1 + jirl_offs : direct_target;
+assign real_taken  = (
+                    inst_jirl | inst_b | inst_bl | 
+                    (inst_beq & (rj_value == rkd_value)) | 
+                    (inst_bne & (rj_value != rkd_value)) |
+                    (inst_blt & ($signed(rj_value) <  $signed(rkd_value))) |
+                    (inst_bge & ($signed(rj_value) >= $signed(rkd_value))) |
+                    (inst_bltu & ($unsigned(rj_value) <  $unsigned(rkd_value))) |
+                    (inst_bgeu & ($unsigned(rj_value) >= $unsigned(rkd_value)))
+                    ) & ID_ready_go & ID_valid;
 //-------------------------{branch prediction updata}end---------------//
 
 //------------------------{bus}begin-------------------------//
@@ -531,15 +561,21 @@ assign ID_EXE1_bus={
             ex_tlb_reload0,ex_tlb_preif_unvalid,ex_tlb_plv0,
             cache_code,inst_cacop
         };
-assign real_target = inst_jirl ? rf_rdata1 + jirl_offs : pc + br_offs;
-assign real_taken  = (
-                    inst_jirl | inst_b | inst_bl | 
-                    (inst_beq & (rj_value == rkd_value)) | 
-                    (inst_bne & (rj_value != rkd_value)) |
-                    (inst_blt & ($signed(rj_value) <  $signed(rkd_value))) |
-                    (inst_bge & ($signed(rj_value) >= $signed(rkd_value))) |
-                    (inst_bltu & ($unsigned(rj_value) <  $unsigned(rkd_value))) |
-                    (inst_bgeu & ($unsigned(rj_value) >= $unsigned(rkd_value)))
-                    ) & ID_ready_go & ID_valid;
 //------------------------{bus}end-------------------------//
+
+//------------------------{ready_go}begin-------------------------//
+assign ID_ready_go= need_stall ? 1'b0 : 1'b1;
+
+always @(posedge clk) begin
+    if(!resetn)begin
+        ID_valid<=1'b0;
+    end
+    else if(need_cancel)begin
+        ID_valid<=1'b0;
+    end
+    else if(ID_allow_in)begin
+        ID_valid<= redirect ? 1'b0 : IF_ID_valid;
+    end
+end
+//------------------------{ready_go}end-------------------------//
 endmodule
