@@ -70,6 +70,8 @@ proc create_report { reportName command } {
   }
 }
 OPTRACE "synth_1" START { ROLLUP_AUTO }
+set_param chipscope.maxJobs 3
+set_param xicom.use_bs_reader 1
 OPTRACE "Creating in-memory project" START { }
 create_project -in_memory -part xc7a200tfbg676-2
 
@@ -124,6 +126,7 @@ read_verilog -library xil_defaultlib {
   D:/chiplab/IP/myCPU/decoder_6_64.v
   D:/chiplab/IP/myCPU/fetch.v
   D:/chiplab/chip/soc_demo/nscscc-team/ram_wrap/fpga_sram_dp.v
+  D:/chiplab/IP/myCPU/icache.v
   D:/chiplab/chip/soc_demo/nscscc-team/JTAG_wrap/jtag_axi_wrap.v
   D:/chiplab/IP/myCPU/mycpu_core.v
   D:/chiplab/IP/myCPU/mycpu_top.v

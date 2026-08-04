@@ -25,7 +25,7 @@ module fetch #(
     //req_to_dataok_trigger
     input  wire        req_to_dataok_trigger
 );
-//------------------------{»º´æinst}begin-------------------------//
+//------------------------{ï¿½ï¿½ï¿½ï¿½inst}begin-------------------------//
 reg [31:0] inst_reg;
 reg        inst_reg_valid;
 always @ (posedge clk)begin
@@ -36,32 +36,37 @@ always @ (posedge clk)begin
     else if(need_cancel)begin
         inst_reg_valid <= 1'b0;
     end
-    else if(inst_sram_data_ok & ~inst_resp_discard)begin
+   /* else if(inst_sram_data_ok & ~inst_resp_discard)begin
         inst_reg <= inst_sram_rdata;
         inst_reg_valid <= 1'b1;
     end
-    // Í¬Ê±µÄÄÇÃ´Ò²µÃÈ¡Ïûµô£¬ÒòÎªÒÑ¾­ÊÕµ½ÁËdiscard
+    // Í¬Ê±ï¿½ï¿½ï¿½ï¿½Ã´Ò²ï¿½ï¿½È¡ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Îªï¿½Ñ¾ï¿½ï¿½Õµï¿½ï¿½ï¿½discard
     else if(inst_sram_data_ok & inst_resp_discard)begin
         inst_reg_valid <= 1'b0;
+    end*/
+    else if (inst_resp_valid & req_to_dataok_trigger & ~deliver_now) begin
+        // æˆ–ï¼š~ID_allow_in æ—¶é”å­˜
+        inst_reg       <= inst_sram_rdata;
+        inst_reg_valid <= 1'b1;
     end
     else if(ID_allow_in | preIF2_IF_valid)begin
         inst_reg_valid <= 1'b0;
     end
 end
-//------------------------{»º´æinst}end-------------------------//
+//------------------------{ï¿½ï¿½ï¿½ï¿½inst}end-------------------------//
 
 //------------------------{bus}begin-------------------------//
 wire [31:0] pc;
 wire        ex_ADEF;
-wire        ex_tlb_reload0;//tlbÖØÌîÀýÍâ
-wire        ex_tlb_preif_unvalid;//tlbÖÐÈ¡Ö¸Ò³ÎÞÐ§
-wire        ex_tlb_plv0;//tlbÖÐÒ³ÌØÈ¨²»ºÏ¹æ
-wire        btb_query_hit;//validÇÒtag
+wire        ex_tlb_reload0;//tlbï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+wire        ex_tlb_preif_unvalid;//tlbï¿½ï¿½È¡Ö¸Ò³ï¿½ï¿½Ð§
+wire        ex_tlb_plv0;//tlbï¿½ï¿½Ò³ï¿½ï¿½È¨ï¿½ï¿½ï¿½Ï¹ï¿½
+wire        btb_query_hit;//validï¿½ï¿½tag
 wire [31:0] btb_query_target;        
-wire        ras_query_hit;//validÇÒtag
+wire        ras_query_hit;//validï¿½ï¿½tag
 wire [31:0] ras_query_target;        
 wire [ 1:0] query_type;              
-wire        query_taken;//Ô¤²âÊÇ·ñÌø×ª 
+wire        query_taken;//Ô¤ï¿½ï¿½ï¿½Ç·ï¿½ï¿½ï¿½×ª 
         
 reg [inbus_width-1:0] bus;
 always @(posedge clk)begin
@@ -82,6 +87,10 @@ assign IF_ID_bus=inst_reg_valid ? {pc,inst_reg,ex_ADEF,ex_tlb_reload0,ex_tlb_pre
 
 //------------------------{ready_go}begin-------------------------//
 wire inst_resp_valid = inst_sram_data_ok & ~inst_resp_discard;
+// æœ¬æ‹è‹¥ IF èƒ½æŠŠå½“å‰æŒ‡ä»¤äº¤ç»™ IDï¼Œåˆ™ä¼˜å…ˆèµ°æ—è·¯ rdataï¼Œä¸å¿…ä¾èµ– reg å½“ ready
+wire deliver_now = IF_valid & inst_resp_valid & req_to_dataok_trigger & ID_allow_in
+                 & ~need_stall & ~need_cancel;
+
 assign IF_ready_go = (need_stall | need_cancel) ? 1'b0 :
                      (inst_resp_valid & req_to_dataok_trigger) | inst_reg_valid;
 always @(posedge clk) begin
