@@ -28,16 +28,11 @@ always @(posedge clk) begin
         update_target_r <= 32'b0;
         update_type_r   <= 2'b0;
     end
-    else if (update_cancel) begin
-        update_valid_r <= 1'b0;
-    end
     else begin
-        update_valid_r <= update_valid;
-        if (update_valid) begin
-            update_pc_r     <= update_pc;
-            update_target_r <= update_target;
-            update_type_r   <= update_type;
-        end
+        update_valid_r  <= update_cancel ? 1'b0 : update_valid;
+        update_pc_r     <= update_pc;
+        update_target_r <= update_target;
+        update_type_r   <= update_type;
     end
 end
 

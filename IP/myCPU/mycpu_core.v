@@ -389,11 +389,11 @@ wire        mem_can_not_front_push;
 wire         wb_can_not_front_push;
 assign front_push_rdata1 = rf_raddr1 == 5'b0 ? 32'b0 : (exe2_front_addr == rf_raddr1 & EXE2_valid & ~exe2_can_not_front_push) ? exe2_front_data :
                                                        (mem_front_addr == rf_raddr1 & MEM_valid & ~mem_can_not_front_push) ? mem_front_data :
-                                                       (wb_front_addr  == rf_raddr1 & WB_valid  & ~ wb_can_not_front_push) ? wb_front_data  :
+                                                       (wb_front_addr  == rf_raddr1 & WB_valid & !flush & ~ wb_can_not_front_push) ? wb_front_data  :
                                                        rf_rdata1;
 assign front_push_rdata2 = rf_raddr2 == 5'b0 ? 32'b0 : (exe2_front_addr == rf_raddr2 & EXE2_valid & ~exe2_can_not_front_push) ? exe2_front_data :
                                                        (mem_front_addr == rf_raddr2 & MEM_valid & ~mem_can_not_front_push) ? mem_front_data :
-                                                       (wb_front_addr  == rf_raddr2 & WB_valid  & ~ wb_can_not_front_push) ? wb_front_data  :
+                                                       (wb_front_addr  == rf_raddr2 & WB_valid & !flush & ~ wb_can_not_front_push) ? wb_front_data  :
                                                        rf_rdata2;                        
 //------------------------{front_push}end-------------------------//
 
@@ -522,21 +522,17 @@ assign need_cancel = flush;
 
 //cacop cancel
 wire [31:0] cacop_pc;
-
+//[NOTICE:—ßª·“ª’–]CE≤ª»Á∑≈µΩ <= —°‘Ò,WNSø…ƒ‹∫√“ªµ„
 always @(posedge clk) begin
     if (!resetn) begin
         br_afterpred_taken_r  <= 1'b0;
         br_afterpred_target_r <= 32'b0;
     end
-    else if (need_cancel || cacop_need_cancel) begin
-        // WBÔøΩÔøΩÔøΩÏ≥£ÔøΩÔøΩERTNÔøΩÔøΩCSRÔøΩ»∏ÔøΩÔøΩÔøΩÔøΩ¬ºÔøΩÔøΩÔøΩÔøΩÔøΩ
-        br_afterpred_taken_r <= 1'b0;
-    end
     else begin
-        br_afterpred_taken_r <= br_afterpred_taken;
-        // ÔøΩÔøΩÔøΩ‘§ÔøΩÔøΩÔøΩÔøΩÔøΩÔøΩÔøΩ“™ÔøΩÔøΩ◊™ÔøΩŸ∏ÔøΩÔøΩÔøΩtarget
-        if (br_afterpred_taken)
-            br_afterpred_target_r <= br_afterpred_target;
+        br_afterpred_taken_r <= (need_cancel || cacop_need_cancel) ? 1'b0
+                                : br_afterpred_taken;
+
+        br_afterpred_target_r <= br_afterpred_target;
     end
 end
 

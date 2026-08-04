@@ -21,8 +21,8 @@ module pre_IF2 #(
     input  wire        need_stall,
     //handshake
     output wire        inst_sram_req,
-    output wire        inst_sram_wr, // 1±íÊ¾ÐèÒªwrite 0±íÊ¾ÐèÒªread
-    output wire [ 3:0] inst_sram_wstrb,// wstrbÒ²¾ÍÊÇ±íÊ¾ÐèÒªÐ´µÄÎ»ÖÃ 0 1 2 ·Ö±ð¶ÔÓ¦b h w 
+    output wire        inst_sram_wr, // 1ï¿½ï¿½Ê¾ï¿½ï¿½Òªwrite 0ï¿½ï¿½Ê¾ï¿½ï¿½Òªread
+    output wire [ 3:0] inst_sram_wstrb,// wstrbÒ²ï¿½ï¿½ï¿½Ç±ï¿½Ê¾ï¿½ï¿½ÒªÐ´ï¿½ï¿½Î»ï¿½ï¿½ 0 1 2 ï¿½Ö±ï¿½ï¿½Ó¦b h w 
     output wire [ 1:0] inst_sram_size,
     output wire [31:0] inst_sram_addr_without_cacop,
     output wire [31:0] inst_sram_wdata,
@@ -31,33 +31,33 @@ module pre_IF2 #(
     input  wire        inst_sram_data_ok,
     //req&addr -> 1 dataok->0
     output wire        req_to_dataok_trigger,
-    // µ±Ç°·µ»ØÊôÓÚÒÑ±»Ìø×ª/Òì³£È¡ÏûµÄÈ¡Ö¸ÇëÇó
+    // ï¿½ï¿½Ç°ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ñ±ï¿½ï¿½ï¿½×ª/ï¿½ì³£È¡ï¿½ï¿½ï¿½ï¿½È¡Ö¸ï¿½ï¿½ï¿½ï¿½
     output wire        inst_resp_discard,
     //CRMD PG DA
     input  wire        csr_CRMD_DA,
     input  wire        csr_CRMD_PG,
-    //»¹ÓÐs0_matÉÏÃæÒÑ¾­¶¨Òå¹ýÁË    // tlbÒ³±íÓ³Éä
+    //ï¿½ï¿½ï¿½ï¿½s0_matï¿½ï¿½ï¿½ï¿½ï¿½Ñ¾ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½    // tlbÒ³ï¿½ï¿½Ó³ï¿½ï¿½
     output wire   [1:0] inst_mat,
     output wire         inst_wr
 );
 //------------------------{bus}begin-------------------------//
 wire [31:0] pc;
 wire        ex_ADEF;
-wire        ex_tlb_reload0;//tlbÖØÌîÀýÍâ
-wire        ex_tlb_preif_unvalid;//tlbÖÐÈ¡Ö¸Ò³ÎÞÐ§
-wire        ex_tlb_plv0;//tlbÖÐÒ³ÌØÈ¨²»ºÏ¹æ
+wire        ex_tlb_reload0;//tlbï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+wire        ex_tlb_preif_unvalid;//tlbï¿½ï¿½È¡Ö¸Ò³ï¿½ï¿½Ð§
+wire        ex_tlb_plv0;//tlbï¿½ï¿½Ò³ï¿½ï¿½È¨ï¿½ï¿½ï¿½Ï¹ï¿½
 wire        dmw_found0;
 wire [2:0]  dmw_pseg0;
 wire [1:0]  dmw_mat0;
 wire [1:0]  s0_mat;
 wire [1:0]  csr_CRMD_DATF;
 wire [31:0] tlb_paddr;
-wire        btb_query_hit;//validÇÒtag
+wire        btb_query_hit;//validï¿½ï¿½tag
 wire [31:0] btb_query_target;        
-wire        ras_query_hit;//validÇÒtag
+wire        ras_query_hit;//validï¿½ï¿½tag
 wire [31:0] ras_query_target;        
 wire [ 1:0] query_type;              
-wire        query_taken;//Ô¤²âÊÇ·ñÌø×ª  
+wire        query_taken;//Ô¤ï¿½ï¿½ï¿½Ç·ï¿½ï¿½ï¿½×ª  
 
 reg req_without_dataok;   
 
@@ -78,7 +78,7 @@ assign {pc,ex_ADEF,ex_tlb_reload0,ex_tlb_preif_unvalid,ex_tlb_plv0,
         btb_query_hit,btb_query_target,ras_query_hit,ras_query_target,query_type,query_taken}=bus;
 //------------------------{bus}end-------------------------//
 
-//------------------------{»º´æreq&addr_ok}begin-------------------------//
+//------------------------{ï¿½ï¿½ï¿½ï¿½req&addr_ok}begin-------------------------//
 
 always @ (posedge clk)begin
     if(!resetn)begin
@@ -92,9 +92,9 @@ always @ (posedge clk)begin
     end
 end
 assign req_to_dataok_trigger = req_without_dataok;
-//------------------------{»º´æreq&addr_ok}end-------------------------//
+//------------------------{ï¿½ï¿½ï¿½ï¿½req&addr_ok}end-------------------------//
 
-//------------------------{¶ªÆúÒÑÈ¡ÏûÈ¡Ö¸ÏìÓ¦}begin-------------------------//
+//------------------------{ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È¡ï¿½ï¿½È¡Ö¸ï¿½ï¿½Ó¦}begin-------------------------//
 reg discard_resp_pending;
 wire redirect_now;
 assign redirect_now = need_cancel | br_taken;
@@ -109,10 +109,10 @@ always @(posedge clk) begin
         discard_resp_pending <= 1'b1;
     end
 end
-// redirect Óë data_ok Í¬ÖÜÆÚÊ±Ò²±ØÐëÖ±½Ó¶ªÆú£¬²»ÄÜµÈ¼Ä´æÆ÷ÏÂÒ»ÅÄÉúÐ§¡£
+// redirect ï¿½ï¿½ data_ok Í¬ï¿½ï¿½ï¿½ï¿½Ê±Ò²ï¿½ï¿½ï¿½ï¿½Ö±ï¿½Ó¶ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ÜµÈ¼Ä´ï¿½ï¿½ï¿½ï¿½ï¿½Ò»ï¿½ï¿½ï¿½ï¿½Ð§ï¿½ï¿½
 assign inst_resp_discard = discard_resp_pending |
                            (redirect_now & req_without_dataok);
-//------------------------{¶ªÆúÒÑÈ¡ÏûÈ¡Ö¸ÏìÓ¦}end-------------------------//
+//------------------------{ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È¡ï¿½ï¿½È¡Ö¸ï¿½ï¿½Ó¦}end-------------------------//
 
 //------------------------{instRAM handshake}begin-------------------------//
 assign inst_sram_wstrb = 4'b0;
@@ -122,12 +122,17 @@ assign inst_sram_addr_without_cacop  = (csr_CRMD_DA == 1 & csr_CRMD_PG == 0) ? p
                          (csr_CRMD_DA == 0 & csr_CRMD_PG == 1) & ~dmw_found0 ? tlb_paddr :
                           32'b0;
 assign inst_sram_wdata = 32'b0;
-//1. Ìø×ªÖ®ºóµÄpreIFµÄÖ¸ÁîÖ±½ÓÈÃËûµÄreqÎª0£¬ÄÇÃ´µ±Ç°clk¾ÍÒ»¶¨²»»áready_go
-//2. ÎªÁË·ÀÖ¹preIF ready go IF²»allow_in ¾ÍÖ»ÔÚallow_inµÄÊ±ºò·¢Æðreq
-//3. ÎªÁË·ÀÖ¹¶à¸öreqÖ®ºó²ÅÏìÓ¦dataokËùÒÔÐèÒªÔÚÒ»´ÎreqÖ®ºóÊÖ¶¯À­µÍ
+//1. ï¿½ï¿½×ªÖ®ï¿½ï¿½ï¿½preIFï¿½ï¿½Ö¸ï¿½ï¿½Ö±ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½reqÎª0ï¿½ï¿½ï¿½ï¿½Ã´ï¿½ï¿½Ç°clkï¿½ï¿½Ò»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ready_go
+//2. Îªï¿½Ë·ï¿½Ö¹preIF ready go IFï¿½ï¿½allow_in ï¿½ï¿½Ö»ï¿½ï¿½allow_inï¿½ï¿½Ê±ï¿½ï¿½ï¿½ï¿½req
+//3. Îªï¿½Ë·ï¿½Ö¹ï¿½ï¿½ï¿½reqÖ®ï¿½ï¿½ï¿½ï¿½ï¿½Ó¦dataokï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Òªï¿½ï¿½Ò»ï¿½ï¿½reqÖ®ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½ï¿½ï¿½
 
-assign inst_sram_req = preIF2_valid & IF_allow_in & ~br_taken & ~req_without_dataok & ~need_cancel & ~need_stall & 
-                       req_slot_free;
+//assign inst_sram_req = preIF2_valid & IF_allow_in & ~br_taken & ~req_without_dataok & ~need_cancel & ~need_stall & 
+//                     req_slot_free;
+// data_ok å½“æ‹é‡Šæ”¾æ§½ä½ï¼Œå¯ç«‹åˆ»å‘ä¸‹ä¸€æ¡ï¼ˆæœ€å¤šä»ä¿æŒ 1 ä¸ª outstandingï¼‰
+wire can_issue_inst = !req_without_dataok || inst_sram_data_ok;
+assign inst_sram_req = preIF2_valid & IF_allow_in & ~br_taken
+                        & ~need_cancel & ~need_stall
+                        & can_issue_inst;
 assign inst_sram_size  = 2'b10;
 assign inst_mat        = (csr_CRMD_DA == 1 & csr_CRMD_PG == 0) ? csr_CRMD_DATF :
                          (csr_CRMD_DA == 0 & csr_CRMD_PG == 1) &  dmw_found0  ? dmw_mat0 :
@@ -138,7 +143,7 @@ assign inst_wr         = 1'b0;
 
 //------------------------{ready_go}begin-------------------------//
 assign preIF2_ready_go = need_stall ? 1'b0 : 
-                    //ÎÕÊÖ³É¹¦
+                    //ï¿½ï¿½ï¿½Ö³É¹ï¿½
                         (inst_sram_req & inst_sram_addr_ok);
 always @(posedge clk) begin
     if(!resetn)begin

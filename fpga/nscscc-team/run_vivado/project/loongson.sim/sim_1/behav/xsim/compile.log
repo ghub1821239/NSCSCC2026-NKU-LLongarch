@@ -421,6 +421,7 @@ INFO: [VRFC 10-2263] Analyzing Verilog file "D:/chiplab/IP/myCPU/csr_regfile.v" 
 INFO: [VRFC 10-311] analyzing module csr_regfile
 INFO: [VRFC 10-2263] Analyzing Verilog file "D:/chiplab/IP/myCPU/decode.v" into library xil_defaultlib
 INFO: [VRFC 10-311] analyzing module decode
+WARNING: [VRFC 10-3380] identifier 'redirect' is used before its declaration [D:/chiplab/IP/myCPU/decode.v:427]
 INFO: [VRFC 10-2263] Analyzing Verilog file "D:/chiplab/IP/myCPU/decoder_2_4.v" into library xil_defaultlib
 INFO: [VRFC 10-311] analyzing module decoder_2_4
 INFO: [VRFC 10-2263] Analyzing Verilog file "D:/chiplab/IP/myCPU/decoder_4_16.v" into library xil_defaultlib
@@ -431,12 +432,16 @@ INFO: [VRFC 10-2263] Analyzing Verilog file "D:/chiplab/IP/myCPU/decoder_6_64.v"
 INFO: [VRFC 10-311] analyzing module decoder_6_64
 INFO: [VRFC 10-2263] Analyzing Verilog file "D:/chiplab/IP/myCPU/fetch.v" into library xil_defaultlib
 INFO: [VRFC 10-311] analyzing module fetch
+WARNING: [VRFC 10-3380] identifier 'inst_resp_valid' is used before its declaration [D:/chiplab/IP/myCPU/fetch.v:47]
 INFO: [VRFC 10-2263] Analyzing Verilog file "D:/chiplab/chip/soc_demo/nscscc-team/ram_wrap/fpga_sram_dp.v" into library xil_defaultlib
 INFO: [VRFC 10-311] analyzing module fpga_sram_dp
+INFO: [VRFC 10-2263] Analyzing Verilog file "D:/chiplab/IP/myCPU/icache.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module icache
 INFO: [VRFC 10-2263] Analyzing Verilog file "D:/chiplab/chip/soc_demo/nscscc-team/JTAG_wrap/jtag_axi_wrap.v" into library xil_defaultlib
 INFO: [VRFC 10-311] analyzing module jtag_axi_wrap
 INFO: [VRFC 10-2263] Analyzing Verilog file "D:/chiplab/IP/myCPU/mycpu_core.v" into library xil_defaultlib
 INFO: [VRFC 10-311] analyzing module mycpu_core
+WARNING: [VRFC 10-2938] 'need_cancel' is already implicitly declared on line 465 [D:/chiplab/IP/myCPU/mycpu_core.v:518]
 INFO: [VRFC 10-2263] Analyzing Verilog file "D:/chiplab/IP/myCPU/mycpu_top.v" into library xil_defaultlib
 INFO: [VRFC 10-311] analyzing module core_top
 INFO: [VRFC 10-2263] Analyzing Verilog file "D:/chiplab/IP/APB_DEV/URT/raminfr.v" into library xil_defaultlib

@@ -287,9 +287,7 @@ assign cpu_inst_rdata       = inst_rdata;
 //icache���ߣ�icache-----bridge
 
 
-cache #(
-    .code2_0(3'b000)
-)   u_Icache (
+icache u_Icache (
     .clk        (aclk),
     .resetn     (aresetn  ),
 //                                                                 ����(input)/ȥ����output)

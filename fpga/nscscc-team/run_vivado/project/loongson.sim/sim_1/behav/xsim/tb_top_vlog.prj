@@ -36,6 +36,7 @@ verilog xil_defaultlib  --include "../../../../../../../../IP/myCPU" --include "
 "../../../../../../../../IP/myCPU/decoder_6_64.v" \
 "../../../../../../../../IP/myCPU/fetch.v" \
 "../../../../../../../../chip/soc_demo/nscscc-team/ram_wrap/fpga_sram_dp.v" \
+"../../../../../../../../IP/myCPU/icache.v" \
 "../../../../../../../../chip/soc_demo/nscscc-team/JTAG_wrap/jtag_axi_wrap.v" \
 "../../../../../../../../IP/myCPU/mycpu_core.v" \
 "../../../../../../../../IP/myCPU/mycpu_top.v" \

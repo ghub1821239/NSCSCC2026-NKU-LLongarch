@@ -1,7 +1,7 @@
 Copyright 1986-2022 Xilinx, Inc. All Rights Reserved. Copyright 2022-2023 Advanced Micro Devices, Inc. All Rights Reserved.
 -------------------------------------------------------------------------------------------------------------------------------------------------
 | Tool Version     : Vivado v.2023.2_AR000036317 (win64) Build 4029153 Fri Oct 13 20:14:34 MDT 2023
-| Date             : Mon Aug  3 22:50:59 2026
+| Date             : Tue Aug  4 17:09:55 2026
 | Host             : mini running 64-bit major release  (build 9200)
 | Command          : report_power -file soc_top_power_routed.rpt -pb soc_top_power_summary_routed.pb -rpx soc_top_power_routed.rpx
 | Design           : soc_top
@@ -30,10 +30,10 @@ Table of Contents
 ----------
 
 +--------------------------+--------------+
-| Total On-Chip Power (W)  | 1.062        |
+| Total On-Chip Power (W)  | 1.084        |
 | Design Power Budget (W)  | Unspecified* |
 | Power Budget Margin (W)  | NA           |
-| Dynamic (W)              | 0.913        |
+| Dynamic (W)              | 0.935        |
 | Device Static (W)        | 0.149        |
 | Effective TJA (C/W)      | 1.9          |
 | Max Ambient (C)          | 83.0         |
@@ -52,25 +52,25 @@ Table of Contents
 +--------------------------+-----------+----------+-----------+-----------------+
 | On-Chip                  | Power (W) | Used     | Available | Utilization (%) |
 +--------------------------+-----------+----------+-----------+-----------------+
-| Clocks                   |     0.086 |       26 |       --- |             --- |
-| Slice Logic              |     0.020 |    54260 |       --- |             --- |
-|   LUT as Logic           |     0.017 |    23892 |    133800 |           17.86 |
-|   Register               |     0.001 |    22496 |    269200 |            8.36 |
-|   CARRY4                 |    <0.001 |      739 |     33450 |            2.21 |
+| Clocks                   |     0.088 |       26 |       --- |             --- |
+| Slice Logic              |     0.028 |    52262 |       --- |             --- |
+|   LUT as Logic           |     0.025 |    22554 |    133800 |           16.86 |
+|   CARRY4                 |     0.001 |      747 |     33450 |            2.23 |
+|   Register               |     0.001 |    21906 |    269200 |            8.14 |
 |   LUT as Distributed RAM |    <0.001 |     1002 |     46200 |            2.17 |
-|   F7/F8 Muxes            |    <0.001 |      932 |    133800 |            0.70 |
+|   F7/F8 Muxes            |    <0.001 |      752 |    133800 |            0.56 |
 |   LUT as Shift Register  |    <0.001 |      235 |     46200 |            0.51 |
 |   Others                 |    <0.001 |      971 |       --- |             --- |
-| Signals                  |     0.026 |    42940 |       --- |             --- |
-| Block RAM                |     0.025 |     12.5 |       365 |            3.42 |
+| Signals                  |     0.039 |    41801 |       --- |             --- |
+| Block RAM                |     0.031 |     12.5 |       365 |            3.42 |
 | MMCM                     |     0.095 |        1 |        10 |           10.00 |
-| PLL                      |     0.217 |        2 |        10 |           20.00 |
+| PLL                      |     0.206 |        2 |        10 |           20.00 |
 | DSPs                     |    <0.001 |        4 |       740 |            0.54 |
-| I/O                      |     0.306 |      103 |       400 |           25.75 |
+| I/O                      |     0.309 |      103 |       400 |           25.75 |
 | PHASER                   |     0.134 |       14 |       --- |             --- |
 | XADC                     |     0.004 |        1 |       --- |             --- |
 | Static Power             |     0.149 |          |           |                 |
-| Total                    |     1.062 |          |           |                 |
+| Total                    |     1.084 |          |           |                 |
 +--------------------------+-----------+----------+-----------+-----------------+
 
 
@@ -80,9 +80,9 @@ Table of Contents
 +-----------+-------------+-----------+-------------+------------+-------------+-------------+------------+
 | Source    | Voltage (V) | Total (A) | Dynamic (A) | Static (A) | Powerup (A) | Budget (A)  | Margin (A) |
 +-----------+-------------+-----------+-------------+------------+-------------+-------------+------------+
-| Vccint    |       1.000 |     0.239 |       0.206 |      0.033 |       NA    | Unspecified | NA         |
-| Vccaux    |       1.800 |     0.311 |       0.280 |      0.031 |       NA    | Unspecified | NA         |
-| Vcco33    |       3.300 |     0.009 |       0.004 |      0.005 |       NA    | Unspecified | NA         |
+| Vccint    |       1.000 |     0.267 |       0.234 |      0.033 |       NA    | Unspecified | NA         |
+| Vccaux    |       1.800 |     0.305 |       0.275 |      0.031 |       NA    | Unspecified | NA         |
+| Vcco33    |       3.300 |     0.010 |       0.005 |      0.005 |       NA    | Unspecified | NA         |
 | Vcco25    |       2.500 |     0.000 |       0.000 |      0.000 |       NA    | Unspecified | NA         |
 | Vcco18    |       1.800 |     0.000 |       0.000 |      0.000 |       NA    | Unspecified | NA         |
 | Vcco15    |       1.500 |     0.128 |       0.123 |      0.005 |       NA    | Unspecified | NA         |
@@ -139,7 +139,7 @@ Table of Contents
 | clk                                                                                                                                                       | clk                                                                                                                                                                                                                  |            10.0 |
 | clk_pll_i                                                                                                                                                 | ddr3.u_axi_wrap_ddr/mig_axi/u_mig_axi_32_mig/u_ddr3_infrastructure/clk_pll_i                                                                                                                                         |            10.0 |
 | clkfbout_clk_pll                                                                                                                                          | fpga_pll.u_clk_pll/inst/clkfbout_clk_pll                                                                                                                                                                             |            10.0 |
-| cpu_clk                                                                                                                                                   | fpga_pll.u_clk_pll/inst/cpu_clk_clk_pll                                                                                                                                                                              |            15.7 |
+| cpu_clk                                                                                                                                                   | fpga_pll.u_clk_pll/inst/cpu_clk_clk_pll                                                                                                                                                                              |            13.3 |
 | dbg_hub/inst/BSCANID.u_xsdbm_id/SWITCH_N_EXT_BSCAN.bscan_inst/SERIES7_BSCAN.bscan_inst/TCK                                                                | dbg_hub/inst/BSCANID.u_xsdbm_id/SWITCH_N_EXT_BSCAN.bscan_inst/TCK                                                                                                                                                    |            33.0 |
 | ddr_clk                                                                                                                                                   | fpga_pll.u_clk_pll/inst/ddr_clk_clk_pll                                                                                                                                                                              |             5.0 |
 | freq_refclk                                                                                                                                               | ddr3.u_axi_wrap_ddr/mig_axi/u_mig_axi_32_mig/u_ddr3_infrastructure/freq_refclk                                                                                                                                       |             1.3 |
@@ -172,58 +172,64 @@ Table of Contents
 +------------------------------+-----------+
 | Name                         | Power (W) |
 +------------------------------+-----------+
-| soc_top                      |     0.913 |
-|   APB_DEV                    |     0.003 |
+| soc_top                      |     0.935 |
+|   APB_DEV                    |     0.004 |
+|     AA_axi2apb_bridge_cpu    |     0.001 |
 |     uart0                    |     0.002 |
 |       regs                   |     0.002 |
 |   dbg_hub                    |     0.004 |
 |     inst                     |     0.004 |
 |       BSCANID.u_xsdbm_id     |     0.004 |
-|   ddr3.u_axi_wrap_ddr        |     0.673 |
-|     mig_axi                  |     0.667 |
-|       u_mig_axi_32_mig       |     0.667 |
-|     u_Axi_CDC                |     0.003 |
-|   fpga_pll.u_clk_pll         |     0.127 |
-|     inst                     |     0.127 |
-|   u_axi3_to_axi4_bridge      |     0.006 |
-|   u_axi_clock_sync           |     0.002 |
-|   u_axi_crossbar_2x3         |     0.004 |
-|     inst                     |     0.004 |
-|       gen_samd.crossbar_samd |     0.004 |
+|   ddr3.u_axi_wrap_ddr        |     0.680 |
+|     mig_axi                  |     0.671 |
+|       u_mig_axi_32_mig       |     0.671 |
+|     u_Axi_CDC                |     0.004 |
+|       wFifo                  |     0.001 |
+|   fpga_pll.u_clk_pll         |     0.116 |
+|     inst                     |     0.116 |
+|   u_axi3_to_axi4_bridge      |     0.007 |
+|   u_axi_clock_sync           |     0.003 |
+|     rFifo                    |     0.001 |
+|   u_axi_crossbar_2x3         |     0.005 |
+|     inst                     |     0.005 |
+|       gen_samd.crossbar_samd |     0.005 |
 |   u_confreg                  |     0.004 |
-|   u_cpu                      |     0.061 |
-|     u_Dcache                 |     0.017 |
-|       data_way0_bank0        |     0.001 |
-|       data_way0_bank1        |     0.001 |
-|       data_way0_bank2        |     0.001 |
-|       data_way0_bank3        |     0.001 |
-|       data_way1_bank0        |     0.001 |
-|       data_way1_bank1        |     0.001 |
-|       data_way1_bank2        |     0.001 |
-|       data_way1_bank3        |     0.001 |
-|       tagv_way0              |     0.001 |
-|       tagv_way1              |     0.001 |
-|     u_Icache                 |     0.019 |
-|       data_way0_bank0        |     0.001 |
-|       data_way0_bank1        |     0.001 |
-|       data_way0_bank2        |     0.001 |
-|       data_way0_bank3        |     0.001 |
-|       data_way1_bank0        |     0.001 |
-|       data_way1_bank1        |     0.001 |
-|       data_way1_bank2        |     0.001 |
-|       data_way1_bank3        |     0.001 |
-|       tagv_way0              |     0.001 |
-|       tagv_way1              |     0.001 |
-|     u_mycpu_core             |     0.024 |
-|       u_csr_regfile          |     0.001 |
-|       u_exe1                 |     0.011 |
+|   u_cpu                      |     0.080 |
+|     u_Dcache                 |     0.028 |
+|       data_way0_bank0        |     0.002 |
+|       data_way0_bank1        |     0.002 |
+|       data_way0_bank2        |     0.002 |
+|       data_way0_bank3        |     0.002 |
+|       data_way1_bank0        |     0.002 |
+|       data_way1_bank1        |     0.002 |
+|       data_way1_bank2        |     0.002 |
+|       data_way1_bank3        |     0.002 |
+|       tagv_way0              |     0.002 |
+|       tagv_way1              |     0.002 |
+|     u_Icache                 |     0.021 |
+|       data_way0_bank0        |     0.002 |
+|       data_way0_bank1        |     0.002 |
+|       data_way0_bank2        |     0.002 |
+|       data_way0_bank3        |     0.002 |
+|       data_way1_bank0        |     0.002 |
+|       data_way1_bank1        |     0.002 |
+|       data_way1_bank2        |     0.002 |
+|       data_way1_bank3        |     0.002 |
+|       tagv_way0              |     0.002 |
+|       tagv_way1              |     0.002 |
+|     u_mycpu_core             |     0.031 |
+|       u_bht                  |     0.001 |
+|       u_csr_regfile          |     0.002 |
+|       u_exe1                 |     0.016 |
+|       u_exe2                 |     0.001 |
 |       u_regfile              |     0.002 |
 |       u_tlb                  |     0.004 |
+|       u_wb                   |     0.001 |
 |   u_jtag_axi_wrap            |     0.010 |
 |     u_jtag_axi               |     0.010 |
 |       inst                   |     0.010 |
-|   vio                        |     0.003 |
-|     inst                     |     0.003 |
+|   vio                        |     0.004 |
+|     inst                     |     0.004 |
 |       PROBE_IN_INST          |     0.002 |
 |       U_XSDB_SLAVE           |     0.001 |
 +------------------------------+-----------+

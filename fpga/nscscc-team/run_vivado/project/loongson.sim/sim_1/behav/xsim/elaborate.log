@@ -121,7 +121,7 @@ Compiling module unisims_ver.RB18_INTERNAL_VLOG(RDADDR_COLLIS...
 Compiling module unisims_ver.RAMB18E1(RDADDR_COLLISION_HWCONF...
 Compiling module xil_defaultlib.tagv_ram
 Compiling module xil_defaultlib.data_bank_ram
-Compiling module xil_defaultlib.cache
+Compiling module xil_defaultlib.icache
 Compiling module xil_defaultlib.cache(code2_0=3'b01)
 Compiling module xil_defaultlib.core_top
 Compiling module xil_defaultlib.first_one_4_4
