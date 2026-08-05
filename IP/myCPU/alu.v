@@ -2,7 +2,7 @@ module alu(
   input  wire clk,
   input  wire resetn,
   input  wire EXE1_valid,
-  input  wire need_cancel,
+  input  wire EXE1_need_cancel,
   input  wire [18:0] alu_op,
   input  wire [31:0] alu_src1,
   input  wire [31:0] alu_src2,
@@ -121,7 +121,7 @@ reg is_dividing;
 wire div_ready_go;
 wire divide_begin;
 assign divide_begin= (op_div | op_mod) & EXE1_valid;
-reg  kill;//Èç¹ûÓÐflushµôµÄdivµÈÖ¸ÁîÐèÒªÈ¡Ïû´íÎóµÄ·µ»Ø
+reg  kill;//ï¿½ï¿½ï¿½ï¿½ï¿½flushï¿½ï¿½ï¿½ï¿½divï¿½ï¿½Ö¸ï¿½ï¿½ï¿½ï¿½ÒªÈ¡ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä·ï¿½ï¿½ï¿½
 always @(posedge clk) begin
     if (~resetn) begin
         kill <= 1'b0;
@@ -129,7 +129,7 @@ always @(posedge clk) begin
     else if (div_ready_go) begin
         kill <= 1'b0;
     end
-    else if (need_cancel & divide_begin) begin
+    else if (EXE1_need_cancel & divide_begin) begin
         kill <= 1'b1;
     end
 end
@@ -176,7 +176,7 @@ wire div_ready_go_u;
 reg is_dividing_u;
 wire divide_begin_u;
 assign divide_begin_u= (op_divu | op_modu) & EXE1_valid;
-reg  kill_u;//Èç¹ûÓÐflushµôµÄdivµÈÖ¸ÁîÐèÒªÈ¡Ïû´íÎóµÄ·µ»Ø
+reg  kill_u;//ï¿½ï¿½ï¿½ï¿½ï¿½flushï¿½ï¿½ï¿½ï¿½divï¿½ï¿½Ö¸ï¿½ï¿½ï¿½ï¿½ÒªÈ¡ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä·ï¿½ï¿½ï¿½
 always @(posedge clk) begin
     if (~resetn) begin
         kill_u <= 1'b0;
@@ -184,7 +184,7 @@ always @(posedge clk) begin
     else if (div_ready_go_u) begin
         kill_u <= 1'b0;
     end
-    else if (need_cancel & divide_begin_u) begin
+    else if (EXE1_need_cancel & divide_begin_u) begin
         kill_u <= 1'b1;
     end
 end

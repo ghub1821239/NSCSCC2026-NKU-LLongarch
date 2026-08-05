@@ -23,6 +23,7 @@
 `define CSR_TCFG      14'h41
 `define CSR_TVAL      14'h42
 `define CSR_TICLR     14'h44
+`define CSR_LLBCTL    14'h60
 `define CSR_TLBRENTRY 14'h88
 `define CSR_DMW0      14'h180
 `define CSR_DMW1      14'h181
@@ -160,5 +161,10 @@
 `define CSR_DMW1_MAT  5:4
 `define CSR_DMW1_PSEG 27:25
 `define CSR_DMW1_VSEG 31:29
+
+//LLBCTL
+`define CSR_LLBCTL_ROLLB 0
+`define CSR_LLBCTL_WCLLB 1
+`define CSR_LLBCTL_KLO 2
 
 `endif

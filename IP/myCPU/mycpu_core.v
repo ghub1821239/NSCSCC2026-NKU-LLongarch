@@ -96,24 +96,6 @@ assign EXE2_MEM_valid = EXE2_valid & EXE2_ready_go;
 assign MEM_WB_valid   = MEM_valid & MEM_ready_go;
 //------------------------{5-stage pipeline control signals assignment}end-------------------------//
 
-//------------------------{cacop}begin-------------------------//
-wire [31:0] inst_sram_addr_without_cacop;
-assign inst_sram_addr = (cacop_valid && cache_code[2:0] == 3'b0) ? data_sram_addr : inst_sram_addr_without_cacop;
-
-reg cacop_need_cancel;
-always @(posedge clk)begin
-    if(!resetn)begin
-        cacop_need_cancel <= 1'b0;
-    end
-    else if(cacop_done)begin
-        cacop_need_cancel <= 1'b0;
-    end
-    else if (cacop_valid & cache_code[2:0] == 3'b0)begin
-        cacop_need_cancel <= 1'b1;
-    end
-end
-//------------------------{cacop}end-------------------------//
-
 //------------------------{regfile}begin-------------------------//
 wire [4:0] rf_raddr1;
 wire [4:0] rf_raddr2;
@@ -171,6 +153,7 @@ wire        tlbrd_we;
 wire        tlbsrch_we;
 wire        tlbwr_we;
 wire        tlbfill_we;
+// the csr & ex need cancel
 wire        flush;
 reg [3:0]   tlbfill_random;
 
@@ -461,8 +444,8 @@ btb u_btb(
     .update_pc          (update_pc    ),
     .update_target      (update_target),//real target
     .update_type        (update_type  ),
-    // Èç¹ûÈ¡Ïû¾Í²»Í¬²½¸üÐÂ
-    .update_cancel (need_cancel | cacop_need_cancel)
+    // ï¿½ï¿½ï¿½È¡ï¿½ï¿½ï¿½Í²ï¿½Í¬ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+    .update_cancel (flush | cacop_need_cancel)
 );
 
 wire query_taken;
@@ -480,7 +463,7 @@ bht u_bht(
     .update_valid   (bht_update_valid),//update BHT
     .update_pc      (update_pc   ),//branch pc
     .update_taken   (update_taken),//real taken
-    .update_cancel  (need_cancel | cacop_need_cancel)//Èç¹ûÈ¡Ïû¾Í²»Í¬²½¸üÐÂ
+    .update_cancel  (flush | cacop_need_cancel)//ï¿½ï¿½ï¿½È¡ï¿½ï¿½ï¿½Í²ï¿½Í¬ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 );
 
 //ras
@@ -504,7 +487,7 @@ ras u_ras(
 );
 //------------------------{branch prediction}end---------------------------//
 
-//------------------------{Ô¤ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ò?ï¿½ï¿½×ªï¿½ï¿½ï¿½Åºï¿½ï¿½ï¿½ï¿½ï¿½}begin-------------------------//
+//------------------------{Ô¤ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½?ï¿½ï¿½×ªï¿½ï¿½ï¿½Åºï¿½ï¿½ï¿½ï¿½ï¿½}begin-------------------------//
 wire        br_taken;
 wire [31:0] br_target;
 
@@ -514,22 +497,19 @@ wire [31:0] br_afterpred_target;
 reg         br_afterpred_taken_r;
 reg  [31:0] br_afterpred_target_r;
 
-// this is the csr need to cancel all
-wire need_cancel;
 // this is the br inst need to cancel the preIF IF ID
 wire need_br_cancel;
-assign need_cancel = flush;
 
 //cacop cancel
 wire [31:0] cacop_pc;
-//[NOTICE:Ñ§»áÒ»ÕÐ]CE²»Èç·Åµ½ <= Ñ¡Ôñ,WNS¿ÉÄÜºÃÒ»µã
+//[NOTICE:Ñ§ï¿½ï¿½Ò»ï¿½ï¿½]CEï¿½ï¿½ï¿½ï¿½Åµï¿½ <= Ñ¡ï¿½ï¿½,WNSï¿½ï¿½ï¿½Üºï¿½Ò»ï¿½ï¿½
 always @(posedge clk) begin
     if (!resetn) begin
         br_afterpred_taken_r  <= 1'b0;
         br_afterpred_target_r <= 32'b0;
     end
     else begin
-        br_afterpred_taken_r <= (need_cancel || cacop_need_cancel) ? 1'b0
+        br_afterpred_taken_r <= (flush || cacop_need_cancel) ? 1'b0
                                 : br_afterpred_taken;
 
         br_afterpred_target_r <= br_afterpred_target;
@@ -539,8 +519,48 @@ end
 assign br_taken       = br_afterpred_taken_r;
 assign br_target      = br_afterpred_target_r;
 assign need_br_cancel = br_afterpred_taken_r;
-//------------------------{Ô¤ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ò?ï¿½ï¿½×ªï¿½ï¿½ï¿½Åºï¿½ï¿½ï¿½ï¿½ï¿½}end-------------------------//
+//------------------------{Ô¤ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½?ï¿½ï¿½×ªï¿½ï¿½ï¿½Åºï¿½ï¿½ï¿½ï¿½ï¿½}end-------------------------//
 
+//------------------------{cacop}begin-------------------------//
+wire [31:0] inst_sram_addr_without_cacop;
+assign inst_sram_addr = (cacop_valid && cache_code[2:0] == 3'b0) ? data_sram_addr : inst_sram_addr_without_cacop;
+
+reg cacop_need_cancel;
+always @(posedge clk)begin
+    if(!resetn)begin
+        cacop_need_cancel <= 1'b0;
+    end
+    else if(cacop_done)begin
+        cacop_need_cancel <= 1'b0;
+    end
+    else if (cacop_valid & cache_code[2:0] == 3'b0)begin
+        cacop_need_cancel <= 1'b1;
+    end
+end
+//------------------------{cacop}end-------------------------//
+
+//------------------------{i/dbar need cancel}begins-------------------------//
+wire ibar_cancel;
+wire dbar_cancel;
+
+wire preIF1_need_cancel;
+wire preIF2_need_cancel;
+wire IF_need_cancel;
+wire ID_need_cancel;
+wire EXE1_need_cancel;
+wire EXE2_need_cancel;
+wire MEM_need_cancel;
+wire WB_need_cancel;
+
+assign preIF1_need_cancel = flush | cacop_need_cancel | ibar_cancel;
+assign preIF2_need_cancel = flush | cacop_need_cancel | ibar_cancel;
+assign IF_need_cancel     = flush | need_br_cancel    | cacop_need_cancel | ibar_cancel;
+assign ID_need_cancel     = flush | cacop_need_cancel | ibar_cancel;
+assign EXE1_need_cancel   = flush | ibar_cancel;
+assign EXE2_need_cancel   = flush;
+assign MEM_need_cancel    = flush;
+assign WB_need_cancel     = flush;
+//------------------------{i/dbar need cancel}end-------------------------//
 
 //------------------------{5 pipeline bus + inst ram control}begin-------------------------//
 localparam preIF1_preIF2_bus_width = 147;
@@ -601,8 +621,13 @@ wire   [1:0] dmw_mat1;
 wire   [1:0] inst_mat;
 wire   [1:0] data_mat;
 
+//LLbit
+wire         LLbit_wb;
+wire         LLbit;
+
 assign hw_int_in = 8'h0;
 assign ipi_int_in= 1'h0;
+
 
 //----------------Icache?????????-----------
 assign inst_uncache_valid   = (inst_mat == 2'b00);
@@ -700,7 +725,10 @@ csr_regfile #(
     .csr_CRMD_DATF          (csr_CRMD_DATF),
     .csr_CRMD_DATM          (csr_CRMD_DATM),
     .dmw_mat0               (dmw_mat0),
-    .dmw_mat1               (dmw_mat1)
+    .dmw_mat1               (dmw_mat1),
+    //LLbit
+    .LLbit_wb       (LLbit_wb),
+    .LLbit          (LLbit)
 );
 //------------------------{csr_regfile}end-------------------------//
 
@@ -722,7 +750,7 @@ pre_IF1 #(
     .br_target(br_target),
     .br_taken(br_taken),
     //cancel
-    .need_cancel(need_cancel | cacop_need_cancel),
+    .preIF1_need_cancel(preIF1_need_cancel),
     //stall
     .need_stall(need_stall),
     .csr_target(cacop_need_cancel ? cacop_pc : csr_target),
@@ -783,7 +811,7 @@ pre_IF2 #(
 
     .br_taken(br_taken),
     //cancel
-    .need_cancel(need_cancel | cacop_need_cancel),
+    .preIF2_need_cancel(preIF2_need_cancel),
     //stall
     .need_stall(need_stall),
     //handshake
@@ -821,7 +849,7 @@ fetch #(
     .preIF2_IF_bus(preIF2_IF_bus),
     .IF_ID_bus(IF_ID_bus),
     //cancel
-    .need_cancel(need_cancel | need_br_cancel | cacop_need_cancel),
+    .IF_need_cancel(IF_need_cancel),
     //stall
     .need_stall(need_stall),
     //handshake
@@ -854,7 +882,7 @@ decode #(
     .rf_rdata1(front_push_rdata1),
     .rf_rdata2(front_push_rdata2),//have been front_push 
     //cancel
-    .need_cancel(need_cancel | cacop_need_cancel),
+    .ID_need_cancel(ID_need_cancel),
     //stall
     .need_stall(need_stall),
     //???
@@ -892,7 +920,7 @@ exe1 #(
     .EXE1_rf_dest(EXE1_rf_dest),
     .EXE1_rf_gr_we(EXE1_rf_gr_we),
     //cancel
-    .need_cancel(need_cancel),
+    .EXE1_need_cancel(EXE1_need_cancel),
     //stable counter
     .stable_counter(stable_counter),
     // search port 1 (for load/store the data)
@@ -957,7 +985,7 @@ exe2 #(
     //can_not_front_push
     .exe2_can_not_front_push(exe2_can_not_front_push),
     //cancel
-    .need_cancel(need_cancel),
+    .EXE2_need_cancel(EXE2_need_cancel),
     //ex
     .older_ex_for_exe2(older_ex_for_exe2),
     //handshake
@@ -978,7 +1006,12 @@ exe2 #(
     .cache_code       (cache_code  ),
     .cacop_valid      (cacop_valid ),
     .cacop_done       (cacop_done  ),
-    .cacop_pc         (cacop_pc    )
+    .cacop_pc         (cacop_pc    ),
+    //system inst_need_cancel
+    .ibar_cancel      (ibar_cancel),
+    .dbar_cancel      (dbar_cancel),
+    .LLbit_wb         (LLbit_wb),
+    .LLbit            (LLbit)
 );
 
 mem #(
@@ -1002,7 +1035,7 @@ mem #(
     .mem_front_data(mem_front_data),
     .mem_front_addr(mem_front_addr),
     //cancel
-    .need_cancel(need_cancel),
+    .MEM_need_cancel(MEM_need_cancel),
     .older_ex_for_mem(older_ex_for_mem),
     //ex_front
     .MEM_ex(MEM_ex),
@@ -1051,7 +1084,7 @@ wb #(
     .csr_target(csr_target),
     .flush(flush),
     //cancel
-    .need_cancel(need_cancel),
+    .WB_need_cancel(WB_need_cancel),
     //wb?????
     .wb_pc(wb_pc),
     .wb_ex(wb_ex),

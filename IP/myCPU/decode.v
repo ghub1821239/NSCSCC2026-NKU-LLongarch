@@ -19,7 +19,7 @@ module decode #(
     input  wire [31:0] rf_rdata1,
     input  wire [31:0] rf_rdata2,
     //cancel control
-    input  wire        need_cancel,
+    input  wire        ID_need_cancel,
     //prediction
     output wire        br_afterpred_taken,
     output wire [31:0] br_afterpred_target,
@@ -27,17 +27,17 @@ module decode #(
     input  wire        need_stall,
     input  wire        has_int,
     //branch prediction
-    //¸üĞÂ¶Ë¿Ú£ºDecodeÈ·¶¨ÕæÊµ½á¹ûºó»ØÀ´¸üĞÂBTB
+    //ï¿½ï¿½ï¿½Â¶Ë¿Ú£ï¿½DecodeÈ·ï¿½ï¿½ï¿½ï¿½Êµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½BTB
     output wire        update_valid ,
     output wire        bht_update_valid,
     output wire [31:0] update_pc    ,
-    output wire [31:0] update_target,//ÕæÊµÄ¿±êµØÖ·
+    output wire [31:0] update_target,//ï¿½ï¿½ÊµÄ¿ï¿½ï¿½ï¿½Ö·
     output wire [1:0]  update_type  ,
-    output wire        update_taken ,//ÕæÊµÊÇ·ñÌø×ª
-    // ºó¶ËÕæÊµ call ¸üĞÂ
+    output wire        update_taken ,//ï¿½ï¿½Êµï¿½Ç·ï¿½ï¿½ï¿½×ª
+    // ï¿½ï¿½ï¿½ï¿½ï¿½Êµ call ï¿½ï¿½ï¿½ï¿½
     output wire        push_valid   ,
     output wire [31:0] push_target  ,
-    // ºó¶ËÕæÊµ return ¸üĞÂ
+    // ï¿½ï¿½ï¿½ï¿½ï¿½Êµ return ï¿½ï¿½ï¿½ï¿½
     output wire        pop_valid   
 );
 //------------------------{bus decode}begin-------------------------//
@@ -56,12 +56,12 @@ wire        ex_ADEF;
 wire        ex_tlb_reload0;//tlbï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 wire        ex_tlb_preif_unvalid;//tlbï¿½ï¿½È¡Ö¸Ò³ï¿½ï¿½Ğ§
 wire        ex_tlb_plv0;//tlbï¿½ï¿½Ò³ï¿½ï¿½È¨ï¿½ï¿½ï¿½Ï¹ï¿½
-wire        btb_query_hit;//validÇÒtag
+wire        btb_query_hit;//validï¿½ï¿½tag
 wire [31:0] btb_query_target;        
-wire        ras_query_hit;//validÇÒtag
+wire        ras_query_hit;//validï¿½ï¿½tag
 wire [31:0] ras_query_target;        
 wire [ 1:0] query_type;              
-wire        query_taken;//Ô¤²âÊÇ·ñÌø×ª 
+wire        query_taken;//Ô¤ï¿½ï¿½ï¿½Ç·ï¿½ï¿½ï¿½×ª 
 assign {pc,inst,ex_ADEF,ex_tlb_reload0,ex_tlb_preif_unvalid,ex_tlb_plv0,
         btb_query_hit,btb_query_target,ras_query_hit,ras_query_target,query_type,query_taken} = bus;
 //------------------------{bus decode}end-------------------------//
@@ -93,6 +93,7 @@ wire [ 4:0] rj;
 wire [ 4:0] rk;
 wire [13:0] csr_num;
 wire [11:0] i12;
+wire [13:0] i14;
 wire [19:0] i20;
 wire [15:0] i16;
 wire [25:0] i26;
@@ -174,10 +175,16 @@ wire        inst_invtlb;
 wire        inst_cacop;
 //cpucfg
 wire        inst_cpucfg;
+//system inst
+wire        inst_ibar;
+wire        inst_dbar;
+wire        inst_ll_w;
+wire        inst_sc_w;
 
 wire        need_ui5;
 wire        need_ui12;
 wire        need_si12;
+wire        need_si14;
 wire        need_si16;
 wire        need_si20;
 wire        need_si26;
@@ -203,8 +210,9 @@ assign rk   = inst[14:10];
 assign csr_num = inst[23:10];
 
 assign i12  = inst[21:10];
-assign i20  = inst[24: 5];
+assign i14  = inst[23:10];
 assign i16  = inst[25:10];
+assign i20  = inst[24: 5];
 assign i26  = {inst[ 9: 0], inst[25:10]};
 
 decoder_6_64 u_dec0(.in(op_31_26 ), .out(op_31_26_d ));
@@ -214,6 +222,7 @@ decoder_5_32 u_dec3(.in(op_19_15 ), .out(op_19_15_d ));
 decoder_2_4  u_dec4(.in(op_25_24 ), .out(op_25_24_d ));
 decoder_5_32 u_dec5(.in(op_14_10 ), .out(op_14_10_d ));
 //------------------------{Decode match}end-------------------------//
+
 //------------------------{one hot}begin-------------------------//
 assign inst_add_w  = op_31_26_d[6'h00] & op_25_22_d[4'h0] & op_21_20_d[2'h1] & op_19_15_d[5'h00];
 assign inst_sub_w  = op_31_26_d[6'h00] & op_25_22_d[4'h0] & op_21_20_d[2'h1] & op_19_15_d[5'h02];
@@ -271,7 +280,7 @@ assign inst_ertn   = op_31_26_d[6'h01] & op_25_22_d[4'h9] & op_21_20_d[2'h0] & o
 assign inst_syscall= op_31_26_d[6'h00] & op_25_22_d[4'h0] & op_21_20_d[2'h2] & op_19_15_d[5'h16];
 assign inst_break  = op_31_26_d[6'h00] & op_25_22_d[4'h0] & op_21_20_d[2'h2] & op_19_15_d[5'h14];
 assign inst_csr    = inst_csrrd | inst_csrwr | inst_csrxchg;
-assign inst_rdcntvl_w=op_31_26_d[6'h00] & op_25_22_d[4'h0] & op_21_20_d[2'h0] & op_19_15_d[5'h0] & rk == 5'b11000 & rj == 5'b00000 & rd != 5'b00000;//notice:æˆ‘ï¿½?ï¿½åŠ ï¿??!=çš„conditionï¼Œæ“ä½œæ‰‹å†Œä¸Šæ²¡å†™ï¼Œä½†ï¿??åŠ ä¸Šæ›´å®Œå–„ï¼Œå› ä¸ºï¿??0å·å¯„å­˜å™¨å’Œä¸å†™ä¸€æ ·ï¼Œå› ï¿½?ï¿½å¯ä»¥æ’é™¤ï¿½??
+assign inst_rdcntvl_w=op_31_26_d[6'h00] & op_25_22_d[4'h0] & op_21_20_d[2'h0] & op_19_15_d[5'h0] & rk == 5'b11000 & rj == 5'b00000 & rd != 5'b00000;//notice:æˆ‘ï¿½?ï¿½åŠ ï¿½??!=çš„conditionï¼Œæ“ä½œæ‰‹å†Œä¸Šæ²¡å†™ï¼Œä½†ï¿½??åŠ ä¸Šæ›´å®Œå–„ï¼Œå› ä¸ºï¿½??0å·å¯„å­˜å™¨å’Œä¸å†™ä¸€æ ·ï¼Œå› ï¿½?ï¿½å¯ä»¥æ’é™¤ï¿½??
 assign inst_rdcntvh_w=op_31_26_d[6'h00] & op_25_22_d[4'h0] & op_21_20_d[2'h0] & op_19_15_d[5'h0] & rk == 5'b11001 & rj == 5'b00000;
 assign inst_rdcntid= op_31_26_d[6'h00] & op_25_22_d[4'h0] & op_21_20_d[2'h0] & op_19_15_d[5'h0] & rk == 5'b11000 & rj != 5'b00000 & rd == 5'b00000;
 //chapter 9 exp18:new add
@@ -284,11 +293,17 @@ assign inst_invtlb = op_31_26_d[6'h01] & op_25_22_d[4'h9] & op_21_20_d[2'h0] & o
 assign inst_cacop  = op_31_26_d[6'h01] & op_25_22_d[4'h8];
 //cpucfg
 assign inst_cpucfg = op_31_26_d[6'h00] & op_25_22_d[4'h0] & op_21_20_d[2'h0] & op_19_15_d[5'h0] & rk == 5'b11011;
+//system inst
+assign inst_ibar   = op_31_26_d[6'h0e] & op_25_22_d[4'h1] & op_21_20_d[2'h3] & op_19_15_d[5'h4] & inst[14:0] == 15'h0;
+assign inst_dbar   = op_31_26_d[6'h0e] & op_25_22_d[4'h1] & op_21_20_d[2'h3] & op_19_15_d[5'h5] & inst[14:0] == 15'h0;
+assign inst_ll_w   = op_31_26_d[6'h08] & op_25_24_d[2'h0];
+assign inst_sc_w   = op_31_26_d[6'h08] & op_25_24_d[2'h1];
 
 assign alu_op[ 0] = inst_add_w | inst_addi_w | inst_ld_w | inst_st_w
                     | inst_jirl | inst_bl | inst_pcaddu12i_w 
                     | inst_ld_b | inst_ld_h | inst_ld_bu | inst_ld_hu 
-                    | inst_st_b | inst_st_h | inst_cacop | inst_cpucfg;
+                    | inst_st_b | inst_st_h | inst_cacop | inst_cpucfg
+                    | inst_ll_w | inst_sc_w;
 assign alu_op[ 1] = inst_sub_w;
 assign alu_op[ 2] = inst_slt   | inst_slti;
 assign alu_op[ 3] = inst_sltu  | inst_sltui;
@@ -313,7 +328,7 @@ wire rf_gr_we;
 assign rf_gr_we= ~inst_st_w    & ~inst_beq   & ~inst_bne   & ~inst_b       & ~inst_blt  &
                  ~inst_bge     & ~inst_bltu  & ~inst_bgeu  & ~inst_st_b    & ~inst_st_h &
                  ~inst_tlbsrch & ~inst_tlbrd & ~inst_tlbwr & ~inst_tlbfill & ~inst_invtlb &
-                 ~inst_cacop;
+                 ~inst_cacop.  & ~inst_ibar  & ~inst_dbar  & ~inst_sc_w;
 
 assign need_ui5   =  inst_slli_w | inst_srli_w | inst_srai_w;
 assign need_ui12  =  inst_andi   | inst_ori    | inst_xori;
@@ -321,6 +336,7 @@ assign need_si12  =  inst_addi_w | inst_ld_w | inst_st_w | inst_slti | inst_sltu
                      | inst_ld_b | inst_ld_h | inst_ld_bu | inst_ld_hu
                      | inst_st_b | inst_st_h 
                      | inst_cacop;
+assign need_si14  =  inst_ll_w | inst_sc_w;
 assign need_si16  =   inst_jirl | inst_beq | inst_bne
                      | inst_blt | inst_bge | inst_bltu | inst_bgeu;
 assign need_si20  =  inst_lu12i_w | inst_pcaddu12i_w;
@@ -328,9 +344,10 @@ assign need_si26  =  inst_b | inst_bl;
 assign src2_is_4  =  inst_jirl | inst_bl;
 
 
-assign imm = src2_is_4 ? 32'h4                      :
-             need_si20 ? {i20[19:0], 12'b0}         :
+assign imm = src2_is_4 ? 32'h4                         :
+             need_si20 ? {i20[19:0], 12'b0}            :
              need_ui12 ? {{20{1'b0}},i12[11:0]}        :
+             need_si14 ? {{16{i14[13]},i14[13:0],2'b0} :
 /*need_ui5 || need_si12*/{{20{i12[11]}}, i12[11:0]} ;
 
 assign br_offs = need_si26 ? {{ 4{i26[25]}}, i26[25:0], 2'b0} :
@@ -338,8 +355,8 @@ assign br_offs = need_si26 ? {{ 4{i26[25]}}, i26[25:0], 2'b0} :
 
 assign jirl_offs = {{14{i16[15]}}, i16[15:0], 2'b0};
 
-assign src_reg_is_rd = inst_beq | inst_bne | inst_st_w | inst_blt | inst_bge | inst_bltu | inst_bgeu
-                     | inst_st_b | inst_st_h | inst_csrwr | inst_csrxchg;
+assign src_reg_is_rd = inst_beq  | inst_bne  | inst_st_w  | inst_blt     | inst_bge | inst_bltu | inst_bgeu |
+                       inst_st_b | inst_st_h | inst_csrwr | inst_csrxchg | inst_sc_w;
 
 assign src1_is_pc    = inst_jirl | inst_bl | inst_pcaddu12i_w;
 
@@ -364,20 +381,18 @@ assign src2_is_imm   = inst_slli_w |
                        inst_ld_hu  | 
                        inst_st_b   | 
                        inst_st_h   |
-                       inst_cacop;
+                       inst_cacop  |
+                       inst_ll_w   |
+                       inst_sc_w;
                        
 //------------------------{one hot}end-------------------------//
 
-//------------------------{push_front}begin-------------------------//
-
-//------------------------{push_front}end-------------------------//
-
 //------------------------{summary}begin-------------------------//
 assign dst_is_r1     = inst_bl;
-assign res_from_mem  = inst_ld_w | inst_ld_b | inst_ld_h | inst_ld_bu | inst_ld_hu;
-assign mem_we        = inst_st_w | inst_st_b | inst_st_h;
+assign res_from_mem  = inst_ld_w | inst_ld_b | inst_ld_h | inst_ld_bu | inst_ld_hu | inst_ll_w;
+assign mem_we        = inst_st_w | inst_st_b | inst_st_h | inst_sc_w;
 assign rf_dest       = dst_is_r1 ? 5'd1 : (inst_rdcntid ? rj : rd);
-
+// src1/2ä¸ä¼šè¢«ä½¿ç”¨
 wire src1_unused = inst_b | inst_bl | inst_lu12i_w | inst_pcaddu12i_w;
 wire src2_unused = (src2_is_imm && !mem_we) | inst_b;
 
@@ -409,7 +424,7 @@ assign alu_src2 = inst_cpucfg ? cpucfg_value :
 //------------------------{stall}begin-------------------------//
 wire need_stall_inst;
 wire need_stall_csr;
-assign need_stall_inst = inst_ld_w | inst_ld_b | inst_ld_h | inst_ld_bu | inst_ld_hu;
+assign need_stall_inst = inst_ld_w | inst_ld_b | inst_ld_h | inst_ld_bu | inst_ld_hu | inst_ll_w;
 assign need_stall_csr =  inst_csrrd | inst_csrwr | inst_csrxchg | inst_rdcntid | inst_rdcntvl_w | inst_rdcntvh_w;
 //------------------------{stall}end-------------------------//
 
@@ -420,7 +435,7 @@ always @(posedge clk) begin
     if(!resetn)begin
         ID_valid<=1'b0;
     end
-    else if(need_cancel)begin
+    else if(ID_need_cancel)begin
         ID_valid<=1'b0;
     end
     else if(ID_allow_in)begin
@@ -452,14 +467,15 @@ assign ex_INE = ~(inst_add_w        | inst_sub_w        | inst_slt          | in
                   inst_csrxchg      | inst_ertn         | inst_syscall      | inst_break        |
                   inst_rdcntid      | inst_rdcntvl_w    | inst_rdcntvh_w    | inst_tlbsrch      |
                   inst_tlbrd        | inst_tlbwr        | inst_tlbfill      | inst_invtlb & ~ex_tlbinv_op |
-                  inst_cacop        | inst_cpucfg);
+                  inst_cacop        | inst_cpucfg       | inst_dbar         | inst_ibar         |
+                  inst_ll_w         | inst_sc_w);
 //------------------------{ex_INE}end-------------------------//
 
 //-------------------------{branch prediction updata}begin---------------//
-localparam TYPE_COND = 2'b00;//2'b00  COND   Ìõ¼ş·ÖÖ§ beq/bne/blt/bge/bltu/bgeu
-localparam TYPE_JUMP = 2'b01;//2'b01  JUMP   ÎŞÌõ¼şÖ±½ÓÌø b
-localparam TYPE_CALL = 2'b10;//2'b10  CALL   bl£¬»ò jirl ÇÒ rd!=0
-localparam TYPE_RET  = 2'b11;//2'b11  RET    jirl ÇÒ rd==0
+localparam TYPE_COND = 2'b00;//2'b00  COND   ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö§ beq/bne/blt/bge/bltu/bgeu
+localparam TYPE_JUMP = 2'b01;//2'b01  JUMP   ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö±ï¿½ï¿½ï¿½ï¿½ b
+localparam TYPE_CALL = 2'b10;//2'b10  CALL   blï¿½ï¿½ï¿½ï¿½ jirl ï¿½ï¿½ rd!=0
+localparam TYPE_RET  = 2'b11;//2'b11  RET    jirl ï¿½ï¿½ rd==0
 
 wire        real_taken;
 wire [31:0] real_target;
@@ -468,10 +484,10 @@ wire [31:0] pred_target;
 wire        redirect;
 wire [31:0] direct_target;
 
-    //---------------{Ìø×ª·ÖÀà}begin---------------//
+    //---------------{ï¿½ï¿½×ªï¿½ï¿½ï¿½ï¿½}begin---------------//
     wire is_cond ;
-    wire is_jirl_call;// jirl $rd==$r1 Ê±´ó¸ÅÂÊÎªº¯Êıcall
-    wire is_jump ;// b »ò jirl ÇÒ rd!=0
+    wire is_jirl_call;// jirl $rd==$r1 Ê±ï¿½ï¿½ï¿½ï¿½ï¿½Îªï¿½ï¿½ï¿½ï¿½call
+    wire is_jump ;// b ï¿½ï¿½ jirl ï¿½ï¿½ rd!=0
     wire is_call ;
     wire is_ret  ;
     wire is_indirect_jump;
@@ -480,28 +496,28 @@ wire [31:0] direct_target;
     assign is_jump = inst_b | is_indirect_jump;
     assign is_call = inst_bl | is_jirl_call;
     assign is_ret  = inst_jirl & (rd == 5'd0) & (rj == 5'b1) & (i16 == 16'b0);
-    assign is_indirect_jump = inst_jirl && !is_jirl_call && !is_ret;//³ıÁËcallºÍreturnµÄjirl¶¼ÊÇ¼ä½ÓÌø×ª
-    //---------------{Ìø×ª·ÖÀà}end---------------//
+    assign is_indirect_jump = inst_jirl && !is_jirl_call && !is_ret;//ï¿½ï¿½ï¿½ï¿½callï¿½ï¿½returnï¿½ï¿½jirlï¿½ï¿½ï¿½Ç¼ï¿½ï¿½ï¿½ï¿½×ª
+    //---------------{ï¿½ï¿½×ªï¿½ï¿½ï¿½ï¿½}end---------------//
 
-    //---------------{Ìø×ªºÍ±í¶Ô±È ÓĞĞ§ & Æ¥Åä}begin---------------//
-    wire pred_valid;// ±íÊ¾ÊÇÉÏÃæ¼¸ÖÖ
+    //---------------{ï¿½ï¿½×ªï¿½Í±ï¿½ï¿½Ô±ï¿½ ï¿½ï¿½Ğ§ & Æ¥ï¿½ï¿½}begin---------------//
+    wire pred_valid;// ï¿½ï¿½Ê¾ï¿½ï¿½ï¿½ï¿½ï¿½æ¼¸ï¿½ï¿½
     wire pred_ok ;
     /*
-        Ö®Ç°ÕâÖÖ»áÊÇ dcache->rj->rj+imm->¶Ô±Èreal->btb
-        ¿ÉÒÔ²ğ·Ö³É
+        Ö®Ç°ï¿½ï¿½ï¿½Ö»ï¿½ï¿½ï¿½ dcache->rj->rj+imm->ï¿½Ô±ï¿½real->btb
+        ï¿½ï¿½ï¿½Ô²ï¿½Ö³ï¿½
             dache->rj
-                        ->¶Ô±Èreal-imm & rj ->btb
+                        ->ï¿½Ô±ï¿½real-imm & rj ->btb
             real-imm
-        Òò´ËĞÂÔöjirl_pred_rj target_match
-        assign pred_ok = pred_valid & (real_taken == pred_taken) & (!real_taken || (real_target == pred_target));//Ô¤²âÒ»ÖÂ
+        ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½jirl_pred_rj target_match
+        assign pred_ok = pred_valid & (real_taken == pred_taken) & (!real_taken || (real_target == pred_target));//Ô¤ï¿½ï¿½Ò»ï¿½ï¿½
     */
     wire [31:0] jirl_pred_rj;
     wire        target_match;
     assign jirl_pred_rj = pred_target - jirl_offs;
     assign target_match = inst_jirl ? (rj_value == jirl_pred_rj) : (direct_target == pred_target);
-    assign pred_valid   = is_cond | is_jump | is_call | is_ret;//Ö»ĞèÒª¼ÇÕâ¼¸ÖÖµÄbr
-    assign pred_ok = pred_valid & (real_taken == pred_taken) & (!real_taken || target_match);//Ô¤²âÒ»ÖÂ
-    //---------------{Ìø×ªºÍ±í¶Ô±È ÓĞĞ§ & Æ¥Åä}begin---------------//
+    assign pred_valid   = is_cond | is_jump | is_call | is_ret;//Ö»ï¿½ï¿½Òªï¿½ï¿½ï¿½â¼¸ï¿½Öµï¿½br
+    assign pred_ok = pred_valid & (real_taken == pred_taken) & (!real_taken || target_match);//Ô¤ï¿½ï¿½Ò»ï¿½ï¿½
+    //---------------{ï¿½ï¿½×ªï¿½Í±ï¿½ï¿½Ô±ï¿½ ï¿½ï¿½Ğ§ & Æ¥ï¿½ï¿½}begin---------------//
 
 
 assign pred_taken = (ras_query_hit && (query_type == TYPE_RET)) ||
@@ -512,7 +528,7 @@ assign pred_target = (ras_query_hit && (query_type == TYPE_RET)) ? ras_query_tar
                      (btb_query_hit && (query_type == TYPE_CALL || query_type == TYPE_JUMP ||
                      (query_type == TYPE_COND && query_taken))) ? btb_query_target :
                      (pc + 32'd4);
-assign redirect = ID_valid & ID_ready_go & ~need_cancel & ID_allow_in 
+assign redirect = ID_valid & ID_ready_go & ~ID_need_cancel & ID_allow_in 
                  & ~ex_ADEF & (
                     (pred_valid & (real_taken != pred_taken)) |
                     (pred_valid & real_taken & ~target_match) |
@@ -520,9 +536,9 @@ assign redirect = ID_valid & ID_ready_go & ~need_cancel & ID_allow_in
                  );
 assign br_afterpred_taken = redirect;
 assign br_afterpred_target = real_taken ? real_target : pc + 4;
-assign update_valid =ID_valid & ID_ready_go & ~need_cancel & ID_allow_in & pred_valid & ~ex_ADEF & ~pred_ok;
+assign update_valid =ID_valid & ID_ready_go & ~ID_need_cancel & ID_allow_in & pred_valid & ~ex_ADEF & ~pred_ok;
 assign bht_update_valid = ID_valid && ID_ready_go &&
-                          !need_cancel && ID_allow_in &&
+                          !ID_need_cancel && ID_allow_in &&
                           is_cond && !ex_ADEF; 
 assign update_pc = pc;
 assign update_target = real_target;
@@ -532,11 +548,11 @@ assign update_type =    is_cond ? TYPE_COND :
                         is_jump ? TYPE_JUMP :
                                   TYPE_COND;
 assign update_taken = real_taken;
-assign push_valid   = ID_valid & ID_ready_go & ~need_cancel & ID_allow_in  & is_call & ~ex_ADEF;//ÕæÊµcall Òª push
+assign push_valid   = ID_valid & ID_ready_go & ~ID_need_cancel & ID_allow_in  & is_call & ~ex_ADEF;//ï¿½ï¿½Êµcall Òª push
 assign push_target  = pc + 32'd4;
-assign pop_valid    = is_ret & ID_valid & ID_ready_go & ~need_cancel & ID_allow_in  & ~ex_ADEF;//ÕæÊµreturn Òª pop
+assign pop_valid    = is_ret & ID_valid & ID_ready_go & ~ID_need_cancel & ID_allow_in  & ~ex_ADEF;//ï¿½ï¿½Êµreturn Òª pop
 //assign real_target = inst_jirl ? rf_rdata1 + jirl_offs : pc + br_offs;
-//Ğ´ÕâÖÖÖ»ÓĞinst_jirlÀ´ÁËÖ®ºó²Å»á¼ÆËãpc+br_offs
+//Ğ´ï¿½ï¿½ï¿½ï¿½Ö»ï¿½ï¿½inst_jirlï¿½ï¿½ï¿½ï¿½Ö®ï¿½ï¿½Å»ï¿½ï¿½ï¿½ï¿½pc+br_offs
 assign direct_target = pc + br_offs;
 assign real_target = inst_jirl ? rf_rdata1 + jirl_offs : direct_target;
 assign real_taken  = (
@@ -559,7 +575,7 @@ assign ID_EXE1_bus={
             inst_csrrd, inst_csrwr,inst_csrxchg,inst_ertn,inst_syscall,inst_break,ex_INE,ex_ADEF,has_int,inst_rdcntvl_w,inst_rdcntvh_w,inst_rdcntid,csr_num,rj_value,rf_dest,rf_gr_we,//WB destination and write_enable
             inst_tlbsrch,inst_tlbrd,inst_tlbwr,inst_tlbfill,inst_invtlb,
             ex_tlb_reload0,ex_tlb_preif_unvalid,ex_tlb_plv0,
-            cache_code,inst_cacop
+            cache_code,inst_cacop,inst_ibar,inst_dbar,inst_sc_w,inst_ll_w
         };
 //------------------------{bus}end-------------------------//
 
@@ -570,7 +586,7 @@ always @(posedge clk) begin
     if(!resetn)begin
         ID_valid<=1'b0;
     end
-    else if(need_cancel)begin
+    else if(ID_need_cancel)begin
         ID_valid<=1'b0;
     end
     else if(ID_allow_in)begin
