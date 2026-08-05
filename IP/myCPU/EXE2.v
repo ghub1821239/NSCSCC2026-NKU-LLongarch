@@ -23,7 +23,7 @@ module exe2 #(
     output wire [ 4:0]  exe2_front_addr,
     output wire         exe2_can_not_front_push,// ��д�Ĵ����Ŀ��Բ�ǰ��
     //cancel control
-    input  wire         need_cancel,
+    input  wire         EXE2_need_cancel,
     //ex_cancel ����write              exe2
     input  wire        older_ex_for_exe2,
     //handshake                        exe2
@@ -44,7 +44,13 @@ module exe2 #(
     output wire  [4:0]  cache_code,
     output wire         cacop_valid,
     input  wire         cacop_done,
-    output wire  [31:0] cacop_pc
+    output wire  [31:0] cacop_pc,
+    //system inst_need_cancel
+    output wire         ibar_cancel,
+    output wire         dbar_cancel,
+    //CSR_LLBCTL
+    output wire         LLbit_wb,
+    input  wire         LLbit
 );
 
 //------------------------{bus����&����}begin-------------------------//
@@ -106,6 +112,13 @@ wire       ex_tlb_page_modify;//tlb��ҳ�޸�
 
 wire       inst_cacop;
 
+//system inst
+wire       inst_ibar;
+wire       inst_dbar;
+wire       inst_sc_w;
+wire       inst_ll_w;
+
+assign LLbit_wb = inst_ll_w & EXE2_valid;
 
 always @(posedge clk)begin
     if(!resetn)begin
@@ -121,7 +134,7 @@ assign {
         inst_csrrd, inst_csrwr,inst_csrxchg,inst_ertn,inst_syscall,inst_break,ex_INE,ex_ADEF,ex_ALE,has_int,inst_rdcntvl_w,inst_rdcntvh_w,inst_rdcntid,csr_num,rj_value,rf_dest,rf_gr_we,//WB
         inst_tlbsrch,TLBIDX_new_tlbsrch,inst_tlbrd,inst_tlbwr,inst_tlbfill,inst_invtlb,
         ex_tlb_reload0,ex_tlb_preif_unvalid,ex_tlb_plv0,ex_tlb_reload1,ex_tlb_ld_unvalid,ex_tlb_st_unvalid,ex_tlb_plv1,ex_tlb_page_modify,
-        data_sram_addr,data_sram_wdata,data_sram_size,data_sram_wstrb,data_mat,data_wr,inst_cacop,cache_code
+        data_sram_addr,data_sram_wdata,data_sram_size,data_sram_wstrb,data_mat,data_wr,inst_cacop,cache_code,inst_ibar,inst_dbar,inst_sc_w,inst_ll_w
         }=bus;
 //------------------------{bus����&����}end-------------------------//
 
@@ -144,9 +157,14 @@ end
 assign need_stall_inst = res_from_mem ;
 //------------------------{need_stall_inst}end-------------------------//
 
+//------------------------{i/dbar need cancel}begins-------------------------//
+assign ibar_cancel = inst_ibar;
+assign dbar_cancel = inst_dbar;
+//------------------------{i/dbar need cancel}end-------------------------//
+
 //------------------------{dataRAM handshake}begin-------------------------//
 wire EXE2_ex;
-assign data_sram_req   = (res_from_mem | mem_we) & ~req_without_dataok & MEM_allow_in &
+assign data_sram_req   = (res_from_mem | mem_we) & ~req_without_dataok & MEM_allow_in & ~(inst_sc_w & ~LLbit) &
                          ~EXE2_ex & ~older_ex_for_exe2 & EXE2_valid;
 assign data_sram_wr    = |data_sram_wstrb & ~older_ex_for_exe2 & ~EXE2_ex & EXE2_valid;
 
@@ -176,7 +194,7 @@ always @(posedge clk) begin
     if(!resetn)begin
         EXE2_valid<=1'b0;
     end
-    else if(need_cancel)begin
+    else if(EXE2_need_cancel)begin
         EXE2_valid<=1'b0;
     end
     else if(EXE2_allow_in)begin
@@ -191,7 +209,7 @@ assign EXE2_MEM_bus={
         rkd_value,res_from_mem,mem_we,need_stall_csr,inst_ld_b,inst_ld_h,inst_ld_bu ,inst_ld_hu,data_sram_addr[1:0],alu_result_with_rdct,//MEM
         inst_csrrd, inst_csrwr,inst_csrxchg,inst_ertn,inst_syscall,inst_break,ex_INE,ex_ADEF,ex_ALE,has_int,inst_rdcntvl_w,inst_rdcntvh_w,inst_rdcntid,csr_num,rj_value,rf_dest,rf_gr_we,//WB
         inst_tlbsrch,TLBIDX_new_tlbsrch,inst_tlbrd,inst_tlbwr,inst_tlbfill,inst_invtlb,
-        ex_tlb_reload0,ex_tlb_preif_unvalid,ex_tlb_plv0,ex_tlb_reload1,ex_tlb_ld_unvalid,ex_tlb_st_unvalid,ex_tlb_plv1,ex_tlb_page_modify
+        ex_tlb_reload0,ex_tlb_preif_unvalid,ex_tlb_plv0,ex_tlb_reload1,ex_tlb_ld_unvalid,ex_tlb_st_unvalid,ex_tlb_plv1,ex_tlb_page_modify,inst_sc_w
     };                                                      
 assign EXE2_rf_dest = rf_dest;                               
 //------------------------{bus}end-------------------------//

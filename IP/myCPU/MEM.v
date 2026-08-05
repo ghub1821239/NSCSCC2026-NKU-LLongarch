@@ -19,7 +19,7 @@ module mem #(
   output wire [31:0]  mem_front_data,
   output wire [ 4:0]  mem_front_addr,
   //cancel control
-  input  wire         need_cancel,
+  input  wire         MEM_need_cancel,
   //exception front
   output wire         MEM_ex,
   //ex
@@ -76,6 +76,9 @@ wire        inst_tlbwr;
 wire        inst_tlbfill;
 wire        inst_invtlb;
 
+// sc_w
+wire        inst_sc_w;
+
 wire [31:0] rkd_value;
 reg  [inbus_width-1:0] bus;
 
@@ -84,15 +87,16 @@ wire [7:0]  ld_data_byte;
 wire [15:0] ld_data_half;
 wire [1:0]   data_sram_addr_l;
 
+
 //tlb_ex
-wire       ex_tlb_reload0;//tlbÖØÌîÀıÍâ
-wire       ex_tlb_preif_unvalid;//tlbÖĞÈ¡Ö¸Ò³ÎŞĞ§
-wire       ex_tlb_plv0;//tlbÖĞÒ³ÌØÈ¨²»ºÏ¹æ
-wire       ex_tlb_reload1;//tlbÖØÌîÀıÍâ        
-wire       ex_tlb_ld_unvalid;//tlbÖĞloadÒ³ÎŞĞ§ 
-wire       ex_tlb_st_unvalid;//tlbÖĞstoreÒ³ÎŞĞ§
-wire       ex_tlb_plv1;//tlbÖĞÒ³ÌØÈ¨²»ºÏ¹æ        
-wire       ex_tlb_page_modify;//tlbÖĞÒ³ĞŞ¸Ä     
+wire       ex_tlb_reload0;//tlbï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+wire       ex_tlb_preif_unvalid;//tlbï¿½ï¿½È¡Ö¸Ò³ï¿½ï¿½Ğ§
+wire       ex_tlb_plv0;//tlbï¿½ï¿½Ò³ï¿½ï¿½È¨ï¿½ï¿½ï¿½Ï¹ï¿½
+wire       ex_tlb_reload1;//tlbï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½        
+wire       ex_tlb_ld_unvalid;//tlbï¿½ï¿½loadÒ³ï¿½ï¿½Ğ§ 
+wire       ex_tlb_st_unvalid;//tlbï¿½ï¿½storeÒ³ï¿½ï¿½Ğ§
+wire       ex_tlb_plv1;//tlbï¿½ï¿½Ò³ï¿½ï¿½È¨ï¿½ï¿½ï¿½Ï¹ï¿½        
+wire       ex_tlb_page_modify;//tlbï¿½ï¿½Ò³ï¿½Ş¸ï¿½     
 
 assign ld_data_byte = data_sram_addr_l == 2'b00 ? data_sram_rdata [7:0] :
                       data_sram_addr_l == 2'b01 ? data_sram_rdata [15:8] :
@@ -120,11 +124,11 @@ assign {
         rkd_value,res_from_mem,mem_we,need_stall_csr,inst_ld_b,inst_ld_h,inst_ld_bu ,inst_ld_hu,data_sram_addr_l,alu_result_with_rdct,//MEM
         inst_csrrd, inst_csrwr,inst_csrxchg,inst_ertn,inst_syscall,inst_break,ex_INE,ex_ADEF,ex_ALE,has_int,inst_rdcntvl_w,inst_rdcntvh_w,inst_rdcntid,csr_num,rj_value,rf_dest,rf_gr_we,
         inst_tlbsrch,TLBIDX_new_tlbsrch,inst_tlbrd,inst_tlbwr,inst_tlbfill,inst_invtlb,//WB
-        ex_tlb_reload0,ex_tlb_preif_unvalid,ex_tlb_plv0,ex_tlb_reload1,ex_tlb_ld_unvalid,ex_tlb_st_unvalid,ex_tlb_plv1,ex_tlb_page_modify
+        ex_tlb_reload0,ex_tlb_preif_unvalid,ex_tlb_plv0,ex_tlb_reload1,ex_tlb_ld_unvalid,ex_tlb_st_unvalid,ex_tlb_plv1,ex_tlb_page_modify,inst_sc_w
     }=bus;
 assign MEM_rf_dest = rf_dest;
 assign need_stall_inst = res_from_mem;
-//[todo Òì³£¼ÇµÃÓëÉÏ]
+//[todo ï¿½ì³£ï¿½Çµï¿½ï¿½ï¿½ï¿½ï¿½]
 assign rf_gr_we_ex = rf_gr_we & ~inst_ertn & ~inst_syscall & ~inst_break &
                      ~ex_INE & ~ex_ADEF & ~ex_ALE & ~has_int & 
                      ~ex_tlb_reload0 & ~ex_tlb_reload1 & ~ex_tlb_preif_unvalid & ~ex_tlb_plv0 & ~ex_tlb_plv1 & ~ex_tlb_ld_unvalid & ~ex_tlb_st_unvalid & ~ex_tlb_page_modify;
@@ -145,7 +149,7 @@ always @(posedge clk) begin
     if(!resetn)begin
         MEM_valid<=1'b0;
     end
-    else if(need_cancel)begin
+    else if(MEM_need_cancel)begin
         MEM_valid<=1'b0;
     end
     else if(MEM_allow_in)begin

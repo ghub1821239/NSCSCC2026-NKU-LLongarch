@@ -14,7 +14,7 @@ module fetch #(
     
     output wire [outbus_width-1:0] IF_ID_bus,
     //cancel
-    input  wire        need_cancel,
+    input  wire        IF_need_cancel,
     //stall
     input  wire        need_stall,
     //handshake
@@ -33,7 +33,7 @@ always @ (posedge clk)begin
         inst_reg <= 32'b0;
         inst_reg_valid <= 1'b0;
     end
-    else if(need_cancel)begin
+    else if(IF_need_cancel)begin
         inst_reg_valid <= 1'b0;
     end
    /* else if(inst_sram_data_ok & ~inst_resp_discard)begin
@@ -89,15 +89,15 @@ assign IF_ID_bus=inst_reg_valid ? {pc,inst_reg,ex_ADEF,ex_tlb_reload0,ex_tlb_pre
 wire inst_resp_valid = inst_sram_data_ok & ~inst_resp_discard;
 // 本拍若 IF 能把当前指令交给 ID，则优先走旁路 rdata，不必依赖 reg 当 ready
 wire deliver_now = IF_valid & inst_resp_valid & req_to_dataok_trigger & ID_allow_in
-                 & ~need_stall & ~need_cancel;
+                 & ~need_stall & ~IF_need_cancel;
 
-assign IF_ready_go = (need_stall | need_cancel) ? 1'b0 :
+assign IF_ready_go = (need_stall | IF_need_cancel) ? 1'b0 :
                      (inst_resp_valid & req_to_dataok_trigger) | inst_reg_valid;
 always @(posedge clk) begin
     if(!resetn)begin
         IF_valid<=1'b0;
     end
-    else if (need_cancel)begin
+    else if (IF_need_cancel)begin
         IF_valid<=1'b0;
     end  
     else if(IF_allow_in)begin

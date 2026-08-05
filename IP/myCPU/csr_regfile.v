@@ -8,24 +8,24 @@ module csr_regfile#(
     input  wire        csr_we,
     input  wire [31:0] csr_wmask,
     input  wire [13:0] csr_num,
-    // Ð´ÑÚÂë´æÔÚµÄ±ØÒª¾ÍÊÇÒòÎªcsrwcfgÕâ¸öÖ¸Áî»áÉæ¼°µ½rjµÄÐ´ÑÚÂëÎÊÌâ£¬ÕâÀïÊÇ·Åµ½ÁËcsrÀï½øÐÐ´¦Àí£¬ÕâÑùÒ²²»»áÈÃdecodeµÄ¹Ø¼üÂ·¾¶±ä³¤
+    // Ð´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ÚµÄ±ï¿½Ò?ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Îªcsrwcfgï¿½ï¿½ï¿½Ö¸ï¿½ï¿½ï¿½ï¿½æ¼°ï¿½ï¿½rjï¿½ï¿½Ð´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½â£¬ï¿½ï¿½ï¿½ï¿½ï¿½Ç·Åµï¿½ï¿½ï¿½csrï¿½ï¿½ï¿½ï¿½Ð´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ò²ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½decodeï¿½Ä¹Ø¼ï¿½Â·ï¿½ï¿½ï¿½ä³¤
     input  wire [31:0] csr_wvalue,
     // read port
     input  wire        csr_re,
     output wire [31:0] csr_rvalue,
-    // ex ·¢ÆðÒì³£
+    // ex ï¿½ï¿½ï¿½ï¿½ï¿½ì³£
     input  wire        wb_ex,
 
     input  wire  [5:0] wb_ecode,
     input  wire  [8:0] wb_esubcode,
 
-    // Ó²¼þÒì³£8Î»
+    // Ó²ï¿½ï¿½ï¿½ì³£8Î»
     input  wire [7:0]  hw_int_in,
     input  wire        ipi_int_in,
 
-    // ERA ´æ´¢Ê¹ÓÃ£¬·¢ÆðÒì³£µÄpc
+    // ERA ï¿½æ´¢Ê¹ï¿½Ã£ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ì³£ï¿½ï¿½pc
     input  wire [31:0] wb_pc,
-    // BAVD ¼ÇÂ¼´íÎóµÄµØÖ·
+    // BAVD ï¿½ï¿½Â¼ï¿½ï¿½ï¿½ï¿½Äµï¿½Ö?
     input  wire [31:0] wb_vaddr,
 
     // decode
@@ -37,10 +37,10 @@ module csr_regfile#(
     // TLB CSR outputs for EXE/WB
     output wire [31:0] csr_TLBEHI,
     output wire [31:0] csr_TLBIDX,
-    // CRMD ¸øµ½Á÷Ë®¼¶½øÐÐPLVÈ¨ÏÞÅÐ¶¨
+    // CRMD ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ë®ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½PLVÈ¨ï¿½ï¿½ï¿½Ð¶ï¿½
     output wire  [1:0] csr_CRMD_PLV,
     
-    //tlbrd½Ó¿Ú read port
+    //tlbrdï¿½Ó¿ï¿½ read port
     output  wire [$clog2(TLBNUM)-1:0] r_index,
     output  wire [9:0]  s0_asid,
     output  wire [9:0]  s1_asid_without_invtlb,
@@ -77,10 +77,10 @@ module csr_regfile#(
     output  wire [1:0]  w_mat1,
     output  wire        w_d1,
     output  wire        w_v1,
-    // CRMD Êä³ö¸øÁ÷Ë®Ïß½øÐÐÅÐ¶¨·­Òë·½Ê½
+    // CRMD ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ë?ï¿½ß½ï¿½ï¿½ï¿½ï¿½Ð¶ï¿½ï¿½ï¿½ï¿½ë·½Ê½
     output  wire        csr_CRMD_DA,
     output  wire        csr_CRMD_PG,
-    // CRMDÖØÌîÒì³£
+    // CRMDï¿½ï¿½ï¿½ï¿½ï¿½ì³£
     input   wire        ex_tlb_reload,
     // DMW0/1 
     input   wire  [2:0] dmw_vseg0,
@@ -91,7 +91,7 @@ module csr_regfile#(
     output  wire        dmw_found1,
     output  wire  [2:0] dmw_pseg1,
 
-    //ERTN ÀýÍâÖ¸Áî·µ»Ø¸ü¸ÄCRMD
+    //ERTN ï¿½ï¿½ï¿½ï¿½Ö¸ï¿½î·µï¿½Ø¸ï¿½ï¿½ï¿½CRMD
     input   wire        inst_ertn,
     
     //BADV
@@ -101,11 +101,14 @@ module csr_regfile#(
     input   wire        csr_tlb_plv1   ,
     // ex_tlb TLBEHI
     input   wire        ex_tlb,
-    //mat:´æ´¢·ÃÎÊÀàÐÍ
+    //mat:ï¿½æ´¢ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
     output   wire  [1:0] csr_CRMD_DATF,
     output   wire  [1:0] csr_CRMD_DATM,
     output   wire  [1:0] dmw_mat0,
-    output   wire  [1:0] dmw_mat1
+    output   wire  [1:0] dmw_mat1,
+    //LLbit
+    input    wire        LLbit_wb,
+    output   wire        LLbit
 );
 
 // ----------DEFINE--------------
@@ -132,39 +135,40 @@ reg [31:0] ASID;
 reg [31:0] TLBRENTRY;
 reg [31:0] DMW0;
 reg [31:0] DMW1;
+reg [31:0] LLBCTL;
 // ----------DEFINE END----------
 
 // ----------WRITE IN--------------
 
-//¡¾CRMD PLV¡¿ ÌØÈ¨µÈ¼¶
+//ï¿½ï¿½CRMD PLVï¿½ï¿½ ï¿½ï¿½È¨ï¿½È¼ï¿½
 always @ (posedge clk)begin
-    // ²Ù×÷ÊÖ²á6.3¸´Î»Ö¸³ö
+    // ï¿½ï¿½ï¿½ï¿½ï¿½Ö²ï¿½6.3ï¿½ï¿½Î»Ö¸ï¿½ï¿½
     if(!resetn)begin
         CRMD[`CSR_CRMD_PLV] <= 2'b0;
     end
-    // Èç¹ûÐ´»Ø½×¶Î±¨´í£¬¾ÍÒª×ª³ÉÄÚºËÌ¬½øÐÐÒì³£´¦Àí
+    // ï¿½ï¿½ï¿½Ð´ï¿½Ø½×¶Î±ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ò?×ªï¿½ï¿½ï¿½Úºï¿½Ì¬ï¿½ï¿½ï¿½ï¿½ï¿½ì³£ï¿½ï¿½ï¿½ï¿½
     else if(wb_ex)begin
         CRMD[`CSR_CRMD_PLV] <= 2'b0;
     end
-    // Èç¹ûµ÷ÓÃertn£¬±íÊ¾Òì³£ÒÑ¾­´¦ÀíÍê£¬ÐèÒª»Ö¸´µ½Òì³£´¥·¢Ç°µÄÌØÈ¨µÈ¼¶
+    // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ertnï¿½ï¿½ï¿½ï¿½Ê¾ï¿½ì³£ï¿½Ñ¾ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ê£¬ï¿½ï¿½Òªï¿½Ö¸ï¿½ï¿½ï¿½ï¿½ì³£ï¿½ï¿½ï¿½ï¿½Ç°ï¿½ï¿½ï¿½ï¿½È¨ï¿½È¼ï¿½
     else if (inst_ertn) begin
         CRMD[`CSR_CRMD_PLV] <= PRMD [`CSR_PRMD_PPLV];
     end
-    // Èç¹ûÐ´CRMD£¬Ôò°´Ð´ÑÚÂë¸üÐÂ£º
-    // 1. ÑÚÂëÎª1µÄÎ»Ð´Èëcsr_wvalue¶ÔÓ¦Î»
-    // 2. ÑÚÂëÎª0µÄÎ»±£³ÖÔ­Öµ
-    // ×îºó½«Á½²¿·Ö°´Î»»òºÏ²¢
+    // ï¿½ï¿½ï¿½Ð´CRMDï¿½ï¿½ï¿½ï¿½Ð´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â£ï¿?
+    // 1. ï¿½ï¿½ï¿½ï¿½Îª1ï¿½ï¿½Î»Ð´ï¿½ï¿½csr_wvalueï¿½ï¿½Ó¦Î»
+    // 2. ï¿½ï¿½ï¿½ï¿½Îª0ï¿½ï¿½Î»ï¿½ï¿½ï¿½ï¿½Ô­Öµ
+    // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö°ï¿½Î»ï¿½ï¿½Ï²ï¿½
     else if (csr_we & csr_num == `CSR_CRMD)begin
         CRMD[`CSR_CRMD_PLV] <= (csr_wmask[`CSR_CRMD_PLV] & csr_wvalue[`CSR_CRMD_PLV]) | 
                                (~csr_wmask[`CSR_CRMD_PLV] & CRMD[`CSR_CRMD_PLV]);
     end
 end
-//¡¾CRMD IE¡¿ÊÇ·ñÔÊÐíÏìÓ¦ÖÐ¶Ï
+//ï¿½ï¿½CRMD IEï¿½ï¿½ï¿½Ç·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ó¦ï¿½Ð¶ï¿½
 always @ (posedge clk)begin
     if(!resetn)begin
         CRMD[`CSR_CRMD_IE] <= 1'b0;
     end
-    // ½øÈëÒì³£´¦Àí³ÌÐòºó½«CRMDµÄIEÎ»ÖÃ0£¬±ÜÃâÔÚÒì³£´¦ÀíÆÚ¼äÔÙ´ÎÏìÓ¦ÖÐ¶Ï
+    // ï¿½ï¿½ï¿½ï¿½ï¿½ì³£ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½CRMDï¿½ï¿½IEÎ»ï¿½ï¿½0ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ì³£ï¿½ï¿½ï¿½ï¿½ï¿½Ú¼ï¿½ï¿½Ù´ï¿½ï¿½ï¿½Ó¦ï¿½Ð¶ï¿½
     else if(wb_ex)begin
         CRMD[`CSR_CRMD_IE] <= 1'b0;
     end
@@ -176,7 +180,7 @@ always @ (posedge clk)begin
                                (~csr_wmask[`CSR_CRMD_IE] & CRMD[`CSR_CRMD_IE]);
     end
 end
-//¡¾CRMD DA & PG & DATF & DATM¡¿ÕâÐ©×Ö¶ÎÔÚÆôÓÃTLBºó²Å»áÊ¹ÓÃ£¬´Ë´¦ÏÈÉèÖÃ¸´Î»Öµ
+//ï¿½ï¿½CRMD DA & PG & DATF & DATMï¿½ï¿½ï¿½ï¿½Ð©ï¿½Ö¶ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½TLBï¿½ï¿½Å»ï¿½Ê¹ï¿½Ã£ï¿½ï¿½Ë´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ã¸ï¿½Î»Ö?
 always @(posedge clk)begin
     if(!resetn)begin
         CRMD[`CSR_CRMD_DA]   <= 1'b1;
@@ -192,7 +196,7 @@ always @(posedge clk)begin
         else if (inst_ertn && ESTAT[`CSR_ESTAT_ECODE] == 6'h3F) begin
             CRMD[`CSR_CRMD_DA]   <= 1'b0;
             CRMD[`CSR_CRMD_PG]   <= 1'b1;
-            // ÍÆ¼öµÄ µ«ÊÇÖ¸ÁîÊÖ²áÓÐÎó
+            // ï¿½Æ¼ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Ö¸ï¿½ï¿½ï¿½Ö²ï¿½ï¿½ï¿½ï¿½ï¿½
 //            CRMD[`CSR_CRMD_DATF] <= 2'b00;
 //            CRMD[`CSR_CRMD_DATM] <= 2'b01;
         end
@@ -217,7 +221,7 @@ always @(posedge clk)begin
     end
 end
 
-//¡¾PRMD PPLV¡¿±£´æÒì³£´¥·¢Ç°µÄÌØÈ¨µÈ¼¶
+//ï¿½ï¿½PRMD PPLVï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ì³£ï¿½ï¿½ï¿½ï¿½Ç°ï¿½ï¿½ï¿½ï¿½È¨ï¿½È¼ï¿½
 always @(posedge clk)begin
     if(wb_ex)begin
         PRMD[`CSR_PRMD_PPLV] <= CRMD[`CSR_CRMD_PLV];
@@ -227,7 +231,7 @@ always @(posedge clk)begin
                                (~csr_wmask[`CSR_PRMD_PPLV] & PRMD[`CSR_PRMD_PPLV]);
     end
 end
-//¡¾PRMD PIE¡¿±£´æÒì³£´¥·¢Ç°µÄÈ«¾ÖÖÐ¶ÏÊ¹ÄÜÎ»
+//ï¿½ï¿½PRMD PIEï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ì³£ï¿½ï¿½ï¿½ï¿½Ç°ï¿½ï¿½È«ï¿½ï¿½ï¿½Ð¶ï¿½Ê¹ï¿½ï¿½Î»
 always @(posedge clk)begin
     if (wb_ex)begin
         PRMD[`CSR_PRMD_PIE] <= CRMD[`CSR_CRMD_IE];
@@ -238,9 +242,9 @@ always @(posedge clk)begin
     end
 end
 
-//¡¾ERA¡¿Òì³£·µ»ØµØÖ·
-// ´¥·¢Òì³£µÄÊ±ºò£¬wb_ex»á´¥·¢°Ñµ±Ç°µÄÒì³£pcÐ´Èëera
-// ÕâÑùsyscallºÍbrkÕâÖÖÖ»ÐèÒª¹ÜÌø×ªµ½eentry¼´¿É
+//ï¿½ï¿½ERAï¿½ï¿½ï¿½ì³£ï¿½ï¿½ï¿½Øµï¿½Ö·
+// ï¿½ï¿½ï¿½ï¿½ï¿½ì³£ï¿½ï¿½Ê±ï¿½ï¿½wb_exï¿½á´¥ï¿½ï¿½ï¿½Ñµï¿½Ç°ï¿½ï¿½ï¿½ì³£pcÐ´ï¿½ï¿½era
+// ï¿½ï¿½ï¿½ï¿½syscallï¿½ï¿½brkï¿½ï¿½ï¿½ï¿½Ö»ï¿½ï¿½Òªï¿½ï¿½ï¿½ï¿½×ªï¿½ï¿½eentryï¿½ï¿½ï¿½ï¿½
 always @(posedge clk)begin
     if (wb_ex)begin
         ERA[`CSR_ERA_PC] <= wb_pc;
@@ -251,7 +255,7 @@ always @(posedge clk)begin
     end
 end
 
-//¡¾EENTRY¡¿Òì³£Èë¿ÚµØÖ·
+//ï¿½ï¿½EENTRYï¿½ï¿½ï¿½ì³£ï¿½ï¿½Úµï¿½Ö?
 always @ (posedge clk)begin
     if (csr_we & csr_num == `CSR_EENTRY)begin
         EENTRY[`CSR_EENTRY_VA] <= (csr_wmask[`CSR_EENTRY_VA] & csr_wvalue[`CSR_EENTRY_VA]) |
@@ -259,7 +263,7 @@ always @ (posedge clk)begin
     end
 end
 
-//¡¾SAVE 0~3¡¿Êý¾Ý±£´æ¼Ä´æÆ÷
+//ï¿½ï¿½SAVE 0~3ï¿½ï¿½ï¿½ï¿½ï¿½Ý±ï¿½ï¿½ï¿½Ä´ï¿½ï¿½ï¿?
 always @ (posedge clk)begin
     if (csr_we && csr_num == `CSR_SAVE0)begin
         SAVE0[`CSR_SAVE_DATA] <= (csr_wmask[`CSR_SAVE_DATA] & csr_wvalue[`CSR_SAVE_DATA]) |
@@ -279,10 +283,10 @@ always @ (posedge clk)begin
     end
 end
 
-//¡¾TICLR¡¿¶¨Ê±Æ÷ÖÐ¶ÏÇå³ý¼Ä´æÆ÷
+//ï¿½ï¿½TICLRï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½ï¿½Ð¶ï¿½ï¿½ï¿½ï¿½ï¿½Ä´ï¿½ï¿½ï¿?
 
-//¡¾ECFG¡¿
-//¡¾todo¡¿ checkÒ»ÏÂÕâÀïÊÇESTAT »¹ÊÇ ECFG
+//ï¿½ï¿½ECFGï¿½ï¿½
+//ï¿½ï¿½todoï¿½ï¿½ checkÒ»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ESTAT ï¿½ï¿½ï¿½ï¿½ ECFG
 always @ (posedge clk)begin
     if(!resetn)begin
         ECFG[`CSR_ECFG_LIE] <= 13'b0;
@@ -294,7 +298,7 @@ always @ (posedge clk)begin
 end
     
 
-//¡¾BADV¡¿Òì³£Ïà¹ØÐéµØÖ·
+//ï¿½ï¿½BADVï¿½ï¿½ï¿½ì³£ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö·
 wire wb_ex_addr_err;
 wire ex_preIF_tlb;
 assign wb_ex_addr_err = wb_ecode == `ECODE_ADE || wb_ecode == `ECODE_ALE || wb_ecode == `ECODE_PIL ||
@@ -308,7 +312,7 @@ always @ (posedge clk)begin
     end
 end
 
-//¡¾TID¡¿¸´Î»Ê±ÔØÈëcoreid£¬Ò²¿ÉÍ¨¹ýCSRÖ¸ÁîÐ´Èë
+//ï¿½ï¿½TIDï¿½ï¿½ï¿½ï¿½Î»Ê±ï¿½ï¿½ï¿½ï¿½coreidï¿½ï¿½Ò²ï¿½ï¿½Í¨ï¿½ï¿½CSRÖ¸ï¿½ï¿½Ð´ï¿½ï¿½
 always @ (posedge clk)begin
     if(!resetn)begin
         TID[`CSR_TID_TID] <= coreid_in;
@@ -319,7 +323,7 @@ always @ (posedge clk)begin
     end
 end
 
-//¡¾TCFG¡¿¿ØÖÆ¶¨Ê±Æ÷µÄ³õÊ¼Öµ¡¢Ñ­»·Ä£Ê½ºÍÊ¹ÄÜÎ»
+//ï¿½ï¿½TCFGï¿½ï¿½ï¿½ï¿½ï¿½Æ¶ï¿½Ê±ï¿½ï¿½ï¿½Ä³ï¿½Ê¼Öµï¿½ï¿½Ñ­ï¿½ï¿½Ä£Ê½ï¿½ï¿½Ê¹ï¿½ï¿½Î»
 always @ (posedge clk)begin
     if(!resetn)begin
         TCFG[`CSR_TCFG_EN] <= 1'b0;
@@ -337,14 +341,14 @@ always @ (posedge clk)begin
 end
 
 reg [31:0] timer_cnt;
-// ÐÂµÄTCFG
+// ï¿½Âµï¿½TCFG
 wire [31:0] TCFG_next_val;
 assign TCFG_next_val = csr_wmask[31:0] & csr_wvalue[31:0] | ~csr_wmask[31:0] & TCFG[31:0];
 always @ (posedge clk) begin
     if (!resetn) begin
         timer_cnt <= 32'hffffffff;
     end
-    // ÓÐÐ§&×Ô¼õ
+    // ï¿½ï¿½Ð§&ï¿½Ô¼ï¿½
     else if (csr_we && csr_num == `CSR_TCFG && TCFG_next_val[`CSR_TCFG_EN]) begin
         timer_cnt <= {TCFG_next_val[`CSR_TCFG_INITVAL],{2{1'b0}}};
     end
@@ -358,9 +362,9 @@ always @ (posedge clk) begin
     end
 end
 
-//¡¾ESTAT IS¡¿ÖÐ¶Ï×´Ì¬Î»
+//ï¿½ï¿½ESTAT ISï¿½ï¿½ï¿½Ð¶ï¿½×´Ì¬Î»
 always @(posedge clk)begin
-    //¡¾ÈíÖÐ¶Ï¡¿
+    //ï¿½ï¿½ï¿½ï¿½ï¿½Ð¶Ï¡ï¿½
     if (!resetn)begin
         ESTAT[`CSR_ESTAT_IS1_0] <= 2'b0;
     end
@@ -368,25 +372,25 @@ always @(posedge clk)begin
         ESTAT[`CSR_ESTAT_IS1_0] <= (csr_wmask[`CSR_ESTAT_IS1_0] & csr_wvalue[`CSR_ESTAT_IS1_0]) | 
                                     (~csr_wmask[`CSR_ESTAT_IS1_0] & ESTAT[`CSR_ESTAT_IS1_0]);
     end                            
-    //¡¾Ó²ÖÐ¶Ï¡¿ÓÉhw_int_in´«Èë£»Î´Á¬½ÓÓ²¼þÖÐ¶ÏÔ´Ê±Ó¦ÊäÈë0
+    //ï¿½ï¿½Ó²ï¿½Ð¶Ï¡ï¿½ï¿½ï¿½hw_int_inï¿½ï¿½ï¿½ë£»Î´ï¿½ï¿½ï¿½ï¿½Ó²ï¿½ï¿½ï¿½Ð¶ï¿½Ô´Ê±Ó¦ï¿½ï¿½ï¿½ï¿½0
     ESTAT[`CSR_ESTAT_IS9_2] <= hw_int_in[7:0];
 
-    //¡¾±£ÁôÎ»¡¿
+    //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Î»ï¿½ï¿½
     ESTAT[10] <= 1'b0;
 
-    //¡¾¶¨Ê±Æ÷ÖÐ¶Ï¡¿
+    //ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½ï¿½Ð¶Ï¡ï¿½
     if(timer_cnt[31:0] == 32'b0)begin
         ESTAT[`CSR_ESTAT_IS11] <= 1'b1;
     end
-    // TICLRµÄ¶ÁÖµºãÎª0£¬Ð´ÈëCLRÎ»Ê±Ö±½ÓÇå³ý¶¨Ê±Æ÷ÖÐ¶Ï×´Ì¬
+    // TICLRï¿½Ä¶ï¿½Öµï¿½ï¿½Îª0ï¿½ï¿½Ð´ï¿½ï¿½CLRÎ»Ê±Ö±ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½ï¿½Ð¶ï¿½×´Ì?
     else if (csr_we && csr_num == `CSR_TICLR && csr_wmask[`CSR_TICLR_CLR] && csr_wvalue[`CSR_TICLR_CLR])begin
         ESTAT[`CSR_ESTAT_IS11] <= 1'b0;
     end
 
-    //¡¾ºË¼äÖÐ¶Ï¡¿
+    //ï¿½ï¿½ï¿½Ë¼ï¿½ï¿½Ð¶Ï¡ï¿½
     ESTAT[`CSR_ESTAT_IS12] <= ipi_int_in;
 end
-//¡¾ESTAT Ecode & Esubcode¡¿Òì³£ÀàÐÍºÍÒì³£×ÓÀàÐÍ
+//ï¿½ï¿½ESTAT Ecode & Esubcodeï¿½ï¿½ï¿½ì³£ï¿½ï¿½ï¿½Íºï¿½ï¿½ì³£ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 always @(posedge clk)begin
     if(wb_ex)begin
         ESTAT[`CSR_ESTAT_ECODE] <= wb_ecode;
@@ -394,20 +398,20 @@ always @(posedge clk)begin
     end
 end
 
-//¡¾TLBIDX INDEX¡¿TLBµÄIndexÓò
+//ï¿½ï¿½TLBIDX INDEXï¿½ï¿½TLBï¿½ï¿½Indexï¿½ï¿½
 always @(posedge clk) begin
     if(csr_we && csr_num == `CSR_TLBIDX) begin
         TLBIDX[`CSR_TLBIDX_INDEX] <= (csr_wmask[`CSR_TLBIDX_INDEX] & csr_wvalue[`CSR_TLBIDX_INDEX]) |
                                      (~csr_wmask[`CSR_TLBIDX_INDEX] & TLBIDX[`CSR_TLBIDX_INDEX]);
     end
 end
-//¡¾TLBIDX PS¡¿TLBµÄÒ³Ãæ´óÐ¡(4KB/4MB)
+//ï¿½ï¿½TLBIDX PSï¿½ï¿½TLBï¿½ï¿½Ò³ï¿½ï¿½ï¿½Ð?(4KB/4MB)
 always @(posedge clk) begin
-    //tlbrd¶ÁÈ¡µÄÊÇÓÐÐ§Ïî
+    //tlbrdï¿½ï¿½È¡ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ð§ï¿½ï¿½
     if (tlbrd_we & r_e == 1) begin
         TLBIDX[`CSR_TLBIDX_PS] <= r_ps;
     end
-    //tlbrd¶ÁÈ¡µÄÊÇÎÞÐ§Ïî
+    //tlbrdï¿½ï¿½È¡ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ð§ï¿½ï¿½
     if (tlbrd_we & r_e == 0) begin
         TLBIDX[`CSR_TLBIDX_PS] <= 6'b0;
     end
@@ -416,13 +420,13 @@ always @(posedge clk) begin
                                   (~csr_wmask[`CSR_TLBIDX_PS] & TLBIDX[`CSR_TLBIDX_PS]);
     end
 end
-//¡¾TLBIDX NE¡¿TLBµÄÓÐÐ§Î»
+//ï¿½ï¿½TLBIDX NEï¿½ï¿½TLBï¿½ï¿½ï¿½ï¿½Ð§Î»
 always @(posedge clk) begin
-    //tlbrd¶ÁÈ¡µÄÊÇÓÐÐ§Ïî
+    //tlbrdï¿½ï¿½È¡ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ð§ï¿½ï¿½
     if (tlbrd_we & r_e == 1) begin
         TLBIDX[`CSR_TLBIDX_NE] <= 1'b0;
     end
-    //tlbrd¶ÁÈ¡µÄÊÇÎÞÐ§Ïî
+    //tlbrdï¿½ï¿½È¡ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ð§ï¿½ï¿½
     if (tlbrd_we & r_e == 0) begin
         TLBIDX[`CSR_TLBIDX_NE] <= 1'b1;
     end
@@ -432,15 +436,15 @@ always @(posedge clk) begin
     end
 end
 
-//¡¾TLBEHI VPPN¡¿TLB±íÏî¸ßÎ»µÄVPPN
+//ï¿½ï¿½TLBEHI VPPNï¿½ï¿½TLBï¿½ï¿½ï¿½ï¿½ï¿½Î»ï¿½ï¿½VPPN
 wire [18:0] err_vppn;
 assign err_vppn = ex_preIF_tlb ? wb_pc[31:13] : wb_vaddr[31:13]; 
 always @(posedge clk) begin
-    //tlbrd¶ÁÈ¡µÄÊÇÓÐÐ§Ïî
+    //tlbrdï¿½ï¿½È¡ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ð§ï¿½ï¿½
     if (tlbrd_we & r_e == 1) begin
         TLBEHI[`CSR_TLBEHI_VPPN] <= r_vppn;
     end
-    //tlbrd¶ÁÈ¡µÄÊÇÎÞÐ§Ïî
+    //tlbrdï¿½ï¿½È¡ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ð§ï¿½ï¿½
     if (tlbrd_we & r_e == 0) begin
         TLBEHI[`CSR_TLBEHI_VPPN] <= 19'b0;
     end
@@ -453,9 +457,9 @@ always @(posedge clk) begin
     end
 end
 
-//¡¾TLBELO0¡¿TLB±íÏîµÄµÍÎ»ÐÅÏ¢,Å¼ÊýÒ³Ãæ
+//ï¿½ï¿½TLBELO0ï¿½ï¿½TLBï¿½ï¿½ï¿½ï¿½Äµï¿½Î»ï¿½ï¿½Ï?,Å¼ï¿½ï¿½Ò³ï¿½ï¿½
 always @(posedge clk) begin
-    //tlbrd¶ÁÈ¡µÄÊÇÓÐÐ§Ïî
+    //tlbrdï¿½ï¿½È¡ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ð§ï¿½ï¿½
     if (tlbrd_we & r_e == 1) begin
         TLBELO0[`CSR_TLBELO0_V] <= r_v0;
         TLBELO0[`CSR_TLBELO0_D] <= r_d0;
@@ -464,7 +468,7 @@ always @(posedge clk) begin
         TLBELO0[`CSR_TLBELO0_G]   <= r_g;
         TLBELO0[`CSR_TLBELO0_PPN] <= r_ppn0;
     end
-    //tlbrd¶ÁÈ¡µÄÊÇÎÞÐ§Ïî
+    //tlbrdï¿½ï¿½È¡ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ð§ï¿½ï¿½
     if (tlbrd_we & r_e == 0) begin
         TLBELO0[`CSR_TLBELO0_V] <= 1'b0;
         TLBELO0[`CSR_TLBELO0_D] <= 1'b0;
@@ -489,9 +493,9 @@ always @(posedge clk) begin
     end
 end
 
-//¡¾TLBELO1¡¿TLB±íÏîµÄµÍÎ»ÐÅÏ¢,ÆæÊýÒ³Ãæ
+//ï¿½ï¿½TLBELO1ï¿½ï¿½TLBï¿½ï¿½ï¿½ï¿½Äµï¿½Î»ï¿½ï¿½Ï?,ï¿½ï¿½ï¿½ï¿½Ò³ï¿½ï¿½
 always @(posedge clk) begin
-    //tlbrd¶ÁÈ¡µÄÊÇÓÐÐ§Ïî
+    //tlbrdï¿½ï¿½È¡ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ð§ï¿½ï¿½
     if (tlbrd_we & r_e == 1) begin
         TLBELO1[`CSR_TLBELO1_V] <= r_v1;
         TLBELO1[`CSR_TLBELO1_D] <= r_d1;
@@ -500,7 +504,7 @@ always @(posedge clk) begin
         TLBELO1[`CSR_TLBELO1_G]   <= r_g;
         TLBELO1[`CSR_TLBELO1_PPN] <= r_ppn1;
     end
-    //tlbrd¶ÁÈ¡µÄÊÇÎÞÐ§Ïî
+    //tlbrdï¿½ï¿½È¡ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ð§ï¿½ï¿½
     if (tlbrd_we & r_e == 0) begin
         TLBELO1[`CSR_TLBELO1_V] <= 1'b0;
         TLBELO1[`CSR_TLBELO1_D] <= 1'b0;
@@ -525,17 +529,17 @@ always @(posedge clk) begin
     end
 end
 
-//¡¾ASID¡¿TLBÖ¸ÁîµÄµØÖ·¿Õ¼ä±êÊ¶·û
+//ï¿½ï¿½ASIDï¿½ï¿½TLBÖ¸ï¿½ï¿½Äµï¿½Ö·ï¿½Õ¼ï¿½ï¿½Ê¶ï¿½ï¿½
 always @(posedge clk) begin
     //ASIDBITS
     if (!resetn) begin
         ASID[`CSR_ASID_ASIDBITS] <= 8'ha;
     end
-    //tlbrd¶ÁÈ¡µÄÊÇÎÞÐ§Ïî
+    //tlbrdï¿½ï¿½È¡ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ð§ï¿½ï¿½
     if (tlbrd_we & r_e == 0) begin
         ASID[`CSR_ASID_ASID] <= 10'b0;
     end
-    //tlbrd¶ÁÈ¡µÄÊÇÓÐÐ§Ïî
+    //tlbrdï¿½ï¿½È¡ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ð§ï¿½ï¿½
     if (tlbrd_we & r_e == 1) begin
         ASID[`CSR_ASID_ASID] <= r_asid;
     end
@@ -545,7 +549,7 @@ always @(posedge clk) begin
     end
 end
 
-//¡¾TLBRENTY PA¡¿TLB·¢ÉúÖØÌîÀýÍâÊ±£¬Ð´ÈëÕâÀïµÄÎïÀíµØÖ·
+//ï¿½ï¿½TLBRENTY PAï¿½ï¿½TLBï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½Ð´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö?
 always @(posedge clk) begin
     if (csr_we && csr_num == `CSR_TLBRENTRY) begin
         TLBRENTRY[`CSR_TLBRENTRY_PA] <= (csr_wmask[`CSR_TLBRENTRY_PA] & csr_wvalue[`CSR_TLBRENTRY_PA]) |
@@ -553,7 +557,7 @@ always @(posedge clk) begin
     end
 end
 
-//¡¾DMW0¡¿ 
+//ï¿½ï¿½DMW0ï¿½ï¿½ 
 always @(posedge clk)begin
     if(!resetn)begin
         DMW0[`CSR_DMW0_PLV0] <= 1'b0;
@@ -583,7 +587,7 @@ always @(posedge clk)begin
     end
 end
 
-//¡¾DMW1¡¿ 
+//ï¿½ï¿½DMW1ï¿½ï¿½ 
 always @(posedge clk)begin
     if(!resetn)begin
         DMW1[`CSR_DMW1_PLV0] <= 1'b0;
@@ -613,6 +617,41 @@ always @(posedge clk)begin
     end
 end
 
+//¡¾LLBCTL¡¿
+always @(posedge clk)begin
+    if(LLbit_wb)begin
+        LLBCTL[`CSR_LLBCTL_ROLLB] <= 1'b1;
+    end
+    else if (csr_we && csr_num == `CSR_LLBCTL)begin
+        if(csr_wmask[`CSR_LLBCTL_WCLLB] & csr_wvalue[`CSR_LLBCTL_WCLLB])begin
+            LLBCTL[`CSR_LLBCTL_ROLLB] <= 1'b0;
+        end
+    end
+    else if (inst_ertn & ~LLBCTL[`CSR_LLBCTL_KLO])begin
+        LLBCTL[`CSR_LLBCTL_ROLLB] <= 1'b0;
+    end
+end
+
+always @ (posedge clk)begin
+    if (csr_we && csr_num == `CSR_LLBCTL)begin
+        if(csr_wmask[`CSR_LLBCTL_WCLLB] & csr_wvalue[`CSR_LLBCTL_WCLLB])begin
+            LLBCTL[`CSR_LLBCTL_WCLLB] <= 1'b1;
+        end
+    end
+end
+
+always @(posedge clk)begin
+    if (!resetn)begin
+        LLBCTL[`CSR_LLBCTL_KLO] <= 1'b0;
+    end
+    else if(csr_we && csr_num == `CSR_LLBCTL)begin
+        LLBCTL[`CSR_LLBCTL_KLO] <= (csr_wmask[`CSR_LLBCTL_KLO] & csr_wvalue[`CSR_LLBCTL_KLO]) |
+                                    (~csr_wmask[`CSR_LLBCTL_KLO] & LLBCTL[`CSR_LLBCTL_KLO]);
+    end
+    else if (inst_ertn & LLBCTL[`CSR_LLBCTL_KLO])begin
+        LLBCTL[`CSR_LLBCTL_KLO] <= 1'b0;
+    end
+end
 // ----------WRITE IN END--------------
 
 // ----------TO PIPELINE END--------------
@@ -621,6 +660,10 @@ assign csr_CRMD_DA  = CRMD[`CSR_CRMD_DA];
 assign csr_CRMD_PG  = CRMD[`CSR_CRMD_PG];
 assign csr_CRMD_PLV = CRMD[`CSR_CRMD_PLV];
 // ----------TO PIPELINE IN END--------------
+
+// ----------LLbit begin--------------
+assign LLbit = LLBCTL[`CSR_LLBCTL_ROLLB];
+// ----------LLbit END--------------
 
 // ---------- DMW0/1 begin --------------
 wire vseg0_0;   
@@ -673,6 +716,7 @@ wire [31:0] csr_asid_rvalue;
 wire [31:0] csr_tlbrentry_rvalue;
 wire [31:0] csr_dmw0_rvalue;
 wire [31:0] csr_dmw1_rvalue;
+wire [31:0] csr_llbctl_rvalue;
 
 assign csr_crmd_rvalue  = {{23{1'b0}},CRMD[`CSR_CRMD_DATM],CRMD[`CSR_CRMD_DATF],CRMD[`CSR_CRMD_PG],CRMD[`CSR_CRMD_DA], CRMD[`CSR_CRMD_IE],CRMD[`CSR_CRMD_PLV]};
 assign csr_prmd_rvalue  = {{29{1'b0}},PRMD[`CSR_PRMD_PIE],PRMD[`CSR_PRMD_PPLV]};
@@ -699,21 +743,22 @@ assign csr_asid_rvalue   = {{8'b0},{8'ha},{6'b0},ASID[`CSR_ASID_ASID]};
 assign csr_tlbrentry_rvalue = {TLBRENTRY[`CSR_TLBRENTRY_PA],{6'b0}};
 assign csr_dmw0_rvalue = {DMW0[`CSR_DMW0_VSEG],{1{1'b0}},DMW0[`CSR_DMW0_PSEG],{19{1'b0}},DMW0[`CSR_DMW0_MAT],DMW0[`CSR_DMW0_PLV3],{2{1'b0}},DMW0[`CSR_DMW0_PLV0]};
 assign csr_dmw1_rvalue = {DMW1[`CSR_DMW1_VSEG],{1{1'b0}},DMW1[`CSR_DMW1_PSEG],{19{1'b0}},DMW1[`CSR_DMW1_MAT],DMW1[`CSR_DMW1_PLV3],{2{1'b0}},DMW1[`CSR_DMW1_PLV0]};
+assign csr_llbctl_rvalue = {29'h0,LLBCTL[`CSR_LLBCTL_KLO],LLBCTL[`CSR_LLBCTL_WCLLB],LLBCTL[`CSR_LLBCTL_ROLLB]};
 
-//csrµ½tlbµÄ½Ó¿Ú½ÓÏß
+//csrï¿½ï¿½tlbï¿½Ä½Ó¿Ú½ï¿½ï¿½ï¿½
 assign r_index = TLBIDX[`CSR_TLBIDX_INDEX];
 assign s0_asid = ASID[`CSR_ASID_ASID];
 assign s1_asid_without_invtlb = ASID[`CSR_ASID_ASID];
 
-//TLB¶Á½Ó¿Ú,tlb¼Ä´æÆ÷µ¥¶ÀÐ´½Ó¿Ú½Óµ½TLB
+//TLBï¿½ï¿½ï¿½Ó¿ï¿½,tlbï¿½Ä´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ð´ï¿½Ó¿Ú½Óµï¿½TLB
 assign csr_TLBIDX  = csr_tlbidx_rvalue;
 assign csr_TLBEHI  = csr_tlbehi_rvalue;
 
-//mat:´æ´¢·ÃÎÊÀàÐÍ
+//mat:ï¿½æ´¢ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 assign csr_CRMD_DATF = CRMD[`CSR_CRMD_DATF];
 assign csr_CRMD_DATM = CRMD[`CSR_CRMD_DATM];
 
-//write TLB½Ó¿Ú
+//write TLBï¿½Ó¿ï¿½
 assign w_index    = TLBIDX[`CSR_TLBIDX_INDEX];
 assign w_e        = (ESTAT[`CSR_ESTAT_ECODE] == 6'h3F) | ~TLBIDX[`CSR_TLBIDX_NE];
 assign w_vppn     = TLBEHI[`CSR_TLBEHI_VPPN];
@@ -731,7 +776,7 @@ assign w_mat1     = TLBELO1[`CSR_TLBELO1_MAT];
 assign w_d1       = TLBELO1[`CSR_TLBELO1_D];  
 assign w_v1       = TLBELO1[`CSR_TLBELO1_V];  
  
-//ÆäÓàCSR¶Á½Ó¿Ú   
+//ï¿½ï¿½ï¿½ï¿½CSRï¿½ï¿½ï¿½Ó¿ï¿½   
 assign csr_rvalue = ({32{csr_num == `CSR_CRMD}} & csr_crmd_rvalue)          |
                     ({32{csr_num == `CSR_PRMD}} & csr_prmd_rvalue)          |
                     ({32{csr_num == `CSR_ESTAT}} & csr_estat_rvalue)        |
@@ -754,7 +799,8 @@ assign csr_rvalue = ({32{csr_num == `CSR_CRMD}} & csr_crmd_rvalue)          |
                     ({32{csr_num == `CSR_ASID}}     & csr_asid_rvalue)      |
                     ({32{csr_num == `CSR_TLBRENTRY}} & csr_tlbrentry_rvalue)|
                     ({32{csr_num == `CSR_DMW0}} & csr_dmw0_rvalue)          |
-                    ({32{csr_num == `CSR_DMW1}} & csr_dmw1_rvalue);
+                    ({32{csr_num == `CSR_DMW1}} & csr_dmw1_rvalue)          |
+                    ({32{csr_num == `CSR_LLBCTL}} & csr_llbctl_rvalue);
 
 // ---------- READ END --------------
 endmodule

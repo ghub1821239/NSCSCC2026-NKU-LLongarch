@@ -4,64 +4,64 @@ module wb #(
 )(
     input  wire        clk,
     input  wire        resetn,
-    // Á÷Ë®Ïß¿ØÖÆĞÅºÅ
+    // ï¿½ï¿½Ë®ï¿½ß¿ï¿½ï¿½ï¿½ï¿½Åºï¿½
     input  wire        MEM_WB_valid,
     input  wire        WB_allow_in,
     output wire        WB_ready_go,
     output reg         WB_valid,
     
-    input  wire [inbus_width-1:0]MEM_WB_bus,// MEMµ½WB¼¶×ÜÏß
-    // µ÷ÊÔ½Ó¿Ú
+    input  wire [inbus_width-1:0]MEM_WB_bus,// MEMï¿½ï¿½WBï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+    // ï¿½ï¿½ï¿½Ô½Ó¿ï¿½
     output wire [31:0] debug_wb_pc,
     output wire [ 3:0] debug_wb_rf_we,
     output wire [ 4:0] debug_wb_rf_wnum,
     output wire [31:0] debug_wb_rf_wdata,
-    // Í¨ÓÃ¼Ä´æÆ÷¶ÑĞ´»Ø½Ó¿Ú
+    // Í¨ï¿½Ã¼Ä´ï¿½ï¿½ï¿½ï¿½ï¿½Ğ´ï¿½Ø½Ó¿ï¿½
     output wire [ 4:0] rf_waddr,
     output wire [31:0] rf_wdata,
     output wire        rf_we,
-    // Êı¾İÏà¹ØÓëÍ£¶Ù¿ØÖÆ
+    // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Í£ï¿½Ù¿ï¿½ï¿½ï¿½
     output wire [ 4:0] WB_rf_dest,
     output wire        need_stall_csr,
-    // Ğ´»Ø¼¶Êı¾İÇ°µİ
+    // Ğ´ï¿½Ø¼ï¿½ï¿½ï¿½ï¿½ï¿½Ç°ï¿½ï¿½
     output wire [31:0] wb_front_data,
     output wire [ 4:0] wb_front_addr,
-    // CSR¶ÁĞ´½Ó¿Ú
+    // CSRï¿½ï¿½Ğ´ï¿½Ó¿ï¿½
     output wire [13:0] csr_num,
     output wire        csr_re,
     input  wire [31:0] csr_rvalue,
     output wire        csr_we,
     output wire [31:0] csr_wdata,
     output wire [31:0] csr_wmask,
-    // ERTN»òÒì³£·¢ÉúÊ±³åË¢Á÷Ë®Ïß£¬²¢¸ø³öÌø×ªÄ¿±ê
+    // ERTNï¿½ï¿½ï¿½ì³£ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½Ë¢ï¿½ï¿½Ë®ï¿½ß£ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½×ªÄ¿ï¿½ï¿½
     output wire        flush,
     output wire [31:0] csr_target,
-    // Á÷Ë®ÏßÈ¡Ïû¿ØÖÆ
-    input  wire        need_cancel,
-    // Òì³£ĞÅÏ¢
+    // ï¿½ï¿½Ë®ï¿½ï¿½È¡ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+    input  wire        WB_need_cancel,
+    // ï¿½ì³£ï¿½ï¿½Ï¢
     output wire [31:0] wb_pc,
     output wire        wb_ex,
     output wire [5:0]  ecode,
     output wire [8:0]  esubcode,
     output wire [31:0] wb_vaddr,
-    // ÏòÇ°¼¶·´À¡Òì³£¿ØÖÆĞÅºÅ
+    // ï¿½ï¿½Ç°ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ì³£ï¿½ï¿½ï¿½ï¿½ï¿½Åºï¿½
     output wire        WB_ex,
-    // tlbrd ¿ØÖÆcsrµÄĞ´Èë
+    // tlbrd ï¿½ï¿½ï¿½ï¿½csrï¿½ï¿½Ğ´ï¿½ï¿½
     output wire        tlbrd_we,
-    // tlbwr,tlbfill ¿ØÖÆtlbĞ´Èë
+    // tlbwr,tlbfill ï¿½ï¿½ï¿½ï¿½tlbĞ´ï¿½ï¿½
     output wire        tlbwr_we,
     output wire        tlbfill_we,
     // tlbidx
     input  wire [31:0] csr_TLBIDX,
-    //tlbreload ÖØÌî´«ÈëCSR
+    //tlbreload ï¿½ï¿½ï¿½î´«ï¿½ï¿½CSR
     output wire        ex_tlb_reload,
-    // ERTN¡¡¸ü¸Ä¡¡CRMD
+    // ERTNï¿½ï¿½ï¿½ï¿½ï¿½Ä¡ï¿½CRMD
     output wire        inst_ertn,
     // BADV
     output wire        csr_tlb_reload0,
-    output wire        csr_tlb_plv0   ,//tlbÖĞÒ³ÌØÈ¨²»ºÏ¹æ
-    output wire        csr_tlb_reload1,//tlbÖØÌîÀıÍâ  
-    output wire        csr_tlb_plv1,    //tlbÖĞÒ³ÌØÈ¨²»ºÏ¹æ 
+    output wire        csr_tlb_plv0   ,//tlbï¿½ï¿½Ò³ï¿½ï¿½È¨ï¿½ï¿½ï¿½Ï¹ï¿½
+    output wire        csr_tlb_reload1,//tlbï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½  
+    output wire        csr_tlb_plv1,    //tlbï¿½ï¿½Ò³ï¿½ï¿½È¨ï¿½ï¿½ï¿½Ï¹ï¿½ 
     // ex_tlb --> TLBEHI
     output wire        ex_tlb,
     //can_not_front_push
@@ -82,27 +82,27 @@ wire        inst_csrrd;
 wire        inst_csrwr;
 wire        inst_csrxchg;
 wire [13:0] csr_num_wr;
-// Òì³£ÀàĞÍ±êÖ¾
+// ï¿½ì³£ï¿½ï¿½ï¿½Í±ï¿½Ö¾
 wire        inst_syscall;
 wire        inst_break;
 wire        ex_INE;
 wire        ex_ADEF;
 wire        ex_ALE;
 //tlb_ex
-wire        ex_tlb_reload0;//tlbÖØÌîÀıÍâ
-wire        ex_tlb_preif_unvalid;//tlbÖĞÈ¡Ö¸Ò³ÎŞĞ§
-wire        ex_tlb_plv0;//tlbÖĞÒ³ÌØÈ¨²»ºÏ¹æ
-wire        ex_tlb_reload1;//tlbÖØÌîÀıÍâ        
-wire        ex_tlb_ld_unvalid;//tlbÖĞloadÒ³ÎŞĞ§ 
-wire        ex_tlb_st_unvalid;//tlbÖĞstoreÒ³ÎŞĞ§
-wire        ex_tlb_plv1;//tlbÖĞÒ³ÌØÈ¨²»ºÏ¹æ        
-wire        ex_tlb_page_modify;//tlbÖĞÒ³ĞŞ¸Ä
+wire        ex_tlb_reload0;//tlbï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+wire        ex_tlb_preif_unvalid;//tlbï¿½ï¿½È¡Ö¸Ò³ï¿½ï¿½Ğ§
+wire        ex_tlb_plv0;//tlbï¿½ï¿½Ò³ï¿½ï¿½È¨ï¿½ï¿½ï¿½Ï¹ï¿½
+wire        ex_tlb_reload1;//tlbï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½        
+wire        ex_tlb_ld_unvalid;//tlbï¿½ï¿½loadÒ³ï¿½ï¿½Ğ§ 
+wire        ex_tlb_st_unvalid;//tlbï¿½ï¿½storeÒ³ï¿½ï¿½Ğ§
+wire        ex_tlb_plv1;//tlbï¿½ï¿½Ò³ï¿½ï¿½È¨ï¿½ï¿½ï¿½Ï¹ï¿½        
+wire        ex_tlb_page_modify;//tlbï¿½ï¿½Ò³ï¿½Ş¸ï¿½
 wire        ex_tlb_plv;     
 
 
 wire        has_int;
 
-// ¼ÆÊ±Æ÷¶ÁÈ¡Ö¸Áî
+// ï¿½ï¿½Ê±ï¿½ï¿½ï¿½ï¿½È¡Ö¸ï¿½ï¿½
 wire        inst_rdcntvl_w;
 wire        inst_rdcntvh_w;
 wire        inst_rdcntid;
@@ -134,7 +134,7 @@ always @(posedge clk)begin
         bus<=MEM_WB_bus;
     end
 end
-// csr_num_wrÊÇMEM¼¶´«ÈëµÄÖ¸ÁîÔ­Ê¼CSR±àºÅ£»ERTN¡¢Òì³£ºÍRDCNTID»áÔÚWB¼¶¸ÄÑ¡ÆäËûCSR
+// csr_num_wrï¿½ï¿½MEMï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö¸ï¿½ï¿½Ô­Ê¼CSRï¿½ï¿½Å£ï¿½ERTNï¿½ï¿½ï¿½ì³£ï¿½ï¿½RDCNTIDï¿½ï¿½ï¿½ï¿½WBï¿½ï¿½ï¿½ï¿½Ñ¡ï¿½ï¿½ï¿½ï¿½CSR
 assign {
         pc,need_stall_csr,alu_result_with_rdct,
         inst_csrrd, inst_csrwr,inst_csrxchg,inst_ertn,inst_syscall,inst_break,ex_INE,ex_ADEF,ex_ALE,has_int,inst_rdcntvl_w,inst_rdcntvh_w,inst_rdcntid,csr_num_wr,mem_we,rj_value,rkd_value,rf_dest,rf_alu_wdata,rf_gr_we_ex,
@@ -169,7 +169,7 @@ assign csr_num    = has_int         ? `CSR_EENTRY      :
                     inst_tlbsrch    ? `CSR_TLBIDX      : 
                     csr_num_wr;
 assign csr_target = inst_csrwr | inst_csrxchg | inst_tlbfill | inst_tlbwr | inst_tlbrd | inst_tlbsrch? wb_pc + 4 : csr_rvalue;
-// tlb Òì³£
+// tlb ï¿½ì³£
 assign ex_tlb_reload = WB_valid & (ex_tlb_reload0 | ex_tlb_reload1);
 assign ex_tlb     = WB_valid & (ex_tlb_reload0 | ex_tlb_reload1 | ex_tlb_preif_unvalid |
                                 ex_tlb_plv0 | ex_tlb_plv1 | ex_tlb_ld_unvalid |
@@ -178,7 +178,7 @@ assign ex_tlb     = WB_valid & (ex_tlb_reload0 | ex_tlb_reload1 | ex_tlb_preif_u
 assign wb_pc      = pc;
 assign wb_ex      = (inst_syscall | inst_break | ex_INE | ex_ADEF | ex_ALE | has_int | ex_tlb) & WB_valid;
 assign ex_tlb_plv = ex_tlb_plv0 | ex_tlb_plv1;
-// µØÖ·²»¶ÔÆëÒì³£Ê±£¬¼ÇÂ¼load/storeÖ¸Áî¼ÆËã³öµÄ·Ã´æµØÖ·
+// ï¿½ï¿½Ö·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ì³£Ê±ï¿½ï¿½ï¿½ï¿½Â¼load/storeÖ¸ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä·Ã´ï¿½ï¿½Ö·
 assign wb_vaddr   = alu_result_with_rdct;
 assign ecode      = has_int         ? `ECODE_INT  :
                     ex_ADEF         ? `ECODE_ADE  :
@@ -226,7 +226,7 @@ always @(posedge clk) begin
     if(!resetn)begin
         WB_valid<=1'b0;
     end
-    else if(need_cancel)begin
+    else if(WB_need_cancel)begin
         WB_valid<=1'b0;
     end
     else if(WB_allow_in)begin

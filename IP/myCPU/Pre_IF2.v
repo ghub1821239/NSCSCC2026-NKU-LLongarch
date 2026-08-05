@@ -16,7 +16,7 @@ module pre_IF2 #(
     //br_taken
     input  wire        br_taken,
     //cancel
-    input  wire        need_cancel,
+    input  wire        preIF2_need_cancel,
     //stall
     input  wire        need_stall,
     //handshake
@@ -97,7 +97,7 @@ assign req_to_dataok_trigger = req_without_dataok;
 //------------------------{������ȡ��ȡָ��Ӧ}begin-------------------------//
 reg discard_resp_pending;
 wire redirect_now;
-assign redirect_now = need_cancel | br_taken;
+assign redirect_now = preIF2_need_cancel | br_taken;
 always @(posedge clk) begin
     if(!resetn)begin
         discard_resp_pending <= 1'b0;
@@ -126,12 +126,12 @@ assign inst_sram_wdata = 32'b0;
 //2. Ϊ�˷�ֹpreIF ready go IF��allow_in ��ֻ��allow_in��ʱ����req
 //3. Ϊ�˷�ֹ���req֮�����Ӧdataok������Ҫ��һ��req֮���ֶ�����
 
-//assign inst_sram_req = preIF2_valid & IF_allow_in & ~br_taken & ~req_without_dataok & ~need_cancel & ~need_stall & 
+//assign inst_sram_req = preIF2_valid & IF_allow_in & ~br_taken & ~req_without_dataok & ~preIF2_need_cancel & ~need_stall & 
 //                     req_slot_free;
 // data_ok 当拍释放槽位，可立刻发下一条（最多仍保持 1 个 outstanding）
 wire can_issue_inst = !req_without_dataok || inst_sram_data_ok;
 assign inst_sram_req = preIF2_valid & IF_allow_in & ~br_taken
-                        & ~need_cancel & ~need_stall
+                        & ~preIF2_need_cancel & ~need_stall
                         & can_issue_inst;
 assign inst_sram_size  = 2'b10;
 assign inst_mat        = (csr_CRMD_DA == 1 & csr_CRMD_PG == 0) ? csr_CRMD_DATF :
@@ -149,7 +149,7 @@ always @(posedge clk) begin
     if(!resetn)begin
         preIF2_valid<=1'b0;
     end
-    else if (need_cancel || br_taken)begin
+    else if (preIF2_need_cancel || br_taken)begin
         preIF2_valid <= 1'b0;
     end
     else if(preIF2_allow_in)begin
