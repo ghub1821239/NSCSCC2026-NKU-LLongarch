@@ -16,7 +16,7 @@ module pre_IF1 #(
     input  wire [31:0] br_target,
     input  wire        br_taken,
     //cancel
-    input  wire        need_cancel,
+    input  wire        preIF1_need_cancel,
     //stall
     input  wire        need_stall,
     input  wire [31:0] csr_target,
@@ -78,7 +78,7 @@ always @(posedge clk) begin
         pc <= 32'h1bfffffc; //nextpc=1c000000
 //        pc <= 32'h1c000000;
     end
-    else if (need_cancel)begin
+    else if (preIF1_need_cancel)begin
         pc <= csr_target;
     end
     // 直接br_taken在当前clk更改pc那么就可以把preIF的错指令给覆盖掉
@@ -107,7 +107,7 @@ assign dmw_vseg0 = pc[31:29];
 assign s0_vppn     = pc[31:13];
 assign s0_va_bit12 = pc[12];
 wire [31:0] tlb_paddr;
-assign tlb_inst_req = preIF1_valid && !need_cancel && !csr_CRMD_DA &&  csr_CRMD_PG && !dmw_found0;
+assign tlb_inst_req = preIF1_valid && !preIF1_need_cancel && !csr_CRMD_DA &&  csr_CRMD_PG && !dmw_found0;
 assign tlb_paddr = (s0_ps == 6'd21) ? {s0_ppn[19:9], pc[20:0]}  // 4MB页
                                     : {s0_ppn[19:0],  pc[11:0]}; // 4KB页
 //------------------------{虚地址转物理地址}end-------------------------//

@@ -18,7 +18,7 @@ module exe1 #(
   output wire [ 4:0]  EXE1_rf_dest,
   output wire         EXE1_rf_gr_we,
   //cancel control
-  input  wire        need_cancel,
+  input  wire        EXE1_need_cancel,
   //stable counter
   input  wire [63:0] stable_counter,
   //tlb port s1
@@ -118,6 +118,12 @@ wire        ex_tlb_reload0;//tlbï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 wire        ex_tlb_preif_unvalid;//tlbï¿½ï¿½È¡Ö¸Ò³ï¿½ï¿½Ð§
 wire        ex_tlb_plv0;//tlbï¿½ï¿½Ò³ï¿½ï¿½È¨ï¿½ï¿½ï¿½Ï¹ï¿½
 
+//system inst
+wire        inst_ibar;
+wire        inst_dbar;
+wire        inst_ll_w;
+wire        inst_sc_w;
+
 always @(posedge clk)begin
     if(!resetn)begin
         bus<={inbus_width{1'b0}};
@@ -133,7 +139,7 @@ assign {
             inst_csrrd, inst_csrwr,inst_csrxchg,inst_ertn,inst_syscall,inst_break,ex_INE,ex_ADEF,has_int,inst_rdcntvl_w,inst_rdcntvh_w,inst_rdcntid,csr_num,rj_value,rf_dest,rf_gr_we,//WB destination and write_enable
             inst_tlbsrch,inst_tlbrd,inst_tlbwr,inst_tlbfill,inst_invtlb,
             ex_tlb_reload0,ex_tlb_preif_unvalid,ex_tlb_plv0,
-            cache_code,inst_cacop
+            cache_code,inst_cacop,inst_ibar,inst_dbar,inst_sc_w,inst_ll_w
         }=bus;
 //------------------------{alu}begin-------------------------//
 wire [31:0] alu_result;
@@ -144,7 +150,7 @@ alu u_alu(
     .clk        (clk       ),
     .resetn     (resetn    ),
     .EXE1_valid  (EXE1_valid ),
-    .need_cancel(need_cancel),
+    .EXE1_need_cancel(EXE1_need_cancel),
     .alu_op     (alu_op    ),
     .alu_src1   (alu_src1  ),
     .alu_src2   (alu_src2  ),
@@ -161,7 +167,7 @@ assign s1_vppn = inst_tlbsrch ? csr_TLBEHI[`CSR_TLBEHI_VPPN]
 assign s1_va_bit12  = mem_vaddr[12];
 assign tlbinv_asid  = alu_src1[9:0];
 assign invtlb_op    = rf_dest;
-assign invtlb_valid = inst_invtlb & ~ex_INE & EXE1_valid; // Ò²ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½opï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Î´ï¿½ï¿½ï¿½ï¿½ï¿?
+assign invtlb_valid = inst_invtlb & ~ex_INE & EXE1_valid; // Ò²ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½opï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Î´ï¿½ï¿½ï¿½ï¿½ï¿½?
 
 wire [10:0] TLBIDX_new_tlbsrch;
 assign TLBIDX_new_tlbsrch = {~s1_found,{6{1'b0}},s1_index};
@@ -181,21 +187,21 @@ assign tlb_data_req  = tlb_load_req | tlb_store_req;
 //------------------------{TLB}end-------------------------//
 
 //------------------------{ready_go}begin-------------------------//
-/*¡¾NOTICE¡¤·´¸´Ñ§Ï°¡¿
-Ò»¿ªÊ¼ready_goÊÇ²»ÊÇÏëÖ±½ÓÐ´³É
+/*ï¿½ï¿½NOTICEï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ñ§Ï°ï¿½ï¿½
+Ò»ï¿½ï¿½Ê¼ready_goï¿½Ç²ï¿½ï¿½ï¿½ï¿½ï¿½Ö±ï¿½ï¿½Ð´ï¿½ï¿½
 assign EXE1_ready_go = EXE1_ex ? 1'b1 :
                        div_mod ? divide_ready_go :
                                  1'b1;
-²»ÊÇ´íµÄ£¬µ«ÊÇÕâÑùÎÒÃÇ¾Í»á³öÏÖtlbÒì³£È¥Ç°µÝÕâÑùµÄÁ´Â·£¬µ«ÊÇ¼ÈÈ»ÎÒÃÇEXE²ð·Ö¿ª±¾Éí¾ÍÊÇÏëÈÃEXE1ÈÔÈ»Éú³ÉÊý¾Ý·ÃÎÊÒì³£²¢´«¸ø EXE2£¬stºÍldÏà¹Ø½»¸øEXE2¡£¶Ô°É
-ËùÒÔºÍst/ldµÄÏà¹ØÒì³£ÔÚEXE1¿ØÖÆÂß¼­ÀïÆäÊµ²»Ó¦¸Ã³öÏÖ£¬ËùÒÔµÚÒ»°æÈçÏÂ£º
+ï¿½ï¿½ï¿½Ç´ï¿½ï¿½Ä£ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ç¾Í»ï¿½ï¿½ï¿½ï¿½tlbï¿½ì³£È¥Ç°ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â·ï¿½ï¿½ï¿½ï¿½ï¿½Ç¼ï¿½È»ï¿½ï¿½ï¿½ï¿½EXEï¿½ï¿½Ö¿ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½EXE1ï¿½ï¿½È»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ý·ï¿½ï¿½ï¿½ï¿½ì³£ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ EXE2ï¿½ï¿½stï¿½ï¿½ldï¿½ï¿½Ø½ï¿½ï¿½ï¿½EXE2ï¿½ï¿½ï¿½Ô°ï¿½
+ï¿½ï¿½ï¿½Ôºï¿½st/ldï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ì³£ï¿½ï¿½EXE1ï¿½ï¿½ï¿½ï¿½ï¿½ß¼ï¿½ï¿½ï¿½ï¿½ï¿½Êµï¿½ï¿½Ó¦ï¿½Ã³ï¿½ï¿½Ö£ï¿½ï¿½ï¿½ï¿½Ôµï¿½Ò»ï¿½ï¿½ï¿½ï¿½ï¿½Â£ï¿½
 wire ex_other;
 assign ex_other = EXE1_valid &
                (inst_syscall | inst_ertn | inst_break | ex_INE | ex_ADEF |
                 ex_tlb_reload0 | ex_tlb_preif_unvalid | ex_tlb_plv0 | has_int);
 assign EXE1_ready_go =  ex_other | ~div_mod | divide_ready_go;
 
-µ«ÊÇÕâÒ²²»¹»£¬ÒòÎªÄãÏë ex_otherÀïÓÐÐ©Òì³£±¾ÉíÒòÎªinstµÄopcode»¥³â¾Í»á±»°üº¬ÔÚ~div_modÖÐ
-Òò´Ëinst_syscall | inst_ertn | inst_break | ex_INE¿ÉÒÔÊ¡È¥
+ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ò²ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Îªï¿½ï¿½ï¿½ï¿½ ex_otherï¿½ï¿½ï¿½ï¿½Ð©ï¿½ì³£ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Îªinstï¿½ï¿½opcodeï¿½ï¿½ï¿½ï¿½Í»á±»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½~div_modï¿½ï¿½
+ï¿½ï¿½ï¿½inst_syscall | inst_ertn | inst_break | ex_INEï¿½ï¿½ï¿½ï¿½Ê¡È¥
 */
 wire ex_div_need_notice;
 assign ex_div_need_notice = EXE1_valid & (has_int | ex_ADEF | ex_tlb_reload0 | ex_tlb_preif_unvalid | ex_tlb_plv0);
@@ -204,7 +210,7 @@ always @(posedge clk) begin
     if(!resetn)begin
         EXE1_valid<=1'b0;
     end
-    else if(need_cancel)begin
+    else if(EXE1_need_cancel)begin
         EXE1_valid<=1'b0;
     end
     else if(EXE1_allow_in)begin
@@ -219,7 +225,7 @@ wire [31:0] data_sram_addr;
 wire [31:0] data_sram_wdata;
 wire [3:0]  data_sram_wstrb;
 wire [1:0]  data_sram_size;
-//ï¿½ï¿½ï¿½ï¿½s1_matï¿½ï¿½ï¿½ï¿½ï¿½Ñ¾ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿?    // tlbÒ³ï¿½ï¿½Ó³ï¿½ï¿½
+//ï¿½ï¿½ï¿½ï¿½s1_matï¿½ï¿½ï¿½ï¿½ï¿½Ñ¾ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½?    // tlbÒ³ï¿½ï¿½Ó³ï¿½ï¿½
 wire [1:0]  data_mat;
 wire        data_wr;
 wire [31:0] st_data;
@@ -270,8 +276,8 @@ wire [31:0] alu_result_with_rdct = inst_rdcntvl_w ? stable_counter[31:0] :
 wire ex_half;
 wire ex_word;
 
-assign ex_half = (inst_st_h | inst_ld_h | inst_ld_hu ) & (mem_vaddr[0]!=1'b0);
-assign ex_word = (inst_st_w | inst_ld_w) & (mem_vaddr[1:0]!=2'b00);
+assign ex_half = (inst_st_h | inst_ld_h | inst_ld_hu) & (mem_vaddr[0]!=1'b0);
+assign ex_word = (inst_st_w | inst_ld_w | inst_sc_w | inst_ll_w) & (mem_vaddr[1:0]!=2'b00);
 assign ex_ALE  = (ex_half | ex_word);
 //------------------------{ex_ALE}end-------------------------//
 
@@ -289,7 +295,7 @@ assign EXE1_EXE2_bus = {pc,
                         inst_csrrd, inst_csrwr,inst_csrxchg,inst_ertn,inst_syscall,inst_break,ex_INE,ex_ADEF,ex_ALE,has_int,inst_rdcntvl_w,inst_rdcntvh_w,inst_rdcntid,csr_num,rj_value,rf_dest,rf_gr_we,//WB
                         inst_tlbsrch,TLBIDX_new_tlbsrch,inst_tlbrd,inst_tlbwr,inst_tlbfill,inst_invtlb,
                         ex_tlb_reload0,ex_tlb_preif_unvalid,ex_tlb_plv0,ex_tlb_reload1,ex_tlb_ld_unvalid,ex_tlb_st_unvalid,ex_tlb_plv1,ex_tlb_page_modify,
-                        data_sram_addr,data_sram_wdata,data_sram_size,data_sram_wstrb,data_mat,data_wr,inst_cacop,cache_code
+                        data_sram_addr,data_sram_wdata,data_sram_size,data_sram_wstrb,data_mat,data_wr,inst_cacop,cache_code,inst_ibar,inst_dbar,inst_sc_w,inst_ll_w
                         };                                                      
 assign EXE1_rf_dest = rf_dest;
 assign EXE1_rf_gr_we = rf_gr_we;                               
