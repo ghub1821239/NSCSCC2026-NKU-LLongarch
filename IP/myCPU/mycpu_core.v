@@ -37,7 +37,7 @@ module mycpu_core #(
     output wire [ 3:0] debug_wb_rf_we,
     output wire [ 4:0] debug_wb_rf_wnum,
     output wire [31:0] debug_wb_rf_wdata,
-    // 硬中断
+    // �?�?�?
     input  wire [ 7:0] hw_int_in
 );
 //------------------------{5-stage pipeline control signals define}begin-------------------------//
@@ -361,7 +361,7 @@ assign older_ex_for_mem = WB_ex;
 //------------------------{front_push}begin-------------------------//
 wire        flush;
 wire [31:0] flush_target;
-wire [31:0] flush_cacop_cancel_target;// 从 WB 传回来的 flush_target & cacop 的
+wire [31:0] flush_cacop_cancel_target;// �? WB 传回来的 flush_target & cacop �?
 
 
 wire [31:0] exe1_front_data;
@@ -382,8 +382,9 @@ assign front_push_rdata1 = rf_raddr1 == 5'b0 ? 32'b0 : (exe2_front_addr == rf_ra
 assign front_push_rdata2 = rf_raddr2 == 5'b0 ? 32'b0 : (exe2_front_addr == rf_raddr2 & EXE2_valid & ~exe2_can_not_front_push) ? exe2_front_data :
                                                        (mem_front_addr == rf_raddr2 & MEM_valid & ~mem_can_not_front_push) ? mem_front_data :
                                                        (wb_front_addr  == rf_raddr2 & WB_valid & !flush & ~ wb_can_not_front_push) ? wb_front_data  :
-                                                       rf_rdata2;                       
-assign flush_cacop_cancel_target = cacop_need_cancel ? cacop_pc : flush_target;
+                                                       rf_rdata2;             
+//ibarҲ��EXE2 ��˿���ֱ�Ӹ���cacop_pc
+assign flush_cacop_cancel_target = (cacop_need_cancel | ibar_cancel) ? cacop_pc : flush_target;
 //------------------------{front_push}end-------------------------//
 
 //------------------------{stall}begin-------------------------//
@@ -464,7 +465,7 @@ btb u_btb(
     .update_pc          (update_pc    ),
     .update_target      (update_target),//real target
     .update_type        (update_type  ),
-    // ���ȡ���Ͳ�ͬ������
+    // ���ȡ���Ͳ��?������
     .update_cancel (flush | cacop_need_cancel)
 );
 
@@ -483,7 +484,7 @@ bht u_bht(
     .update_valid   (bht_update_valid),//update BHT
     .update_pc      (update_pc   ),//branch pc
     .update_taken   (update_taken),//real taken
-    .update_cancel  (flush | cacop_need_cancel)//���ȡ���Ͳ�ͬ������
+    .update_cancel  (flush | cacop_need_cancel)//���ȡ���Ͳ��?������
 );
 
 //ras
@@ -522,7 +523,7 @@ wire need_br_cancel;
 
 //cacop cancel
 wire [31:0] cacop_pc;
-//[NOTICE:ѧ��һ��]CE����ŵ� <= ѡ��,WNS���ܺ�һ��
+//[NOTICE:ѧ��һ��]CE����ŵ�? <= ѡ��,WNS���ܺ�һ��
 always @(posedge clk) begin
     if (!resetn) begin
         br_afterpred_taken_r  <= 1'b0;
@@ -577,7 +578,7 @@ assign preIF2_need_cancel = flush | cacop_need_cancel | ibar_cancel;
 assign IF_need_cancel     = flush | need_br_cancel    | cacop_need_cancel | ibar_cancel;
 assign ID_need_cancel     = flush | cacop_need_cancel | ibar_cancel;
 assign EXE1_need_cancel   = flush | ibar_cancel;
-assign EXE2_need_cancel   = flush;
+assign EXE2_need_cancel   = flush | ibar_cancel;
 assign MEM_need_cancel    = flush;
 assign WB_need_cancel     = flush;
 //------------------------{i/dbar need cancel}end-------------------------//
@@ -586,10 +587,10 @@ assign WB_need_cancel     = flush;
 localparam preIF1_preIF2_bus_width = 147;
 localparam preIF2_IF_bus_width    = 105;
 localparam IF_ID_bus_width    = 137;
-localparam ID_EXE1_bus_width   = 237;//263+5+1-32
-localparam EXE1_EXE2_bus_width  = 271;//226-32
-localparam EXE2_MEM_bus_width  = 194;//226-32
-localparam MEM_WB_bus_width   = 219;
+localparam ID_EXE1_bus_width   = 242;//263+5+1-32
+localparam EXE1_EXE2_bus_width  = 276;//226-32
+localparam EXE2_MEM_bus_width  = 197;//226-32
+localparam MEM_WB_bus_width   = 220;
 
 wire [preIF1_preIF2_bus_width-1:0] preIF1_preIF2_bus;
 wire [preIF2_IF_bus_width-1:0] preIF2_IF_bus;
@@ -641,6 +642,7 @@ wire   [1:0] data_mat;
 
 //LLbit
 wire         LLbit_wb;
+wire         LLbit_wdata;
 wire         LLbit;
 
 assign ipi_int_in= 1'h0;
@@ -745,6 +747,7 @@ csr_regfile #(
     .dmw_mat1               (dmw_mat1),
     //LLbit
     .LLbit_wb       (LLbit_wb),
+    .LLbit_wdata    (LLbit_wdata),
     .LLbit          (LLbit)
 );
 //------------------------{csr_regfile}end-------------------------//
@@ -1030,6 +1033,7 @@ exe2 #(
     .ibar_cancel      (ibar_cancel),
     .dbar_cancel      (dbar_cancel),
     .LLbit_wb         (LLbit_wb),
+    .LLbit_wdata      (LLbit_wdata),
     .LLbit            (LLbit)
 );
 

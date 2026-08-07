@@ -20,7 +20,7 @@ module wb #(
     output wire [ 4:0] rf_waddr,
     output wire [31:0] rf_wdata,
     output wire        rf_we,
-    // ���������ͣ�ٿ���
+    // ���������ͣ�ٿ���?
     output wire [ 4:0] WB_rf_dest,
     output wire        need_stall_csr,
     // д�ؼ�����ǰ��
@@ -137,7 +137,7 @@ always @(posedge clk)begin
         bus<=MEM_WB_bus;
     end
 end
-// csr_num_wr��MEM�������ָ��ԭʼCSR��ţ�ERTN���쳣��RDCNTID����WB����ѡ����CSR
+// csr_num_wr��MEM�������ָ���?ʼCSR��ţ�ERTN���쳣��RDCNTID����WB����ѡ����CSR
 assign {
         pc,need_stall_csr,alu_result_with_rdct,
         inst_csrrd, inst_csrwr,inst_csrxchg,inst_ertn,inst_syscall,inst_break,ex_INE,ex_ADEF,ex_ALE,has_int,inst_rdcntvl_w,inst_rdcntvh_w,inst_rdcntid,csr_num_wr,mem_we,rj_value,rkd_value,rf_dest,rf_alu_wdata,rf_gr_we_ex,
@@ -171,7 +171,11 @@ assign csr_num    = has_int         ? `CSR_EENTRY      :
                     inst_rdcntid    ? `CSR_TID         : 
                     inst_tlbsrch    ? `CSR_TLBIDX      : 
                     csr_num_wr;
-assign flush_target = inst_csrwr | inst_csrxchg | inst_tlbfill | inst_tlbwr | inst_tlbrd | inst_tlbsrch | inst_idle ? wb_pc + 4 : csr_rvalue;
+assign flush_target = wb_ex ? csr_rvalue :
+                      (inst_csrwr | inst_csrxchg | inst_tlbfill |
+                       inst_tlbwr | inst_tlbrd | inst_tlbsrch | inst_idle)
+                      ? wb_pc + 4
+                      : csr_rvalue;
 // tlb �쳣
 assign ex_tlb_reload = WB_valid & (ex_tlb_reload0 | ex_tlb_reload1);
 assign ex_tlb     = WB_valid & (ex_tlb_reload0 | ex_tlb_reload1 | ex_tlb_preif_unvalid |
@@ -181,7 +185,7 @@ assign ex_tlb     = WB_valid & (ex_tlb_reload0 | ex_tlb_reload1 | ex_tlb_preif_u
 assign wb_pc      = pc;
 assign wb_ex      = (inst_syscall | inst_break | ex_INE | ex_ADEF | ex_ALE | has_int | ex_tlb) & WB_valid;
 assign ex_tlb_plv = ex_tlb_plv0 | ex_tlb_plv1;
-// ��ַ�������쳣ʱ����¼load/storeָ�������ķô��ַ
+// ��ַ�������쳣ʱ����¼load/storeָ�������ķô���?
 assign wb_vaddr   = alu_result_with_rdct;
 assign ecode      = has_int         ? `ECODE_INT  :
                     ex_ADEF         ? `ECODE_ADE  :
@@ -239,13 +243,13 @@ end
 //------------------------{ready_go}end-------------------------//
 
 //------------------------{front_push}begin-------------------------//
-assign wb_front_data = mem_we ? rkd_value : rf_wdata;
+assign wb_front_data = rf_wdata;
 assign wb_front_addr = rf_dest;
 assign wb_can_not_front_push = ~rf_gr_we_ex;
 //------------------------{front_push}end-------------------------//
 
 //------------------------{IDLE_stall}end-------------------------//
-assign IDLE_stall = inst_idle & WB_valid & ~WB_ex & ~WB_need_cancel
+assign IDLE_stall = inst_idle & WB_valid & ~WB_ex;
 //------------------------{IDLE_stall}end-------------------------//
 
 //------------------------{exp_front}begin-------------------------//
