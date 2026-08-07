@@ -41,11 +41,11 @@ module exe1 #(
   input  wire        csr_CRMD_DA,
   input  wire        csr_CRMD_PG,
   //tlb_ex
-  input  wire       ex_tlb_reload1,//tlb��������
-  input  wire       ex_tlb_ld_unvalid,//tlb��loadҳ��Ч
-  input  wire       ex_tlb_st_unvalid,//tlb��storeҳ��Ч
-  input  wire       ex_tlb_plv1,//tlb��ҳ��Ȩ���Ϲ�
-  input  wire       ex_tlb_page_modify,//tlb��ҳ�޸�
+  input  wire       ex_tlb_reload1,//tlb重填异常
+  input  wire       ex_tlb_ld_unvalid,//tlb的load页无效
+  input  wire       ex_tlb_st_unvalid,//tlb的store页无效
+  input  wire       ex_tlb_plv1,//tlb的页权限上访
+  input  wire       ex_tlb_page_modify,//tlb的页修改
   output wire       tlb_load_req,
   output wire       tlb_store_req,
   output wire       tlb_data_req,
@@ -53,10 +53,10 @@ module exe1 #(
   output  wire  [2:0] dmw_vseg1,
   input   wire        dmw_found1,
   input   wire  [2:0] dmw_pseg1,
-  //mat:�洢��������
-  input  wire   [1:0] csr_CRMD_DATF,//ֱ�ӵ�ַ��ȡָ
-  input  wire   [1:0] csr_CRMD_DATM,//ֱ�ӵ�ַ��ld/st
-  input  wire   [1:0] dmw_mat1    //ֱ��ӳ��
+  //mat:存储访问类型
+  input  wire   [1:0] csr_CRMD_DATF,//直接地址取指
+  input  wire   [1:0] csr_CRMD_DATM,//直接地址ld/st
+  input  wire   [1:0] dmw_mat1    //直接映射
 );
 wire        res_from_mem;
 wire        mem_we;
@@ -115,9 +115,9 @@ wire        inst_tlbfill;
 wire        inst_invtlb;
 
 //tlb_ex
-wire        ex_tlb_reload0;//tlb��������
-wire        ex_tlb_preif_unvalid;//tlb��ȡָҳ��Ч
-wire        ex_tlb_plv0;//tlb��ҳ��Ȩ���Ϲ�
+wire        ex_tlb_reload0;//tlb重填异常
+wire        ex_tlb_preif_unvalid;//tlb的取指页无效
+wire        ex_tlb_plv0;//tlb的页权限上访
 
 //system inst
 wire        inst_ibar;
@@ -171,12 +171,12 @@ assign s1_vppn = inst_tlbsrch ? csr_TLBEHI[`CSR_TLBEHI_VPPN]
 assign s1_va_bit12  = mem_vaddr[12];
 assign tlbinv_asid  = alu_src1[9:0];
 assign invtlb_op    = rf_dest;
-assign invtlb_valid = inst_invtlb & ~ex_INE & ~ex_IPE & EXE1_valid; // Ҳ���������op������δ�����?
+assign invtlb_valid = inst_invtlb & ~ex_INE & ~ex_IPE & EXE1_valid; // 也检查op是否有效，未添加?
 
 wire [10:0] TLBIDX_new_tlbsrch;
 assign TLBIDX_new_tlbsrch = {~s1_found,{6{1'b0}},s1_index};
 
-// tlbӳ���µ���ʵ��ַ
+// tlb映射得到的物理地址
 wire [31:0] tlb_paddr;
 assign tlb_paddr = (s1_ps == 6'd21) ? {s1_ppn[19:9], mem_vaddr[20:0]}
                                     : {s1_ppn[19:0],  mem_vaddr[11:0]};
@@ -191,21 +191,21 @@ assign tlb_data_req  = tlb_load_req | tlb_store_req;
 //------------------------{TLB}end-------------------------//
 
 //------------------------{ready_go}begin-------------------------//
-/*��NOTICE������ѧϰ��
-һ��ʼready_go�ǲ�����ֱ��д��
+/*[NOTICE：学习笔记]
+一开始ready_go不能直接写死
 assign EXE1_ready_go = EXE1_ex ? 1'b1 :
                        div_mod ? divide_ready_go :
                                  1'b1;
-���Ǵ��ģ������������Ǿͻ����tlb�쳣ȥǰ����������·�����Ǽ�Ȼ����EXE��ֿ�������������EXE1��Ȼ�������ݷ����쳣������ EXE2��st��ld��ؽ���EXE2���԰�
-���Ժ�st/ld������쳣��EXE1�����߼�����ʵ��Ӧ�ó��֣����Ե�һ�����£�
+所以这样写，一旦有tlb异常就会先去前面冲刷流水线；但既然EXE级已经分开，可以让EXE1先产生数据前递异常，再由EXE2处理st/ld相关异常。
+所以st/ld相关异常放在EXE1后，逻辑上实际应该出现的数据前递问题最后统一收拢。
 wire ex_other;
 assign ex_other = EXE1_valid &
                (inst_syscall | inst_ertn | inst_break | ex_INE | ex_ADEF |
                 ex_tlb_reload0 | ex_tlb_preif_unvalid | ex_tlb_plv0 | has_int);
 assign EXE1_ready_go =  ex_other | ~div_mod | divide_ready_go;
 
-������Ҳ��������Ϊ���� ex_other����Щ�쳣������Ϊinst��opcode����ͻᱻ������~div_mod��
-���inst_syscall | inst_ertn | inst_break | ex_INE����ʡȥ
+其他异常也类似，ex_other这些异常都是根据inst的opcode判断，不会被~div_mod屏蔽。
+其中inst_syscall | inst_ertn | inst_break | ex_INE等判断省去。
 */
 wire ex_div_need_notice;
 assign ex_div_need_notice = EXE1_valid & (has_int | ex_ADEF | ex_tlb_reload0 | ex_tlb_preif_unvalid | ex_tlb_plv0);
@@ -229,7 +229,7 @@ wire [31:0] data_sram_addr;
 wire [31:0] data_sram_wdata;
 wire [3:0]  data_sram_wstrb;
 wire [1:0]  data_sram_size;
-//����s1_mat�����Ѿ��������?    // tlbҳ��ӳ��
+//说明s1_mat是已经换算好的？    // tlb页映射
 wire [1:0]  data_mat;
 wire        data_wr;
 wire [31:0] st_data;

@@ -27,17 +27,17 @@ module decode #(
     input  wire        need_stall,
     input  wire        has_int,
     //branch prediction
-    //���¶˿ڣ�Decodeȷ����ʵ������������BTB
+    //更新端口：Decode确定真实跳转后更新BTB
     output wire        update_valid ,
     output wire        bht_update_valid,
     output wire [31:0] update_pc    ,
-    output wire [31:0] update_target,//��ʵĿ����?
+    output wire [31:0] update_target,//真实目标地址
     output wire [1:0]  update_type  ,
-    output wire        update_taken ,//��ʵ�Ƿ���ת
-    // ������? call ����
+    output wire        update_taken ,//真实是否跳转
+    // 是不是 call 调用
     output wire        push_valid   ,
     output wire [31:0] push_target  ,
-    // ������? return ����
+    // 是不是 return 返回
     output wire        pop_valid    ,
     //PLV
     input  wire [1:0]  csr_CRMD_PLV
@@ -55,16 +55,16 @@ end
 wire [31:0] pc;
 wire [31:0] inst;
 wire        ex_ADEF;
-wire        ex_tlb_reload0;//tlb��������
-wire        ex_tlb_preif_unvalid;//tlb��ȡָҳ��Ч
-wire        ex_tlb_plv0;//tlb��ҳ��Ȩ���Ϲ�
+wire        ex_tlb_reload0;//tlb重填异常
+wire        ex_tlb_preif_unvalid;//tlb的取指页无效
+wire        ex_tlb_plv0;//tlb的页权限上访
 
-wire        btb_query_hit;//valid��tag
+wire        btb_query_hit;//valid且tag
 wire [31:0] btb_query_target;        
-wire        ras_query_hit;//valid��tag
+wire        ras_query_hit;//valid且tag
 wire [31:0] ras_query_target;        
 wire [ 1:0] query_type;              
-wire        query_taken;//Ԥ���Ƿ���ת 
+wire        query_taken;//预测是否跳转 
 assign {pc,inst,ex_ADEF,ex_tlb_reload0,ex_tlb_preif_unvalid,ex_tlb_plv0,
         btb_query_hit,btb_query_target,ras_query_hit,ras_query_target,query_type,query_taken} = bus;
 //------------------------{bus decode}end-------------------------//
@@ -285,7 +285,7 @@ assign inst_ertn   = op_31_26_d[6'h01] & op_25_22_d[4'h9] & op_21_20_d[2'h0] & o
 assign inst_syscall= op_31_26_d[6'h00] & op_25_22_d[4'h0] & op_21_20_d[2'h2] & op_19_15_d[5'h16];
 assign inst_break  = op_31_26_d[6'h00] & op_25_22_d[4'h0] & op_21_20_d[2'h2] & op_19_15_d[5'h14];
 assign inst_csr    = inst_csrrd | inst_csrwr | inst_csrxchg;
-assign inst_rdcntvl_w=op_31_26_d[6'h00] & op_25_22_d[4'h0] & op_21_20_d[2'h0] & op_19_15_d[5'h0] & rk == 5'b11000 & rj == 5'b00000 & rd != 5'b00000;//notice:我�?�加�???!=的condition，操作手册上没写，但�???加上更完善，因为�???0号寄存器和不写一样，因�?�可以排除�??
+assign inst_rdcntvl_w=op_31_26_d[6'h00] & op_25_22_d[4'h0] & op_21_20_d[2'h0] & op_19_15_d[5'h0] & rk == 5'b11000 & rj == 5'b00000 & rd != 5'b00000;//notice:我新加的!=的condition，操作手册上没写，但加上更完善，因为0号寄存器和不写一样，可以排除
 assign inst_rdcntvh_w=op_31_26_d[6'h00] & op_25_22_d[4'h0] & op_21_20_d[2'h0] & op_19_15_d[5'h0] & rk == 5'b11001 & rj == 5'b00000;
 assign inst_rdcntid= op_31_26_d[6'h00] & op_25_22_d[4'h0] & op_21_20_d[2'h0] & op_19_15_d[5'h0] & rk == 5'b11000 & rj != 5'b00000 & rd == 5'b00000;
 //chapter 9 exp18:new add
@@ -399,7 +399,7 @@ assign dst_is_r1     = inst_bl;
 assign res_from_mem  = inst_ld_w | inst_ld_b | inst_ld_h | inst_ld_bu | inst_ld_hu | inst_ll_w;
 assign mem_we        = inst_st_w | inst_st_b | inst_st_h | inst_sc_w;
 assign rf_dest       = dst_is_r1 ? 5'd1 : (inst_rdcntid ? rj : rd);
-// src1/2不会�?使用
+// src1/2不会同时使用
 wire src1_unused = inst_b | inst_bl | inst_lu12i_w | inst_pcaddu12i_w;
 wire src2_unused = (src2_is_imm && !mem_we) | inst_b;
 
@@ -441,7 +441,7 @@ assign ex_tlbinv_op = ~((rf_dest == 5'd0) | (rf_dest == 5'd1) | (rf_dest == 5'd2
                         (rf_dest == 5'd3) | (rf_dest == 5'd4) | (rf_dest == 5'd5) |
                         (rf_dest == 5'd6));
 
-//[TODO ����ָ��������]
+//[TODO 新增指令未完成]
 wire ex_INE;
 assign ex_INE = ~(inst_add_w        | inst_sub_w        | inst_slt          | inst_sltu         |
                   inst_nor          | inst_and          | inst_or           | inst_xor          |
@@ -470,10 +470,10 @@ assign ex_IPE      = IPE_inst_plv0 | cacop_ipe;
 //------------------------{ex_INE}end-------------------------//
 
 //-------------------------{branch prediction updata}begin---------------//
-localparam TYPE_COND = 2'b00;//2'b00  COND   ������֧ beq/bne/blt/bge/bltu/bgeu
-localparam TYPE_JUMP = 2'b01;//2'b01  JUMP   ������ֱ���� b
-localparam TYPE_CALL = 2'b10;//2'b10  CALL   bl���� jirl �� rd!=0
-localparam TYPE_RET  = 2'b11;//2'b11  RET    jirl �� rd==0
+localparam TYPE_COND = 2'b00;//2'b00  COND   条件分支 beq/bne/blt/bge/bltu/bgeu
+localparam TYPE_JUMP = 2'b01;//2'b01  JUMP   无条件直接跳转 b
+localparam TYPE_CALL = 2'b10;//2'b10  CALL   bl跳转或 jirl 且 rd!=0
+localparam TYPE_RET  = 2'b11;//2'b11  RET    jirl 且 rd==0
 
 wire        real_taken;
 wire [31:0] real_target;
@@ -482,10 +482,10 @@ wire [31:0] pred_target;
 wire        redirect;
 wire [31:0] direct_target;
 
-    //---------------{��ת����}begin---------------//
+    //---------------{跳转分类}begin---------------//
     wire is_cond ;
-    wire is_jirl_call;// jirl $rd==$r1 ʱ������?����call
-    wire is_jump ;// b �� jirl �� rd!=0
+    wire is_jirl_call;// jirl $rd==$r1 时当作调用call
+    wire is_jump ;// b 或 jirl 且 rd!=0
     wire is_call ;
     wire is_ret  ;
     wire is_indirect_jump;
@@ -494,28 +494,28 @@ wire [31:0] direct_target;
     assign is_jump = inst_b | is_indirect_jump;
     assign is_call = inst_bl | is_jirl_call;
     assign is_ret  = inst_jirl & (rd == 5'd0) & (rj == 5'b1) & (i16 == 16'b0);
-    assign is_indirect_jump = inst_jirl && !is_jirl_call && !is_ret;//����call��return��jirl���Ǽ�����?
-    //---------------{��ת����}end---------------//
+    assign is_indirect_jump = inst_jirl && !is_jirl_call && !is_ret;//除了call和return的jirl都是间接跳转
+    //---------------{跳转分类}end---------------//
 
-    //---------------{��ת�ͱ��Ա� ��Ч & ƥ��}begin---------------//
-    wire pred_valid;// ��ʾ�����漸��
+    //---------------{跳转和对比表 有效 & 匹配}begin---------------//
+    wire pred_valid;// 表示预测有效
     wire pred_ok ;
     /*
-        ֮ǰ���ֻ��� dcache->rj->rj+imm->�Ա�real->btb
-        ���Բ�ֳ�?
+        之前做的是 dcache->rj->rj+imm->对比real->btb
+        所以可以拆出来?
             dache->rj
-                        ->�Ա�real-imm & rj ->btb
+                        ->对比real-imm & rj ->btb
             real-imm
-        �������jirl_pred_rj target_match
-        assign pred_ok = pred_valid & (real_taken == pred_taken) & (!real_taken || (real_target == pred_target));//Ԥ��һ��
+        再比如jirl_pred_rj target_match
+        assign pred_ok = pred_valid & (real_taken == pred_taken) & (!real_taken || (real_target == pred_target));//预测一致
     */
     wire [31:0] jirl_pred_rj;
     wire        target_match;
     assign jirl_pred_rj = pred_target - jirl_offs;
     assign target_match = inst_jirl ? (rj_value == jirl_pred_rj) : (direct_target == pred_target);
-    assign pred_valid   = is_cond | is_jump | is_call | is_ret;//ֻ��Ҫ���⼸�ֵ�br
-    assign pred_ok = pred_valid & (real_taken == pred_taken) & (!real_taken || target_match);//Ԥ��һ��
-    //---------------{��ת�ͱ��Ա� ��Ч & ƥ��}begin---------------//
+    assign pred_valid   = is_cond | is_jump | is_call | is_ret;//只需要这几种的br
+    assign pred_ok = pred_valid & (real_taken == pred_taken) & (!real_taken || target_match);//预测一致
+    //---------------{跳转和对比表 有效 & 匹配}end---------------//
 
 
 assign pred_taken = (ras_query_hit && (query_type == TYPE_RET)) ||
@@ -546,11 +546,11 @@ assign update_type =    is_cond ? TYPE_COND :
                         is_jump ? TYPE_JUMP :
                                   TYPE_COND;
 assign update_taken = real_taken;
-assign push_valid   = ID_valid & ID_ready_go & ~ID_need_cancel & ID_allow_in  & is_call & ~ex_ADEF;//��ʵcall Ҫ push
+assign push_valid   = ID_valid & ID_ready_go & ~ID_need_cancel & ID_allow_in  & is_call & ~ex_ADEF;//真实call 要 push
 assign push_target  = pc + 32'd4;
-assign pop_valid    = is_ret & ID_valid & ID_ready_go & ~ID_need_cancel & ID_allow_in  & ~ex_ADEF;//��ʵreturn Ҫ pop
+assign pop_valid    = is_ret & ID_valid & ID_ready_go & ~ID_need_cancel & ID_allow_in  & ~ex_ADEF;//真实return 要 pop
 //assign real_target = inst_jirl ? rf_rdata1 + jirl_offs : pc + br_offs;
-//д����ֻ��inst_jirl����֮��Ż����pc+br_offs
+//写回时只有inst_jirl执行完之后才会使用pc+br_offs
 assign direct_target = pc + br_offs;
 assign real_target = inst_jirl ? rf_rdata1 + jirl_offs : direct_target;
 assign real_taken  = (

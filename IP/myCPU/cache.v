@@ -6,38 +6,38 @@ module cache #(
 (
     input  wire  clk,
     input  wire  resetn,
-    //                                                          À´×Ô(input)/È¥Íù£¨output)
-    input  wire         valid,//±íÃ÷ÇëÇóÓĞĞ§                                       CPU
-    input  wire         op, // op£º0¶Á£¬1Ğ´                                        CPU
-    input  wire [7 :0]  index,// CPU Ö±½Ó½ØÈ¡µÄ12£º4(¿Ï¶¨²»Éæ¼°ĞéÊµÓ³Éä)     CPU
-    input  wire [19:0]  tag,  // CPU´¦ÀíºÃµÄpaddr    (ĞéÊµÓ³Éä)              CPU
-    input  wire [3 :0]  offset,// CPU Ö±½Ó½ØÈ¡µÄ3:0 (¿Ï¶¨²»Éæ¼°ĞéÊµÓ³Éä)     CPU
+    //                                                          æ¥è‡ª(input)/å»å¾€ï¼ˆoutput)
+    input  wire         valid,//è¡¨æ˜è¯·æ±‚æœ‰æ•ˆ                                       CPU
+    input  wire         op, // opï¼š0è¯»ï¼Œ1å†™                                        CPU
+    input  wire [7 :0]  index,// CPU ç›´æ¥æˆªå–çš„12ï¼š4(è‚¯å®šä¸æ¶‰åŠè™šå®æ˜ å°„)     CPU
+    input  wire [19:0]  tag,  // CPUå¤„ç†å¥½çš„paddr    (è™šå®æ˜ å°„)              CPU
+    input  wire [3 :0]  offset,// CPU ç›´æ¥æˆªå–çš„3:0 (è‚¯å®šä¸æ¶‰åŠè™šå®æ˜ å°„)     CPU
     input  wire [3 :0]  wstrb,//                                            CPU
     input  wire [31:0]  wdata,//                                            CPU
     input  wire         uncache_valid,
     input  wire         uncache_wr, // ld:0 st:1
 
-    output wire         addr_ok,//½ÓÊÕµ½×ª½ÓÇÅµÄ ¶Á/Ğ´ µÄ addrok ¸øCPU               CPU£¨O£©                                   
-    input  wire         rd_rdy,   // arready                                      ×ÜÏß
-    output wire [31:0]  rd_addr, // CPU¸øµÄpaddr VA ËûÆ´½ÓÒ»ÏÂ             ×ÜÏß£¨O£©
+    output wire         addr_ok,//æ¥æ”¶åˆ°è½¬æ¥æ¡¥çš„ è¯»/å†™ çš„ addrok ç»™CPU               CPUï¼ˆOï¼‰                                   
+    input  wire         rd_rdy,   // arready                                      æ€»çº¿
+    output wire [31:0]  rd_addr, // CPUç»™çš„paddr VA ä»–æ‹¼æ¥ä¸€ä¸‹             æ€»çº¿ï¼ˆOï¼‰
 
-    output wire         data_ok,//×ÜÏß·µ»ØµÄ                                       CPU£¨O£©
-    output wire [31:0]  rdata,// ×ÜÏß¶Á³öÀ´µÄÊı¾İ                           CPU£¨O£©
-    output wire         rd_req,// CPU µÄ¶ÁÇëÇó                                     ×ÜÏß£¨O£©
-    output wire [2 :0]  rd_type, // ºÍ×ÜÏßµÄsizeÖ±½Ó½Ó                      ×ÜÏß£ºrsize 010   arlen 8'd3 £¨O£©  
+    output wire         data_ok,//æ€»çº¿è¿”å›çš„                                       CPUï¼ˆOï¼‰
+    output wire [31:0]  rdata,// æ€»çº¿è¯»å‡ºæ¥çš„æ•°æ®                           CPUï¼ˆOï¼‰
+    output wire         rd_req,// CPU çš„è¯»è¯·æ±‚                                     æ€»çº¿ï¼ˆOï¼‰
+    output wire [2 :0]  rd_type, // å’Œæ€»çº¿çš„sizeç›´æ¥æ¥                      æ€»çº¿ï¼šrsize 010   arlen 8'd3 ï¼ˆOï¼‰  
     output wire [7 :0]  ar_len,    
-    input  wire         ret_valid,// ×ÜÏß·µ»ØµÄÊıÊÇÓĞĞ§µÄ                           ×ÜÏß£ºrvalid
-    input  wire         ret_last, // ×ÜÏß·µ»Ø½áÊøÁË                                 ×ÜÏß: last
-    input  wire [31:0]  ret_data,// ×ÜÏß¸øµÄ¶ÁÊı¾İ rdata                    ×ÜÏß
+    input  wire         ret_valid,// æ€»çº¿è¿”å›çš„æ•°æ˜¯æœ‰æ•ˆçš„                           æ€»çº¿ï¼šrvalid
+    input  wire         ret_last, // æ€»çº¿è¿”å›ç»“æŸäº†                                 æ€»çº¿: last
+    input  wire [31:0]  ret_data,// æ€»çº¿ç»™çš„è¯»æ•°æ® rdata                    æ€»çº¿
 
 
-    output wire         wr_req,//CPU·¢ÆğµÄ                                        ×ÜÏß£¨O£©
-    output wire [2 :0]  wr_type,//                                        ×ÜÏß£¨O£©
-    output wire [31:0]  wr_addr,//                                        ×ÜÏß£¨O£©
-    output wire [3 :0]  wr_wstrb,//                                       ×ÜÏß£¨O£©
-    output wire [127:0] wr_data,//                                        ×ÜÏß£¨O£©
+    output wire         wr_req,//CPUå‘èµ·çš„                                        æ€»çº¿ï¼ˆOï¼‰
+    output wire [2 :0]  wr_type,//                                        æ€»çº¿ï¼ˆOï¼‰
+    output wire [31:0]  wr_addr,//                                        æ€»çº¿ï¼ˆOï¼‰
+    output wire [3 :0]  wr_wstrb,//                                       æ€»çº¿ï¼ˆOï¼‰
+    output wire [127:0] wr_data,//                                        æ€»çº¿ï¼ˆOï¼‰
     output wire [7 :0]  aw_len,
-    input  wire         wr_rdy,//                                                  ×ÜÏß
+    input  wire         wr_rdy,//                                                  æ€»çº¿
 
     // cacop
     input  wire [ 4:0]  cache_code,
@@ -45,78 +45,78 @@ module cache #(
     output wire         cacop_done
 );
 
-//----------------------------- ¼Ä´æÆ÷¶¨Òå¿ªÊ¼ --------------------------
-// Ö÷×´Ì¬»úºÍ Write Buffer ×´Ì¬»ú
-// ´æ´¢Ö÷×´Ì¬ & Ğ´×´Ì¬
+//----------------------------- å¯„å­˜å™¨å®šä¹‰å¼€å§‹ --------------------------
+// ä¸»çŠ¶æ€æœºå’Œ Write Buffer çŠ¶æ€æœº
+// å­˜å‚¨ä¸»çŠ¶æ€ & å†™çŠ¶æ€
 reg [2:0] main_state;
 reg wb_state;
 
-// ×î½ü×îÉÙÊ¹ÓÃ
+// æœ€è¿‘æœ€å°‘ä½¿ç”¨
 reg  LRU  [`GROUP_NUM-1:0];
-// Î±Ëæ»úÌæ»»
+// ä¼ªéšæœºæ›¿æ¢
 // reg [22:0] LFSR;
 
-// ÔàÎ»±í
+// è„ä½è¡¨
 reg                    dirty_way0 [`GROUP_NUM-1:0];
 reg                    dirty_way1 [`GROUP_NUM-1:0];
-// °Ñµ±Ç° LOOKUP µÄÕâ¸öindexµÄÔàÎ»Ëø´æ£¬ÓÃÓÚÔÚ MISS µÄÊ±ºòÅĞ¶ÏĞ´»Ø
+// æŠŠå½“å‰ LOOKUP çš„è¿™ä¸ªindexçš„è„ä½é”å­˜ï¼Œç”¨äºåœ¨ MISS çš„æ—¶å€™åˆ¤æ–­å†™å›
 reg                    dirty_way0_r;
 reg                    dirty_way1_r;
 
-//Request Buffer£ºËø´æµ±Ç°½øÈëLOOKUPµÄÇëÇó
+//Request Bufferï¼šé”å­˜å½“å‰è¿›å…¥LOOKUPçš„è¯·æ±‚
 reg                    req_valid_r;
 reg                    req_op_r;
 reg [`INDEX_WIDTH-1:0]  req_index_r;
 reg [`TAG_WIDTH-1:0]    req_tag_r;
 reg [`OFFSET_WIDTH-1:0] req_offset_r;
-reg [3:0]              req_wstrb_r; // ·¢ÆğÇëÇóÊ±¿ÌÏÈ»º´æÏÂÀ´ ·½±ãÖ®ºóÃüÖĞ¸øwb_wstrb_r
-reg [31:0]             req_wdata_r; // Ô­Ê¼Ğ´data
+reg [3:0]              req_wstrb_r; // å‘èµ·è¯·æ±‚æ—¶åˆ»å…ˆç¼“å­˜ä¸‹æ¥ æ–¹ä¾¿ä¹‹åå‘½ä¸­ç»™wb_wstrb_r
+reg [31:0]             req_wdata_r; // åŸå§‹å†™data
 reg                    uncache_valid_r;
 reg                    uncache_wr_r;
 reg                    cacop_this_cache_r;
 reg [4:0]              cache_code_r;
 
-//Miss Buffer£ºËø´æµ±Ç°È±Ê§ÊÂÎñµÄÉÏÏÂÎÄ
+//Miss Bufferï¼šé”å­˜å½“å‰ç¼ºå¤±äº‹åŠ¡çš„ä¸Šä¸‹æ–‡
 reg                    miss_op_r;
 reg [`INDEX_WIDTH-1:0] miss_index_r;
 reg [`TAG_WIDTH-1:0]   miss_tag_r;
 reg [`OFFSET_WIDTH-1:0]miss_offset_r;
 reg [3:0]              miss_wstrb_r;
 reg [31:0]             miss_wdata_r;
-// ¸ù¾İ LRU & Ëæ»úÌæ»»Ëã·¨ ÕÒµ½µÄreplaceµÄway
+// æ ¹æ® LRU & éšæœºæ›¿æ¢ç®—æ³• æ‰¾åˆ°çš„replaceçš„way
 reg                    replace_way_r;
 reg [`TAG_WIDTH-1:0]   replace_tag_r;
 reg                    replace_valid_r;
 reg                    replace_dirty_r;
 reg[127:0]             replace_line_r;
 
-//Write Buffer£ºÃüÖĞĞ´ÏÈÔİ´æ£¬ÔÙµ¥¶ÀĞ´ Data Bank
+//Write Bufferï¼šå‘½ä¸­å†™å…ˆæš‚å­˜ï¼Œå†å•ç‹¬å†™ Data Bank
 reg                    wb_valid_r;
 reg                    wb_way_r;
 reg [`INDEX_WIDTH-1:0] wb_index_r;
 reg [1:0]              wb_bank_r;
-reg [3:0]              wb_wstrb_r; // wdata ÒÔ¼°±»
+reg [3:0]              wb_wstrb_r; // wdata ä»¥åŠè¢«
 reg [31:0]             wb_wdata_r;
 
-// ¡¾ÊÜÏŞÓÚ±ÈÈüµÄAXI RAM ÎÒÃÇÍ×Ğ­µÄ²ÉÓÃÁËÒ»´Î32Î»·µ»ØµÄ´òÅÄ¡¿
-// cnt¾ÍÊÇ´òÅÄ£¬bufÊÇ´æ·ÅÕâcache lineÊı¾İµÄ¼Ä´æÆ÷
+// ã€å—é™äºæ¯”èµ›çš„AXI RAM æˆ‘ä»¬å¦¥åçš„é‡‡ç”¨äº†ä¸€æ¬¡32ä½è¿”å›çš„æ‰“æ‹ã€‘
+// cntå°±æ˜¯æ‰“æ‹ï¼Œbufæ˜¯å­˜æ”¾è¿™cache lineæ•°æ®çš„å¯„å­˜å™¨
 reg [1:0]              refill_cnt_r;
-//´æ´¢µÄÊÇÖ±½Ó´Ódata_ram/inst_ramÖĞÄÃ»ØÀ´µÄcache line
+//å­˜å‚¨çš„æ˜¯ç›´æ¥ä»data_ram/inst_ramä¸­æ‹¿å›æ¥çš„cache line
 reg [127:0]            refill_buf_r;
 reg                    rd_req_sent_r;
 reg                    wr_req_sent_r;
 
 integer i;
-//----------------------------- ¼Ä´æÆ÷¶¨Òå½áÊø --------------------------
+//----------------------------- å¯„å­˜å™¨å®šä¹‰ç»“æŸ --------------------------
 
-//----------------------------- ÏßÍø¶¨Òå¿ªÊ¼ --------------------------
+//----------------------------- çº¿ç½‘å®šä¹‰å¼€å§‹ --------------------------
 wire [`TAG_WIDTH-1:0]  way0_tag;
 wire [`TAG_WIDTH-1:0]  way1_tag;
 wire                   way0_v;
 wire                   way1_v;
 wire                   way0_d;
 wire                   way1_d;
-// way0/1ËùÑ¡ÔñµÄword ÒÔ¼°ÎÒÃÇÑ¡ÔñµÄword
+// way0/1æ‰€é€‰æ‹©çš„word ä»¥åŠæˆ‘ä»¬é€‰æ‹©çš„word
 wire [31:0]           way0_word;
 wire [31:0]           way1_word;
 wire                  way0_hit;
@@ -124,20 +124,20 @@ wire                  way1_hit;
 wire                  cache_hit;
 wire                  hit_way;
 wire [31:0]           hit_word;
-// stÍ¨¹ıÑÚÂëÀ´Ğ´Èë£¨st_h,st_b)
+// sté€šè¿‡æ©ç æ¥å†™å…¥ï¼ˆst_h,st_b)
 wire [31:0]           merged_hit_word;
 
-//refill_buf_rÊÇ»º´æÆ÷£¬Òò´Ë±ØÈ»±Èret_dataÂıÒ»¸öÖÜÆÚ£¬Õâ¸öwire¾ÍÏàµ±ÓÚ¿ÉÒÔË²Ê±±ä»¯£¬ÔÚret_data
-//·µ»ØµÄË²Ê±Õâ¸öcache lineÖĞµÄÖµ¾Í»á±ä³ÉĞÂµÄ
+//refill_buf_ræ˜¯ç¼“å­˜å™¨ï¼Œå› æ­¤å¿…ç„¶æ¯”ret_dataæ…¢ä¸€ä¸ªå‘¨æœŸï¼Œè¿™ä¸ªwireå°±ç›¸å½“äºå¯ä»¥ç¬æ—¶å˜åŒ–ï¼Œåœ¨ret_data
+//è¿”å›çš„ç¬æ—¶è¿™ä¸ªcache lineä¸­çš„å€¼å°±ä¼šå˜æˆæ–°çš„
 wire [127:0]          refill_line_next;
-// ¡¾inst_data/ldÒªÄÃ¡¿ || ¡¾stÒª¸ÄµÄÄÇÒ»¸öword¡¿
+// ã€inst_data/ldè¦æ‹¿ã€‘ || ã€stè¦æ”¹çš„é‚£ä¸€ä¸ªwordã€‘
 wire [31:0]           refill_word;
-// Õâ¸öÕë¶ÔµÄÊÇst_h.w.b ÕâÖÖÒªĞÂĞ´ÈëµÄÖµ
+// è¿™ä¸ªé’ˆå¯¹çš„æ˜¯st_h.w.b è¿™ç§è¦æ–°å†™å…¥çš„å€¼
 wire [31:0]           refill_merged_word;
 
 
-// ÓĞÎŞĞ§Â· replaceÈ¥Ñ¡ÔñÌæ»»µÄÎ»ÖÃ
-// ĞèÒªÌæ»»ÄÇÒ»Â·¶ÔÓ¦µÄ¾ÉÊı¾İ
+// æœ‰æ— æ•ˆè·¯ replaceå»é€‰æ‹©æ›¿æ¢çš„ä½ç½®
+// éœ€è¦æ›¿æ¢é‚£ä¸€è·¯å¯¹åº”çš„æ—§æ•°æ®
 wire                  has_invalid_way;
 wire                  invalid_way;
 wire                  policy_way;
@@ -148,7 +148,7 @@ wire                  replace_dirty;
 wire                  replace_need_writeback;
 wire [127:0]          replace_line;
 
-// ¾­¹ıstĞ´Êı¾İµÄÅĞ¶¨Ö®ºó£¬ÒªÍùcacheÖĞĞ´»ØµÄline
+// ç»è¿‡stå†™æ•°æ®çš„åˆ¤å®šä¹‹åï¼Œè¦å¾€cacheä¸­å†™å›çš„line
 wire [127:0]          refill_final_line;
 wire [31:0]           refill_final_word;
 wire [31:0]           refill_final_bank0;
@@ -161,12 +161,12 @@ wire                  lookup_begin;
 wire                  lookup_read_hit;
 wire                  lookup_write_hit;
 wire                  lookup_miss;
-// refillÔÙ´ÓI/D RAMÄÃ»Øcache lineÖ®ºóÒª½øÈëĞ´cache½×¶Î
+// refillå†ä»I/D RAMæ‹¿å›cache lineä¹‹åè¦è¿›å…¥å†™cacheé˜¶æ®µ
 wire                  refill_write;
 wire                  wb_write;
 
-// TagV RAM ¶Ë¿Ú
-// Ğ´TAGV
+// TagV RAM ç«¯å£
+// å†™TAGV
 wire [0:0]             tagv_way0_wea;
 wire [0:0]             tagv_way1_wea;
 wire                   tagv_way0_code2;
@@ -178,7 +178,7 @@ wire [`TAGV_WIDTH-1:0]  tagv_way1_dina;
 wire [`TAGV_WIDTH-1:0]  tagv_way0_r;
 wire [`TAGV_WIDTH-1:0]  tagv_way1_r;
 
-// Data Bank RAM ¶Ë¿Ú
+// Data Bank RAM ç«¯å£
 wire [3:0]             data_way0_bank0_wea;
 wire [3:0]             data_way0_bank1_wea;
 wire [3:0]             data_way0_bank2_wea;
@@ -214,7 +214,7 @@ wire [`BANK_SIZE-1:0]  data_way1_bank0_r;
 wire [`BANK_SIZE-1:0]  data_way1_bank1_r;
 wire [`BANK_SIZE-1:0]  data_way1_bank2_r;
 wire [`BANK_SIZE-1:0]  data_way1_bank3_r;
-//----------------------------- ÏßÍø¶¨Òå½áÊø --------------------------
+//----------------------------- çº¿ç½‘å®šä¹‰ç»“æŸ --------------------------
 
 //----------------------------- CACOP begin  --------------------------
 wire   cacop_this_cache;
@@ -235,17 +235,17 @@ assign cacop_done = ((main_state == `MAIN_REFILL) && (code0 || code1)) ||
                     ((wb_state   == `WB_WRITE)    && code2);
 //----------------------------- CACOP end  --------------------------
 
-//----------------------------- TAGV RAM ·ÃÎÊÂß¼­ begin --------------------------
+//----------------------------- TAGV RAM è®¿é—®é€»è¾‘ begin --------------------------
 assign tagv_way0_wea       = (refill_write && !replace_way_r);
 assign tagv_way0_code2     = (wb_write && code2 && !wb_way_r);
 assign tagv_way1_wea       = (refill_write &&  replace_way_r);
 assign tagv_way1_code2     = (wb_write && code2 &&  wb_way_r);
-// Èç¹ûÊÇĞ´ ¾ÍµÈµ½Ğ´µÄÊ±ºòÔÙÈ¥´¥·¢ 
-// Èç¹ûÊÇ¶Á ÄÇ¾ÍÖ±½ÓÔÚ´«ÈëµÄË²¼ä´ÓTAGVµÄÁ½Â·ÏÈ°ÑÊı¾İ¶Á³öÀ´£¬Ö®ºóÔÙÑ¡
-// Èç¹ûÊÇCACOP ÕâÀïÆäÊµÒ²ÊÇindexµÄaddr
+// å¦‚æœæ˜¯å†™ å°±ç­‰åˆ°å†™çš„æ—¶å€™å†å»è§¦å‘ 
+// å¦‚æœæ˜¯è¯» é‚£å°±ç›´æ¥åœ¨ä¼ å…¥çš„ç¬é—´ä»TAGVçš„ä¸¤è·¯å…ˆæŠŠæ•°æ®è¯»å‡ºæ¥ï¼Œä¹‹åå†é€‰
+// å¦‚æœæ˜¯CACOP è¿™é‡Œå…¶å®ä¹Ÿæ˜¯indexçš„addr
 assign tagv_way0_addr = tagv_way0_code2 ? wb_index_r : tagv_way0_wea ? miss_index_r : index;
 assign tagv_way1_addr = tagv_way1_code2 ? wb_index_r : tagv_way1_wea ? miss_index_r : index;
-// Ğ´Êı¾İ
+// å†™æ•°æ®
 assign tagv_way0_dina = (tagv_way0_wea & code0) ? {21'b0} :
                         (tagv_way0_wea & code1) ? {replace_tag_r,1'b0} :
                         (tagv_way0_code2&code2) ? {20'b0,1'b0} :
@@ -254,7 +254,7 @@ assign tagv_way1_dina = (tagv_way1_wea & code0) ? {21'b0} :
                         (tagv_way1_wea & code1) ? {replace_tag_r,1'b0} :
                         (tagv_way1_code2&code2) ? {20'b0,1'b0} :
                         {miss_tag_r, 1'b1};
-// TagV RAM£ºÃ¿Â·Ò»ÕÅ 256x21 ±í£¬Î»[20:1]Îª±êÇ©£¬Î»[0]ÎªÓĞĞ§Î»
+// TagV RAMï¼šæ¯è·¯ä¸€å¼  256x21 è¡¨ï¼Œä½[20:1]ä¸ºæ ‡ç­¾ï¼Œä½[0]ä¸ºæœ‰æ•ˆä½
 tagv_ram tagv_way0 (
     .clka  (clk),
     .wea   (tagv_way0_wea | tagv_way0_code2),
@@ -270,14 +270,14 @@ tagv_ram tagv_way1 (
     .dina  (tagv_way1_dina),
     .douta (tagv_way1_r)
 );
-//----------------------------- TAGV RAM ·ÃÎÊÂß¼­ end --------------------------
+//----------------------------- TAGV RAM è®¿é—®é€»è¾‘ end --------------------------
 
-//----------------------------- DATA BANK RAM ·ÃÎÊÂß¼­ begin --------------------------
-// Ã¿Ò»¸öbankµÄĞ´/¶ÁÊ¹ÄÜ 
-// wb_write£ºwrite buffer
+//----------------------------- DATA BANK RAM è®¿é—®é€»è¾‘ begin --------------------------
+// æ¯ä¸€ä¸ªbankçš„å†™/è¯»ä½¿èƒ½ 
+// wb_writeï¼šwrite buffer
 
-//(refill_write && !replace_way_r):´Ó inst/data RAM ¶Á»ØÌæ»»
-//(wb_write && !wb_way_r && (wb_bank_r == 2'b00) cache ÃüÖĞÏÂµÄst
+//(refill_write && !replace_way_r):ä» inst/data RAM è¯»å›æ›¿æ¢
+//(wb_write && !wb_way_r && (wb_bank_r == 2'b00) cache å‘½ä¸­ä¸‹çš„st
 assign data_way0_bank0_wea = (refill_write && !cacop_this_cache_r && !replace_way_r) ? 4'b1111 :
                              (wb_write && !wb_way_r && (wb_bank_r == 2'b00) && !cacop_this_cache_r) ? wb_wstrb_r : 4'b0000;
 assign data_way0_bank1_wea = (refill_write && !cacop_this_cache_r && !replace_way_r) ? 4'b1111 :
@@ -313,7 +313,7 @@ assign data_way1_bank1_dina = (refill_write &&  replace_way_r) ? refill_final_ba
 assign data_way1_bank2_dina = (refill_write &&  replace_way_r) ? refill_final_bank2 : wb_wdata_r;
 assign data_way1_bank3_dina = (refill_write &&  replace_way_r) ? refill_final_bank3 : wb_wdata_r;
 
-// Êı¾İ°´Ã¿Â· 4 ¸ö Data Bank ×éÖ¯
+// æ•°æ®æŒ‰æ¯è·¯ 4 ä¸ª Data Bank ç»„ç»‡
 data_bank_ram data_way0_bank0 (
     .clka  (clk),
     .wea   (data_way0_bank0_wea),
@@ -377,9 +377,9 @@ data_bank_ram data_way1_bank3 (
     .dina  (data_way1_bank3_dina),
     .douta (data_way1_bank3_r)
 );
-//----------------------------- DATA BANK RAM ·ÃÎÊÂß¼­ begin --------------------------
+//----------------------------- DATA BANK RAM è®¿é—®é€»è¾‘ begin --------------------------
 
-//----------------------------- LOOKUP/REPLACE/REFILL ×éºÏÂß¼­¿ªÊ¼ --------------------------
+//----------------------------- LOOKUP/REPLACE/REFILL ç»„åˆé€»è¾‘å¼€å§‹ --------------------------
 assign way0_tag = tagv_way0_r[20:1];
 assign way1_tag = tagv_way1_r[20:1];
 assign way0_v   = tagv_way0_r[0];
@@ -405,7 +405,7 @@ assign hit_word        = hit_way ? way1_word : way0_word;
 assign merged_hit_word = (hit_word    & ~{{8{req_wstrb_r[3]}}, {8{req_wstrb_r[2]}}, {8{req_wstrb_r[1]}}, {8{req_wstrb_r[0]}}})
                        | (req_wdata_r &  {{8{req_wstrb_r[3]}}, {8{req_wstrb_r[2]}}, {8{req_wstrb_r[1]}}, {8{req_wstrb_r[0]}}});
 
-//MISS Ê±ÓÅÏÈÌîÎŞĞ§Â·£¬·ñÔòÔÙ°´Ìæ»»²ßÂÔÑ¡Ôñ±»Ìæ»»Â·
+//MISS æ—¶ä¼˜å…ˆå¡«æ— æ•ˆè·¯ï¼Œå¦åˆ™å†æŒ‰æ›¿æ¢ç­–ç•¥é€‰æ‹©è¢«æ›¿æ¢è·¯
 assign has_invalid_way       = !way0_v || !way1_v;
 assign invalid_way           = !way0_v ? 1'b0 : 1'b1;
 //assign policy_way            = (`REPLACE_MODE == 1'b0) ? LRU[req_index_r] : LFSR[0];
@@ -419,8 +419,8 @@ assign replace_need_writeback = replace_valid && replace_dirty;
 assign replace_line = replace_way_r ? {data_way1_bank3_r, data_way1_bank2_r, data_way1_bank1_r, data_way1_bank0_r}
                                 : {data_way0_bank3_r, data_way0_bank2_r, data_way0_bank1_r, data_way0_bank0_r};
 
-// Ğ´È±Ê§Ê±£¬»ØÌîÍê³Éºó»¹Òª¶ÔÄ¿±ê×ÖÔÙºÏ²¢Ò»´Î
-// ret_last µ±ÅÄ·µ»ØµÄ×îºóÒ»¸öÊı¾İÅÄÒ²±ØĞë²¢Èë×îÖÕ»º´æĞĞ
+// å†™ç¼ºå¤±æ—¶ï¼Œå›å¡«å®Œæˆåè¿˜è¦å¯¹ç›®æ ‡å­—å†åˆå¹¶ä¸€æ¬¡
+// ret_last å½“æ‹è¿”å›çš„æœ€åä¸€ä¸ªæ•°æ®æ‹ä¹Ÿå¿…é¡»å¹¶å…¥æœ€ç»ˆç¼“å­˜è¡Œ
 assign refill_line_next = ret_valid ? {(refill_cnt_r == 2'b11) ? ret_data : refill_buf_r[127:96],
                                        (refill_cnt_r == 2'b10) ? ret_data : refill_buf_r[95:64],
                                        (refill_cnt_r == 2'b01) ? ret_data : refill_buf_r[63:32],
@@ -444,17 +444,17 @@ assign refill_final_bank1 = refill_final_line[63:32];
 assign refill_final_bank2 = refill_final_line[95:64];
 assign refill_final_bank3 = refill_final_line[127:96];
 
-//Ö»ÓĞÖ÷×´Ì¬»ú¿ÕÏĞ¡¢Write Buffer Ò²¿ÕÏĞÊ±£¬²Å½ÓÊÕĞÂµÄ»º´æÇëÇó¡£
+//åªæœ‰ä¸»çŠ¶æ€æœºç©ºé—²ã€Write Buffer ä¹Ÿç©ºé—²æ—¶ï¼Œæ‰æ¥æ”¶æ–°çš„ç¼“å­˜è¯·æ±‚ã€‚
 //assign can_accept_req   = (main_state == `MAIN_IDLE) && (wb_state == `WB_IDLE) && !wb_valid_r;
-// cacop_this_cacheÒ²Ó¦¸Ã½øÈë
+// cacop_this_cacheä¹Ÿåº”è¯¥è¿›å…¥
 assign lookup_begin     = (valid | cacop_this_cache) && can_accept_req;
-// Èç¹ûÊÇ¶ÁµÄHitÇ¿ÖÆuncache miss
+// å¦‚æœæ˜¯è¯»çš„Hitå¼ºåˆ¶uncache miss
 assign lookup_read_hit  = cache_hit && !req_op_r && ~(uncache_valid_r && ~uncache_wr_r) && ~code0 && ~code1;
-// Í¬ÑùĞ´Ò²ÊÇ
+// åŒæ ·å†™ä¹Ÿæ˜¯
 assign lookup_write_hit = cache_hit &&  req_op_r && ~(uncache_valid_r && uncache_wr_r) && ~cacop_this_cache_r;
-// Ç¿ÖÆmiss
+// å¼ºåˆ¶miss
 assign lookup_miss      = !cache_hit | uncache_valid_r | code0 | code1;
-// refill_write£º´¦ÓÚrefill×´Ì¬£¬Òª°Ñcache lineÖØÌî»Øcache
+// refill_writeï¼šå¤„äºrefillçŠ¶æ€ï¼Œè¦æŠŠcache lineé‡å¡«å›cache
 assign refill_write     = (main_state == `MAIN_REFILL) && ((ret_valid && ret_last && ~uncache_valid_r) || code0 || code1);
 assign wb_write         = (wb_state == `WB_WRITE);
 
@@ -470,7 +470,7 @@ assign can_accept_req =
 
 assign addr_ok = can_accept_req;
 
-//----------------------------- LOOKUP/REPLACE/REFILL ×éºÏÂß¼­½áÊø --------------------------
+//----------------------------- LOOKUP/REPLACE/REFILL ç»„åˆé€»è¾‘ç»“æŸ --------------------------
 
 always @(posedge clk or negedge resetn) begin
     if (!resetn) begin
@@ -512,7 +512,7 @@ always @(posedge clk or negedge resetn) begin
         cacop_this_cache_r   <= 1'b0;
         cache_code_r         <= 5'b0;
 
-        // ÕâÀïÖ»ÇåÔªÊı¾İ£¬²»ÕûÆ¬ÇåÁã Data RAM£¬±ÜÃâÆÆ»µ BRAM ÍÆ¶Ï·ç¸ñ¡£
+        // è¿™é‡Œåªæ¸…å…ƒæ•°æ®ï¼Œä¸æ•´ç‰‡æ¸…é›¶ Data RAMï¼Œé¿å…ç ´å BRAM æ¨æ–­é£æ ¼ã€‚
         for (i = 0; i < `GROUP_NUM; i = i + 1) begin
             dirty_way0[i] <= 1'b0;
             dirty_way1[i] <= 1'b0;
@@ -520,22 +520,22 @@ always @(posedge clk or negedge resetn) begin
         end
     end
     else begin
-        // Î±Ëæ»úÌæ»»
-        // Î±Ëæ»úÊ¹ÓÃÎ»Êı²éÑ¯ÊÖ²á¿ÉÒÔ²éÑ¯µÍÎ»ÊÇÄÄĞ©Òì»ò
+        // ä¼ªéšæœºæ›¿æ¢
+        // ä¼ªéšæœºä½¿ç”¨ä½æ•°æŸ¥è¯¢æ‰‹å†Œå¯ä»¥æŸ¥è¯¢ä½ä½æ˜¯å“ªäº›å¼‚æˆ–
         //LFSR <= {LFSR[21:0], LFSR[22] ^ LFSR[17]};
 
         case (main_state)
             `MAIN_IDLE: begin
                 if (lookup_begin) begin
-                    // µÚÒ»ÅÄ£ºËø´æÇëÇó£¬²¢ÏòÁ½Â· TagV/Data Bank ·¢¶ÁµØÖ·
+                    // ç¬¬ä¸€æ‹ï¼šé”å­˜è¯·æ±‚ï¼Œå¹¶å‘ä¸¤è·¯ TagV/Data Bank å‘è¯»åœ°å€
                     req_valid_r  <= 1'b1;
-                    req_op_r     <= cacop_this_cache ? 1'b0: op;// ÒòÎªÃüÖĞcacheĞèÒªVÖÃÎª0,ËùÒÔÆäÊµÏàµ±ÓÚldµ«ÊÇÒªĞ´
+                    req_op_r     <= cacop_this_cache ? 1'b0: op;// å› ä¸ºå‘½ä¸­cacheéœ€è¦Vç½®ä¸º0,æ‰€ä»¥å…¶å®ç›¸å½“äºldä½†æ˜¯è¦å†™
                     req_index_r  <= index;
                     req_tag_r    <= tag;
                     req_offset_r <= offset;
                     req_wstrb_r  <= wstrb;
                     req_wdata_r  <= wdata;
-                    uncache_valid_r <= uncache_valid & ~cacop_this_cache;// ±ØĞëÔÚ·ÇcacopÖ¸ÁîµÄÊ±ºò²ÅÄÜuncache
+                    uncache_valid_r <= uncache_valid & ~cacop_this_cache;// å¿…é¡»åœ¨écacopæŒ‡ä»¤çš„æ—¶å€™æ‰èƒ½uncache
                     uncache_wr_r <= uncache_wr;
                     cacop_this_cache_r <= cacop_this_cache;
                     cache_code_r  <= cache_code;
@@ -577,7 +577,7 @@ always @(posedge clk or negedge resetn) begin
                         (code2_0 != 3'b000) &&
                         (hit_way ? way1_d : way0_d)) begin
 
-                        // D-cache code2 ÔàÃüÖĞ£ºËø´æÃüÖĞĞĞ£¬ÏÈĞ´»Ø
+                        // D-cache code2 è„å‘½ä¸­ï¼šé”å­˜å‘½ä¸­è¡Œï¼Œå…ˆå†™å›
                         miss_index_r         <= req_index_r;
 
                         replace_way_r        <= hit_way;
@@ -594,7 +594,7 @@ always @(posedge clk or negedge resetn) begin
                     end
                     else begin
                         if (code2) begin
-                            // I-cacheÃüÖĞ£¬»òÕßD-cache¸É¾»ÃüÖĞ£¬Ö±½ÓÇåV
+                            // I-cacheå‘½ä¸­ï¼Œæˆ–è€…D-cacheå¹²å‡€å‘½ä¸­ï¼Œç›´æ¥æ¸…V
                             wb_valid_r <= 1'b1;
                             wb_way_r   <= hit_way;
                             wb_index_r <= req_index_r;
@@ -604,17 +604,17 @@ always @(posedge clk or negedge resetn) begin
                     end
                 end
                 else if (lookup_write_hit) begin
-                    // Ğ´ÃüÖĞ£ºÖ÷×´Ì¬»úÖ»¸ºÔğÈ·ÈÏÃüÖĞ
-                    // ÕæÕıĞ´ Data Bank µÄ¶¯×÷½»¸ø Write Buffer ×´Ì¬»ú
+                    // å†™å‘½ä¸­ï¼šä¸»çŠ¶æ€æœºåªè´Ÿè´£ç¡®è®¤å‘½ä¸­
+                    // çœŸæ­£å†™ Data Bank çš„åŠ¨ä½œäº¤ç»™ Write Buffer çŠ¶æ€æœº
                     wb_valid_r <= 1'b1;
                     wb_way_r   <= hit_way;
                     wb_index_r <= req_index_r;
                     wb_bank_r  <= req_offset_r[3:2];
                     wb_wstrb_r <= req_wstrb_r;
-                    // LOOKUP ÅÄÒÑ¾­¶Á³öÃüÖĞ×Ö£¬ÕâÀï±£´æºÏ²¢ºóµÄĞÂ×Ö
+                    // LOOKUP æ‹å·²ç»è¯»å‡ºå‘½ä¸­å­—ï¼Œè¿™é‡Œä¿å­˜åˆå¹¶åçš„æ–°å­—
                     wb_wdata_r <= merged_hit_word;
 
-                    // ÃüÖĞÒ»Â·ºó£¬°ÑÁíÒ»Â·±ê³É"¸ü¾É"
+                    // å‘½ä¸­ä¸€è·¯åï¼ŒæŠŠå¦ä¸€è·¯æ ‡æˆ"æ›´æ—§"
                     LRU[req_index_r] <= ~hit_way;
                     req_valid_r      <= 1'b0;
                     main_state       <= `MAIN_IDLE;
@@ -628,7 +628,7 @@ always @(posedge clk or negedge resetn) begin
                         cacop_this_cache_r   <= 1'b0;
                     end
                     else begin
-                    // LOOKUP È±Ê§£º°Ñµ±Ç°È±Ê§ÊÂÎñ°á½ø Miss Buffer
+                    // LOOKUP ç¼ºå¤±ï¼šæŠŠå½“å‰ç¼ºå¤±äº‹åŠ¡æ¬è¿› Miss Buffer
                         miss_op_r            <= req_op_r;
                         miss_index_r         <= req_index_r;
                         miss_tag_r           <= req_tag_r;
@@ -650,21 +650,21 @@ always @(posedge clk or negedge resetn) begin
                     end
                 end
                 else begin
-                    // ±£»¤·ÖÖ§
+                    // ä¿æŠ¤åˆ†æ”¯
                     req_valid_r      <= 1'b0;
                     main_state       <= `MAIN_IDLE;
                 end
             end
 
             `MAIN_MISS: begin
-                // MISS£ºÏÈ¾ö¶¨±»Ìæ»»Â·ÊÇ·ñĞèÒªĞ´»Ø
+                // MISSï¼šå…ˆå†³å®šè¢«æ›¿æ¢è·¯æ˜¯å¦éœ€è¦å†™å›
                 if(code0)begin
                     refill_cnt_r   <= 2'b0;
                     refill_buf_r   <= {`LINE_SIZE{1'b0}};
                     main_state     <= `MAIN_REFILL;
                 end
                 else if (code1)begin
-                    // Ö»ÓĞÓĞĞ§&ÔàÎ»ĞèÒªreplaceĞ´»Øµ½ram
+                    // åªæœ‰æœ‰æ•ˆ&è„ä½éœ€è¦replaceå†™å›åˆ°ram
                     if(replace_valid_r & replace_dirty_r)begin
                         refill_cnt_r   <= 2'b0;
                         refill_buf_r   <= {`LINE_SIZE{1'b0}};
@@ -687,28 +687,28 @@ always @(posedge clk or negedge resetn) begin
                     main_state     <= `MAIN_REPLACE;
                 end
                 else if (!replace_valid_r) begin
-                    // ±»Ìæ»»Â·ÎŞĞ§£¬ËµÃ÷¸ÃÂ·ÊÇ¿Õ²Û£¬¿ÉÖ±½Ó»ØÌî
+                    // è¢«æ›¿æ¢è·¯æ— æ•ˆï¼Œè¯´æ˜è¯¥è·¯æ˜¯ç©ºæ§½ï¼Œå¯ç›´æ¥å›å¡«
                     refill_cnt_r  <= 2'b0;
                     refill_buf_r  <= {`LINE_SIZE{1'b0}};
                     rd_req_sent_r        <= 1'b0;
                     main_state    <= `MAIN_REFILL;
                 end
                 else if (!replace_dirty_r) begin
-                    // ±»Ìæ»»Â·ÓĞĞ§µ«²»Ôà£¬²»ĞèÒª REPLACE£¬Ö±½Ó½øÈë REFILL
+                    // è¢«æ›¿æ¢è·¯æœ‰æ•ˆä½†ä¸è„ï¼Œä¸éœ€è¦ REPLACEï¼Œç›´æ¥è¿›å…¥ REFILL
                     refill_cnt_r  <= 2'b0;
                     refill_buf_r  <= {`LINE_SIZE{1'b0}};
                     rd_req_sent_r        <= 1'b0;
                     main_state    <= `MAIN_REFILL;
                 end
                 else begin
-                    // ±»Ìæ»»Â·ÓĞĞ§ÇÒÎªÔà¿é£¬±ØĞëÏÈÕûÌåĞ´»Ø
+                    // è¢«æ›¿æ¢è·¯æœ‰æ•ˆä¸”ä¸ºè„å—ï¼Œå¿…é¡»å…ˆæ•´ä½“å†™å›
                     wr_req_sent_r        <= 1'b0;
                     main_state    <= `MAIN_REPLACE;
                 end
             end
 
             `MAIN_REPLACE: begin
-                // REPLACE£ºµÈ´ı×ÜÏß½ÓÊÜĞ´»ØÇëÇó
+                // REPLACEï¼šç­‰å¾…æ€»çº¿æ¥å—å†™å›è¯·æ±‚
                 if (code1)begin
                     if(code2_0 != 3'b0)begin
                         if(!wr_req_sent_r && wr_rdy)begin
@@ -725,7 +725,7 @@ always @(posedge clk or negedge resetn) begin
                 end
                 else if (code2) begin
                     if (!wr_req_sent_r && wr_rdy) begin
-                        // ÔàĞĞĞ´»ØÒÑ¾­±»×ÜÏß½ÓÊÕ£¬½ÓÏÂÀ´Í¨¹ıWBÇåV
+                        // è„è¡Œå†™å›å·²ç»è¢«æ€»çº¿æ¥æ”¶ï¼Œæ¥ä¸‹æ¥é€šè¿‡WBæ¸…V
                         wr_req_sent_r <= 1'b1;
 
                         wb_valid_r    <= 1'b1;
@@ -735,7 +735,7 @@ always @(posedge clk or negedge resetn) begin
                         main_state    <= `MAIN_IDLE;
                     end
                 end
-                // uncacheµÄĞ´
+                // uncacheçš„å†™
                 else if(uncache_valid_r && uncache_wr_r)begin
                     if (!wr_req_sent_r && wr_rdy) begin
                         wr_req_sent_r   <= 1'b1;
@@ -745,7 +745,7 @@ always @(posedge clk or negedge resetn) begin
                     end
                 end
                 else if (!wr_req_sent_r && wr_rdy) begin
-                    // Ğ´»ØÇëÇóÖ»·¢ËÍÒ»´Î£»×ÜÏß½ÓÊÜºóÁ¢¼´×ªÈëÈ±Ê§ĞĞ»ØÌî
+                    // å†™å›è¯·æ±‚åªå‘é€ä¸€æ¬¡ï¼›æ€»çº¿æ¥å—åç«‹å³è½¬å…¥ç¼ºå¤±è¡Œå›å¡«
                     wr_req_sent_r <= 1'b1;
                     refill_cnt_r  <= 2'b0;
                     refill_buf_r  <= {`LINE_SIZE{1'b0}};
@@ -755,7 +755,7 @@ always @(posedge clk or negedge resetn) begin
             end
 
             `MAIN_REFILL: begin
-                // REFILL£ºÏÈ·¢È±Ê§ĞĞÇëÇó£¬ÔÙ½ÓÊÕ 4 ¸öÊı¾İÅÄ
+                // REFILLï¼šå…ˆå‘ç¼ºå¤±è¡Œè¯·æ±‚ï¼Œå†æ¥æ”¶ 4 ä¸ªæ•°æ®æ‹
                 if (code0 | code1) begin
                     cacop_this_cache_r <= 1'b0;
                     rd_req_sent_r      <= 1'b0;
@@ -763,10 +763,10 @@ always @(posedge clk or negedge resetn) begin
                     main_state         <= `MAIN_IDLE;
                 end
                 else if (!rd_req_sent_r && rd_rdy) begin
-                    // ¶ÁÇëÇóÖ»·¢ËÍÒ»´Î£¬Ö®ºóµÈ´ı×ÜÏßÖğÅÄ·µ»Ø 4 ¸ö 32Î»Êı¾İ
+                    // è¯»è¯·æ±‚åªå‘é€ä¸€æ¬¡ï¼Œä¹‹åç­‰å¾…æ€»çº¿é€æ‹è¿”å› 4 ä¸ª 32ä½æ•°æ®
                     rd_req_sent_r <= 1'b1;
                 end
-                // uncacheµÄ¶Á
+                // uncacheçš„è¯»
                 else if(uncache_valid_r & ~uncache_wr_r)begin
                     if (ret_valid && ret_last) begin
                         rd_req_sent_r   <= 1'b0;
@@ -785,8 +785,8 @@ always @(posedge clk or negedge resetn) begin
                     refill_cnt_r <= refill_cnt_r + 2'b01;
 
                     if (ret_last) begin
-                        // REFILL ½áÊø£º¸üĞÂ TagV/Dirty/LRU/Data Bank
-                        // ÕâÀïÍ³Ò»°Ñ×îÖÕ»º´æĞĞ²ğ»Ø 4 ¸ö Data Bank Ğ´ÈëÄ¿±êÂ·
+                        // REFILL ç»“æŸï¼šæ›´æ–° TagV/Dirty/LRU/Data Bank
+                        // è¿™é‡Œç»Ÿä¸€æŠŠæœ€ç»ˆç¼“å­˜è¡Œæ‹†å› 4 ä¸ª Data Bank å†™å…¥ç›®æ ‡è·¯
                         if (replace_way_r) begin
                             dirty_way1[miss_index_r] <= miss_op_r;
                         end
@@ -809,7 +809,7 @@ always @(posedge clk or negedge resetn) begin
         endcase
 
 
-        // Write Buffer Ğ¡×´Ì¬»ú
+        // Write Buffer å°çŠ¶æ€æœº
         case (wb_state)
             `WB_IDLE: begin
                 if (wb_valid_r) begin
@@ -818,7 +818,7 @@ always @(posedge clk or negedge resetn) begin
             end
 
             `WB_WRITE: begin
-                // ÃüÖĞĞ´µÄÊı¾İÓÉ Data Bank ·ÃÎÊ¿éÍ³Ò»Ğ´Èë£¬ÕâÀïÖ»Î¬»¤ÔàÎ»
+                // å‘½ä¸­å†™çš„æ•°æ®ç”± Data Bank è®¿é—®å—ç»Ÿä¸€å†™å…¥ï¼Œè¿™é‡Œåªç»´æŠ¤è„ä½
                 if(code2)begin
                     cacop_this_cache_r <= 1'b0;
                 end
