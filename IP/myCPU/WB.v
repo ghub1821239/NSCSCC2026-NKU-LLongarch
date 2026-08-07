@@ -4,64 +4,64 @@ module wb #(
 )(
     input  wire        clk,
     input  wire        resetn,
-    // æµæ°´çº¿æ§åˆ¶ä¿¡å·
+    // Á÷Ë®Ïß¿ØÖÆĞÅºÅ
     input  wire        MEM_WB_valid,
     input  wire        WB_allow_in,
     output wire        WB_ready_go,
     output reg         WB_valid,
     
-    input  wire [inbus_width-1:0]MEM_WB_bus,// MEMåˆ°WBçº§æ€»çº¿
-    // è°ƒè¯•æ¥å£
+    input  wire [inbus_width-1:0]MEM_WB_bus,// MEMµ½WB¼¶×ÜÏß
+    // µ÷ÊÔ½Ó¿Ú
     output wire [31:0] debug_wb_pc,
     output wire [ 3:0] debug_wb_rf_we,
     output wire [ 4:0] debug_wb_rf_wnum,
     output wire [31:0] debug_wb_rf_wdata,
-    // é€šç”¨å¯„å­˜å™¨å †å†™å›æ¥å£
+    // Í¨ÓÃ¼Ä´æÆ÷¶ÑĞ´»Ø½Ó¿Ú
     output wire [ 4:0] rf_waddr,
     output wire [31:0] rf_wdata,
     output wire        rf_we,
-    // æ•°æ®ç›¸å…³ä¸åœé¡¿æ§åˆ¶
+    // Êı¾İÏà¹ØÓëÍ£¶Ù¿ØÖÆ
     output wire [ 4:0] WB_rf_dest,
     output wire        need_stall_csr,
-    // å†™å›çº§æ•°æ®å‰é€’
+    // Ğ´»Ø¼¶Êı¾İÇ°µİ
     output wire [31:0] wb_front_data,
     output wire [ 4:0] wb_front_addr,
-    // CSRè¯»å†™æ¥å£
+    // CSR¶ÁĞ´½Ó¿Ú
     output wire [13:0] csr_num,
     output wire        csr_re,
     input  wire [31:0] csr_rvalue,
     output wire        csr_we,
     output wire [31:0] csr_wdata,
     output wire [31:0] csr_wmask,
-    // ERTNæˆ–å¼‚å¸¸å‘ç”Ÿæ—¶å†²åˆ·æµæ°´çº¿ï¼Œå¹¶ç»™å‡ºè·³è½¬ç›®æ ‡
+    // ERTN»òÒì³£·¢ÉúÊ±³åË¢Á÷Ë®Ïß£¬²¢¸ø³öÌø×ªÄ¿±ê
     output wire        flush,
     output wire [31:0] flush_target,
-    // æµæ°´çº¿å–æ¶ˆæ§åˆ¶
+    // Á÷Ë®ÏßÈ¡Ïû¿ØÖÆ
     input  wire        WB_need_cancel,
-    // å¼‚å¸¸ä¿¡æ¯
+    // Òì³£ĞÅÏ¢
     output wire [31:0] wb_pc,
     output wire        wb_ex,
     output wire [5:0]  ecode,
     output wire [8:0]  esubcode,
     output wire [31:0] wb_vaddr,
-    // å‘å‰çº§åé¦ˆå¼‚å¸¸æ§åˆ¶ä¿¡å·
+    // ÏòÇ°¼¶·´À¡Òì³£¿ØÖÆĞÅºÅ
     output wire        WB_ex,
-    // tlbrd æ§åˆ¶csrçš„å†™å…¥
+    // tlbrd ¿ØÖÆcsrµÄĞ´Èë
     output wire        tlbrd_we,
-    // tlbwr,tlbfill æ§åˆ¶tlbå†™å…¥
+    // tlbwr,tlbfill ¿ØÖÆtlbĞ´Èë
     output wire        tlbwr_we,
     output wire        tlbfill_we,
     // tlbidx
     input  wire [31:0] csr_TLBIDX,
-    //tlbreload é‡å¡«ä¼ å…¥CSR
+    //tlbreload ÖØÌî´«ÈëCSR
     output wire        ex_tlb_reload,
-    // ERTNã€€æ›´æ”¹ã€€CRMD
+    // ERTN¡¡¸ü¸Ä¡¡CRMD
     output wire        ertn_valid,
     // BADV
     output wire        csr_tlb_reload0,
-    output wire        csr_tlb_plv0   ,//tlbä¸­é¡µç‰¹æƒä¸åˆè§„
-    output wire        csr_tlb_reload1,//tlbé‡å¡«ä¾‹å¤–  
-    output wire        csr_tlb_plv1,    //tlbä¸­é¡µç‰¹æƒä¸åˆè§„ 
+    output wire        csr_tlb_plv0   ,//tlbÖĞÒ³ÌØÈ¨²»ºÏ¹æ
+    output wire        csr_tlb_reload1,//tlbÖØÌîÀıÍâ  
+    output wire        csr_tlb_plv1,    //tlbÖĞÒ³ÌØÈ¨²»ºÏ¹æ 
     // ex_tlb --> TLBEHI
     output wire        ex_tlb,
     //can_not_front_push
@@ -84,7 +84,7 @@ wire        inst_csrrd;
 wire        inst_csrwr;
 wire        inst_csrxchg;
 wire [13:0] csr_num_wr;
-// å¼‚å¸¸ç±»å‹æ ‡å¿—
+// Òì³£ÀàĞÍ±êÖ¾
 wire        inst_syscall;
 wire        inst_break;
 wire        ex_INE;
@@ -92,16 +92,16 @@ wire        ex_IPE;
 wire        ex_ADEF;
 wire        ex_ALE;
 //tlb_ex
-wire        ex_tlb_reload0;//tlbé‡å¡«ä¾‹å¤–
-wire        ex_tlb_preif_unvalid;//tlbä¸­å–æŒ‡é¡µæ— æ•ˆ
-wire        ex_tlb_plv0;//tlbä¸­é¡µç‰¹æƒä¸åˆè§„
-wire        ex_tlb_reload1;//tlbé‡å¡«ä¾‹å¤–        
-wire        ex_tlb_ld_unvalid;//tlbä¸­loadé¡µæ— æ•ˆ 
-wire        ex_tlb_st_unvalid;//tlbä¸­storeé¡µæ— æ•ˆ
-wire        ex_tlb_plv1;//tlbä¸­é¡µç‰¹æƒä¸åˆè§„        
-wire        ex_tlb_page_modify;//tlbä¸­é¡µä¿®æ”¹
+wire        ex_tlb_reload0;//tlbÖØÌîÀıÍâ
+wire        ex_tlb_preif_unvalid;//tlbÖĞÈ¡Ö¸Ò³ÎŞĞ§
+wire        ex_tlb_plv0;//tlbÖĞÒ³ÌØÈ¨²»ºÏ¹æ
+wire        ex_tlb_reload1;//tlbÖØÌîÀıÍâ        
+wire        ex_tlb_ld_unvalid;//tlbÖĞloadÒ³ÎŞĞ§ 
+wire        ex_tlb_st_unvalid;//tlbÖĞstoreÒ³ÎŞĞ§
+wire        ex_tlb_plv1;//tlbÖĞÒ³ÌØÈ¨²»ºÏ¹æ        
+wire        ex_tlb_page_modify;//tlbÖĞÒ³ĞŞ¸Ä
 wire        ex_tlb_plv;     
-// è®¡æ—¶å™¨è¯»å–æŒ‡ä»¤
+// ¼ÆÊ±Æ÷¶ÁÈ¡Ö¸Áî
 wire        inst_idle;
 wire        inst_ertn;
 
@@ -123,7 +123,7 @@ wire        inst_invtlb;
 assign tlbrd_we   = inst_tlbrd & WB_valid & ~wb_ex;
 assign tlbwr_we   = inst_tlbwr & WB_valid & ~wb_ex;
 assign tlbfill_we = inst_tlbfill & WB_valid & ~wb_ex;
-// csr_num_wræ˜¯MEMçº§ä¼ å…¥çš„æŒ‡ä»¤åŸå§‹CSRç¼–å·ï¼›ERTNã€å¼‚å¸¸å’ŒRDCNTIDä¼šåœ¨WBçº§æ”¹é€‰å…¶ä»–CSR
+// csr_num_wrÊÇMEM¼¶´«ÈëµÄÖ¸ÁîÔ­Ê¼CSR±àºÅ£»ERTN¡¢Òì³£ºÍRDCNTID»áÔÚWB¼¶¸ÄÑ¡ÆäËûCSR
 
 wire [31:0] alu_result_with_rdct;
 wire        csr_WB_rd;
@@ -139,7 +139,7 @@ always @(posedge clk)begin
         bus<=MEM_WB_bus;
     end
 end
-// tlb å¼‚å¸¸
+// tlb Òì³£
 assign {
         pc,need_stall_csr,alu_result_with_rdct,
         inst_csrrd, inst_csrwr,inst_csrxchg,inst_ertn,inst_syscall,inst_break,ex_INE,ex_IPE,ex_ADEF,ex_ALE,has_int,inst_rdcntvl_w,inst_rdcntvh_w,inst_rdcntid,csr_num_wr,mem_we,rj_value,rkd_value,rf_dest,rf_alu_wdata,rf_gr_we_ex,
@@ -179,7 +179,7 @@ assign flush_target = wb_ex ? csr_rvalue :
                        inst_tlbwr | inst_tlbrd | inst_tlbsrch | inst_idle)
                       ? wb_pc + 4
                       : csr_rvalue;
-// åœ°å€ä¸å¯¹é½å¼‚å¸¸æ—¶ï¼Œè®°å½•load/storeæŒ‡ä»¤è®¡ç®—å‡ºçš„è®¿å­˜åœ°å€
+// µØÖ·²»¶ÔÆëÒì³£Ê±£¬¼ÇÂ¼load/storeÖ¸Áî¼ÆËã³öµÄ·Ã´æµØÖ·
 //-------------CSR-------------
 /*
 assign ex_tlb_reload = WB_valid & (ex_tlb_reload0 | ex_tlb_reload1);
