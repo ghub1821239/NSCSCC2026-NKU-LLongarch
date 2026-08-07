@@ -8,7 +8,7 @@ module csr_regfile#(
     input  wire        csr_we,
     input  wire [31:0] csr_wmask,
     input  wire [13:0] csr_num,
-    // д������ڵı��?������Ϊcsrwcfg���ָ����漰��rj��д�������⣬�����Ƿŵ���csr����д���������Ҳ������decode�Ĺؼ�·���䳤
+    // д������ڵı��?������Ϊcsrwcfg���ָ����漰��rj��д�������⣬�����Ƿŵ���csr����д���������Ҳ������decode�Ĺؼ�·���䳤
     input  wire [31:0] csr_wvalue,
     // read port
     input  wire        csr_re,
@@ -25,7 +25,7 @@ module csr_regfile#(
 
     // ERA �洢ʹ�ã������쳣��pc
     input  wire [31:0] wb_pc,
-    // BAVD ��¼����ĵ��?
+    // BAVD ��¼����ĵ��?
     input  wire [31:0] wb_vaddr,
 
     // decode
@@ -77,7 +77,7 @@ module csr_regfile#(
     output  wire [1:0]  w_mat1,
     output  wire        w_d1,
     output  wire        w_v1,
-    // CRMD ��������?�߽����ж����뷽ʽ
+    // CRMD ��������?�߽����ж����뷽ʽ
     output  wire        csr_CRMD_DA,
     output  wire        csr_CRMD_PG,
     // CRMD�����쳣
@@ -92,7 +92,7 @@ module csr_regfile#(
     output  wire  [2:0] dmw_pseg1,
 
     //ERTN ����ָ��ظ���CRMD
-    input   wire        inst_ertn,
+    input   wire        ertn_valid,
     
     //BADV
     input   wire        csr_tlb_reload0,
@@ -147,15 +147,15 @@ always @ (posedge clk)begin
     if(!resetn)begin
         CRMD[`CSR_CRMD_PLV] <= 2'b0;
     end
-    // ���д�ؽ׶α��������?ת���ں�̬�����쳣����
+    // ���д�ؽ׶α��������?ת���ں�̬�����쳣����
     else if(wb_ex)begin
         CRMD[`CSR_CRMD_PLV] <= 2'b0;
     end
     // �������ertn����ʾ�쳣�Ѿ������꣬��Ҫ�ָ����쳣����ǰ����Ȩ�ȼ�
-    else if (inst_ertn) begin
+    else if (ertn_valid) begin
         CRMD[`CSR_CRMD_PLV] <= PRMD [`CSR_PRMD_PPLV];
     end
-    // ���дCRMD����д������£�?
+    // ���дCRMD����д������£�?
     // 1. ����Ϊ1��λд��csr_wvalue��Ӧλ
     // 2. ����Ϊ0��λ����ԭֵ
     // ��������ְ�λ��ϲ�
@@ -173,7 +173,7 @@ always @ (posedge clk)begin
     else if(wb_ex)begin
         CRMD[`CSR_CRMD_IE] <= 1'b0;
     end
-    else if (inst_ertn) begin
+    else if (ertn_valid) begin
         CRMD[`CSR_CRMD_IE] <= PRMD [`CSR_PRMD_PIE];
     end
     else if (csr_we & csr_num == `CSR_CRMD)begin
@@ -181,7 +181,7 @@ always @ (posedge clk)begin
                                (~csr_wmask[`CSR_CRMD_IE] & CRMD[`CSR_CRMD_IE]);
     end
 end
-//��CRMD DA & PG & DATF & DATM����Щ�ֶ�������TLB��Ż�ʹ�ã��˴������ø�λ�?
+//��CRMD DA & PG & DATF & DATM����Щ�ֶ�������TLB��Ż�ʹ�ã��˴������ø�λ�?
 always @(posedge clk)begin
     if(!resetn)begin
         CRMD[`CSR_CRMD_DA]   <= 1'b1;
@@ -194,7 +194,7 @@ always @(posedge clk)begin
             CRMD[`CSR_CRMD_DA]   <= 1'b1;
             CRMD[`CSR_CRMD_PG]   <= 1'b0;
         end
-        else if (inst_ertn && ESTAT[`CSR_ESTAT_ECODE] == 6'h3F) begin
+        else if (ertn_valid && ESTAT[`CSR_ESTAT_ECODE] == 6'h3F) begin
             CRMD[`CSR_CRMD_DA]   <= 1'b0;
             CRMD[`CSR_CRMD_PG]   <= 1'b1;
             // �Ƽ��� ����ָ���ֲ�����
@@ -256,7 +256,7 @@ always @(posedge clk)begin
     end
 end
 
-//��EENTRY���쳣��ڵ��?
+//��EENTRY���쳣��ڵ��?
 always @ (posedge clk)begin
     if (csr_we & csr_num == `CSR_EENTRY)begin
         EENTRY[`CSR_EENTRY_VA] <= (csr_wmask[`CSR_EENTRY_VA] & csr_wvalue[`CSR_EENTRY_VA]) |
@@ -264,7 +264,7 @@ always @ (posedge clk)begin
     end
 end
 
-//��SAVE 0~3�����ݱ���Ĵ���?
+//��SAVE 0~3�����ݱ���Ĵ���?
 always @ (posedge clk)begin
     if (csr_we && csr_num == `CSR_SAVE0)begin
         SAVE0[`CSR_SAVE_DATA] <= (csr_wmask[`CSR_SAVE_DATA] & csr_wvalue[`CSR_SAVE_DATA]) |
@@ -284,7 +284,7 @@ always @ (posedge clk)begin
     end
 end
 
-//��TICLR����ʱ���ж�����Ĵ���?
+//��TICLR����ʱ���ж�����Ĵ���?
 
 //��ECFG��
 //��todo�� checkһ��������ESTAT ���� ECFG
@@ -383,7 +383,7 @@ always @(posedge clk)begin
     if(timer_cnt[31:0] == 32'b0)begin
         ESTAT[`CSR_ESTAT_IS11] <= 1'b1;
     end
-    // TICLR�Ķ�ֵ��Ϊ0��д��CLRλʱֱ�������ʱ���ж�״�?
+    // TICLR�Ķ�ֵ��Ϊ0��д��CLRλʱֱ�������ʱ���ж�״�?
     else if (csr_we && csr_num == `CSR_TICLR && csr_wmask[`CSR_TICLR_CLR] && csr_wvalue[`CSR_TICLR_CLR])begin
         ESTAT[`CSR_ESTAT_IS11] <= 1'b0;
     end
@@ -406,7 +406,7 @@ always @(posedge clk) begin
                                      (~csr_wmask[`CSR_TLBIDX_INDEX] & TLBIDX[`CSR_TLBIDX_INDEX]);
     end
 end
-//��TLBIDX PS��TLB��ҳ����?(4KB/4MB)
+//��TLBIDX PS��TLB��ҳ����?(4KB/4MB)
 always @(posedge clk) begin
     //tlbrd��ȡ������Ч��
     if (tlbrd_we & r_e == 1) begin
@@ -458,7 +458,7 @@ always @(posedge clk) begin
     end
 end
 
-//��TLBELO0��TLB����ĵ�λ���?,ż��ҳ��
+//��TLBELO0��TLB����ĵ�λ���?,ż��ҳ��
 always @(posedge clk) begin
     //tlbrd��ȡ������Ч��
     if (tlbrd_we & r_e == 1) begin
@@ -494,7 +494,7 @@ always @(posedge clk) begin
     end
 end
 
-//��TLBELO1��TLB����ĵ�λ���?,����ҳ��
+//��TLBELO1��TLB����ĵ�λ���?,����ҳ��
 always @(posedge clk) begin
     //tlbrd��ȡ������Ч��
     if (tlbrd_we & r_e == 1) begin
@@ -550,7 +550,7 @@ always @(posedge clk) begin
     end
 end
 
-//��TLBRENTY PA��TLB������������ʱ��д��������������?
+//��TLBRENTY PA��TLB������������ʱ��д��������������?
 always @(posedge clk) begin
     if (csr_we && csr_num == `CSR_TLBRENTRY) begin
         TLBRENTRY[`CSR_TLBRENTRY_PA] <= (csr_wmask[`CSR_TLBRENTRY_PA] & csr_wvalue[`CSR_TLBRENTRY_PA]) |
@@ -618,9 +618,9 @@ always @(posedge clk)begin
     end
 end
 
-//��LLBCTL��
+//��LLBCTL��
 always @(posedge clk)begin
-    // ָ���ֲ�û˵resetn ����resetnӦ�����ⲻ��
+    // ָ���ֲ�û˵resetn ����resetnӦ�����ⲻ��
     if (!resetn)
         LLBCTL[`CSR_LLBCTL_ROLLB] <= 1'b0;
     else if (csr_we && csr_num == `CSR_LLBCTL)begin
@@ -628,7 +628,7 @@ always @(posedge clk)begin
             LLBCTL[`CSR_LLBCTL_ROLLB] <= 1'b0;
         end
     end
-    else if (inst_ertn & ~LLBCTL[`CSR_LLBCTL_KLO])begin
+    else if (ertn_valid & ~LLBCTL[`CSR_LLBCTL_KLO])begin
         LLBCTL[`CSR_LLBCTL_ROLLB] <= 1'b0;
     end
     else if(LLbit_wb)begin
@@ -644,7 +644,7 @@ always @(posedge clk)begin
         LLBCTL[`CSR_LLBCTL_KLO] <= (csr_wmask[`CSR_LLBCTL_KLO] & csr_wvalue[`CSR_LLBCTL_KLO]) |
                                     (~csr_wmask[`CSR_LLBCTL_KLO] & LLBCTL[`CSR_LLBCTL_KLO]);
     end
-    else if (inst_ertn & LLBCTL[`CSR_LLBCTL_KLO])begin
+    else if (ertn_valid & LLBCTL[`CSR_LLBCTL_KLO])begin
         LLBCTL[`CSR_LLBCTL_KLO] <= 1'b0;
     end
 end
