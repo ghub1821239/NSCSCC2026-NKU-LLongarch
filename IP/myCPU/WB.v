@@ -4,64 +4,64 @@ module wb #(
 )(
     input  wire        clk,
     input  wire        resetn,
-    // ��ˮ�߿����ź�
+    // 流水线控制信号
     input  wire        MEM_WB_valid,
     input  wire        WB_allow_in,
     output wire        WB_ready_go,
     output reg         WB_valid,
     
-    input  wire [inbus_width-1:0]MEM_WB_bus,// MEM��WB������
-    // ���Խӿ�
+    input  wire [inbus_width-1:0]MEM_WB_bus,// MEM到WB级总线
+    // 调试接口
     output wire [31:0] debug_wb_pc,
     output wire [ 3:0] debug_wb_rf_we,
     output wire [ 4:0] debug_wb_rf_wnum,
     output wire [31:0] debug_wb_rf_wdata,
-    // ͨ�üĴ�����д�ؽӿ�
+    // 通用寄存器堆写回接口
     output wire [ 4:0] rf_waddr,
     output wire [31:0] rf_wdata,
     output wire        rf_we,
-    // ���������ͣ�ٿ���?
+    // 数据相关与停顿控制
     output wire [ 4:0] WB_rf_dest,
     output wire        need_stall_csr,
-    // д�ؼ�����ǰ��
+    // 写回级数据前递
     output wire [31:0] wb_front_data,
     output wire [ 4:0] wb_front_addr,
-    // CSR��д�ӿ�
+    // CSR读写接口
     output wire [13:0] csr_num,
     output wire        csr_re,
     input  wire [31:0] csr_rvalue,
     output wire        csr_we,
     output wire [31:0] csr_wdata,
     output wire [31:0] csr_wmask,
-    // ERTN���쳣����ʱ��ˢ��ˮ�ߣ���������תĿ��
+    // ERTN或异常发生时冲刷流水线，并给出跳转目标
     output wire        flush,
     output wire [31:0] flush_target,
-    // ��ˮ��ȡ������
+    // 流水线取消控制
     input  wire        WB_need_cancel,
-    // �쳣��Ϣ
+    // 异常信息
     output wire [31:0] wb_pc,
     output wire        wb_ex,
     output wire [5:0]  ecode,
     output wire [8:0]  esubcode,
     output wire [31:0] wb_vaddr,
-    // ��ǰ�������쳣�����ź�
+    // 向前级反馈异常控制信号
     output wire        WB_ex,
-    // tlbrd ����csr��д��
+    // tlbrd 控制csr的写入
     output wire        tlbrd_we,
-    // tlbwr,tlbfill ����tlbд��
+    // tlbwr,tlbfill 控制tlb写入
     output wire        tlbwr_we,
     output wire        tlbfill_we,
     // tlbidx
     input  wire [31:0] csr_TLBIDX,
-    //tlbreload �����CSR
+    //tlbreload 重填传入CSR
     output wire        ex_tlb_reload,
-    // ERTN�����ġ�CRMD
+    // ERTN　更改　CRMD
     output wire        ertn_valid,
     // BADV
     output wire        csr_tlb_reload0,
-    output wire        csr_tlb_plv0   ,//tlb��ҳ��Ȩ���Ϲ�
-    output wire        csr_tlb_reload1,//tlb��������  
-    output wire        csr_tlb_plv1,    //tlb��ҳ��Ȩ���Ϲ� 
+    output wire        csr_tlb_plv0   ,//tlb中页特权不合规
+    output wire        csr_tlb_reload1,//tlb重填例外  
+    output wire        csr_tlb_plv1,    //tlb中页特权不合规 
     // ex_tlb --> TLBEHI
     output wire        ex_tlb,
     //can_not_front_push
@@ -84,7 +84,7 @@ wire        inst_csrrd;
 wire        inst_csrwr;
 wire        inst_csrxchg;
 wire [13:0] csr_num_wr;
-// �쳣���ͱ�־
+// 异常类型标志
 wire        inst_syscall;
 wire        inst_break;
 wire        ex_INE;
@@ -92,27 +92,27 @@ wire        ex_IPE;
 wire        ex_ADEF;
 wire        ex_ALE;
 //tlb_ex
-wire        ex_tlb_reload0;//tlb��������
-wire        ex_tlb_preif_unvalid;//tlb��ȡָҳ��Ч
-wire        ex_tlb_plv0;//tlb��ҳ��Ȩ���Ϲ�
-wire        ex_tlb_reload1;//tlb��������        
-wire        ex_tlb_ld_unvalid;//tlb��loadҳ��Ч 
-wire        ex_tlb_st_unvalid;//tlb��storeҳ��Ч
-wire        ex_tlb_plv1;//tlb��ҳ��Ȩ���Ϲ�        
-wire        ex_tlb_page_modify;//tlb��ҳ�޸�
+wire        ex_tlb_reload0;//tlb重填例外
+wire        ex_tlb_preif_unvalid;//tlb中取指页无效
+wire        ex_tlb_plv0;//tlb中页特权不合规
+wire        ex_tlb_reload1;//tlb重填例外        
+wire        ex_tlb_ld_unvalid;//tlb中load页无效 
+wire        ex_tlb_st_unvalid;//tlb中store页无效
+wire        ex_tlb_plv1;//tlb中页特权不合规        
+wire        ex_tlb_page_modify;//tlb中页修改
 wire        ex_tlb_plv;     
-//IDLE
+// 计时器读取指令
 wire        inst_idle;
 wire        inst_ertn;
 
 wire        has_int;
 
-// ��ʱ����ȡָ��
+//**************** tlb begin ****************
 wire        inst_rdcntvl_w;
 wire        inst_rdcntvh_w;
 wire        inst_rdcntid;
 
-//**************** tlb begin ****************
+//**************** tlb end ****************
 wire        inst_tlbsrch;
 wire        inst_tlbrd;
 wire [10:0] TLBIDX_new_tlbsrch;
@@ -123,7 +123,7 @@ wire        inst_invtlb;
 assign tlbrd_we   = inst_tlbrd & WB_valid & ~wb_ex;
 assign tlbwr_we   = inst_tlbwr & WB_valid & ~wb_ex;
 assign tlbfill_we = inst_tlbfill & WB_valid & ~wb_ex;
-//**************** tlb end ****************
+// csr_num_wr是MEM级传入的指令原始CSR编号；ERTN、异常和RDCNTID会在WB级改选其他CSR
 
 wire [31:0] alu_result_with_rdct;
 wire        csr_WB_rd;
@@ -139,7 +139,7 @@ always @(posedge clk)begin
         bus<=MEM_WB_bus;
     end
 end
-// csr_num_wr��MEM�������ָ���?ʼCSR��ţ�ERTN���쳣��RDCNTID����WB����ѡ����CSR
+// tlb 异常
 assign {
         pc,need_stall_csr,alu_result_with_rdct,
         inst_csrrd, inst_csrwr,inst_csrxchg,inst_ertn,inst_syscall,inst_break,ex_INE,ex_IPE,ex_ADEF,ex_ALE,has_int,inst_rdcntvl_w,inst_rdcntvh_w,inst_rdcntid,csr_num_wr,mem_we,rj_value,rkd_value,rf_dest,rf_alu_wdata,rf_gr_we_ex,
@@ -179,8 +179,8 @@ assign flush_target = wb_ex ? csr_rvalue :
                        inst_tlbwr | inst_tlbrd | inst_tlbsrch | inst_idle)
                       ? wb_pc + 4
                       : csr_rvalue;
-// tlb �쳣
-// 真的有异常才能触发 防止 reg 旧缓存影响
+// 地址不对齐异常时，记录load/store指令计算出的访存地址
+//-------------CSR-------------
 /*
 assign ex_tlb_reload = WB_valid & (ex_tlb_reload0 | ex_tlb_reload1);
 assign ex_tlb        = WB_valid & (ex_tlb_reload0 | ex_tlb_reload1 | ex_tlb_preif_unvalid |
@@ -199,7 +199,7 @@ assign wb_pc      = pc;
 assign wb_ex      = (inst_syscall | inst_break | ex_INE | ex_ADEF | 
                      ex_ALE       | has_int    | ex_tlb | ex_IPE  ) & WB_valid;
 assign ex_tlb_plv = ex_tlb_plv0 | ex_tlb_plv1;
-// ��ַ�������쳣ʱ����¼load/storeָ�������ķô���?
+//------------------------{BADV}begin-------------------------//
 assign wb_vaddr   = alu_result_with_rdct;
 assign ecode      = has_int         ? `ECODE_INT  :
                     ex_ADEF         ? `ECODE_ADE  :
@@ -234,16 +234,16 @@ assign esubcode    = has_int              ? `ESUBCODE_INT   :
                      ex_tlb_st_unvalid    ? `ESUBCODE_PIS   : 
                      ex_tlb_page_modify   ? `ESUBCODE_PME   :
                                             9'b0;
-//-------------CSR-------------
-
 //------------------------{BADV}begin-------------------------//
+
+//------------------------{ready_go}begin-------------------------//
 assign csr_tlb_reload0 = ex_tlb_reload0 & WB_valid;
 assign csr_tlb_plv0    = ex_tlb_plv0    & WB_valid;
 assign csr_tlb_reload1 = ex_tlb_reload1 & WB_valid;
 assign csr_tlb_plv1    = ex_tlb_plv1    & WB_valid;
-//------------------------{BADV}begin-------------------------//
+//------------------------{ready_go}end-------------------------//
 
-//------------------------{ready_go}begin-------------------------//
+//------------------------{front_push}begin-------------------------//
 assign WB_ready_go=1'b1;
 always @(posedge clk) begin
     if(!resetn)begin
@@ -256,17 +256,17 @@ always @(posedge clk) begin
         WB_valid<=MEM_WB_valid;
     end
 end
-//------------------------{ready_go}end-------------------------//
+//------------------------{front_push}end-------------------------//
 
-//------------------------{ertn_valid}begin-------------------------//
+//------------------------{exp_front}begin-------------------------//
 assign ertn_valid = inst_ertn & WB_valid & ~wb_ex;
-//------------------------{ertn_valid}end-------------------------//
+//------------------------{exp_front}end-------------------------//
 
-//------------------------{front_push}begin-------------------------//
+//------------------------{debug_var}begin-------------------------//
 assign wb_front_data = rf_wdata;
 assign wb_front_addr = rf_dest;
 assign wb_can_not_front_push = ~rf_gr_we_ex;
-//------------------------{front_push}end-------------------------//
+//------------------------{debug_var}end-------------------------//
 
 //------------------------{IDLE_stall}end-------------------------//
 assign IDLE_stall = inst_idle & WB_valid & ~WB_ex;

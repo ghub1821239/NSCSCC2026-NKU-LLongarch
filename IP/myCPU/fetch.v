@@ -25,7 +25,7 @@ module fetch #(
     //req_to_dataok_trigger
     input  wire        req_to_dataok_trigger
 );
-//------------------------{����inst}begin-------------------------//
+//------------------------{缓存inst}begin-------------------------//
 reg [31:0] inst_reg;
 reg        inst_reg_valid;
 always @ (posedge clk)begin
@@ -40,7 +40,7 @@ always @ (posedge clk)begin
         inst_reg <= inst_sram_rdata;
         inst_reg_valid <= 1'b1;
     end
-    // ͬʱ����ôҲ��ȡ��������Ϊ�Ѿ��յ���discard
+    // 同时的那么也得取消掉，因为已经收到了discard
     else if(inst_sram_data_ok & inst_resp_discard)begin
         inst_reg_valid <= 1'b0;
     end*/
@@ -53,20 +53,20 @@ always @ (posedge clk)begin
         inst_reg_valid <= 1'b0;
     end
 end
-//------------------------{����inst}end-------------------------//
+//------------------------{缓存inst}end-------------------------//
 
 //------------------------{bus}begin-------------------------//
 wire [31:0] pc;
 wire        ex_ADEF;
-wire        ex_tlb_reload0;//tlb��������
-wire        ex_tlb_preif_unvalid;//tlb��ȡָҳ��Ч
-wire        ex_tlb_plv0;//tlb��ҳ��Ȩ���Ϲ�
-wire        btb_query_hit;//valid��tag
+wire        ex_tlb_reload0;//tlb重填例外
+wire        ex_tlb_preif_unvalid;//tlb中取指页无效
+wire        ex_tlb_plv0;//tlb中页特权不合规
+wire        btb_query_hit;//valid且tag
 wire [31:0] btb_query_target;        
-wire        ras_query_hit;//valid��tag
+wire        ras_query_hit;//valid且tag
 wire [31:0] ras_query_target;        
 wire [ 1:0] query_type;              
-wire        query_taken;//Ԥ���Ƿ���ת 
+wire        query_taken;//预测是否跳转 
         
 reg [inbus_width-1:0] bus;
 always @(posedge clk)begin
@@ -87,7 +87,7 @@ assign IF_ID_bus=inst_reg_valid ? {pc,inst_reg,ex_ADEF,ex_tlb_reload0,ex_tlb_pre
 
 //------------------------{ready_go}begin-------------------------//
 wire inst_resp_valid = inst_sram_data_ok & ~inst_resp_discard;
-// 本拍若 IF 能把当前指令交给 ID，则优先走旁路 rdata，不必依赖 reg 当 ready
+//------------------------{ready_go}end-------------------------//
 wire deliver_now = IF_valid & inst_resp_valid & req_to_dataok_trigger & ID_allow_in
                  & ~need_stall & ~IF_need_cancel;
 

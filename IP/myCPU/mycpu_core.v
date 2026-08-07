@@ -6,8 +6,8 @@ module mycpu_core #(
     input  wire        resetn,
     // inst sram interface [handshake]
     output wire        inst_sram_req,
-    output wire        inst_sram_wr, // 1???write 0???read
-    output wire [ 3:0] inst_sram_wstrb,// wstrb ???????????????
+    output wire        inst_sram_wr, // 1表示write 0表示read
+    output wire [ 3:0] inst_sram_wstrb,// wstrb 对应原始数据的字节写使能
     output wire [ 1:0] inst_sram_size,
     output wire [31:0] inst_sram_addr,// 
     output wire [31:0] inst_sram_wdata,
@@ -18,8 +18,8 @@ module mycpu_core #(
     output wire        inst_uncache_wr,
     // data sram interface
     output wire        data_sram_req,
-    output wire        data_sram_wr, // 1???write 0???read
-    output wire [ 3:0] data_sram_wstrb,// wstrb ???????????????
+    output wire        data_sram_wr, // 1表示write 0表示read
+    output wire [ 3:0] data_sram_wstrb,// wstrb 对应原始数据的字节写使能
     output wire [ 1:0] data_sram_size,//
     output wire [31:0] data_sram_addr,// 
     output wire [31:0] data_sram_wdata,
@@ -37,7 +37,7 @@ module mycpu_core #(
     output wire [ 3:0] debug_wb_rf_we,
     output wire [ 4:0] debug_wb_rf_wnum,
     output wire [31:0] debug_wb_rf_wdata,
-    // �?�?�?
+    //硬件中断输入
     input  wire [ 7:0] hw_int_in
 );
 //------------------------{5-stage pipeline control signals define}begin-------------------------//
@@ -160,7 +160,7 @@ reg [3:0]   tlbfill_random;
 // tlbfill random begin
 always @(posedge clk) begin
     if (!resetn)
-        tlbfill_random <= 4'b0001; // ????????? 0
+        tlbfill_random <= 4'b0001; // 初始值不为 0
     else if (tlbfill_we)
         tlbfill_random <= {tlbfill_random[2:0],
                            tlbfill_random[3] ^ tlbfill_random[2]};
@@ -171,7 +171,7 @@ wire [18:0] s0_vppn;
 wire        s0_va_bit12;
 wire [9:0]  s0_asid;
 wire        s0_found;
-wire [$clog2(TLBNUM)-1:0] s0_index; // ??????????? log2?????????????????????
+wire [$clog2(TLBNUM)-1:0] s0_index; // 实际使用的index位宽为log2(TLBNUM)
 wire [19:0] s0_ppn;
 wire [5:0]  s0_ps;
 wire [1:0]  s0_plv;
@@ -242,14 +242,14 @@ wire        r_d1;
 wire        r_v1;
 
 //tlb_ex
-wire       ex_tlb_reload0;//tlb????????
-wire       ex_tlb_reload1;//tlb????????
-wire       ex_tlb_ld_unvalid;//tlb??load????
-wire       ex_tlb_st_unvalid;//tlb??store????
-wire       ex_tlb_preif_unvalid;//tlb????????
-wire       ex_tlb_plv0;//tlb???????????
-wire       ex_tlb_plv1;//tlb???????????
-wire       ex_tlb_page_modify;//tlb??????
+wire       ex_tlb_reload0;//tlb重填异常
+wire       ex_tlb_reload1;//tlb重填异常
+wire       ex_tlb_ld_unvalid;//tlb的load页无效
+wire       ex_tlb_st_unvalid;//tlb的store页无效
+wire       ex_tlb_preif_unvalid;//tlb取指页无效
+wire       ex_tlb_plv0;//tlb的页权限上访
+wire       ex_tlb_plv1;//tlb的页权限上访
+wire       ex_tlb_page_modify;//tlb页修改
 
 wire tlb_inst_req;
 wire tlb_data_req;
@@ -265,7 +265,7 @@ tlb u_tlb(
     .s0_va_bit12(s0_va_bit12),
     .s0_asid(s0_asid),
     .s0_found(s0_found),
-    .s0_index(s0_index), // ??????????? log2?????????????????????
+    .s0_index(s0_index), // 实际使用的index位宽为log2(TLBNUM)
     .s0_ppn(s0_ppn),
     .s0_ps(s0_ps),
     .s0_plv(s0_plv),
@@ -329,14 +329,14 @@ tlb u_tlb(
     .csr_CRMD_PLV(csr_CRMD_PLV),
 
     //tlb_ex
-    .ex_tlb_reload0         (ex_tlb_reload0),//tlb????????
-    .ex_tlb_reload1         (ex_tlb_reload1),//tlb????????
-    .ex_tlb_ld_unvalid      (ex_tlb_ld_unvalid),//tlb??load????
-    .ex_tlb_st_unvalid      (ex_tlb_st_unvalid),//tlb??store????
-    .ex_tlb_preif_unvalid   (ex_tlb_preif_unvalid),//tlb????????
-    .ex_tlb_plv0            (ex_tlb_plv0),//tlb???????????
-    .ex_tlb_plv1            (ex_tlb_plv1),//tlb???????????
-    .ex_tlb_page_modify     (ex_tlb_page_modify),//tlb??????
+    .ex_tlb_reload0         (ex_tlb_reload0),//tlb重填异常
+    .ex_tlb_reload1         (ex_tlb_reload1),//tlb重填异常
+    .ex_tlb_ld_unvalid      (ex_tlb_ld_unvalid),//tlb的load页无效
+    .ex_tlb_st_unvalid      (ex_tlb_st_unvalid),//tlb的store页无效
+    .ex_tlb_preif_unvalid   (ex_tlb_preif_unvalid),//tlb取指页无效
+    .ex_tlb_plv0            (ex_tlb_plv0),//tlb的页权限上访
+    .ex_tlb_plv1            (ex_tlb_plv1),//tlb的页权限上访
+    .ex_tlb_page_modify     (ex_tlb_page_modify),//tlb页修改
     .tlb_inst_req(tlb_inst_req),
     .tlb_data_req (tlb_data_req),
     .tlb_load_req (tlb_load_req),
@@ -361,7 +361,7 @@ assign older_ex_for_mem = WB_ex;
 //------------------------{front_push}begin-------------------------//
 wire        flush;
 wire [31:0] flush_target;
-wire [31:0] flush_cacop_cancel_target;// �? WB 传回来的 flush_target & cacop �?
+wire [31:0] flush_cacop_cancel_target;//从 WB 传回来的 flush_target & cacop 取消
 
 
 wire [31:0] exe1_front_data;
@@ -383,7 +383,7 @@ assign front_push_rdata2 = rf_raddr2 == 5'b0 ? 32'b0 : (exe2_front_addr == rf_ra
                                                        (mem_front_addr == rf_raddr2 & MEM_valid & ~mem_can_not_front_push) ? mem_front_data :
                                                        (wb_front_addr  == rf_raddr2 & WB_valid & !flush & ~ wb_can_not_front_push) ? wb_front_data  :
                                                        rf_rdata2;             
-//ibarҲ��EXE2 ��˿���ֱ�Ӹ���cacop_pc
+//ibar也在EXE2 所以可以直接赋值cacop_pc
 assign flush_cacop_cancel_target = (cacop_need_cancel | ibar_cancel) ? cacop_pc : flush_target;
 //------------------------{front_push}end-------------------------//
 
@@ -465,7 +465,7 @@ btb u_btb(
     .update_pc          (update_pc    ),
     .update_target      (update_target),//real target
     .update_type        (update_type  ),
-    // ���ȡ���Ͳ��?������
+    //取消取指和错误预测
     .update_cancel (flush | cacop_need_cancel)
 );
 
@@ -484,7 +484,7 @@ bht u_bht(
     .update_valid   (bht_update_valid),//update BHT
     .update_pc      (update_pc   ),//branch pc
     .update_taken   (update_taken),//real taken
-    .update_cancel  (flush | cacop_need_cancel)//���ȡ���Ͳ��?������
+    .update_cancel  (flush | cacop_need_cancel)//取消取指和错误预测
 );
 
 //ras
@@ -508,7 +508,7 @@ ras u_ras(
 );
 //------------------------{branch prediction}end---------------------------//
 
-//------------------------{Ԥ��������?��ת���ź�����}begin-------------------------//
+//------------------------{预测输出与跳转信号处理}begin-------------------------//
 wire        br_taken;
 wire [31:0] br_target;
 
@@ -523,7 +523,7 @@ wire need_br_cancel;
 
 //cacop cancel
 wire [31:0] cacop_pc;
-//[NOTICE:ѧ��һ��]CE����ŵ�? <= ѡ��,WNS���ܺ�һ��
+//[NOTICE:学一下]CE出口寄存器 <= 选通,WNS会好一些
 always @(posedge clk) begin
     if (!resetn) begin
         br_afterpred_taken_r  <= 1'b0;
@@ -540,7 +540,7 @@ end
 assign br_taken       = br_afterpred_taken_r;
 assign br_target      = br_afterpred_target_r;
 assign need_br_cancel = br_afterpred_taken_r;
-//------------------------{Ԥ��������?��ת���ź�����}end-------------------------//
+//------------------------{预测输出与跳转信号处理}end-------------------------//
 
 //------------------------{cacop}begin-------------------------//
 wire [31:0] inst_sram_addr_without_cacop;
@@ -619,24 +619,24 @@ wire [8:0]  wb_esubcode;
 wire        has_int;
 wire        csr_CRMD_DA;
 wire        csr_CRMD_PG;
-//tlbreload ??????CSR
+//tlbreload 重填传入CSR
 wire        ex_tlb_reload;
 
-// ERTN ???? CRMD
+// ERTN 更改 CRMD
 wire        ertn_valid;
-// ????BADV
+// 更新BADV
 wire        csr_tlb_reload0;
 wire        csr_tlb_plv0   ;
 wire        csr_tlb_reload1; 
 wire        csr_tlb_plv1   ;     
-// ????TLBEHI ex_tlb
+// 更新TLBEHI ex_tlb
 wire ex_tlb;
-//mat:??????????
+//mat:存储访问类型
 wire   [1:0] csr_CRMD_DATF;
 wire   [1:0] csr_CRMD_DATM;
 wire   [1:0] dmw_mat0;
 wire   [1:0] dmw_mat1;
-//????s1_mat???????????????
+//说明s1_mat是已经换算好的？
 wire   [1:0] inst_mat;
 wire   [1:0] data_mat;
 
@@ -648,12 +648,12 @@ wire         LLbit;
 assign ipi_int_in= 1'h0;
 
 
-//----------------Icache?????????-----------
+//----------------Icache 相关信号-----------
 assign inst_uncache_valid   = (inst_mat == 2'b00);
 assign inst_uncache_wr      =  inst_wr;
 //---------------------------------------------
 
-//----------------Dcache?????????-----------
+//----------------Dcache 相关信号-----------
 assign data_uncache_valid   = (data_mat == 2'b00);
 assign data_uncache_wr      =  data_wr;
 //---------------------------------------------
@@ -678,11 +678,11 @@ csr_regfile #(
     .wb_vaddr    (wb_vaddr),
     .has_int     (has_int),
     .coreid_in   (32'b0  ),
-    //TLB??csr????
+    //TLB与csr接口
     .csr_TLBEHI  (csr_TLBEHI),
     .csr_TLBIDX  (csr_TLBIDX),
     .csr_CRMD_PLV(csr_CRMD_PLV),
-    //tlbrd??? read port,???csr
+    //tlbrd读 read port,写csr
     .r_index     (r_index),
     .s0_asid     (s0_asid),
     .s1_asid_without_invtlb(s1_asid_without_invtlb),
@@ -722,7 +722,7 @@ csr_regfile #(
     .tlbrd_we    (tlbrd_we),
     .csr_CRMD_DA (csr_CRMD_DA),
     .csr_CRMD_PG (csr_CRMD_PG),
-    //tlbreload ??????CSR
+    //tlbreload 重填传入CSR
     .ex_tlb_reload  (ex_tlb_reload),
     //DMW
     .dmw_vseg0(dmw_vseg0),
@@ -731,7 +731,7 @@ csr_regfile #(
     .dmw_vseg1(dmw_vseg1),
     .dmw_found1(dmw_found1),
     .dmw_pseg1(dmw_pseg1),
-    // ERTN ???? CRMD
+    // ERTN 更改 CRMD
     .ertn_valid(ertn_valid),
     // BADV
     .csr_tlb_reload0(csr_tlb_reload0),
@@ -740,7 +740,7 @@ csr_regfile #(
     .csr_tlb_plv1   (csr_tlb_plv1   ),
     //ex_tlb TLBEHI
     .ex_tlb         (ex_tlb         ),
-    //mat:??????????
+    //mat:存储访问类型
     .csr_CRMD_DATF          (csr_CRMD_DATF),
     .csr_CRMD_DATM          (csr_CRMD_DATM),
     .dmw_mat0               (dmw_mat0),
@@ -778,7 +778,7 @@ pre_IF1 #(
     .s0_vppn(s0_vppn),
     .s0_va_bit12(s0_va_bit12),
     .s0_found(s0_found),
-    .s0_index(s0_index), // ??????????? log2?????????????????????
+    .s0_index(s0_index), //实际使用的index位宽为log2(TLBNUM)
     .s0_ppn(s0_ppn),
     .s0_ps(s0_ps),
     .s0_plv(s0_plv),
@@ -786,9 +786,9 @@ pre_IF1 #(
     .s0_d(s0_d),
     .s0_v(s0_v),
     //tlb_ex
-    .ex_tlb_reload0         (ex_tlb_reload0),//tlb????????
-    .ex_tlb_preif_unvalid   (ex_tlb_preif_unvalid),//tlb????????
-    .ex_tlb_plv0            (ex_tlb_plv0),//tlb???????????
+    .ex_tlb_reload0         (ex_tlb_reload0),//tlb重填异常
+    .ex_tlb_preif_unvalid   (ex_tlb_preif_unvalid),//tlb取指页无效
+    .ex_tlb_plv0            (ex_tlb_plv0),//tlb的页权限上访
     .tlb_inst_req           (tlb_inst_req),
     //DMW
     .dmw_vseg0(dmw_vseg0),
@@ -797,7 +797,7 @@ pre_IF1 #(
     //CRMD PG DA
     .csr_CRMD_DA     (csr_CRMD_DA),
     .csr_CRMD_PG     (csr_CRMD_PG),
-    //mat:??????????
+    //mat:存储访问类型
     .csr_CRMD_DATF          (csr_CRMD_DATF),
     .csr_CRMD_DATM          (csr_CRMD_DATM),
     .dmw_mat0               (dmw_mat0),
@@ -838,8 +838,8 @@ pre_IF2 #(
     .need_stall(need_stall),
     //handshake
     .inst_sram_req(inst_sram_req),
-    .inst_sram_wr(inst_sram_wr), // 1???write 0???read
-    .inst_sram_wstrb(inst_sram_wstrb),// wstrb ???????????????
+    .inst_sram_wr(inst_sram_wr), // 1表示write 0表示read
+    .inst_sram_wstrb(inst_sram_wstrb),// wstrb 对应原始数据的字节写使能
     .inst_sram_size(inst_sram_size),
     .inst_sram_addr_without_cacop(inst_sram_addr_without_cacop),
     .inst_sram_wdata(inst_sram_wdata),
@@ -851,7 +851,7 @@ pre_IF2 #(
     //CRMD
     .csr_CRMD_DA(csr_CRMD_DA),
     .csr_CRMD_PG(csr_CRMD_PG),
-    //????s1_mat???????????????
+    //说明s1_mat是已经换算好的？
     .inst_mat               (inst_mat),
     .inst_wr                (inst_wr)
 );
@@ -907,7 +907,7 @@ decode #(
     .ID_need_cancel(ID_need_cancel),
     //stall
     .need_stall(need_stall),
-    //???
+    //中断
     .has_int(has_int),
     //branch prediction
     // update port: Decode writes back real result
@@ -967,11 +967,11 @@ exe1 #(
     .csr_CRMD_DA     (csr_CRMD_DA),
     .csr_CRMD_PG     (csr_CRMD_PG),
     //tlb_ex
-    .ex_tlb_reload1         (ex_tlb_reload1),//tlb????????
-    .ex_tlb_ld_unvalid      (ex_tlb_ld_unvalid),//tlb??load????
-    .ex_tlb_st_unvalid      (ex_tlb_st_unvalid),//tlb??store????
-    .ex_tlb_plv1            (ex_tlb_plv1),//tlb???????????
-    .ex_tlb_page_modify     (ex_tlb_page_modify),//tlb??????
+    .ex_tlb_reload1         (ex_tlb_reload1),//tlb重填异常
+    .ex_tlb_ld_unvalid      (ex_tlb_ld_unvalid),//tlb的load页无效
+    .ex_tlb_st_unvalid      (ex_tlb_st_unvalid),//tlb的store页无效
+    .ex_tlb_plv1            (ex_tlb_plv1),//tlb的页权限上访
+    .ex_tlb_page_modify     (ex_tlb_page_modify),//tlb页修改
     .tlb_data_req           (tlb_data_req),
     .tlb_load_req           (tlb_load_req),
     .tlb_store_req          (tlb_store_req),
@@ -979,7 +979,7 @@ exe1 #(
     .dmw_vseg1              (dmw_vseg1),
     .dmw_found1             (dmw_found1),
     .dmw_pseg1              (dmw_pseg1),
-    //mat:??????????
+    //mat:存储访问类型
     .csr_CRMD_DATF          (csr_CRMD_DATF),
     .csr_CRMD_DATM          (csr_CRMD_DATM),
     .dmw_mat1               (dmw_mat1)
@@ -1110,7 +1110,7 @@ wb #(
     .flush(flush),
     //cancel
     .WB_need_cancel(WB_need_cancel),
-    //wb?????
+    //wb接口
     .wb_pc(wb_pc),
     .wb_ex(wb_ex),
     .wb_vaddr(wb_vaddr),
@@ -1124,11 +1124,11 @@ wb #(
     .tlbfill_we(tlbfill_we),
     //tlbidx
     .csr_TLBIDX(csr_TLBIDX),
-    //tlbreload ??????CSR
+    //tlbreload 重填传入CSR
     .ex_tlb_reload(ex_tlb_reload),
-    //ERTN ???? CRMD
+    //ERTN 更改 CRMD
     .ertn_valid(ertn_valid),
-    // ???? csr_regfile ?????? BADV
+    // 更新 csr_regfile 相关的 BADV
     .csr_tlb_reload0(csr_tlb_reload0),
     .csr_tlb_plv0   (csr_tlb_plv0   ),
     .csr_tlb_reload1(csr_tlb_reload1),  

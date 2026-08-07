@@ -5,103 +5,103 @@ module cpucfg (
 //word0
 wire [31:0] word0_PRID = 32'h14800100;
 //word1
-wire [1:0]  word1_ARCH = 2'b00;//LA32¾«¼ò¼Ü¹¹
-wire        word1_PGMMU= 1'b1;//Ö§³ÖMMUÒ³Ó³Éä
-wire        word1_IOCSR= 1'b0;//Ö§³ÖIOCSRÖ¸Áî
-wire [11:4] word1_PALEN= 8'd31;//ÎïÀíµØÖ·PALEN=32
-wire [19:12]word1_VALEN= 8'd31;//ĞéÄâµØÖ·VALEN=32
-wire        word1_UAL  = 1'b0;//Ö§³Ö·Ç¶ÔÆë·Ã´æ
-wire        word1_RI   = 1'b0;//Ö§³Ö¶Á½ûÖ¹Ò³ÊôĞÔ
-wire        word1_EP   = 1'b0;//Ö§³ÖÖ´ĞĞ±£»¤Ò³ÊôĞÔ
-wire        word1_RPLV = 1'b0;//Ö§³ÖRPLVÒ³ÊôĞÔ
-wire        word1_HP   = 1'b0;//Ö§³Öhuge pageÒ³ÊôĞÔ
-wire        word1_CRC  = 1'b0;//Ö§³ÖCSCĞ£ÑéÖ¸Áî
-wire        word1_MSG_INT = 1'b0;//Ö§³ÖÍâ²¿ÖĞ¶Ï²ÉÓÃÏûÏ¢ÖĞ¶Ï·½Ê½
+wire [1:0]  word1_ARCH = 2'b00;//LA32ç²¾ç®€æ¶æ„
+wire        word1_PGMMU= 1'b1;//æ”¯æŒMMUé¡µæ˜ å°„
+wire        word1_IOCSR= 1'b0;//æ”¯æŒIOCSRæŒ‡ä»¤
+wire [11:4] word1_PALEN= 8'd31;//ç‰©ç†åœ°å€PALEN=32
+wire [19:12]word1_VALEN= 8'd31;//è™šæ‹Ÿåœ°å€VALEN=32
+wire        word1_UAL  = 1'b0;//æ”¯æŒéå¯¹é½è®¿å­˜
+wire        word1_RI   = 1'b0;//æ”¯æŒè¯»ç¦æ­¢é¡µå±æ€§
+wire        word1_EP   = 1'b0;//æ”¯æŒæ‰§è¡Œä¿æŠ¤é¡µå±æ€§
+wire        word1_RPLV = 1'b0;//æ”¯æŒRPLVé¡µå±æ€§
+wire        word1_HP   = 1'b0;//æ”¯æŒhuge pageé¡µå±æ€§
+wire        word1_CRC  = 1'b0;//æ”¯æŒCSCæ ¡éªŒæŒ‡ä»¤
+wire        word1_MSG_INT = 1'b0;//æ”¯æŒå¤–éƒ¨ä¸­æ–­é‡‡ç”¨æ¶ˆæ¯ä¸­æ–­æ–¹å¼
 //word2
-wire        word2_FP   = 1'b0;//Ö§³Ö¸¡µãÊı
-wire        word2_FP_SP= 1'b0;//Ö§³Öµ¥¾«¶È¸¡µãÊı
-wire        word2_FP_DP= 1'b0;//Ö§³ÖË«¾«¶È¸¡µãÊı
-wire [5:3]  word2_FP_ver = 2'b01;//¸¡µãÔËËã°æ±¾ºÅ
-wire        word2_LSX  = 1'b0;//Ö§³Ö128Î»ÏòÁ¿À©Õ¹
-wire        word2_LASX = 1'b0;//Ö§³Ö256Î»ÏòÁ¿À©Õ¹
-wire        word2_COMPLEX = 1'b0;//Ö§³Ö¸´ÊıÏòÁ¿ÔËËã
-wire        word2_CRYPTO  = 1'b0;//Ö§³Ö¼Ó½âÃÜÏòÁ¿
-wire        word2_LVZ     = 1'b0;//Ö§³ÖĞéÄâ»¯À©Õ¹
-wire [13:11]word2_LVZ_ver = 3'b001;//ĞéÄâ»¯Ó²¼ş¼ÓËÙ¹æ·¶°æ±¾ºÅ
-wire        word2_LLFTP   = 1'b1;//Ö§³Öºã¶¨ÆµÂÊ¼ÆÊ±Æ÷ºÍ¶¨Ê±Æ÷
-wire [17:15]word2_LLFTP_ver = 3'b001;//ºã¶¨ÆµÂÊ¼ÆÊ±Æ÷ºÍ¶¨Ê±Æ÷°æ±¾ºÅ
-wire        word2_LBT_X86 = 1'b0;//Ö§³ÖX86¶ş½øÖÆ·­ÒëÀ©Õ¹
-wire        word2_LBT_ARM = 1'b0;//Ö§³ÖARM¶ş½øÖÆÀ©Õ¹
-wire        word2_LBT_MIPS = 1'b0;//Ö§³ÖMIPS¶ş½øÖÆÀ©Õ¹
-wire        word2_LSPW    = 1'b0;//Ö§³ÖÈí¼şÒ³±í±éÀúÖ¸Áî
-wire        word2_LAM     = 1'b0;//Ö§³ÖAMÔ­×ÓÖ¸Áî    
-wire        word2_HPTW    = 1'b0;//Ö§³ÖÓ²¼şÒ³±í±éÀú  
-wire        word2_FRECIPE = 1'b0;//Ö§³ÖÏòÁ¿À©Õ¹µÄ4¸öÖ¸Áî
-wire        word2_DIV32   = 1'b1;//64Î»»úÆ÷ÉÏµÄdiv.wºÍmod.w½ö¸ù¾İµÍ32Î»¼ÆËã
-wire        word2_LAM_BH  = 1'b0;//Ö§³ÖAWµÄ8ÌõÖ¸Áî
-wire        word2_LAMCAS  = 1'b0;//Ö§³ÖAMCASµÄ8ÌõÖ¸Áî
-wire        word2_LLACQ_SCREL = 1'b0;//Ö§³ÖLLACQµÄ4ÌõÖ¸Áî
-wire        word2_SCQ     = 1'b0;//Ö§³ÖSCQÖ¸Áî
+wire        word2_FP   = 1'b0;//æ”¯æŒæµ®ç‚¹æ•°
+wire        word2_FP_SP= 1'b0;//æ”¯æŒå•ç²¾åº¦æµ®ç‚¹æ•°
+wire        word2_FP_DP= 1'b0;//æ”¯æŒåŒç²¾åº¦æµ®ç‚¹æ•°
+wire [5:3]  word2_FP_ver = 2'b01;//æµ®ç‚¹è¿ç®—ç‰ˆæœ¬å·
+wire        word2_LSX  = 1'b0;//æ”¯æŒ128ä½å‘é‡æ‰©å±•
+wire        word2_LASX = 1'b0;//æ”¯æŒ256ä½å‘é‡æ‰©å±•
+wire        word2_COMPLEX = 1'b0;//æ”¯æŒå¤æ•°å‘é‡è¿ç®—
+wire        word2_CRYPTO  = 1'b0;//æ”¯æŒåŠ è§£å¯†å‘é‡
+wire        word2_LVZ     = 1'b0;//æ”¯æŒè™šæ‹ŸåŒ–æ‰©å±•
+wire [13:11]word2_LVZ_ver = 3'b001;//è™šæ‹ŸåŒ–ç¡¬ä»¶åŠ é€Ÿè§„èŒƒç‰ˆæœ¬å·
+wire        word2_LLFTP   = 1'b1;//æ”¯æŒæ’å®šé¢‘ç‡è®¡æ—¶å™¨å’Œå®šæ—¶å™¨
+wire [17:15]word2_LLFTP_ver = 3'b001;//æ’å®šé¢‘ç‡è®¡æ—¶å™¨å’Œå®šæ—¶å™¨ç‰ˆæœ¬å·
+wire        word2_LBT_X86 = 1'b0;//æ”¯æŒX86äºŒè¿›åˆ¶ç¿»è¯‘æ‰©å±•
+wire        word2_LBT_ARM = 1'b0;//æ”¯æŒARMäºŒè¿›åˆ¶æ‰©å±•
+wire        word2_LBT_MIPS = 1'b0;//æ”¯æŒMIPSäºŒè¿›åˆ¶æ‰©å±•
+wire        word2_LSPW    = 1'b0;//æ”¯æŒè½¯ä»¶é¡µè¡¨éå†æŒ‡ä»¤
+wire        word2_LAM     = 1'b0;//æ”¯æŒAMåŸå­æŒ‡ä»¤    
+wire        word2_HPTW    = 1'b0;//æ”¯æŒç¡¬ä»¶é¡µè¡¨éå†  
+wire        word2_FRECIPE = 1'b0;//æ”¯æŒå‘é‡æ‰©å±•çš„4ä¸ªæŒ‡ä»¤
+wire        word2_DIV32   = 1'b1;//64ä½æœºå™¨ä¸Šçš„div.wå’Œmod.wä»…æ ¹æ®ä½32ä½è®¡ç®—
+wire        word2_LAM_BH  = 1'b0;//æ”¯æŒAWçš„8æ¡æŒ‡ä»¤
+wire        word2_LAMCAS  = 1'b0;//æ”¯æŒAMCASçš„8æ¡æŒ‡ä»¤
+wire        word2_LLACQ_SCREL = 1'b0;//æ”¯æŒLLACQçš„4æ¡æŒ‡ä»¤
+wire        word2_SCQ     = 1'b0;//æ”¯æŒSCQæŒ‡ä»¤
 //word3
-wire        word3_CCDMA   = 1'b0;//Ö§³ÖÓ²¼şDMA
-wire        word3_SFB     = 1'b0;//Ö§³ÖStore Fill Buffer
-wire        word3_UCACC   = 1'b0;//Ö§³Ö ucacc win
-wire        word3_LLEXC   = 1'b0;//Ö§³Ö LLÖ¸ÁîÈ¥¶ÀÕ¼¿é
-wire        word3_SCDLY   = 1'b0;//Ö§³Ö SCÖ¸ÁîËæ»úÑÓ³Ù
-wire        word3_LLDBAR  = 1'b0;//Ö§³ÖLLÖ¸Áî×Ô¶¯´ødbar
-wire        word3_ITLBHMC = 1'b0;//Ó²¼şÎ¬»¤ITLBºÍTLBÒ»ÖÂĞÔ
-wire        word3_ICHMC   = 1'b0;//Ó²¼şÎ¬»¤Í¬Ò»´¦ÀíÆ÷ÄÚICacheºÍDcacheÒ»ÖÂĞÔ
-wire [10:8] word3_SPW_LVL = 3'b0;//page walkÖ§³ÖµÄ×î´óÄ¿Â¼²ãÊı
-wire        word3_SPW_HP_HF = 1'b0;//page walkÓöµ½´óÒ³Ê±½«ÕÛ°ëÌîÈëTLB
-wire        word3_RVA     = 1'b0;//Èí¼şÅäÖÃËõ¶ÌĞéÄâµØÖ··¶Î§µÄ¹¦ÄÜ
-wire [16:13]word3_RVAMAX_1= 4'b0;//×î´ó¿ÉÒÔÅäÖÃĞéÄâµØÖ·Ëõ¶ÌÎ»Êı-1
-wire        word3_DBAR_hints  = 1'b0;//DBARµÄ·Ç0Öµ°´ÊÖ²áÍÆ¼öº¬ÒåÊµÏÖ
-wire        word3_LD_SEQ_SA   = 1'b0;//±£Ö¤Í¬µØÖ·load²Ù×÷Ë³ĞòÖ´ĞĞ
+wire        word3_CCDMA   = 1'b0;//æ”¯æŒç¡¬ä»¶DMA
+wire        word3_SFB     = 1'b0;//æ”¯æŒStore Fill Buffer
+wire        word3_UCACC   = 1'b0;//æ”¯æŒ ucacc win
+wire        word3_LLEXC   = 1'b0;//æ”¯æŒ LLæŒ‡ä»¤å»ç‹¬å å—
+wire        word3_SCDLY   = 1'b0;//æ”¯æŒ SCæŒ‡ä»¤éšæœºå»¶è¿Ÿ
+wire        word3_LLDBAR  = 1'b0;//æ”¯æŒLLæŒ‡ä»¤è‡ªåŠ¨å¸¦dbar
+wire        word3_ITLBHMC = 1'b0;//ç¡¬ä»¶ç»´æŠ¤ITLBå’ŒTLBä¸€è‡´æ€§
+wire        word3_ICHMC   = 1'b0;//ç¡¬ä»¶ç»´æŠ¤åŒä¸€å¤„ç†å™¨å†…ICacheå’ŒDcacheä¸€è‡´æ€§
+wire [10:8] word3_SPW_LVL = 3'b0;//page walkæ”¯æŒçš„æœ€å¤§ç›®å½•å±‚æ•°
+wire        word3_SPW_HP_HF = 1'b0;//page walké‡åˆ°å¤§é¡µæ—¶å°†æŠ˜åŠå¡«å…¥TLB
+wire        word3_RVA     = 1'b0;//è½¯ä»¶é…ç½®ç¼©çŸ­è™šæ‹Ÿåœ°å€èŒƒå›´çš„åŠŸèƒ½
+wire [16:13]word3_RVAMAX_1= 4'b0;//æœ€å¤§å¯ä»¥é…ç½®è™šæ‹Ÿåœ°å€ç¼©çŸ­ä½æ•°-1
+wire        word3_DBAR_hints  = 1'b0;//DBARçš„é0å€¼æŒ‰æ‰‹å†Œæ¨èå«ä¹‰å®ç°
+wire        word3_LD_SEQ_SA   = 1'b0;//ä¿è¯åŒåœ°å€loadæ“ä½œé¡ºåºæ‰§è¡Œ
 //word4
-wire [31:0] word4_CC_FREQ = 32'd50;//ºã¶¨ÆµÂÊ¼ÆÊ±Æ÷ºÍ¶¨Ê±Æ÷µÄ¾§ÕñÆµÂÊ
+wire [31:0] word4_CC_FREQ = 32'd50;//æ’å®šé¢‘ç‡è®¡æ—¶å™¨å’Œå®šæ—¶å™¨çš„æ™¶æŒ¯é¢‘ç‡
 //word5
-wire [15:0] word5_CC_MUL  = 16'd1;//Ê±ÖÓµÄ±¶ÆµÒò×Ó
-wire [31:16]word5_CC_DIV  = 16'd0;//Ê±ÖÓµÄ·ÖÆµÏµÊı
+wire [15:0] word5_CC_MUL  = 16'd1;//æ—¶é’Ÿçš„å€é¢‘å› å­
+wire [31:16]word5_CC_DIV  = 16'd0;//æ—¶é’Ÿçš„åˆ†é¢‘ç³»æ•°
 //word6
-wire        word6_PMP     = 1'b0;//Ö§³ÖĞÔÄÜ¼ÆÊıÆ÷
-wire [3:1]  word6_PMVER   = 3'b1;//ĞÔÄÜ¼ì²âÆ÷ÖĞµÄ°æ±¾ºÅ
-wire [7:4]  word6_PMNUM   = 4'b0;//ĞÔÄÜ¼ì²âÆ÷¸öÊı-1
-wire [13:8] word6_PMBITS  = 6'd31;//ĞÔÄÜ¼ì²âÆ÷Î»¿í-1
-wire        word6_UPM     = 1'b0;//Ö§³ÖÓÃ»§¶ÁÈ¡ĞÔÄÜ¼ÆÊıÆ÷
+wire        word6_PMP     = 1'b0;//æ”¯æŒæ€§èƒ½è®¡æ•°å™¨
+wire [3:1]  word6_PMVER   = 3'b1;//æ€§èƒ½æ£€æµ‹å™¨ä¸­çš„ç‰ˆæœ¬å·
+wire [7:4]  word6_PMNUM   = 4'b0;//æ€§èƒ½æ£€æµ‹å™¨ä¸ªæ•°-1
+wire [13:8] word6_PMBITS  = 6'd31;//æ€§èƒ½æ£€æµ‹å™¨ä½å®½-1
+wire        word6_UPM     = 1'b0;//æ”¯æŒç”¨æˆ·è¯»å–æ€§èƒ½è®¡æ•°å™¨
 //word10
-wire        word10_L1_IU_Present   = 1'b1;//´æÔÚ1¼¶Ö¸ÁîCache»òÍ³Ò»Cache
-wire        word10_L1_IU_Unify     = 1'b0;//1¼¶Ö¸ÁîCacheÊÇÍ³Ò»Cache
-wire        word10_L1_D_Present    = 1'b1;//´æÔÚ1¼¶Êı¾İCache»òÍ³Ò»Cache
-wire        word10_L2_IU_Present   = 1'b0;//´æÔÚ2¼¶Ö¸ÁîCache»òÍ³Ò»Cache
-wire        word10_L2_IU_Unify     = 1'b0;//2¼¶Ö¸ÁîCacheÊÇÍ³Ò»Cache  
-wire        word10_L2_IU_Private   = 1'b0;//2¼¶Ö¸ÁîCacheÊÇÃ¿¸öºËË½ÓĞµÄ
-wire        word10_L2_IU_Inclusive = 1'b0;// 2¼¶Ö¸ÁîCache¶Ô¸üµÍ²ã¼¶ÊÇ°üº¬¹ØÏµ                  
-wire        word10_L2_D_Present    = 1'b0;//´æÔÚ2¼¶Êı¾İCache
-wire        word10_L2_D_Private    = 1'b0;//2¼¶Êı¾İCacheÊÇÃ¿¸öºËË½ÓĞµÄ
-wire        word10_L2_D_Inclusive  = 1'b0;//2¼¶Êı¾İCache¶Ô¸üµÍ²ã¼¶ÊÇ°üº¬¹ØÏµ
-wire        word10_L3_IU_Present   = 1'b0;//´æÔÚ3¼¶Ö¸ÁîCache»òÍ³Ò»Cache
-wire        word10_L3_IU_Unify     = 1'b0;//3¼¶Ö¸ÁîCacheÊÇÍ³Ò»Cache
-wire        word10_L3_IU_Private   = 1'b0;//3¼¶Ö¸ÁîCacheÊÇÃ¿¸öºËË½ÓĞµÄ
-wire        word10_L3_IU_Inclusive = 1'b0;//3¼¶Ö¸ÁîCache¶Ô¸üµÍ²ã¼¶ÊÇ°üº¬¹ØÏµ
-wire        word10_L3_D_Present    = 1'b0;//´æÔÚ3¼¶Êı¾İCache
-wire        word10_L3_D_Private    = 1'b0;//3¼¶Êı¾İCacheÊÇÃ¿¸öºËË½ÓĞµÄ
-wire        word10_L3_D_Inclusive  = 1'b0;//3¼¶Êı¾İCache¶Ô¸üµÍ²ã´ÎÊÇ°üº¬¹ØÏµ
+wire        word10_L1_IU_Present   = 1'b1;//å­˜åœ¨1çº§æŒ‡ä»¤Cacheæˆ–ç»Ÿä¸€Cache
+wire        word10_L1_IU_Unify     = 1'b0;//1çº§æŒ‡ä»¤Cacheæ˜¯ç»Ÿä¸€Cache
+wire        word10_L1_D_Present    = 1'b1;//å­˜åœ¨1çº§æ•°æ®Cacheæˆ–ç»Ÿä¸€Cache
+wire        word10_L2_IU_Present   = 1'b0;//å­˜åœ¨2çº§æŒ‡ä»¤Cacheæˆ–ç»Ÿä¸€Cache
+wire        word10_L2_IU_Unify     = 1'b0;//2çº§æŒ‡ä»¤Cacheæ˜¯ç»Ÿä¸€Cache  
+wire        word10_L2_IU_Private   = 1'b0;//2çº§æŒ‡ä»¤Cacheæ˜¯æ¯ä¸ªæ ¸ç§æœ‰çš„
+wire        word10_L2_IU_Inclusive = 1'b0;// 2çº§æŒ‡ä»¤Cacheå¯¹æ›´ä½å±‚çº§æ˜¯åŒ…å«å…³ç³»                  
+wire        word10_L2_D_Present    = 1'b0;//å­˜åœ¨2çº§æ•°æ®Cache
+wire        word10_L2_D_Private    = 1'b0;//2çº§æ•°æ®Cacheæ˜¯æ¯ä¸ªæ ¸ç§æœ‰çš„
+wire        word10_L2_D_Inclusive  = 1'b0;//2çº§æ•°æ®Cacheå¯¹æ›´ä½å±‚çº§æ˜¯åŒ…å«å…³ç³»
+wire        word10_L3_IU_Present   = 1'b0;//å­˜åœ¨3çº§æŒ‡ä»¤Cacheæˆ–ç»Ÿä¸€Cache
+wire        word10_L3_IU_Unify     = 1'b0;//3çº§æŒ‡ä»¤Cacheæ˜¯ç»Ÿä¸€Cache
+wire        word10_L3_IU_Private   = 1'b0;//3çº§æŒ‡ä»¤Cacheæ˜¯æ¯ä¸ªæ ¸ç§æœ‰çš„
+wire        word10_L3_IU_Inclusive = 1'b0;//3çº§æŒ‡ä»¤Cacheå¯¹æ›´ä½å±‚çº§æ˜¯åŒ…å«å…³ç³»
+wire        word10_L3_D_Present    = 1'b0;//å­˜åœ¨3çº§æ•°æ®Cache
+wire        word10_L3_D_Private    = 1'b0;//3çº§æ•°æ®Cacheæ˜¯æ¯ä¸ªæ ¸ç§æœ‰çš„
+wire        word10_L3_D_Inclusive  = 1'b0;//3çº§æ•°æ®Cacheå¯¹æ›´ä½å±‚æ¬¡æ˜¯åŒ…å«å…³ç³»
 //word11
-wire [15:0] word11_Way_1           = 16'd1;//1¼¶Ö¸ÁîCacheµÄWayÊı-1
-wire [23:16]word11_Index_log2      = 8'd8;//1¼¶Ö¸ÁîCacheµÄÒ»Â·ĞĞÊıÈ¡log2
-wire [30:24]word11_Linesize_log2   = 7'd4;//1¼¶Ö¸ÁîCacheµÄÒ»ĞĞ×Ö½ÚÊıÈ¡log2
+wire [15:0] word11_Way_1           = 16'd1;//1çº§æŒ‡ä»¤Cacheçš„Wayæ•°-1
+wire [23:16]word11_Index_log2      = 8'd8;//1çº§æŒ‡ä»¤Cacheçš„ä¸€è·¯è¡Œæ•°å–log2
+wire [30:24]word11_Linesize_log2   = 7'd4;//1çº§æŒ‡ä»¤Cacheçš„ä¸€è¡Œå­—èŠ‚æ•°å–log2
 //word12
-wire [15:0] word12_Way_1           = 16'd1;//1¼¶Êı¾İCacheµÄWayÊı-1
-wire [23:16]word12_Index_log2      = 8'd8;//1¼¶Êı¾İacheµÄÒ»Â·ĞĞÊıÈ¡log2
-wire [30:24]word12_Linesize_log2   = 7'd4;//1¼¶Êı¾İacheµÄÒ»ĞĞ×Ö½ÚÊıÈ¡log2
+wire [15:0] word12_Way_1           = 16'd1;//1çº§æ•°æ®Cacheçš„Wayæ•°-1
+wire [23:16]word12_Index_log2      = 8'd8;//1çº§æ•°æ®acheçš„ä¸€è·¯è¡Œæ•°å–log2
+wire [30:24]word12_Linesize_log2   = 7'd4;//1çº§æ•°æ®acheçš„ä¸€è¡Œå­—èŠ‚æ•°å–log2
 //word13
-wire [15:0] word13_Way_1           = 16'd0;//2¼¶Ö¸ÁîCacheµÄWayÊı-1
-wire [23:16]word13_Index_log2      = 8'd0;//2¼¶Ö¸ÁîCacheµÄÒ»Â·ĞĞÊıÈ¡log2
-wire [30:24]word13_Linesize_log2   = 7'd0;//2¼¶Ö¸ÁîCacheµÄÒ»ĞĞ×Ö½ÚÊıÈ¡log2
+wire [15:0] word13_Way_1           = 16'd0;//2çº§æŒ‡ä»¤Cacheçš„Wayæ•°-1
+wire [23:16]word13_Index_log2      = 8'd0;//2çº§æŒ‡ä»¤Cacheçš„ä¸€è·¯è¡Œæ•°å–log2
+wire [30:24]word13_Linesize_log2   = 7'd0;//2çº§æŒ‡ä»¤Cacheçš„ä¸€è¡Œå­—èŠ‚æ•°å–log2
 //word14
-wire [15:0] word14_Way_1           = 16'd0;//3¼¶Ö¸ÁîCacheµÄWayÊı-1
-wire [23:16]word14_Index_log2      = 8'd0;//3¼¶Ö¸ÁîCacheµÄÒ»Â·ĞĞÊıÈ¡log2
-wire [30:24]word14_Linesize_log2   = 7'd0;//3¼¶Ö¸ÁîCacheµÄÒ»ĞĞ×Ö½ÚÊıÈ¡log2
+wire [15:0] word14_Way_1           = 16'd0;//3çº§æŒ‡ä»¤Cacheçš„Wayæ•°-1
+wire [23:16]word14_Index_log2      = 8'd0;//3çº§æŒ‡ä»¤Cacheçš„ä¸€è·¯è¡Œæ•°å–log2
+wire [30:24]word14_Linesize_log2   = 7'd0;//3çº§æŒ‡ä»¤Cacheçš„ä¸€è¡Œå­—èŠ‚æ•°å–log2
 
 //--------------- cpucfg begin ---------------
 assign cpucfg_value = (rj_value == 32'h0) ? {word0_PRID} :

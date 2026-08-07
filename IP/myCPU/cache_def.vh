@@ -1,28 +1,28 @@
 `ifndef __CACHE_DEF_VH__
 `define __CACHE_DEF_VH__
 
-//----------------------------- ²ÎÊı¶¨Òå¿ªÊ¼ --------------------------
-`define REPLACE_MODE  1'b0  //0£ºLRU£¬1£ºÎ±Ëæ»ú
+//----------------------------- å‚æ•°å®šä¹‰å¼€å§‹ --------------------------
+`define REPLACE_MODE  1'b0  //0ï¼šLRUï¼Œ1ï¼šä¼ªéšæœº
 
-//2Â·×éÏàÁ¬£¬Ã¿Â·256×é£¬Ã¿ĞĞ16×Ö½Ú
+//2è·¯ç»„ç›¸è¿ï¼Œæ¯è·¯256ç»„ï¼Œæ¯è¡Œ16å­—èŠ‚
 `define GROUP_NUM      256
 `define INDEX_WIDTH    8
 `define TAG_WIDTH      20
 `define OFFSET_WIDTH   4
-`define TAGV_WIDTH     21   //¸ßÎ»Îª±êÇ©£¬µÍÎ»ÎªÓĞĞ§Î»
+`define TAGV_WIDTH     21   //é«˜ä½ä¸ºæ ‡ç­¾ï¼Œä½ä½ä¸ºæœ‰æ•ˆä½
 `define BANK_NUM       4
 `define BANK_SIZE      32
 `define LINE_SIZE      128
 
-//Ö÷×´Ì¬»ú
+//ä¸»çŠ¶æ€æœº
 `define MAIN_IDLE      3'd0
 `define MAIN_LOOKUP    3'd1
 `define MAIN_MISS      3'd2
 `define MAIN_REPLACE   3'd3
 `define MAIN_REFILL    3'd4
 
-//Write Buffer Ê¹ÓÃÁ½Ì¬½á¹¹
+//Write Buffer ä½¿ç”¨ä¸¤æ€ç»“æ„
 `define WB_IDLE        1'b0
 `define WB_WRITE       1'b1
-//----------------------------- ²ÎÊı¶¨Òå½áÊø --------------------------
+//----------------------------- å‚æ•°å®šä¹‰ç»“æŸ --------------------------
 `endif

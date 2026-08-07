@@ -16,27 +16,27 @@ module exe2 #(
     output wire [outbus_width-1:0] EXE2_MEM_bus,
     //stall
     output wire [ 4:0]  EXE2_rf_dest,
-    output wire         need_stall_inst, //bus����
-    output wire         need_stall_csr,  //bus����
+    output wire         need_stall_inst, //bus传递
+    output wire         need_stall_csr,  //bus传递
     //front_push
     output wire [31:0]  exe2_front_data,
     output wire [ 4:0]  exe2_front_addr,
-    output wire         exe2_can_not_front_push,// ��д�Ĵ����Ŀ��Բ�ǰ��
+    output wire         exe2_can_not_front_push,// 写回级数据前递目标不能前推
     //cancel control
     input  wire         EXE2_need_cancel,
-    //ex_cancel ����write              exe2
+    //ex_cancel 取消write              exe2
     input  wire        older_ex_for_exe2,
     //handshake                        exe2
     output wire        data_sram_req,
-    output wire        data_sram_wr, // 1��ʾwrite 0��ʾread
-    output wire [ 3:0] data_sram_wstrb,// wstrb ��Ӧԭ���ķ���дʹ��
+    output wire        data_sram_wr, // 1表示write 0表示read
+    output wire [ 3:0] data_sram_wstrb,// wstrb 对应原始数据的字节写使能
     output wire [ 1:0] data_sram_size,
     output wire [31:0] data_sram_addr,
     output wire [31:0] data_sram_wdata,
     input  wire        data_sram_addr_ok,
     input  wire        data_sram_data_ok,
     input  wire        MEM_allow_in,
-    //uncacheʹ��
+    //uncache使用
     output wire   [1:0] data_mat,
     output wire         data_wr,
     //cache_code                      exe2
@@ -54,7 +54,7 @@ module exe2 #(
     input  wire         LLbit
 );
 
-//------------------------{bus����&����}begin-------------------------//
+//------------------------{bus解析&传递}begin-------------------------//
 wire [31:0] pc;
 wire        res_from_mem;
 wire        mem_we;
@@ -103,14 +103,14 @@ wire [31:0] rkd_value;
 reg  [inbus_width-1:0] bus;
 
 //tlb_ex
-wire       ex_tlb_reload0;//tlb��������
-wire       ex_tlb_preif_unvalid;//tlb��ȡָҳ��Ч
-wire       ex_tlb_plv0;//tlb��ҳ��Ȩ���Ϲ�
-wire       ex_tlb_reload1;//tlb��������        
-wire       ex_tlb_ld_unvalid;//tlb��loadҳ��Ч 
-wire       ex_tlb_st_unvalid;//tlb��storeҳ��Ч
-wire       ex_tlb_plv1;//tlb��ҳ��Ȩ���Ϲ�        
-wire       ex_tlb_page_modify;//tlb��ҳ�޸�   
+wire       ex_tlb_reload0;//tlb重填异常
+wire       ex_tlb_preif_unvalid;//tlb的取指页无效
+wire       ex_tlb_plv0;//tlb的页权限上访
+wire       ex_tlb_reload1;//tlb重填异常        
+wire       ex_tlb_ld_unvalid;//tlb的load页无效 
+wire       ex_tlb_st_unvalid;//tlb的store页无效
+wire       ex_tlb_plv1;//tlb的页权限上访        
+wire       ex_tlb_page_modify;//tlb的页修改   
 
 wire       inst_cacop;
 
@@ -139,7 +139,7 @@ assign {
         ex_tlb_reload0,ex_tlb_preif_unvalid,ex_tlb_plv0,ex_tlb_reload1,ex_tlb_ld_unvalid,ex_tlb_st_unvalid,ex_tlb_plv1,ex_tlb_page_modify,
         data_sram_addr,data_sram_wdata,data_sram_size,data_sram_wstrb,data_mat,data_wr,inst_cacop,cache_code,inst_ibar,inst_dbar,inst_sc_w,inst_ll_w,inst_idle
         }=bus;
-//------------------------{bus����&����}end-------------------------//
+//------------------------{bus解析&传递}end-------------------------//
 
 //------------------------{ll&sc}begin-------------------------//
 reg  [29:0] LLaddr;
@@ -166,10 +166,10 @@ always @(posedge clk) begin
 end
 
 assign LLbit_wb    = ll_finish | sc_finish;
-assign LLbit_wdata = ll_finish;  // LL��1���κ�SC����0
+assign LLbit_wdata = ll_finish;  // LL置1写完后SC清零
 //------------------------{ll&sc}end-------------------------//\
 
-//------------------------{����req&addr_ok}begin-------------------------//
+//------------------------{读写req&addr_ok}begin-------------------------//
 reg req_without_dataok;
 always @ (posedge clk)begin
     if(!resetn)begin
@@ -182,7 +182,7 @@ always @ (posedge clk)begin
         req_without_dataok <= 1'b1;
     end
 end
-//------------------------{����req&addr_ok}end-------------------------//
+//------------------------{读写req&addr_ok}end-------------------------//
 
 //------------------------{need_stall_inst}begins-------------------------//
 assign need_stall_inst = res_from_mem ;
