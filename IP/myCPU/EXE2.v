@@ -16,27 +16,27 @@ module exe2 #(
     output wire [outbus_width-1:0] EXE2_MEM_bus,
     //stall
     output wire [ 4:0]  EXE2_rf_dest,
-    output wire         need_stall_inst, //busä¼ é€’
-    output wire         need_stall_csr,  //busä¼ é€’
+    output wire         need_stall_inst, //bus´«µİ
+    output wire         need_stall_csr,  //bus´«µİ
     //front_push
     output wire [31:0]  exe2_front_data,
     output wire [ 4:0]  exe2_front_addr,
-    output wire         exe2_can_not_front_push,// å†™å›çº§æ•°æ®å‰é€’ç›®æ ‡ä¸èƒ½å‰æ¨
+    output wire         exe2_can_not_front_push,// Ğ´»Ø¼¶Êı¾İÇ°µİÄ¿±ê²»ÄÜÇ°ÍÆ
     //cancel control
     input  wire         EXE2_need_cancel,
-    //ex_cancel å–æ¶ˆwrite              exe2
+    //ex_cancel È¡Ïûwrite              exe2
     input  wire        older_ex_for_exe2,
     //handshake                        exe2
     output wire        data_sram_req,
-    output wire        data_sram_wr, // 1è¡¨ç¤ºwrite 0è¡¨ç¤ºread
-    output wire [ 3:0] data_sram_wstrb,// wstrb å¯¹åº”åŸå§‹æ•°æ®çš„å­—èŠ‚å†™ä½¿èƒ½
+    output wire        data_sram_wr, // 1±íÊ¾write 0±íÊ¾read
+    output wire [ 3:0] data_sram_wstrb,// wstrb ¶ÔÓ¦Ô­Ê¼Êı¾İµÄ×Ö½ÚĞ´Ê¹ÄÜ
     output wire [ 1:0] data_sram_size,
     output wire [31:0] data_sram_addr,
     output wire [31:0] data_sram_wdata,
     input  wire        data_sram_addr_ok,
     input  wire        data_sram_data_ok,
     input  wire        MEM_allow_in,
-    //uncacheä½¿ç”¨
+    //uncacheÊ¹ÓÃ
     output wire   [1:0] data_mat,
     output wire         data_wr,
     //cache_code                      exe2
@@ -54,7 +54,7 @@ module exe2 #(
     input  wire         LLbit
 );
 
-//------------------------{busè§£æ&ä¼ é€’}begin-------------------------//
+//------------------------{bus½âÎö&´«µİ}begin-------------------------//
 wire [31:0] pc;
 wire        res_from_mem;
 wire        mem_we;
@@ -103,14 +103,14 @@ wire [31:0] rkd_value;
 reg  [inbus_width-1:0] bus;
 
 //tlb_ex
-wire       ex_tlb_reload0;//tlbé‡å¡«å¼‚å¸¸
-wire       ex_tlb_preif_unvalid;//tlbçš„å–æŒ‡é¡µæ— æ•ˆ
-wire       ex_tlb_plv0;//tlbçš„é¡µæƒé™ä¸Šè®¿
-wire       ex_tlb_reload1;//tlbé‡å¡«å¼‚å¸¸        
-wire       ex_tlb_ld_unvalid;//tlbçš„loadé¡µæ— æ•ˆ 
-wire       ex_tlb_st_unvalid;//tlbçš„storeé¡µæ— æ•ˆ
-wire       ex_tlb_plv1;//tlbçš„é¡µæƒé™ä¸Šè®¿        
-wire       ex_tlb_page_modify;//tlbçš„é¡µä¿®æ”¹   
+wire       ex_tlb_reload0;//tlbÖØÌîÒì³£
+wire       ex_tlb_preif_unvalid;//tlbµÄÈ¡Ö¸Ò³ÎŞĞ§
+wire       ex_tlb_plv0;//tlbµÄÒ³È¨ÏŞÉÏ·Ã
+wire       ex_tlb_reload1;//tlbÖØÌîÒì³£        
+wire       ex_tlb_ld_unvalid;//tlbµÄloadÒ³ÎŞĞ§ 
+wire       ex_tlb_st_unvalid;//tlbµÄstoreÒ³ÎŞĞ§
+wire       ex_tlb_plv1;//tlbµÄÒ³È¨ÏŞÉÏ·Ã        
+wire       ex_tlb_page_modify;//tlbµÄÒ³ĞŞ¸Ä   
 
 wire       inst_cacop;
 
@@ -139,7 +139,7 @@ assign {
         ex_tlb_reload0,ex_tlb_preif_unvalid,ex_tlb_plv0,ex_tlb_reload1,ex_tlb_ld_unvalid,ex_tlb_st_unvalid,ex_tlb_plv1,ex_tlb_page_modify,
         data_sram_addr,data_sram_wdata,data_sram_size,data_sram_wstrb,data_mat,data_wr,inst_cacop,cache_code,inst_ibar,inst_dbar,inst_sc_w,inst_ll_w,inst_idle
         }=bus;
-//------------------------{busè§£æ&ä¼ é€’}end-------------------------//
+//------------------------{bus½âÎö&´«µİ}end-------------------------//
 
 //------------------------{ll&sc}begin-------------------------//
 reg  [29:0] LLaddr;
@@ -166,10 +166,10 @@ always @(posedge clk) begin
 end
 
 assign LLbit_wb    = ll_finish | sc_finish;
-assign LLbit_wdata = ll_finish;  // LLç½®1å†™å®ŒåSCæ¸…é›¶
+assign LLbit_wdata = ll_finish;  // LLÖÃ1Ğ´ÍêºóSCÇåÁã
 //------------------------{ll&sc}end-------------------------//\
 
-//------------------------{è¯»å†™req&addr_ok}begin-------------------------//
+//------------------------{¶ÁĞ´req&addr_ok}begin-------------------------//
 reg req_without_dataok;
 always @ (posedge clk)begin
     if(!resetn)begin
@@ -182,7 +182,7 @@ always @ (posedge clk)begin
         req_without_dataok <= 1'b1;
     end
 end
-//------------------------{è¯»å†™req&addr_ok}end-------------------------//
+//------------------------{¶ÁĞ´req&addr_ok}end-------------------------//
 
 //------------------------{need_stall_inst}begins-------------------------//
 assign need_stall_inst = res_from_mem ;

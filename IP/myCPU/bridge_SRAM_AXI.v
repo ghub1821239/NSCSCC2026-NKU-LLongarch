@@ -87,9 +87,9 @@ module bridge_SRAM_AXI(
 localparam [3:0] AXI_ID_INST = 4'd0;
 localparam [3:0] AXI_ID_DATA = 4'd1;
 
-//----------------------------- è¯»å†™reqèµ‹å€¼ begin -------------------------------
+//----------------------------- ¶ÁĞ´req¸³Öµ begin -------------------------------
 
-//è¡¨ç¤ºæ˜¯å¦å·²ç»æˆåŠŸè¯»æ¡æ‰‹ï¼Œå¦‚æœæˆåŠŸå°±æŠŠå¯¹åº”çš„reqæ‹‰ä½
+//±íÊ¾ÊÇ·ñÒÑ¾­³É¹¦¶ÁÎÕÊÖ£¬Èç¹û³É¹¦¾Í°Ñ¶ÔÓ¦µÄreqÀ­µÍ
 reg inst_rd_req_and_addrok;
 reg data_rd_req_and_addrok;
 
@@ -124,7 +124,7 @@ always @(posedge clk) begin
         end
     end
 end
-// è¯»å†™è¯·æ±‚
+// ¶ÁĞ´ÇëÇó
 wire inst_read_req;
 wire data_read_req;
 wire data_write_req;
@@ -134,26 +134,26 @@ assign inst_read_req     = inst_rd_req;
 assign data_read_req     = data_rd_req;
 assign data_write_req    = data_wr_req;
 
-//AXIè¦æ±‚å‘é€arvalidä¹‹åarsizeå’Œaraddrå°±ä¸èƒ½å˜äº†,å› æ­¤æˆ‘ä»¬è¦å­˜ä¸€ä¸‹è¿™ä¸ªvalidè¡¨ç¤ºå½“å‰çš„æ˜¯å¦èƒ½å¤Ÿæ”¹å˜(valid=1è¡¨ç¤ºå ç”¨)
-//ä¹Ÿå°±æ˜¯æˆ‘ä»¬è¦æŠŠä»–ç»™ç¼“å­˜ä¸‹æ¥
+//AXIÒªÇó·¢ËÍarvalidÖ®ºóarsizeºÍaraddr¾Í²»ÄÜ±äÁË,Òò´ËÎÒÃÇÒª´æÒ»ÏÂÕâ¸övalid±íÊ¾µ±Ç°µÄÊÇ·ñÄÜ¹»¸Ä±ä(valid=1±íÊ¾Õ¼ÓÃ)
+//Ò²¾ÍÊÇÎÒÃÇÒª°ÑËû¸ø»º´æÏÂÀ´
 reg read_req_is_buffering;
-wire read_can_get_new_req;//æ–°çš„å°±æ˜¯å½“å‰æ— ç¼“å­˜/æˆåŠŸæ¡æ‰‹
+wire read_can_get_new_req;//ĞÂµÄ¾ÍÊÇµ±Ç°ÎŞ»º´æ/³É¹¦ÎÕÊÖ
 wire read_req_addr_ok;
 assign read_can_get_new_req = ~read_req_is_buffering | read_req_addr_ok;
-// åˆ¤å®šå½“å‰è¯»è¯·æ±‚ç¼“å­˜æ˜¯å¦æ¥è‡ªäºdata_ram
+// ÅĞ¶¨µ±Ç°¶ÁÇëÇó»º´æÊÇ·ñÀ´×ÔÓÚdata_ram
 reg read_req_buffer_from_dataRAM;
 wire new_read_req_buffer_from_dataRAM;
 assign new_read_req_buffer_from_dataRAM = data_read_req_accept;
-// å¯ä»¥å‘é€æ–°è¯·æ±‚ & æ˜¯è¯»è¯·æ±‚
+// ¿ÉÒÔ·¢ËÍĞÂÇëÇó & ÊÇ¶ÁÇëÇó
 wire new_read_req_valid;
 assign data_read_req_accept = read_can_get_new_req & data_read_can_req;
 assign inst_read_req_accept = read_can_get_new_req & ~data_read_can_req & inst_read_can_req;
 assign new_read_req_valid = data_read_req_accept | inst_read_req_accept;
-// ç¼“å­˜è¯·æ±‚çš„addrå’Œsize
+// »º´æÇëÇóµÄaddrºÍsize
 reg [31:0] read_req_addr;
 reg [ 2:0] read_req_size;
 
-// åªè¦å‘é€è¯·æ±‚ & å½“å‰æ²¡æœ‰req&addrok & æ²¡æœ‰è¯»ç¼“å­˜æ¥è‡ª XX RAM
+// Ö»Òª·¢ËÍÇëÇó & µ±Ç°Ã»ÓĞreq&addrok & Ã»ÓĞ¶Á»º´æÀ´×Ô XX RAM
 assign inst_read_can_req = inst_read_req & ~inst_rd_req_and_addrok & ~(read_req_is_buffering & ~read_req_buffer_from_dataRAM);
 assign data_read_can_req = data_read_req & ~data_rd_req_and_addrok & ~(read_req_is_buffering &  read_req_buffer_from_dataRAM);
 
@@ -173,9 +173,9 @@ always @(posedge clk) begin
         end
     end
 end
-//----------------------------- è¯»å†™reqèµ‹å€¼ end -------------------------------
+//----------------------------- ¶ÁĞ´req¸³Öµ end -------------------------------
 
-//----------------------------- è¯»äº‹åŠ¡addrç›¸å…³ begin -------------------------------
+//----------------------------- ¶ÁÊÂÎñaddrÏà¹Ø begin -------------------------------
 wire write_req_addr_ok;
 wire write_data_ok;
 
@@ -183,8 +183,8 @@ assign read_req_addr_ok      = arvalid & arready;
 assign data_read_req_addr_ok = read_req_addr_ok &  read_req_buffer_from_dataRAM;
 assign inst_read_req_addr_ok = read_req_addr_ok & ~read_req_buffer_from_dataRAM;
 
-// SRAM-like çš„ addr_ok è¡¨ç¤º bridge å·²ç»æ¥æ”¶å¹¶ç¼“å­˜è¯·æ±‚ï¼Œè€Œä¸æ˜¯ AXI AR å·²ç»æ¡æ‰‹ã€‚
-// è¿™æ ·è¯·æ±‚è¢« flush æ—¶ï¼ŒCPU ä»èƒ½çŸ¥é“ bridge ä¸­å­˜åœ¨ä¸€ä¸ªå¿…é¡»ç­‰å¾…/ä¸¢å¼ƒè¿”å›çš„äº‹åŠ¡ã€‚
+// SRAM-like µÄ addr_ok ±íÊ¾ bridge ÒÑ¾­½ÓÊÕ²¢»º´æÇëÇó£¬¶ø²»ÊÇ AXI AR ÒÑ¾­ÎÕÊÖ¡£
+// ÕâÑùÇëÇó±» flush Ê±£¬CPU ÈÔÄÜÖªµÀ bridge ÖĞ´æÔÚÒ»¸ö±ØĞëµÈ´ı/¶ªÆú·µ»ØµÄÊÂÎñ¡£
 //assign inst_rd_rdy = ~read_req_buffer_from_dataRAM & arready;
 //assign data_rd_rdy = read_req_buffer_from_dataRAM & arready;
 assign inst_rd_rdy = inst_read_req_accept;
@@ -200,9 +200,9 @@ assign data_ret_last = (data_read_data_ok & rlast);
 assign data_sram_data_ok = (data_read_data_ok ) | (write_data_ok );
 assign inst_ret_data = inst_read_data_ok ? rdata : 32'b0;
 assign data_ret_data = data_read_data_ok ? rdata : 32'b0;
-//----------------------------- è¯»äº‹åŠ¡addrç›¸å…³ end -------------------------------
+//----------------------------- ¶ÁÊÂÎñaddrÏà¹Ø end -------------------------------
 
-//----------------------------- è¯»è¯·æ±‚é€šé“èµ‹å€¼ begin -------------------------------
+//----------------------------- ¶ÁÇëÇóÍ¨µÀ¸³Öµ begin -------------------------------
 assign arid    = read_req_buffer_from_dataRAM ? AXI_ID_DATA : AXI_ID_INST;
 assign araddr  = read_req_addr;
 assign arlen   = read_req_buffer_from_dataRAM ? data_arlen : inst_arlen;
@@ -212,18 +212,18 @@ assign arlock  = 2'b00;
 assign arcache = 4'b0000;
 assign arprot  = 3'b000;
 assign arvalid = read_req_is_buffering;
-//----------------------------- è¯»è¯·æ±‚é€šé“èµ‹å€¼ end -------------------------------
+//----------------------------- ¶ÁÇëÇóÍ¨µÀ¸³Öµ end -------------------------------
 
-//----------------------------- è¯»å“åº”é€šé“èµ‹å€¼ begin -------------------------------
+//----------------------------- ¶ÁÏìÓ¦Í¨µÀ¸³Öµ begin -------------------------------
 assign rready = inst_rd_req_and_addrok | data_rd_req_and_addrok;
 assign inst_wr_rdy  = 1'b1;
-//----------------------------- è¯»å“åº”é€šé“èµ‹å€¼ end -------------------------------
+//----------------------------- ¶ÁÏìÓ¦Í¨µÀ¸³Öµ end -------------------------------
 
-//----------------------------- å†™äº‹åŠ¡çŠ¶æ€æœº begin -------------------------------
-reg aw_done;//å†™è¯·æ±‚
-reg w_done;//å†™æ•°æ®
-reg wr_wait_b;//å·²ç»å®Œæˆå†™è¯·æ±‚å’Œå†™æ•°æ®,æ­£åœ¨ç­‰å¾…å†™è¿”å›
-// ã€Noteã€‘ å› ä¸ºcache ä¿è¯äº†è¿›å…¥refillçš„æ—¶å€™ç­‰åˆ°wr_rdyæ‰ä¼šæ›´æ”¹çŠ¶æ€ï¼Œæ‰€ä»¥ä¸ç”¨regå¯„å­˜ 
+//----------------------------- Ğ´ÊÂÎñ×´Ì¬»ú begin -------------------------------
+reg aw_done;//Ğ´ÇëÇó
+reg w_done;//Ğ´Êı¾İ
+reg wr_wait_b;//ÒÑ¾­Íê³ÉĞ´ÇëÇóºÍĞ´Êı¾İ,ÕıÔÚµÈ´ıĞ´·µ»Ø
+// ¡¾Note¡¿ ÒòÎªcache ±£Ö¤ÁË½øÈërefillµÄÊ±ºòµÈµ½wr_rdy²Å»á¸ü¸Ä×´Ì¬£¬ËùÒÔ²»ÓÃreg¼Ä´æ 
 reg [1:0] dirty_wb_r;
 always @(posedge clk) begin
     if (!resetn) begin
@@ -233,7 +233,7 @@ always @(posedge clk) begin
         dirty_wb_r <= 2'b0;
     end
     else begin
-        // ç­‰å¾…bvalid & breadyæ¡æ‰‹
+        // µÈ´ıbvalid & breadyÎÕÊÖ
         if (write_data_ok) begin
              wr_wait_b  <= 1'b0;
             aw_done    <= 1'b0;
@@ -241,7 +241,7 @@ always @(posedge clk) begin
             dirty_wb_r <= 2'd0;
         end
         else if (write_req_addr_ok) begin
-            // ç­‰å¾…å†™å›æ¡æ‰‹
+            // µÈ´ıĞ´»ØÎÕÊÖ
             wr_wait_b  <= 1'b1;
             aw_done    <= 1'b0;
             w_done     <= 1'b0;
@@ -264,9 +264,9 @@ always @(posedge clk) begin
         end
     end
 end
-//----------------------------- å†™äº‹åŠ¡çŠ¶æ€æœº end -------------------------------
+//----------------------------- Ğ´ÊÂÎñ×´Ì¬»ú end -------------------------------
 
-//----------------------------- å†™è¯·æ±‚é€šé“èµ‹å€¼ begin -------------------------------
+//----------------------------- Ğ´ÇëÇóÍ¨µÀ¸³Öµ begin -------------------------------
 assign awid    = AXI_ID_DATA;
 assign awaddr  = data_wr_addr;
 assign awlen   = data_write_req ? data_awlen : inst_awlen;
@@ -276,9 +276,9 @@ assign awlock  = 2'b00;
 assign awcache = 4'b0000;
 assign awprot  = 3'b000;
 assign awvalid = data_write_req & ~wr_wait_b & ~aw_done;
-//----------------------------- å†™è¯·æ±‚é€šé“èµ‹å€¼ end -------------------------------
+//----------------------------- Ğ´ÇëÇóÍ¨µÀ¸³Öµ end -------------------------------
 
-//----------------------------- å†™æ•°æ®èµ‹å€¼æ•°æ® begin -------------------------------
+//----------------------------- Ğ´Êı¾İ¸³ÖµÊı¾İ begin -------------------------------
 assign wvalid = data_write_req & ~wr_wait_b & ~w_done;
 assign wid    = AXI_ID_DATA;
 assign wdata  = (dirty_wb_r == 2'd0) ? data_wr_wdata[31:0]   :
@@ -287,15 +287,15 @@ assign wdata  = (dirty_wb_r == 2'd0) ? data_wr_wdata[31:0]   :
                                        data_wr_wdata[127:96];
 assign wstrb  = data_wr_wstrb;
 assign wlast = (dirty_wb_r == data_awlen[1:0]);
-//----------------------------- å†™æ•°æ®èµ‹å€¼æ•°æ® end -------------------------------
+//----------------------------- Ğ´Êı¾İ¸³ÖµÊı¾İ end -------------------------------
 
-//----------------------------- å†™å“åº”èµ‹å€¼æ•°æ® begin -------------------------------
+//----------------------------- Ğ´ÏìÓ¦¸³ÖµÊı¾İ begin -------------------------------
 assign write_req_addr_ok = ~wr_wait_b &
                          (aw_done | (awvalid & awready)) &
                          (w_done  | (wvalid  & wready & wlast ));
 assign data_wr_rdy = write_req_addr_ok;
 assign bready          = wr_wait_b;
 assign write_data_ok = bvalid & bready;
-//----------------------------- å†™å“åº”èµ‹å€¼æ•°æ® end -------------------------------
+//----------------------------- Ğ´ÏìÓ¦¸³ÖµÊı¾İ end -------------------------------
 
 endmodule

@@ -9,12 +9,12 @@ module tlb
     input wire                  clk,
     input wire                  resetn,
 
-    // search port 0 (for fetch the inst) ã€preIFã€‘
+    // search port 0 (for fetch the inst) ¡¾preIF¡¿
     input  wire [18:0] s0_vppn,
     input  wire        s0_va_bit12,
     input  wire [9:0]  s0_asid,
     output wire        s0_found,
-    output wire [$clog2(TLBNUM)-1:0] s0_index, // å…ˆå‘ä¸Šå–æ•´å† log2ï¼ˆï¼‰ï¼Œè¿™æ ·æ¥æ±‚å‡ºæ¥ä½å®½
+    output wire [$clog2(TLBNUM)-1:0] s0_index, // ÏÈÏòÉÏÈ¡ÕûÔÙ log2£¨£©£¬ÕâÑùÀ´Çó³öÀ´Î»¿í
     output wire [19:0] s0_ppn,
     output wire [5:0]  s0_ps,
     output wire [1:0]  s0_plv,
@@ -22,7 +22,7 @@ module tlb
     output wire        s0_d,
     output wire        s0_v,
 
-    // search port 1 (for load/store the data) ã€EXEã€‘
+    // search port 1 (for load/store the data) ¡¾EXE¡¿
     input  wire [18:0] s1_vppn,
     input  wire        s1_va_bit12,
     input  wire [9:0]  s1_asid,
@@ -35,7 +35,7 @@ module tlb
     output wire        s1_d,
     output wire        s1_v,
 
-    // write port ã€CSRã€‘
+    // write port ¡¾CSR¡¿
     input wire        we,
     input wire [$clog2(TLBNUM)-1:0] w_index,
     input wire        w_e,
@@ -54,7 +54,7 @@ module tlb
     input wire        w_d1,
     input wire        w_v1,
 
-    // read port ã€CSRã€‘
+    // read port ¡¾CSR¡¿
     input wire [$clog2(TLBNUM)-1:0] r_index,
     output wire        r_e,
     output wire [18:0] r_vppn,
@@ -78,14 +78,14 @@ module tlb
     input wire [4:0]  invtlb_op,
 
     //tlb_ex
-    output wire       ex_tlb_reload0,//tlbé‡å¡«ä¾‹å¤–_s0
-    output wire       ex_tlb_reload1,//tlbé‡å¡«ä¾‹å¤–_s1
-    output wire       ex_tlb_ld_unvalid,//tlbä¸­loadé¡µæ— æ•ˆ
-    output wire       ex_tlb_st_unvalid,//tlbä¸­storeé¡µæ— æ•ˆ
-    output wire       ex_tlb_preif_unvalid,//tlbä¸­å–æŒ‡é¡µæ— æ•ˆ
-    output wire       ex_tlb_plv0,//tlbä¸­é¡µç‰¹æƒä¸åˆè§„_s0
-    output wire       ex_tlb_plv1,//tlbä¸­é¡µç‰¹æƒä¸åˆè§„_s1
-    output wire       ex_tlb_page_modify,//tlbä¸­é¡µä¿®æ”¹
+    output wire       ex_tlb_reload0,//tlbÖØÌîÀıÍâ_s0
+    output wire       ex_tlb_reload1,//tlbÖØÌîÀıÍâ_s1
+    output wire       ex_tlb_ld_unvalid,//tlbÖĞloadÒ³ÎŞĞ§
+    output wire       ex_tlb_st_unvalid,//tlbÖĞstoreÒ³ÎŞĞ§
+    output wire       ex_tlb_preif_unvalid,//tlbÖĞÈ¡Ö¸Ò³ÎŞĞ§
+    output wire       ex_tlb_plv0,//tlbÖĞÒ³ÌØÈ¨²»ºÏ¹æ_s0
+    output wire       ex_tlb_plv1,//tlbÖĞÒ³ÌØÈ¨²»ºÏ¹æ_s1
+    output wire       ex_tlb_page_modify,//tlbÖĞÒ³ĞŞ¸Ä
     
     input  wire       tlb_inst_req,
     input  wire       tlb_data_req,
@@ -241,10 +241,10 @@ module tlb
                      && (tlb_ps4MB[15] || s1_vppn[8:0] == tlb_vppn[15][8:0])
                      && ((s1_asid == tlb_asid[15]) || tlb_g[15]) && tlb_e[15];
 
-    // åªè¦ä¸å…¨ä¸º 0 å°±ç®—æ˜¯åŒ¹é…æˆåŠŸäº†
+    // Ö»Òª²»È«Îª 0 ¾ÍËãÊÇÆ¥Åä³É¹¦ÁË
     assign s0_found = |match0;
     assign s1_found = |match1;
-    // inst æ‰¾åˆ°çš„é¡µè¡¨é¡¹
+    // inst ÕÒµ½µÄÒ³±íÏî
     assign s0_index = ({4{match0[ 0]}} & 4'd0 ) |
                       ({4{match0[ 1]}} & 4'd1 ) |
                       ({4{match0[ 2]}} & 4'd2 ) |
@@ -261,7 +261,7 @@ module tlb
                       ({4{match0[13]}} & 4'd13) |
                       ({4{match0[14]}} & 4'd14) |
                       ({4{match0[15]}} & 4'd15);
-    // data æ‰¾åˆ°çš„é¡µè¡¨é¡¹ç´¢å¼•
+    // data ÕÒµ½µÄÒ³±íÏîË÷Òı
     assign s1_index = ({4{match1[ 0]}} & 4'd0 ) |
                       ({4{match1[ 1]}} & 4'd1 ) |
                       ({4{match1[ 2]}} & 4'd2 ) |
@@ -278,7 +278,7 @@ module tlb
                       ({4{match1[13]}} & 4'd13) |
                       ({4{match1[14]}} & 4'd14) |
                       ({4{match1[15]}} & 4'd15);
-    // å½“å‰instè¿™æ¬¡å¤„ç†çš„é¡µè¡¨é¡¹å¯¹åº”çš„æ˜¯å¦æ˜¯ 4MB çš„
+    // µ±Ç°instÕâ´Î´¦ÀíµÄÒ³±íÏî¶ÔÓ¦µÄÊÇ·ñÊÇ 4MB µÄ
     assign s0_ps4MB_sel = ((s0_index == 4'd0 ) & tlb_ps4MB[ 0]) |
                           ((s0_index == 4'd1 ) & tlb_ps4MB[ 1]) |
                           ((s0_index == 4'd2 ) & tlb_ps4MB[ 2]) |
@@ -295,7 +295,7 @@ module tlb
                           ((s0_index == 4'd13) & tlb_ps4MB[13]) |
                           ((s0_index == 4'd14) & tlb_ps4MB[14]) |
                           ((s0_index == 4'd15) & tlb_ps4MB[15]);
-    // å½“å‰dataè¿™æ¬¡å¤„ç†çš„é¡µè¡¨é¡¹å¯¹åº”çš„æ˜¯å¦æ˜¯ 4MB çš„
+    // µ±Ç°dataÕâ´Î´¦ÀíµÄÒ³±íÏî¶ÔÓ¦µÄÊÇ·ñÊÇ 4MB µÄ
     assign s1_ps4MB_sel = ((s1_index == 4'd0 ) & tlb_ps4MB[ 0]) |
                           ((s1_index == 4'd1 ) & tlb_ps4MB[ 1]) |
                           ((s1_index == 4'd2 ) & tlb_ps4MB[ 2]) |
@@ -312,12 +312,12 @@ module tlb
                           ((s1_index == 4'd13) & tlb_ps4MB[13]) |
                           ((s1_index == 4'd14) & tlb_ps4MB[14]) |
                           ((s1_index == 4'd15) & tlb_ps4MB[15]);
-    // å¦‚æœæ˜¯ 4MB é‚£ä¹ˆå¯¹åº”çš„å°±éœ€è¦çœ‹ä¼ å…¥çš„[8]æ¥åˆ¤å®šæ˜¯å¦æ˜¯ ä¹Ÿå°±æ˜¯åˆ¤å®š PPN 0/1 çš„ 
-    // å¦‚æœæ˜¯ 1 çš„è¯é‚£ä¹ˆå°±é€‰æ‹© PPN1
+    // Èç¹ûÊÇ 4MB ÄÇÃ´¶ÔÓ¦µÄ¾ÍĞèÒª¿´´«ÈëµÄ[8]À´ÅĞ¶¨ÊÇ·ñÊÇ Ò²¾ÍÊÇÅĞ¶¨ PPN 0/1 µÄ 
+    // Èç¹ûÊÇ 1 µÄ»°ÄÇÃ´¾ÍÑ¡Ôñ PPN1
     assign s0_odd_page = s0_ps4MB_sel ? s0_vppn[8] : s0_va_bit12;
     assign s1_odd_page = s1_ps4MB_sel ? s1_vppn[8] : s1_va_bit12;
-    // inst é€‰ä¸­çš„é¡µè¡¨çš„ç´¢å¼•ï¼ˆ19ï¼š0 -- 4KB ï¼› 19ï¼š9 -- 4MBï¼‰
-    // è¿™é‡Œ PALEN ç›®å‰é»˜è®¤æ˜¯ 32 æ‰€ä»¥æ˜¯ 32-12=20
+    // inst Ñ¡ÖĞµÄÒ³±íµÄË÷Òı£¨19£º0 -- 4KB £» 19£º9 -- 4MB£©
+    // ÕâÀï PALEN Ä¿Ç°Ä¬ÈÏÊÇ 32 ËùÒÔÊÇ 32-12=20
     assign s0_ppn0_sel = ({20{(s0_index == 4'd0 )}} & tlb_ppn0[ 0]) |
                          ({20{(s0_index == 4'd1 )}} & tlb_ppn0[ 1]) |
                          ({20{(s0_index == 4'd2 )}} & tlb_ppn0[ 2]) |
@@ -478,7 +478,7 @@ module tlb
                          ({1{(s0_index == 4'd13)}} & tlb_v1[13]) |
                          ({1{(s0_index == 4'd14)}} & tlb_v1[14]) |
                          ({1{(s0_index == 4'd15)}} & tlb_v1[15]);
-    // data å¼€å§‹åŒ¹é…é€‰æ‹©
+    // data ¿ªÊ¼Æ¥ÅäÑ¡Ôñ
     assign s1_ppn0_sel = ({20{(s1_index == 4'd0 )}} & tlb_ppn0[ 0]) |
                          ({20{(s1_index == 4'd1 )}} & tlb_ppn0[ 1]) |
                          ({20{(s1_index == 4'd2 )}} & tlb_ppn0[ 2]) |
@@ -639,7 +639,7 @@ module tlb
                          ({1{(s1_index == 4'd13)}} & tlb_v1[13]) |
                          ({1{(s1_index == 4'd14)}} & tlb_v1[14]) |
                          ({1{(s1_index == 4'd15)}} & tlb_v1[15]);
-    // inst & data é€‰æ‹©çš„page size
+    // inst & data Ñ¡ÔñµÄpage size
     assign s0_ps  = s0_ps4MB_sel ? 6'h15 : 6'h0c;
     assign s1_ps  = s1_ps4MB_sel ? 6'h15 : 6'h0c;
     // PPN
@@ -726,13 +726,13 @@ module tlb
 //----------------------------- INVTLB begin --------------------------
 wire condition1_G0  [TLBNUM-1:0];
 wire condition2_G1  [TLBNUM-1:0];
-wire condition3_ASID[TLBNUM-1:0];// å¯¹æ¯”s1_asid
-wire condition4_VPPN[TLBNUM-1:0];// s1_vppnæ˜¯å¦åŒ¹é…VPPNå’ŒPS
+wire condition3_ASID[TLBNUM-1:0];// ¶Ô±Ès1_asid
+wire condition4_VPPN[TLBNUM-1:0];// s1_vppnÊÇ·ñÆ¥ÅäVPPNºÍPS
 integer invtlb_index;
 
 genvar i;
 generate
-    for (i = 0; i < TLBNUM; i = i + 1) begin: gen_invtlb_condition // å¾ªç¯å—çš„åå­—
+    for (i = 0; i < TLBNUM; i = i + 1) begin: gen_invtlb_condition // Ñ­»·¿éµÄÃû×Ö
         assign condition1_G0[i]   = ~tlb_g[i];
         assign condition2_G1[i]   =  tlb_g[i];
         assign condition3_ASID[i] = (s1_asid == tlb_asid[i]);
@@ -744,44 +744,44 @@ always @(*) begin
     invtlb_clear = {TLBNUM{1'b0}};
     case (invtlb_op)
         5'h00: begin
-            // op=0ï¼šæ¸…é™¤æ‰€æœ‰é¡µè¡¨é¡¹
+            // op=0£ºÇå³ıËùÓĞÒ³±íÏî
             invtlb_clear = {TLBNUM{1'b1}};
         end
         5'h01: begin
-            // op=1ï¼šæ¸…é™¤æ‰€æœ‰é¡µè¡¨é¡¹ï¼Œæ•ˆæœä¸op=0ç›¸åŒ
+            // op=1£ºÇå³ıËùÓĞÒ³±íÏî£¬Ğ§¹ûÓëop=0ÏàÍ¬
             invtlb_clear = {TLBNUM{1'b1}};
         end
         5'h02: begin
-            // op=2ï¼šæ¸…é™¤æ‰€æœ‰G=1çš„é¡µè¡¨é¡¹
+            // op=2£ºÇå³ıËùÓĞG=1µÄÒ³±íÏî
             for (invtlb_index = 0; invtlb_index < TLBNUM; invtlb_index = invtlb_index + 1)
                 invtlb_clear[invtlb_index] = condition2_G1[invtlb_index];
         end
         5'h03: begin
-            // op=3ï¼šæ¸…é™¤æ‰€æœ‰G=0çš„é¡µè¡¨é¡¹
+            // op=3£ºÇå³ıËùÓĞG=0µÄÒ³±íÏî
             for (invtlb_index = 0; invtlb_index < TLBNUM; invtlb_index = invtlb_index + 1)
                 invtlb_clear[invtlb_index] = condition1_G0[invtlb_index];
         end
         5'h04: begin
-            // op=4ï¼šæ¸…é™¤G=0ä¸”ASIDåŒ¹é…çš„é¡µè¡¨é¡¹
+            // op=4£ºÇå³ıG=0ÇÒASIDÆ¥ÅäµÄÒ³±íÏî
             for (invtlb_index = 0; invtlb_index < TLBNUM; invtlb_index = invtlb_index + 1)
                 invtlb_clear[invtlb_index] = condition1_G0[invtlb_index]
                                                    && condition3_ASID[invtlb_index];
         end
         5'h05: begin
-            // op=5ï¼šæ¸…é™¤G=0ã€ASIDåŒ¹é…ä¸”VPPNåŒ¹é…çš„é¡µè¡¨é¡¹
+            // op=5£ºÇå³ıG=0¡¢ASIDÆ¥ÅäÇÒVPPNÆ¥ÅäµÄÒ³±íÏî
             for (invtlb_index = 0; invtlb_index < TLBNUM; invtlb_index = invtlb_index + 1)
                 invtlb_clear[invtlb_index] = condition1_G0[invtlb_index]
                                                    && condition3_ASID[invtlb_index]
                                                    && condition4_VPPN[invtlb_index];
         end
         5'h06: begin
-            // op=6ï¼šæ¸…é™¤G=1æˆ–ASIDåŒ¹é…ï¼Œå¹¶ä¸”VPPNåŒ¹é…çš„é¡µè¡¨é¡¹
+            // op=6£ºÇå³ıG=1»òASIDÆ¥Åä£¬²¢ÇÒVPPNÆ¥ÅäµÄÒ³±íÏî
             for (invtlb_index = 0; invtlb_index < TLBNUM; invtlb_index = invtlb_index + 1)
                 invtlb_clear[invtlb_index] = (condition2_G1[invtlb_index] || condition3_ASID[invtlb_index])
                                                    && condition4_VPPN[invtlb_index];
         end
         default: begin
-            // å…¶ä»–æ“ä½œç ä¸æ¸…é™¤ä»»ä½•é¡µè¡¨é¡¹
+            // ÆäËû²Ù×÷Âë²»Çå³ıÈÎºÎÒ³±íÏî
             invtlb_clear = {TLBNUM{1'b0}};
         end
     endcase
@@ -789,14 +789,14 @@ end
 //----------------------------- INVTLB end --------------------------
 
 //----------------------------tlb_ex--------------
-// wire       ex_tlb_reload0,//tlbé‡å¡«ä¾‹å¤–_s0
-// wire       ex_tlb_reload1,//tlbé‡å¡«ä¾‹å¤–_s1
-// wire       ex_tlb_ld_unvalid,//tlbä¸­loadé¡µæ— æ•ˆ
-// wire       ex_tlb_st_unvalid,//tlbä¸­storeé¡µæ— æ•ˆ
-// wire       ex_tlb_preif_unvalid,//tlbä¸­å–æŒ‡é¡µæ— æ•ˆ
-// wire       ex_tlb_plv0,//tlbä¸­é¡µç‰¹æƒä¸åˆè§„_s0
-// wire       ex_tlb_plv1,//tlbä¸­é¡µç‰¹æƒä¸åˆè§„_s1
-// wire       ex_tlb_page_modify//tlbä¸­é¡µä¿®æ”¹
+// wire       ex_tlb_reload0,//tlbÖØÌîÀıÍâ_s0
+// wire       ex_tlb_reload1,//tlbÖØÌîÀıÍâ_s1
+// wire       ex_tlb_ld_unvalid,//tlbÖĞloadÒ³ÎŞĞ§
+// wire       ex_tlb_st_unvalid,//tlbÖĞstoreÒ³ÎŞĞ§
+// wire       ex_tlb_preif_unvalid,//tlbÖĞÈ¡Ö¸Ò³ÎŞĞ§
+// wire       ex_tlb_plv0,//tlbÖĞÒ³ÌØÈ¨²»ºÏ¹æ_s0
+// wire       ex_tlb_plv1,//tlbÖĞÒ³ÌØÈ¨²»ºÏ¹æ_s1
+// wire       ex_tlb_page_modify//tlbÖĞÒ³ĞŞ¸Ä
 assign ex_tlb_reload0       = ~s0_found & tlb_inst_req & ~dmw_found0;
 assign ex_tlb_reload1       = ~s1_found & tlb_data_req & ~dmw_found1;
 assign ex_tlb_ld_unvalid    = (s1_found & ~s1_v) & tlb_load_req;

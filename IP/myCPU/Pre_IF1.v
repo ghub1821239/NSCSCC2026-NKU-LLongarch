@@ -24,7 +24,7 @@ module pre_IF1 #(
     output wire [18:0] s0_vppn,
     output wire        s0_va_bit12,
     input  wire        s0_found,
-    input  wire [$clog2(TLBNUM)-1:0] s0_index, // å…ˆå‘ä¸Šå–æ•´å† log2ï¼ˆï¼‰ï¼Œè¿™æ ·æ¥æ±‚å‡ºæ¥ä½å®½
+    input  wire [$clog2(TLBNUM)-1:0] s0_index, // ÏÈÏòÉÏÈ¡ÕûÔÙ log2£¨£©£¬ÕâÑùÀ´Çó³öÀ´Î»¿í
     input  wire [19:0] s0_ppn,
     input  wire [5:0]  s0_ps,
     input  wire [1:0]  s0_plv,
@@ -32,9 +32,9 @@ module pre_IF1 #(
     input  wire        s0_d,
     input  wire        s0_v,
     //tlb_ex
-    input  wire        ex_tlb_reload0,//tlbé‡å¡«ä¾‹å¤–
-    input  wire        ex_tlb_preif_unvalid,//tlbä¸­å–æŒ‡é¡µæ— æ•ˆ
-    input  wire        ex_tlb_plv0,//tlbä¸­é¡µç‰¹æƒä¸åˆè§„
+    input  wire        ex_tlb_reload0,//tlbÖØÌîÀıÍâ
+    input  wire        ex_tlb_preif_unvalid,//tlbÖĞÈ¡Ö¸Ò³ÎŞĞ§
+    input  wire        ex_tlb_plv0,//tlbÖĞÒ³ÌØÈ¨²»ºÏ¹æ
     output wire        tlb_inst_req,
     //DMW
     output  wire  [2:0] dmw_vseg0,
@@ -43,26 +43,26 @@ module pre_IF1 #(
     //CRMD PG DA
     input  wire        csr_CRMD_DA,
     input  wire        csr_CRMD_PG,
-    //mat:å­˜å‚¨è®¿é—®ç±»å‹
-    input  wire   [1:0] csr_CRMD_DATF,//ç›´æ¥åœ°å€ï¼šå–æŒ‡
-    input  wire   [1:0] csr_CRMD_DATM,//ç›´æ¥åœ°å€ï¼šld/st
-    input  wire   [1:0] dmw_mat0,    //ç›´æ¥æ˜ å°„
+    //mat:´æ´¢·ÃÎÊÀàĞÍ
+    input  wire   [1:0] csr_CRMD_DATF,//Ö±½ÓµØÖ·£ºÈ¡Ö¸
+    input  wire   [1:0] csr_CRMD_DATM,//Ö±½ÓµØÖ·£ºld/st
+    input  wire   [1:0] dmw_mat0,    //Ö±½ÓÓ³Éä
     //branch prediction
-    //æŸ¥è¯¢ç«¯å£ï¼špreIFå–æŒ‡æ—¶æ¥æŸ¥BTB
+    //²éÑ¯¶Ë¿Ú£ºpreIFÈ¡Ö¸Ê±À´²éBTB
     output  wire        query_valid,
     output  wire [31:0] query_pc,
-    input   wire        btb_query_hit,//validä¸”tagåŒ¹é…
+    input   wire        btb_query_hit,//validÇÒtagÆ¥Åä
     input   wire [31:0] btb_query_target,
-    input   wire        ras_query_hit,//validä¸”tagåŒ¹é…
+    input   wire        ras_query_hit,//validÇÒtagÆ¥Åä
     input   wire [31:0] ras_query_target,
     input   wire [ 1:0] query_type,
-    input   wire        query_taken,//é¢„æµ‹æ˜¯å¦è·³è½¬
+    input   wire        query_taken,//Ô¤²âÊÇ·ñÌø×ª
     input   wire        preIF1_IDLE_stall
 );
-localparam TYPE_COND = 2'b00;//2'b00  COND   æ¡ä»¶åˆ†æ”¯ beq/bne/blt/bge/bltu/bgeu
-localparam TYPE_JUMP = 2'b01;//2'b01  JUMP   æ— æ¡ä»¶ç›´æ¥è·³ b
-localparam TYPE_CALL = 2'b10;//2'b10  CALL   blï¼Œæˆ– jirl ä¸” rd!=0
-localparam TYPE_RET  = 2'b11;//2'b11  RET    jirl ä¸” rd==0
+localparam TYPE_COND = 2'b00;//2'b00  COND   Ìõ¼ş·ÖÖ§ beq/bne/blt/bge/bltu/bgeu
+localparam TYPE_JUMP = 2'b01;//2'b01  JUMP   ÎŞÌõ¼şÖ±½ÓÌø b
+localparam TYPE_CALL = 2'b10;//2'b10  CALL   bl£¬»ò jirl ÇÒ rd!=0
+localparam TYPE_RET  = 2'b11;//2'b11  RET    jirl ÇÒ rd==0
 //------------------------{PC}begin-------------------------//
 reg  [31:0] pc;
 wire [31:0] seq_PC = pc + 4;
@@ -72,7 +72,7 @@ assign next_PC = br_taken ? br_target :
                  btb_query_hit & (query_type == TYPE_CALL | query_type == TYPE_JUMP)? btb_query_target : 
                  query_taken & btb_query_hit & (query_type == TYPE_COND)? btb_query_target : 
                  seq_PC;
-//assign next_PC = br_taken ? br_target : seq_PC;//æ ¹æ®æ˜¯å¦è·³è½¬æ›´æ”¹seqPC THE UPDATE OF PC SHOULD CONSTRAIN MORE!
+//assign next_PC = br_taken ? br_target : seq_PC;//¸ù¾İÊÇ·ñÌø×ª¸ü¸ÄseqPC THE UPDATE OF PC SHOULD CONSTRAIN MORE!
 
 always @(posedge clk) begin
     if (!resetn) begin
@@ -82,7 +82,7 @@ always @(posedge clk) begin
     else if (preIF1_need_cancel)begin
         pc <= flush_target;
     end
-    // ç›´æ¥br_takenåœ¨å½“å‰clkæ›´æ”¹pcé‚£ä¹ˆå°±å¯ä»¥æŠŠpreIFçš„é”™æŒ‡ä»¤ç»™è¦†ç›–æ‰
+    // Ö±½Óbr_takenÔÚµ±Ç°clk¸ü¸ÄpcÄÇÃ´¾Í¿ÉÒÔ°ÑpreIFµÄ´íÖ¸Áî¸ø¸²¸Çµô
     else if(preIF1_allow_in | br_taken) begin
         pc <= next_PC;
     end
@@ -90,8 +90,8 @@ end
 //------------------------{PC}end-------------------------//
 
 //------------------------{branch prediciton}begin------------------//
-assign query_valid = preIF1_valid;//preIF1_validè¡¨ç¤ºæŒ‡ä»¤æœ‰æ•ˆ
-assign query_pc    = pc;          //æ‹¿pc
+assign query_valid = preIF1_valid;//preIF1_valid±íÊ¾Ö¸ÁîÓĞĞ§
+assign query_pc    = pc;          //ÄÃpc
 
 //------------------------{branch prediciton}end------------------//
 
@@ -104,14 +104,14 @@ assign ex_ADEF = (pc[1:0] != 2'b00);
 assign dmw_vseg0 = pc[31:29];
 //------------------------{DMW}end-------------------------//
 
-//------------------------{è™šåœ°å€è½¬ç‰©ç†åœ°å€}begin-------------------------//
+//------------------------{ĞéµØÖ·×ªÎïÀíµØÖ·}begin-------------------------//
 assign s0_vppn     = pc[31:13];
 assign s0_va_bit12 = pc[12];
 wire [31:0] tlb_paddr;
 assign tlb_inst_req = preIF1_valid && !preIF1_need_cancel && !csr_CRMD_DA &&  csr_CRMD_PG && !dmw_found0;
-assign tlb_paddr = (s0_ps == 6'd21) ? {s0_ppn[19:9], pc[20:0]}  // 4MBé¡µ
-                                    : {s0_ppn[19:0],  pc[11:0]}; // 4KBé¡µ
-//------------------------{è™šåœ°å€è½¬ç‰©ç†åœ°å€}end-------------------------//
+assign tlb_paddr = (s0_ps == 6'd21) ? {s0_ppn[19:9], pc[20:0]}  // 4MBÒ³
+                                    : {s0_ppn[19:0],  pc[11:0]}; // 4KBÒ³
+//------------------------{ĞéµØÖ·×ªÎïÀíµØÖ·}end-------------------------//
 
 //------------------------{ready_go}begin-------------------------//
 assign preIF1_ready_go = need_stall | preIF1_IDLE_stall ? 1'b0 : 1'b1;

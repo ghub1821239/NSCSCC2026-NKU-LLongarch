@@ -41,11 +41,11 @@ module exe1 #(
   input  wire        csr_CRMD_DA,
   input  wire        csr_CRMD_PG,
   //tlb_ex
-  input  wire       ex_tlb_reload1,//tlbé‡å¡«å¼‚å¸¸
-  input  wire       ex_tlb_ld_unvalid,//tlbçš„loadé¡µæ— æ•ˆ
-  input  wire       ex_tlb_st_unvalid,//tlbçš„storeé¡µæ— æ•ˆ
-  input  wire       ex_tlb_plv1,//tlbçš„é¡µæƒé™ä¸Šè®¿
-  input  wire       ex_tlb_page_modify,//tlbçš„é¡µä¿®æ”¹
+  input  wire       ex_tlb_reload1,//tlbÖØÌîÒì³£
+  input  wire       ex_tlb_ld_unvalid,//tlbµÄloadÒ³ÎŞĞ§
+  input  wire       ex_tlb_st_unvalid,//tlbµÄstoreÒ³ÎŞĞ§
+  input  wire       ex_tlb_plv1,//tlbµÄÒ³È¨ÏŞÉÏ·Ã
+  input  wire       ex_tlb_page_modify,//tlbµÄÒ³ĞŞ¸Ä
   output wire       tlb_load_req,
   output wire       tlb_store_req,
   output wire       tlb_data_req,
@@ -53,10 +53,10 @@ module exe1 #(
   output  wire  [2:0] dmw_vseg1,
   input   wire        dmw_found1,
   input   wire  [2:0] dmw_pseg1,
-  //mat:å­˜å‚¨è®¿é—®ç±»å‹
-  input  wire   [1:0] csr_CRMD_DATF,//ç›´æ¥åœ°å€å–æŒ‡
-  input  wire   [1:0] csr_CRMD_DATM,//ç›´æ¥åœ°å€ld/st
-  input  wire   [1:0] dmw_mat1    //ç›´æ¥æ˜ å°„
+  //mat:´æ´¢·ÃÎÊÀàĞÍ
+  input  wire   [1:0] csr_CRMD_DATF,//Ö±½ÓµØÖ·È¡Ö¸
+  input  wire   [1:0] csr_CRMD_DATM,//Ö±½ÓµØÖ·ld/st
+  input  wire   [1:0] dmw_mat1    //Ö±½ÓÓ³Éä
 );
 wire        res_from_mem;
 wire        mem_we;
@@ -115,9 +115,9 @@ wire        inst_tlbfill;
 wire        inst_invtlb;
 
 //tlb_ex
-wire        ex_tlb_reload0;//tlbé‡å¡«å¼‚å¸¸
-wire        ex_tlb_preif_unvalid;//tlbçš„å–æŒ‡é¡µæ— æ•ˆ
-wire        ex_tlb_plv0;//tlbçš„é¡µæƒé™ä¸Šè®¿
+wire        ex_tlb_reload0;//tlbÖØÌîÒì³£
+wire        ex_tlb_preif_unvalid;//tlbµÄÈ¡Ö¸Ò³ÎŞĞ§
+wire        ex_tlb_plv0;//tlbµÄÒ³È¨ÏŞÉÏ·Ã
 
 //system inst
 wire        inst_ibar;
@@ -171,12 +171,12 @@ assign s1_vppn = inst_tlbsrch ? csr_TLBEHI[`CSR_TLBEHI_VPPN]
 assign s1_va_bit12  = mem_vaddr[12];
 assign tlbinv_asid  = alu_src1[9:0];
 assign invtlb_op    = rf_dest;
-assign invtlb_valid = inst_invtlb & ~ex_INE & ~ex_IPE & EXE1_valid; // ä¹Ÿæ£€æŸ¥opæ˜¯å¦æœ‰æ•ˆï¼Œæœªæ·»åŠ ?
+assign invtlb_valid = inst_invtlb & ~ex_INE & ~ex_IPE & EXE1_valid; // Ò²¼ì²éopÊÇ·ñÓĞĞ§£¬Î´Ìí¼Ó?
 
 wire [10:0] TLBIDX_new_tlbsrch;
 assign TLBIDX_new_tlbsrch = {~s1_found,{6{1'b0}},s1_index};
 
-// tlbæ˜ å°„å¾—åˆ°çš„ç‰©ç†åœ°å€
+// tlbÓ³ÉäµÃµ½µÄÎïÀíµØÖ·
 wire [31:0] tlb_paddr;
 assign tlb_paddr = (s1_ps == 6'd21) ? {s1_ppn[19:9], mem_vaddr[20:0]}
                                     : {s1_ppn[19:0],  mem_vaddr[11:0]};
@@ -191,21 +191,21 @@ assign tlb_data_req  = tlb_load_req | tlb_store_req;
 //------------------------{TLB}end-------------------------//
 
 //------------------------{ready_go}begin-------------------------//
-/*[NOTICEï¼šå­¦ä¹ ç¬”è®°]
-ä¸€å¼€å§‹ready_goä¸èƒ½ç›´æ¥å†™æ­»
+/*[NOTICE£ºÑ§Ï°±Ê¼Ç]
+Ò»¿ªÊ¼ready_go²»ÄÜÖ±½ÓĞ´ËÀ
 assign EXE1_ready_go = EXE1_ex ? 1'b1 :
                        div_mod ? divide_ready_go :
                                  1'b1;
-æ‰€ä»¥è¿™æ ·å†™ï¼Œä¸€æ—¦æœ‰tlbå¼‚å¸¸å°±ä¼šå…ˆå»å‰é¢å†²åˆ·æµæ°´çº¿ï¼›ä½†æ—¢ç„¶EXEçº§å·²ç»åˆ†å¼€ï¼Œå¯ä»¥è®©EXE1å…ˆäº§ç”Ÿæ•°æ®å‰é€’å¼‚å¸¸ï¼Œå†ç”±EXE2å¤„ç†st/ldç›¸å…³å¼‚å¸¸ã€‚
-æ‰€ä»¥st/ldç›¸å…³å¼‚å¸¸æ”¾åœ¨EXE1åï¼Œé€»è¾‘ä¸Šå®é™…åº”è¯¥å‡ºç°çš„æ•°æ®å‰é€’é—®é¢˜æœ€åç»Ÿä¸€æ”¶æ‹¢ã€‚
+ËùÒÔÕâÑùĞ´£¬Ò»µ©ÓĞtlbÒì³£¾Í»áÏÈÈ¥Ç°Ãæ³åË¢Á÷Ë®Ïß£»µ«¼ÈÈ»EXE¼¶ÒÑ¾­·Ö¿ª£¬¿ÉÒÔÈÃEXE1ÏÈ²úÉúÊı¾İÇ°µİÒì³££¬ÔÙÓÉEXE2´¦Àíst/ldÏà¹ØÒì³£¡£
+ËùÒÔst/ldÏà¹ØÒì³£·ÅÔÚEXE1ºó£¬Âß¼­ÉÏÊµ¼ÊÓ¦¸Ã³öÏÖµÄÊı¾İÇ°µİÎÊÌâ×îºóÍ³Ò»ÊÕÂ£¡£
 wire ex_other;
 assign ex_other = EXE1_valid &
                (inst_syscall | inst_ertn | inst_break | ex_INE | ex_ADEF |
                 ex_tlb_reload0 | ex_tlb_preif_unvalid | ex_tlb_plv0 | has_int);
 assign EXE1_ready_go =  ex_other | ~div_mod | divide_ready_go;
 
-å…¶ä»–å¼‚å¸¸ä¹Ÿç±»ä¼¼ï¼Œex_otherè¿™äº›å¼‚å¸¸éƒ½æ˜¯æ ¹æ®instçš„opcodeåˆ¤æ–­ï¼Œä¸ä¼šè¢«~div_modå±è”½ã€‚
-å…¶ä¸­inst_syscall | inst_ertn | inst_break | ex_INEç­‰åˆ¤æ–­çœå»ã€‚
+ÆäËûÒì³£Ò²ÀàËÆ£¬ex_otherÕâĞ©Òì³£¶¼ÊÇ¸ù¾İinstµÄopcodeÅĞ¶Ï£¬²»»á±»~div_modÆÁ±Î¡£
+ÆäÖĞinst_syscall | inst_ertn | inst_break | ex_INEµÈÅĞ¶ÏÊ¡È¥¡£
 */
 wire ex_div_need_notice;
 assign ex_div_need_notice = EXE1_valid & (has_int | ex_ADEF | ex_tlb_reload0 | ex_tlb_preif_unvalid | ex_tlb_plv0);
@@ -229,7 +229,7 @@ wire [31:0] data_sram_addr;
 wire [31:0] data_sram_wdata;
 wire [3:0]  data_sram_wstrb;
 wire [1:0]  data_sram_size;
-//è¯´æ˜s1_matæ˜¯å·²ç»æ¢ç®—å¥½çš„ï¼Ÿ    // tlbé¡µæ˜ å°„
+//ËµÃ÷s1_matÊÇÒÑ¾­»»ËãºÃµÄ£¿    // tlbÒ³Ó³Éä
 wire [1:0]  data_mat;
 wire        data_wr;
 wire [31:0] st_data;
