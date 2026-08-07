@@ -124,6 +124,9 @@ wire        inst_dbar;
 wire        inst_ll_w;
 wire        inst_sc_w;
 
+// IDLE
+wire        inst_idle;
+
 always @(posedge clk)begin
     if(!resetn)begin
         bus<={inbus_width{1'b0}};
@@ -139,7 +142,7 @@ assign {
             inst_csrrd, inst_csrwr,inst_csrxchg,inst_ertn,inst_syscall,inst_break,ex_INE,ex_ADEF,has_int,inst_rdcntvl_w,inst_rdcntvh_w,inst_rdcntid,csr_num,rj_value,rf_dest,rf_gr_we,//WB destination and write_enable
             inst_tlbsrch,inst_tlbrd,inst_tlbwr,inst_tlbfill,inst_invtlb,
             ex_tlb_reload0,ex_tlb_preif_unvalid,ex_tlb_plv0,
-            cache_code,inst_cacop,inst_ibar,inst_dbar,inst_sc_w,inst_ll_w
+            cache_code,inst_cacop,inst_ibar,inst_dbar,inst_sc_w,inst_ll_w,inst_idle
         }=bus;
 //------------------------{alu}begin-------------------------//
 wire [31:0] alu_result;
@@ -295,7 +298,7 @@ assign EXE1_EXE2_bus = {pc,
                         inst_csrrd, inst_csrwr,inst_csrxchg,inst_ertn,inst_syscall,inst_break,ex_INE,ex_ADEF,ex_ALE,has_int,inst_rdcntvl_w,inst_rdcntvh_w,inst_rdcntid,csr_num,rj_value,rf_dest,rf_gr_we,//WB
                         inst_tlbsrch,TLBIDX_new_tlbsrch,inst_tlbrd,inst_tlbwr,inst_tlbfill,inst_invtlb,
                         ex_tlb_reload0,ex_tlb_preif_unvalid,ex_tlb_plv0,ex_tlb_reload1,ex_tlb_ld_unvalid,ex_tlb_st_unvalid,ex_tlb_plv1,ex_tlb_page_modify,
-                        data_sram_addr,data_sram_wdata,data_sram_size,data_sram_wstrb,data_mat,data_wr,inst_cacop,cache_code,inst_ibar,inst_dbar,inst_sc_w,inst_ll_w
+                        data_sram_addr,data_sram_wdata,data_sram_size,data_sram_wstrb,data_mat,data_wr,inst_cacop,cache_code,inst_ibar,inst_dbar,inst_sc_w,inst_ll_w,inst_idle
                         };                                                      
 assign EXE1_rf_dest = rf_dest;
 assign EXE1_rf_gr_we = rf_gr_we;                               

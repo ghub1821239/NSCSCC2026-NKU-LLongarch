@@ -180,6 +180,8 @@ wire        inst_ibar;
 wire        inst_dbar;
 wire        inst_ll_w;
 wire        inst_sc_w;
+// IDLE
+wire        inst_idle;
 
 wire        need_ui5;
 wire        need_ui12;
@@ -298,6 +300,8 @@ assign inst_ibar   = op_31_26_d[6'h0e] & op_25_22_d[4'h1] & op_21_20_d[2'h3] & o
 assign inst_dbar   = op_31_26_d[6'h0e] & op_25_22_d[4'h1] & op_21_20_d[2'h3] & op_19_15_d[5'h5] & inst[14:0] == 15'h0;
 assign inst_ll_w   = op_31_26_d[6'h08] & op_25_24_d[2'h0];
 assign inst_sc_w   = op_31_26_d[6'h08] & op_25_24_d[2'h1];
+// IDLE
+assign inst_idle   = op_31_26_d[6'h01] & op_25_22_d[4'h9] & op_21_20_d[2'h0] & op_19_15_d[5'h11];
 
 assign alu_op[ 0] = inst_add_w | inst_addi_w | inst_ld_w | inst_st_w
                     | inst_jirl | inst_bl | inst_pcaddu12i_w 
@@ -328,7 +332,8 @@ wire rf_gr_we;
 assign rf_gr_we= ~inst_st_w    & ~inst_beq   & ~inst_bne   & ~inst_b       & ~inst_blt  &
                  ~inst_bge     & ~inst_bltu  & ~inst_bgeu  & ~inst_st_b    & ~inst_st_h &
                  ~inst_tlbsrch & ~inst_tlbrd & ~inst_tlbwr & ~inst_tlbfill & ~inst_invtlb &
-                 ~inst_cacop.  & ~inst_ibar  & ~inst_dbar  & ~inst_sc_w;
+                 ~inst_cacop.  & ~inst_ibar  & ~inst_dbar  & ~inst_sc_w
+                 ~inst_idle;
 
 assign need_ui5   =  inst_slli_w | inst_srli_w | inst_srai_w;
 assign need_ui12  =  inst_andi   | inst_ori    | inst_xori;
@@ -468,7 +473,7 @@ assign ex_INE = ~(inst_add_w        | inst_sub_w        | inst_slt          | in
                   inst_rdcntid      | inst_rdcntvl_w    | inst_rdcntvh_w    | inst_tlbsrch      |
                   inst_tlbrd        | inst_tlbwr        | inst_tlbfill      | inst_invtlb & ~ex_tlbinv_op |
                   inst_cacop        | inst_cpucfg       | inst_dbar         | inst_ibar         |
-                  inst_ll_w         | inst_sc_w);
+                  inst_ll_w         | inst_sc_w         | inst_idle);
 //------------------------{ex_INE}end-------------------------//
 
 //-------------------------{branch prediction updata}begin---------------//
@@ -575,7 +580,7 @@ assign ID_EXE1_bus={
             inst_csrrd, inst_csrwr,inst_csrxchg,inst_ertn,inst_syscall,inst_break,ex_INE,ex_ADEF,has_int,inst_rdcntvl_w,inst_rdcntvh_w,inst_rdcntid,csr_num,rj_value,rf_dest,rf_gr_we,//WB destination and write_enable
             inst_tlbsrch,inst_tlbrd,inst_tlbwr,inst_tlbfill,inst_invtlb,
             ex_tlb_reload0,ex_tlb_preif_unvalid,ex_tlb_plv0,
-            cache_code,inst_cacop,inst_ibar,inst_dbar,inst_sc_w,inst_ll_w
+            cache_code,inst_cacop,inst_ibar,inst_dbar,inst_sc_w,inst_ll_w,inst_idle
         };
 //------------------------{bus}end-------------------------//
 
