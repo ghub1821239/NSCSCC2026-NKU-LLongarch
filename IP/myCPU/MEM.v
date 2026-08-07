@@ -78,6 +78,7 @@ wire        inst_invtlb;
 
 // sc_w
 wire        inst_sc_w;
+wire        sc_success;
 
 //IDLE
 wire        inst_idle;
@@ -112,7 +113,9 @@ assign ld_data = inst_ld_b  ? {{24{ld_data_byte[7]}},ld_data_byte} :
                  inst_ld_h  ? {{16{ld_data_half[15]}},ld_data_half} :
                  inst_ld_hu ? {{16{1'b0}},ld_data_half} :
                  data_sram_rdata;
-assign rf_wdata = (res_from_mem ? ld_data : alu_result_with_rdct);
+assign rf_wdata = (res_from_mem ? ld_data :
+                   inst_sc_w    ? {31'b0, sc_success}   : 
+                   alu_result_with_rdct);
 
 always @(posedge clk)begin
     if(!resetn)begin
@@ -127,7 +130,7 @@ assign {
         rkd_value,res_from_mem,mem_we,need_stall_csr,inst_ld_b,inst_ld_h,inst_ld_bu ,inst_ld_hu,data_sram_addr_l,alu_result_with_rdct,//MEM
         inst_csrrd, inst_csrwr,inst_csrxchg,inst_ertn,inst_syscall,inst_break,ex_INE,ex_ADEF,ex_ALE,has_int,inst_rdcntvl_w,inst_rdcntvh_w,inst_rdcntid,csr_num,rj_value,rf_dest,rf_gr_we,
         inst_tlbsrch,TLBIDX_new_tlbsrch,inst_tlbrd,inst_tlbwr,inst_tlbfill,inst_invtlb,//WB
-        ex_tlb_reload0,ex_tlb_preif_unvalid,ex_tlb_plv0,ex_tlb_reload1,ex_tlb_ld_unvalid,ex_tlb_st_unvalid,ex_tlb_plv1,ex_tlb_page_modify,inst_sc_w,inst_idle
+        ex_tlb_reload0,ex_tlb_preif_unvalid,ex_tlb_plv0,ex_tlb_reload1,ex_tlb_ld_unvalid,ex_tlb_st_unvalid,ex_tlb_plv1,ex_tlb_page_modify,inst_sc_w,sc_success,inst_idle
     }=bus;
 assign MEM_rf_dest = rf_dest;
 assign need_stall_inst = res_from_mem;
@@ -144,7 +147,7 @@ assign MEM_WB_bus ={
 //------------------------{bus}end-------------------------//
 
 //------------------------{ready_go}begin-------------------------//
-assign MEM_ready_go = (res_from_mem | mem_we) & ~(MEM_ex | older_ex_for_mem)
+assign MEM_ready_go = (res_from_mem | (mem_we & ~(inst_sc_w & ~sc_success))) & ~(MEM_ex | older_ex_for_mem)
                     ? data_sram_data_ok
                     : 1'b1;
 
@@ -170,7 +173,10 @@ assign MEM_ex = MEM_valid &
 //------------------------{exp_front}end-------------------------//
 
 //------------------------{front_push}begin-------------------------//
-assign mem_front_data = res_from_mem ? ld_data : mem_we ? rkd_value : alu_result_with_rdct;// is ld_w?
+assign mem_front_data = res_from_mem ? ld_data :
+                        inst_sc_w    ? {31'b0, sc_success} :
+                        mem_we       ? rkd_value :
+                                       alu_result_with_rdct;// is ld_w?
 assign mem_front_addr = rf_dest;
 assign mem_can_not_front_push = ~rf_gr_we;
 //------------------------{front_push}end-------------------------//
