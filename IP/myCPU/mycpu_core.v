@@ -623,7 +623,7 @@ wire        csr_CRMD_PG;
 wire        ex_tlb_reload;
 
 // ERTN ???? CRMD
-wire        inst_ertn;
+wire        ertn_valid;
 // ????BADV
 wire        csr_tlb_reload0;
 wire        csr_tlb_plv0   ;
@@ -732,7 +732,7 @@ csr_regfile #(
     .dmw_found1(dmw_found1),
     .dmw_pseg1(dmw_pseg1),
     // ERTN ???? CRMD
-    .inst_ertn(inst_ertn),
+    .ertn_valid(ertn_valid),
     // BADV
     .csr_tlb_reload0(csr_tlb_reload0),
     .csr_tlb_plv0   (csr_tlb_plv0   ),
@@ -1127,7 +1127,7 @@ wb #(
     //tlbreload ??????CSR
     .ex_tlb_reload(ex_tlb_reload),
     //ERTN ???? CRMD
-    .inst_ertn(inst_ertn),
+    .ertn_valid(ertn_valid),
     // ???? csr_regfile ?????? BADV
     .csr_tlb_reload0(csr_tlb_reload0),
     .csr_tlb_plv0   (csr_tlb_plv0   ),
