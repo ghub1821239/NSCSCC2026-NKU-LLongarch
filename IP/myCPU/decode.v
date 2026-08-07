@@ -31,14 +31,16 @@ module decode #(
     output wire        update_valid ,
     output wire        bht_update_valid,
     output wire [31:0] update_pc    ,
-    output wire [31:0] update_target,//��ʵĿ����?
+    output wire [31:0] update_target,//��ʵĿ����?
     output wire [1:0]  update_type  ,
     output wire        update_taken ,//��ʵ�Ƿ���ת
-    // ������? call ����
+    // ������? call ����
     output wire        push_valid   ,
     output wire [31:0] push_target  ,
-    // ������? return ����
-    output wire        pop_valid   
+    // ������? return ����
+    output wire        pop_valid    ,
+    //PLV
+    input  wire [1:0]  csr_CRMD_PLV
 );
 //------------------------{bus decode}begin-------------------------//
 reg [inbus_width-1:0] bus;
@@ -56,6 +58,7 @@ wire        ex_ADEF;
 wire        ex_tlb_reload0;//tlb��������
 wire        ex_tlb_preif_unvalid;//tlb��ȡָҳ��Ч
 wire        ex_tlb_plv0;//tlb��ҳ��Ȩ���Ϲ�
+
 wire        btb_query_hit;//valid��tag
 wire [31:0] btb_query_target;        
 wire        ras_query_hit;//valid��tag
@@ -282,7 +285,7 @@ assign inst_ertn   = op_31_26_d[6'h01] & op_25_22_d[4'h9] & op_21_20_d[2'h0] & o
 assign inst_syscall= op_31_26_d[6'h00] & op_25_22_d[4'h0] & op_21_20_d[2'h2] & op_19_15_d[5'h16];
 assign inst_break  = op_31_26_d[6'h00] & op_25_22_d[4'h0] & op_21_20_d[2'h2] & op_19_15_d[5'h14];
 assign inst_csr    = inst_csrrd | inst_csrwr | inst_csrxchg;
-assign inst_rdcntvl_w=op_31_26_d[6'h00] & op_25_22_d[4'h0] & op_21_20_d[2'h0] & op_19_15_d[5'h0] & rk == 5'b11000 & rj == 5'b00000 & rd != 5'b00000;//notice:我�?�加�???!=的condition，操作手册上没写，但�???加上更完善，因为�???0号寄存器和不写一样，因�?�可以排除�??
+assign inst_rdcntvl_w=op_31_26_d[6'h00] & op_25_22_d[4'h0] & op_21_20_d[2'h0] & op_19_15_d[5'h0] & rk == 5'b11000 & rj == 5'b00000 & rd != 5'b00000;//notice:我�?�加�???!=的condition，操作手册上没写，但�???加上更完善，因为�???0号寄存器和不写一样，因�?�可以排除�??
 assign inst_rdcntvh_w=op_31_26_d[6'h00] & op_25_22_d[4'h0] & op_21_20_d[2'h0] & op_19_15_d[5'h0] & rk == 5'b11001 & rj == 5'b00000;
 assign inst_rdcntid= op_31_26_d[6'h00] & op_25_22_d[4'h0] & op_21_20_d[2'h0] & op_19_15_d[5'h0] & rk == 5'b11000 & rj != 5'b00000 & rd == 5'b00000;
 //chapter 9 exp18:new add
@@ -396,7 +399,7 @@ assign dst_is_r1     = inst_bl;
 assign res_from_mem  = inst_ld_w | inst_ld_b | inst_ld_h | inst_ld_bu | inst_ld_hu | inst_ll_w;
 assign mem_we        = inst_st_w | inst_st_b | inst_st_h | inst_sc_w;
 assign rf_dest       = dst_is_r1 ? 5'd1 : (inst_rdcntid ? rj : rd);
-// src1/2不会�?使用
+// src1/2不会�?使用
 wire src1_unused = inst_b | inst_bl | inst_lu12i_w | inst_pcaddu12i_w;
 wire src2_unused = (src2_is_imm && !mem_we) | inst_b;
 
@@ -457,6 +460,13 @@ assign ex_INE = ~(inst_add_w        | inst_sub_w        | inst_slt          | in
                   inst_tlbrd        | inst_tlbwr        | inst_tlbfill      | inst_invtlb & ~ex_tlbinv_op |
                   inst_cacop        | inst_cpucfg       | inst_dbar         | inst_ibar         |
                   inst_ll_w         | inst_sc_w         | inst_idle);
+
+wire ex_IPE;
+wire IPE_inst_plv0 = (inst_csrrd   | inst_csrwr | inst_csrxchg | inst_idle  |
+                      inst_tlbfill | inst_tlbrd | inst_tlbsrch | inst_tlbwr |
+                      inst_invtlb  | inst_ertn) & (csr_CRMD_PLV != 2'b00);
+wire cacop_ipe     = inst_cacop & (cache_code [4:3] == 2'b00 | cache_code [4:3] == 2'b01) & (csr_CRMD_PLV != 2'b00);
+assign ex_IPE      = IPE_inst_plv0 | cacop_ipe;
 //------------------------{ex_INE}end-------------------------//
 
 //-------------------------{branch prediction updata}begin---------------//
@@ -474,7 +484,7 @@ wire [31:0] direct_target;
 
     //---------------{��ת����}begin---------------//
     wire is_cond ;
-    wire is_jirl_call;// jirl $rd==$r1 ʱ������?����call
+    wire is_jirl_call;// jirl $rd==$r1 ʱ������?����call
     wire is_jump ;// b �� jirl �� rd!=0
     wire is_call ;
     wire is_ret  ;
@@ -484,7 +494,7 @@ wire [31:0] direct_target;
     assign is_jump = inst_b | is_indirect_jump;
     assign is_call = inst_bl | is_jirl_call;
     assign is_ret  = inst_jirl & (rd == 5'd0) & (rj == 5'b1) & (i16 == 16'b0);
-    assign is_indirect_jump = inst_jirl && !is_jirl_call && !is_ret;//����call��return��jirl���Ǽ�����?
+    assign is_indirect_jump = inst_jirl && !is_jirl_call && !is_ret;//����call��return��jirl���Ǽ�����?
     //---------------{��ת����}end---------------//
 
     //---------------{��ת�ͱ��Ա� ��Ч & ƥ��}begin---------------//
@@ -492,7 +502,7 @@ wire [31:0] direct_target;
     wire pred_ok ;
     /*
         ֮ǰ���ֻ��� dcache->rj->rj+imm->�Ա�real->btb
-        ���Բ�ֳ�?
+        ���Բ�ֳ�?
             dache->rj
                         ->�Ա�real-imm & rj ->btb
             real-imm
@@ -560,7 +570,7 @@ assign ID_EXE1_bus={
             pc,
             rkd_value,alu_op,alu_src1,alu_src2,need_stall_inst,need_stall_csr,inst_st_b,inst_st_h,inst_st_w,inst_ld_w,//EXE
             res_from_mem,mem_we,inst_ld_b,inst_ld_h,inst_ld_bu ,inst_ld_hu,//MEM read and write
-            inst_csrrd, inst_csrwr,inst_csrxchg,inst_ertn,inst_syscall,inst_break,ex_INE,ex_ADEF,has_int,inst_rdcntvl_w,inst_rdcntvh_w,inst_rdcntid,csr_num,rj_value,rf_dest,rf_gr_we,//WB destination and write_enable
+            inst_csrrd, inst_csrwr,inst_csrxchg,inst_ertn,inst_syscall,inst_break,ex_INE,ex_IPE,ex_ADEF,has_int,inst_rdcntvl_w,inst_rdcntvh_w,inst_rdcntid,csr_num,rj_value,rf_dest,rf_gr_we,//WB destination and write_enable
             inst_tlbsrch,inst_tlbrd,inst_tlbwr,inst_tlbfill,inst_invtlb,
             ex_tlb_reload0,ex_tlb_preif_unvalid,ex_tlb_plv0,
             cache_code,inst_cacop,inst_ibar,inst_dbar,inst_sc_w,inst_ll_w,inst_idle
