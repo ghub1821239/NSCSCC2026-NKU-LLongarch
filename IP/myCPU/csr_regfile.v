@@ -8,24 +8,24 @@ module csr_regfile#(
     input  wire        csr_we,
     input  wire [31:0] csr_wmask,
     input  wire [13:0] csr_num,
-    // д������ڵı��?������Ϊcsrwcfg���ָ����漰��rj��д�������⣬�����Ƿŵ���csr����д���������Ҳ������decode�Ĺؼ�·���䳤
+    // 写掩码存在的必要就是因为csrwcfg这个指令会涉及到rj的写掩码问题，这里是放到了csr里进行处理，这样也不会让decode的关键路径变长
     input  wire [31:0] csr_wvalue,
     // read port
     input  wire        csr_re,
     output wire [31:0] csr_rvalue,
-    // ex �����쳣
+    // ex 发起异常
     input  wire        wb_ex,
 
     input  wire  [5:0] wb_ecode,
     input  wire  [8:0] wb_esubcode,
 
-    // Ӳ���쳣8λ
+    // 硬件异常8位
     input  wire [7:0]  hw_int_in,
     input  wire        ipi_int_in,
 
-    // ERA �洢ʹ�ã������쳣��pc
+    // ERA 存储使用，发起异常的pc
     input  wire [31:0] wb_pc,
-    // BAVD ��¼����ĵ��?
+    // BAVD 记录错误的地址
     input  wire [31:0] wb_vaddr,
 
     // decode
@@ -37,10 +37,10 @@ module csr_regfile#(
     // TLB CSR outputs for EXE/WB
     output wire [31:0] csr_TLBEHI,
     output wire [31:0] csr_TLBIDX,
-    // CRMD ������ˮ������PLVȨ���ж�
+    // CRMD 给到流水级进行PLV权限判定
     output wire  [1:0] csr_CRMD_PLV,
     
-    //tlbrd�ӿ� read port
+    //tlbrd接口 read port
     output  wire [$clog2(TLBNUM)-1:0] r_index,
     output  wire [9:0]  s0_asid,
     output  wire [9:0]  s1_asid_without_invtlb,
@@ -77,10 +77,10 @@ module csr_regfile#(
     output  wire [1:0]  w_mat1,
     output  wire        w_d1,
     output  wire        w_v1,
-    // CRMD ��������?�߽����ж����뷽ʽ
+    // CRMD 输出给流水线进行判定翻译方式
     output  wire        csr_CRMD_DA,
     output  wire        csr_CRMD_PG,
-    // CRMD�����쳣
+    // CRMD重填异常
     input   wire        ex_tlb_reload,
     // DMW0/1 
     input   wire  [2:0] dmw_vseg0,
@@ -91,7 +91,7 @@ module csr_regfile#(
     output  wire        dmw_found1,
     output  wire  [2:0] dmw_pseg1,
 
-    //ERTN ����ָ��ظ���CRMD
+    //ERTN 例外指令返回更改CRMD
     input   wire        ertn_valid,
     
     //BADV
@@ -101,12 +101,12 @@ module csr_regfile#(
     input   wire        csr_tlb_plv1   ,
     // ex_tlb TLBEHI
     input   wire        ex_tlb,
-    //mat:�洢��������
+    //mat:存储访问类型
     output   wire  [1:0] csr_CRMD_DATF,
     output   wire  [1:0] csr_CRMD_DATM,
     output   wire  [1:0] dmw_mat0,
     output   wire  [1:0] dmw_mat1,
-    //LLbit
+    // 操作手册6.3复位指出
     input    wire        LLbit_wb,
     input    wire        LLbit_wdata,
     output   wire        LLbit
@@ -141,35 +141,35 @@ reg [31:0] LLBCTL;
 
 // ----------WRITE IN--------------
 
-//��CRMD PLV�� ��Ȩ�ȼ�
+//【CRMD PLV】 特权等级
 always @ (posedge clk)begin
-    // �����ֲ�6.3��λָ��
+    // 如果写回阶段报错，就要转成内核态进行异常处理
     if(!resetn)begin
         CRMD[`CSR_CRMD_PLV] <= 2'b0;
     end
-    // ���д�ؽ׶α��������?ת���ں�̬�����쳣����
+    // 如果调用ertn，表示异常已经处理完，需要恢复到异常触发前的特权等级
     else if(wb_ex)begin
         CRMD[`CSR_CRMD_PLV] <= 2'b0;
     end
-    // �������ertn����ʾ�쳣�Ѿ������꣬��Ҫ�ָ����쳣����ǰ����Ȩ�ȼ�
+    // 如果写CRMD，则按写掩码更新：
     else if (ertn_valid) begin
         CRMD[`CSR_CRMD_PLV] <= PRMD [`CSR_PRMD_PPLV];
     end
-    // ���дCRMD����д������£�?
-    // 1. ����Ϊ1��λд��csr_wvalue��Ӧλ
-    // 2. ����Ϊ0��λ����ԭֵ
-    // ��������ְ�λ��ϲ�
+    // 1. 掩码为1的位写入csr_wvalue对应位
+    // 2. 掩码为0的位保持原值
+    // 最后将两部分按位或合并
+    // 进入异常处理程序后将CRMD的IE位置0，避免在异常处理期间再次响应中断
     else if (csr_we & csr_num == `CSR_CRMD)begin
         CRMD[`CSR_CRMD_PLV] <= (csr_wmask[`CSR_CRMD_PLV] & csr_wvalue[`CSR_CRMD_PLV]) | 
                                (~csr_wmask[`CSR_CRMD_PLV] & CRMD[`CSR_CRMD_PLV]);
     end
 end
-//��CRMD IE���Ƿ�������Ӧ�ж�
+//【CRMD IE】是否允许响应中断
 always @ (posedge clk)begin
     if(!resetn)begin
         CRMD[`CSR_CRMD_IE] <= 1'b0;
     end
-    // �����쳣���������CRMD��IEλ��0���������쳣�����ڼ��ٴ���Ӧ�ж�
+    // 有效&自减
     else if(wb_ex)begin
         CRMD[`CSR_CRMD_IE] <= 1'b0;
     end
@@ -181,7 +181,7 @@ always @ (posedge clk)begin
                                (~csr_wmask[`CSR_CRMD_IE] & CRMD[`CSR_CRMD_IE]);
     end
 end
-//��CRMD DA & PG & DATF & DATM����Щ�ֶ�������TLB��Ż�ʹ�ã��˴������ø�λ�?
+//【CRMD DA & PG & DATF & DATM】这些字段在启用TLB后才会使用，此处先设置复位值
 always @(posedge clk)begin
     if(!resetn)begin
         CRMD[`CSR_CRMD_DA]   <= 1'b1;
@@ -197,7 +197,7 @@ always @(posedge clk)begin
         else if (ertn_valid && ESTAT[`CSR_ESTAT_ECODE] == 6'h3F) begin
             CRMD[`CSR_CRMD_DA]   <= 1'b0;
             CRMD[`CSR_CRMD_PG]   <= 1'b1;
-            // �Ƽ��� ����ָ���ֲ�����
+            // 推荐的 但是指令手册有误
 //            CRMD[`CSR_CRMD_DATF] <= 2'b00;
 //            CRMD[`CSR_CRMD_DATM] <= 2'b01;
         end
@@ -222,7 +222,7 @@ always @(posedge clk)begin
     end
 end
 
-//��PRMD PPLV�������쳣����ǰ����Ȩ�ȼ�
+//【PRMD PPLV】保存异常触发前的特权等级
 always @(posedge clk)begin
     if(wb_ex)begin
         PRMD[`CSR_PRMD_PPLV] <= CRMD[`CSR_CRMD_PLV];
@@ -232,7 +232,7 @@ always @(posedge clk)begin
                                (~csr_wmask[`CSR_PRMD_PPLV] & PRMD[`CSR_PRMD_PPLV]);
     end
 end
-//��PRMD PIE�������쳣����ǰ��ȫ���ж�ʹ��λ
+//【PRMD PIE】保存异常触发前的全局中断使能位
 always @(posedge clk)begin
     if (wb_ex)begin
         PRMD[`CSR_PRMD_PIE] <= CRMD[`CSR_CRMD_IE];
@@ -243,9 +243,9 @@ always @(posedge clk)begin
     end
 end
 
-//��ERA���쳣���ص�ַ
-// �����쳣��ʱ��wb_ex�ᴥ���ѵ�ǰ���쳣pcд��era
-// ����syscall��brk����ֻ��Ҫ����ת��eentry����
+//【ERA】异常返回地址
+// 触发异常的时候，wb_ex会触发把当前的异常pc写入era
+// 这样syscall和brk这种只需要管跳转到eentry即可
 always @(posedge clk)begin
     if (wb_ex)begin
         ERA[`CSR_ERA_PC] <= wb_pc;
@@ -256,7 +256,7 @@ always @(posedge clk)begin
     end
 end
 
-//��EENTRY���쳣��ڵ��?
+//【EENTRY】异常入口地址
 always @ (posedge clk)begin
     if (csr_we & csr_num == `CSR_EENTRY)begin
         EENTRY[`CSR_EENTRY_VA] <= (csr_wmask[`CSR_EENTRY_VA] & csr_wvalue[`CSR_EENTRY_VA]) |
@@ -264,7 +264,7 @@ always @ (posedge clk)begin
     end
 end
 
-//��SAVE 0~3�����ݱ���Ĵ���?
+//【SAVE 0~3】数据保存寄存器
 always @ (posedge clk)begin
     if (csr_we && csr_num == `CSR_SAVE0)begin
         SAVE0[`CSR_SAVE_DATA] <= (csr_wmask[`CSR_SAVE_DATA] & csr_wvalue[`CSR_SAVE_DATA]) |
@@ -284,10 +284,10 @@ always @ (posedge clk)begin
     end
 end
 
-//��TICLR����ʱ���ж�����Ĵ���?
+//【TICLR】定时器中断清除寄存器
 
-//��ECFG��
-//��todo�� checkһ��������ESTAT ���� ECFG
+//【ECFG】
+//【todo】 check一下这里是ESTAT 还是 ECFG
 always @ (posedge clk)begin
     if(!resetn)begin
         ECFG[`CSR_ECFG_LIE] <= 13'b0;
@@ -299,7 +299,7 @@ always @ (posedge clk)begin
 end
     
 
-//��BADV���쳣������ַ
+//【BADV】异常相关虚地址
 wire wb_ex_addr_err;
 wire ex_preIF_tlb;
 assign wb_ex_addr_err = wb_ecode == `ECODE_ADE || wb_ecode == `ECODE_ALE || wb_ecode == `ECODE_PIL ||
@@ -313,7 +313,7 @@ always @ (posedge clk)begin
     end
 end
 
-//��TID����λʱ����coreid��Ҳ��ͨ��CSRָ��д��
+//【TID】复位时载入coreid，也可通过CSR指令写入
 always @ (posedge clk)begin
     if(!resetn)begin
         TID[`CSR_TID_TID] <= coreid_in;
@@ -324,7 +324,7 @@ always @ (posedge clk)begin
     end
 end
 
-//��TCFG�����ƶ�ʱ���ĳ�ʼֵ��ѭ��ģʽ��ʹ��λ
+//【TCFG】控制定时器的初始值、循环模式和使能位
 always @ (posedge clk)begin
     if(!resetn)begin
         TCFG[`CSR_TCFG_EN] <= 1'b0;
@@ -342,14 +342,14 @@ always @ (posedge clk)begin
 end
 
 reg [31:0] timer_cnt;
-// �µ�TCFG
+// 新的TCFG
 wire [31:0] TCFG_next_val;
 assign TCFG_next_val = csr_wmask[31:0] & csr_wvalue[31:0] | ~csr_wmask[31:0] & TCFG[31:0];
 always @ (posedge clk) begin
     if (!resetn) begin
         timer_cnt <= 32'hffffffff;
     end
-    // ��Ч&�Լ�
+    //【软中断】
     else if (csr_we && csr_num == `CSR_TCFG && TCFG_next_val[`CSR_TCFG_EN]) begin
         timer_cnt <= {TCFG_next_val[`CSR_TCFG_INITVAL],{2{1'b0}}};
     end
@@ -363,9 +363,9 @@ always @ (posedge clk) begin
     end
 end
 
-//��ESTAT IS���ж�״̬λ
+//【ESTAT IS】中断状态位
 always @(posedge clk)begin
-    //�����жϡ�
+    //【硬中断】由hw_int_in传入；未连接硬件中断源时应输入0
     if (!resetn)begin
         ESTAT[`CSR_ESTAT_IS1_0] <= 2'b0;
     end
@@ -373,25 +373,25 @@ always @(posedge clk)begin
         ESTAT[`CSR_ESTAT_IS1_0] <= (csr_wmask[`CSR_ESTAT_IS1_0] & csr_wvalue[`CSR_ESTAT_IS1_0]) | 
                                     (~csr_wmask[`CSR_ESTAT_IS1_0] & ESTAT[`CSR_ESTAT_IS1_0]);
     end                            
-    //��Ӳ�жϡ���hw_int_in���룻δ����Ӳ���ж�ԴʱӦ����0
+    //【保留位】
     ESTAT[`CSR_ESTAT_IS9_2] <= hw_int_in[7:0];
 
-    //������λ��
+    //【定时器中断】
     ESTAT[10] <= 1'b0;
 
-    //����ʱ���жϡ�
+    // TICLR的读值恒为0，写入CLR位时直接清除定时器中断状态
     if(timer_cnt[31:0] == 32'b0)begin
         ESTAT[`CSR_ESTAT_IS11] <= 1'b1;
     end
-    // TICLR�Ķ�ֵ��Ϊ0��д��CLRλʱֱ�������ʱ���ж�״�?
+    //【核间中断】
     else if (csr_we && csr_num == `CSR_TICLR && csr_wmask[`CSR_TICLR_CLR] && csr_wvalue[`CSR_TICLR_CLR])begin
         ESTAT[`CSR_ESTAT_IS11] <= 1'b0;
     end
 
-    //���˼��жϡ�
+    //tlbrd读取的是有效项
     ESTAT[`CSR_ESTAT_IS12] <= ipi_int_in;
 end
-//��ESTAT Ecode & Esubcode���쳣���ͺ��쳣������
+//【ESTAT Ecode & Esubcode】异常类型和异常子类型
 always @(posedge clk)begin
     if(wb_ex)begin
         ESTAT[`CSR_ESTAT_ECODE] <= wb_ecode;
@@ -399,20 +399,20 @@ always @(posedge clk)begin
     end
 end
 
-//��TLBIDX INDEX��TLB��Index��
+//【TLBIDX INDEX】TLB的Index域
 always @(posedge clk) begin
     if(csr_we && csr_num == `CSR_TLBIDX) begin
         TLBIDX[`CSR_TLBIDX_INDEX] <= (csr_wmask[`CSR_TLBIDX_INDEX] & csr_wvalue[`CSR_TLBIDX_INDEX]) |
                                      (~csr_wmask[`CSR_TLBIDX_INDEX] & TLBIDX[`CSR_TLBIDX_INDEX]);
     end
 end
-//��TLBIDX PS��TLB��ҳ����?(4KB/4MB)
+//【TLBIDX PS】TLB的页面大小(4KB/4MB)
 always @(posedge clk) begin
-    //tlbrd��ȡ������Ч��
+    //tlbrd读取的是无效项
     if (tlbrd_we & r_e == 1) begin
         TLBIDX[`CSR_TLBIDX_PS] <= r_ps;
     end
-    //tlbrd��ȡ������Ч��
+    //tlbrd读取的是有效项
     if (tlbrd_we & r_e == 0) begin
         TLBIDX[`CSR_TLBIDX_PS] <= 6'b0;
     end
@@ -421,13 +421,13 @@ always @(posedge clk) begin
                                   (~csr_wmask[`CSR_TLBIDX_PS] & TLBIDX[`CSR_TLBIDX_PS]);
     end
 end
-//��TLBIDX NE��TLB����Чλ
+//【TLBIDX NE】TLB的有效位
 always @(posedge clk) begin
-    //tlbrd��ȡ������Ч��
+    //tlbrd读取的是无效项
     if (tlbrd_we & r_e == 1) begin
         TLBIDX[`CSR_TLBIDX_NE] <= 1'b0;
     end
-    //tlbrd��ȡ������Ч��
+    //tlbrd读取的是有效项
     if (tlbrd_we & r_e == 0) begin
         TLBIDX[`CSR_TLBIDX_NE] <= 1'b1;
     end
@@ -437,15 +437,15 @@ always @(posedge clk) begin
     end
 end
 
-//��TLBEHI VPPN��TLB�����λ��VPPN
+//【TLBEHI VPPN】TLB表项高位的VPPN
 wire [18:0] err_vppn;
 assign err_vppn = ex_preIF_tlb ? wb_pc[31:13] : wb_vaddr[31:13]; 
 always @(posedge clk) begin
-    //tlbrd��ȡ������Ч��
+    //tlbrd读取的是无效项
     if (tlbrd_we & r_e == 1) begin
         TLBEHI[`CSR_TLBEHI_VPPN] <= r_vppn;
     end
-    //tlbrd��ȡ������Ч��
+    //tlbrd读取的是有效项
     if (tlbrd_we & r_e == 0) begin
         TLBEHI[`CSR_TLBEHI_VPPN] <= 19'b0;
     end
@@ -458,9 +458,9 @@ always @(posedge clk) begin
     end
 end
 
-//��TLBELO0��TLB����ĵ�λ���?,ż��ҳ��
+//【TLBELO0】TLB表项的低位信息,偶数页面
 always @(posedge clk) begin
-    //tlbrd��ȡ������Ч��
+    //tlbrd读取的是无效项
     if (tlbrd_we & r_e == 1) begin
         TLBELO0[`CSR_TLBELO0_V] <= r_v0;
         TLBELO0[`CSR_TLBELO0_D] <= r_d0;
@@ -469,7 +469,7 @@ always @(posedge clk) begin
         TLBELO0[`CSR_TLBELO0_G]   <= r_g;
         TLBELO0[`CSR_TLBELO0_PPN] <= r_ppn0;
     end
-    //tlbrd��ȡ������Ч��
+    //tlbrd读取的是有效项
     if (tlbrd_we & r_e == 0) begin
         TLBELO0[`CSR_TLBELO0_V] <= 1'b0;
         TLBELO0[`CSR_TLBELO0_D] <= 1'b0;
@@ -494,9 +494,9 @@ always @(posedge clk) begin
     end
 end
 
-//��TLBELO1��TLB����ĵ�λ���?,����ҳ��
+//【TLBELO1】TLB表项的低位信息,奇数页面
 always @(posedge clk) begin
-    //tlbrd��ȡ������Ч��
+    //tlbrd读取的是无效项
     if (tlbrd_we & r_e == 1) begin
         TLBELO1[`CSR_TLBELO1_V] <= r_v1;
         TLBELO1[`CSR_TLBELO1_D] <= r_d1;
@@ -505,7 +505,7 @@ always @(posedge clk) begin
         TLBELO1[`CSR_TLBELO1_G]   <= r_g;
         TLBELO1[`CSR_TLBELO1_PPN] <= r_ppn1;
     end
-    //tlbrd��ȡ������Ч��
+    //ASIDBITS
     if (tlbrd_we & r_e == 0) begin
         TLBELO1[`CSR_TLBELO1_V] <= 1'b0;
         TLBELO1[`CSR_TLBELO1_D] <= 1'b0;
@@ -530,17 +530,17 @@ always @(posedge clk) begin
     end
 end
 
-//��ASID��TLBָ��ĵ�ַ�ռ��ʶ��
+//【ASID】TLB指令的地址空间标识符
 always @(posedge clk) begin
-    //ASIDBITS
+    //tlbrd读取的是无效项
     if (!resetn) begin
         ASID[`CSR_ASID_ASIDBITS] <= 8'ha;
     end
-    //tlbrd��ȡ������Ч��
+    //tlbrd读取数据有效
     if (tlbrd_we & r_e == 0) begin
         ASID[`CSR_ASID_ASID] <= 10'b0;
     end
-    //tlbrd��ȡ������Ч��
+    //tlbrd读取数据有效
     if (tlbrd_we & r_e == 1) begin
         ASID[`CSR_ASID_ASID] <= r_asid;
     end
@@ -550,7 +550,7 @@ always @(posedge clk) begin
     end
 end
 
-//��TLBRENTY PA��TLB������������ʱ��д��������������?
+//【TLBRENTY PA】TLB发生重填例外时，写入这里的物理地址
 always @(posedge clk) begin
     if (csr_we && csr_num == `CSR_TLBRENTRY) begin
         TLBRENTRY[`CSR_TLBRENTRY_PA] <= (csr_wmask[`CSR_TLBRENTRY_PA] & csr_wvalue[`CSR_TLBRENTRY_PA]) |
@@ -558,7 +558,7 @@ always @(posedge clk) begin
     end
 end
 
-//��DMW0�� 
+//【DMW0】 
 always @(posedge clk)begin
     if(!resetn)begin
         DMW0[`CSR_DMW0_PLV0] <= 1'b0;
@@ -588,7 +588,7 @@ always @(posedge clk)begin
     end
 end
 
-//��DMW1�� 
+//【DMW1】 
 always @(posedge clk)begin
     if(!resetn)begin
         DMW1[`CSR_DMW1_PLV0] <= 1'b0;
@@ -618,9 +618,9 @@ always @(posedge clk)begin
     end
 end
 
-//��LLBCTL��
+// ----------WRITE IN END--------------
 always @(posedge clk)begin
-    // ָ���ֲ�û˵resetn ����resetnӦ�����ⲻ��
+    // 手册没说resetn 时resetn应该默认清零
     if (!resetn)
         LLBCTL[`CSR_LLBCTL_ROLLB] <= 1'b0;
     else if (csr_we && csr_num == `CSR_LLBCTL)begin
@@ -648,20 +648,20 @@ always @(posedge clk)begin
         LLBCTL[`CSR_LLBCTL_KLO] <= 1'b0;
     end
 end
-// ----------WRITE IN END--------------
-
 // ----------TO PIPELINE END--------------
+
+// ----------TO PIPELINE IN END--------------
 assign has_int = (((ESTAT[`CSR_ESTAT_IS] & ECFG[`CSR_ECFG_LIE])!=13'b0) && (CRMD[`CSR_CRMD_IE] == 1'b1));
 assign csr_CRMD_DA  = CRMD[`CSR_CRMD_DA];
 assign csr_CRMD_PG  = CRMD[`CSR_CRMD_PG];
 assign csr_CRMD_PLV = CRMD[`CSR_CRMD_PLV];
-// ----------TO PIPELINE IN END--------------
-
-// ----------LLbit begin--------------
-assign LLbit = LLBCTL[`CSR_LLBCTL_ROLLB];
-// ----------LLbit END--------------
-
 // ---------- DMW0/1 begin --------------
+
+//assign dmw_found0 = (vseg0_0 | vseg0_1) & (dmw0_plv_ok | dmw1_plv_ok);
+assign LLbit = LLBCTL[`CSR_LLBCTL_ROLLB];
+// ---------- DMW0/1 end --------------
+
+// ---------- READ --------------
 wire vseg0_0;   
 wire vseg0_1;
 wire dmw0_plv_ok;
@@ -674,7 +674,7 @@ assign dmw1_plv_ok= DMW1[`CSR_DMW1_PLV0] ? (csr_CRMD_PLV == 2'b00) :
                     1'b0;   
 assign vseg0_0    = (dmw_vseg0 == DMW0[`CSR_DMW0_VSEG]);
 assign vseg0_1    = (dmw_vseg0 == DMW1[`CSR_DMW0_VSEG]);
-//assign dmw_found0 = (vseg0_0 | vseg0_1) & (dmw0_plv_ok | dmw1_plv_ok);
+//csr到tlb的接口接线
 assign dmw_found0 = (vseg0_0 & dmw0_plv_ok) | (vseg0_1 & dmw1_plv_ok);
 assign dmw_mat0   = vseg0_0 ? DMW0[`CSR_DMW0_MAT]  : DMW1[`CSR_DMW1_MAT];
 assign dmw_pseg0  = vseg0_0 ? DMW0[`CSR_DMW0_PSEG] : DMW1[`CSR_DMW0_PSEG];
@@ -686,9 +686,9 @@ assign vseg1_1    = (dmw_vseg1 == DMW1[`CSR_DMW0_VSEG]);
 assign dmw_found1 = (vseg1_0 & dmw0_plv_ok) | (vseg1_1 & dmw1_plv_ok);
 assign dmw_mat1   = vseg1_0 ? DMW0[`CSR_DMW0_MAT]  : DMW1[`CSR_DMW1_MAT];
 assign dmw_pseg1  = vseg1_0 ? DMW0[`CSR_DMW0_PSEG] : DMW1[`CSR_DMW0_PSEG];
-// ---------- DMW0/1 end --------------
+//TLB读接口,tlb寄存器单独写接口接到TLB
 
-// ---------- READ --------------
+//mat:存储访问类型
 wire [31:0] csr_crmd_rvalue;
 wire [31:0] csr_prmd_rvalue;
 wire [31:0] csr_estat_rvalue;
@@ -741,20 +741,20 @@ assign csr_dmw0_rvalue = {DMW0[`CSR_DMW0_VSEG],{1{1'b0}},DMW0[`CSR_DMW0_PSEG],{1
 assign csr_dmw1_rvalue = {DMW1[`CSR_DMW1_VSEG],{1{1'b0}},DMW1[`CSR_DMW1_PSEG],{19{1'b0}},DMW1[`CSR_DMW1_MAT],DMW1[`CSR_DMW1_PLV3],{2{1'b0}},DMW1[`CSR_DMW1_PLV0]};
 assign csr_llbctl_rvalue = {29'h0,LLBCTL[`CSR_LLBCTL_KLO],1'b0,LLBCTL[`CSR_LLBCTL_ROLLB]};
 
-//csr��tlb�Ľӿڽ���
+//write TLB接口
 assign r_index = TLBIDX[`CSR_TLBIDX_INDEX];
 assign s0_asid = ASID[`CSR_ASID_ASID];
 assign s1_asid_without_invtlb = ASID[`CSR_ASID_ASID];
 
-//TLB���ӿ�,tlb�Ĵ�������д�ӿڽӵ�TLB
+//其余CSR读接口   
 assign csr_TLBIDX  = csr_tlbidx_rvalue;
 assign csr_TLBEHI  = csr_tlbehi_rvalue;
 
-//mat:�洢��������
+// ---------- READ END --------------
 assign csr_CRMD_DATF = CRMD[`CSR_CRMD_DATF];
 assign csr_CRMD_DATM = CRMD[`CSR_CRMD_DATM];
 
-//write TLB�ӿ�
+//write TLB接口
 assign w_index    = TLBIDX[`CSR_TLBIDX_INDEX];
 assign w_e        = (ESTAT[`CSR_ESTAT_ECODE] == 6'h3F) | ~TLBIDX[`CSR_TLBIDX_NE];
 assign w_vppn     = TLBEHI[`CSR_TLBEHI_VPPN];
@@ -772,7 +772,7 @@ assign w_mat1     = TLBELO1[`CSR_TLBELO1_MAT];
 assign w_d1       = TLBELO1[`CSR_TLBELO1_D];  
 assign w_v1       = TLBELO1[`CSR_TLBELO1_V];  
  
-//����CSR���ӿ�   
+//CSR读接口   
 assign csr_rvalue = ({32{csr_num == `CSR_CRMD}} & csr_crmd_rvalue)          |
                     ({32{csr_num == `CSR_PRMD}} & csr_prmd_rvalue)          |
                     ({32{csr_num == `CSR_ESTAT}} & csr_estat_rvalue)        |

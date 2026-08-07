@@ -77,11 +77,11 @@ wire        inst_tlbwr;
 wire        inst_tlbfill;
 wire        inst_invtlb;
 
-// sc_w
+//tlb_ex
 wire        inst_sc_w;
 wire        sc_success;
 
-//IDLE
+//[todo 异常记得与上]
 wire        inst_idle;
 
 wire [31:0] rkd_value;
@@ -93,15 +93,15 @@ wire [15:0] ld_data_half;
 wire [1:0]   data_sram_addr_l;
 
 
-//tlb_ex
-wire       ex_tlb_reload0;//tlb��������
-wire       ex_tlb_preif_unvalid;//tlb��ȡָҳ��Ч
-wire       ex_tlb_plv0;//tlb��ҳ��Ȩ���Ϲ�
-wire       ex_tlb_reload1;//tlb��������        
-wire       ex_tlb_ld_unvalid;//tlb��loadҳ��Ч 
-wire       ex_tlb_st_unvalid;//tlb��storeҳ��Ч
-wire       ex_tlb_plv1;//tlb��ҳ��Ȩ���Ϲ�        
-wire       ex_tlb_page_modify;//tlb��ҳ�޸�     
+//------------------------{bus}end-------------------------//
+wire       ex_tlb_reload0;//tlb重填例外
+wire       ex_tlb_preif_unvalid;//tlb中取指页无效
+wire       ex_tlb_plv0;//tlb中页特权不合规
+wire       ex_tlb_reload1;//tlb重填例外        
+wire       ex_tlb_ld_unvalid;//tlb中load页无效 
+wire       ex_tlb_st_unvalid;//tlb中store页无效
+wire       ex_tlb_plv1;//tlb中页特权不合规        
+wire       ex_tlb_page_modify;//tlb中页修改     
 
 assign ld_data_byte = data_sram_addr_l == 2'b00 ? data_sram_rdata [7:0] :
                       data_sram_addr_l == 2'b01 ? data_sram_rdata [15:8] :
@@ -135,7 +135,7 @@ assign {
     }=bus;
 assign MEM_rf_dest = rf_dest;
 assign need_stall_inst = res_from_mem;
-//[todo �쳣�ǵ�����]
+//------------------------{ready_go}begin-------------------------//
 assign rf_gr_we_ex = rf_gr_we        & ~inst_ertn         & ~inst_syscall         & ~inst_break         &
                      ~ex_INE         & ~ex_ADEF           & ~ex_ALE               & ~has_int            & 
                      ~ex_tlb_reload0 & ~ex_tlb_reload1    & ~ex_tlb_preif_unvalid & ~ex_tlb_plv0        & 
@@ -147,9 +147,9 @@ assign MEM_WB_bus ={
         inst_tlbsrch,TLBIDX_new_tlbsrch,inst_tlbrd,inst_tlbwr,inst_tlbfill,inst_invtlb,//WB
         ex_tlb_reload0,ex_tlb_preif_unvalid,ex_tlb_plv0,ex_tlb_reload1,ex_tlb_ld_unvalid,ex_tlb_st_unvalid,ex_tlb_plv1,ex_tlb_page_modify,inst_idle
     };//[todo: change bus]
-//------------------------{bus}end-------------------------//
+//------------------------{ready_go}end-------------------------//
 
-//------------------------{ready_go}begin-------------------------//
+//------------------------{exp_front}begin-------------------------//
 assign MEM_ready_go = (res_from_mem | (mem_we & ~(inst_sc_w & ~sc_success))) & ~(MEM_ex | older_ex_for_mem)
                     ? data_sram_data_ok
                     : 1'b1;
@@ -165,15 +165,15 @@ always @(posedge clk) begin
         MEM_valid<=EXE2_MEM_valid;
     end
 end
-//------------------------{ready_go}end-------------------------//
+//------------------------{exp_front}end-------------------------//
 
-//------------------------{exp_front}begin-------------------------//
+//------------------------{front_push}begin-------------------------//
 assign MEM_ex = MEM_valid &
                 (inst_syscall   | inst_ertn         | inst_break           | ex_INE             |
                  ex_tlb_reload0 | ex_tlb_reload1    | ex_tlb_preif_unvalid | ex_tlb_plv0        |
                  ex_tlb_plv1    | ex_tlb_ld_unvalid | ex_tlb_st_unvalid    | ex_tlb_page_modify |
                  has_int        | ex_IPE            | ex_ADEF              | ex_ALE );
-//------------------------{exp_front}end-------------------------//
+//------------------------{front_push}end-------------------------//
 
 //------------------------{front_push}begin-------------------------//
 assign mem_front_data = res_from_mem ? ld_data :
