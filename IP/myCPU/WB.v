@@ -56,7 +56,7 @@ module wb #(
     //tlbreload �����CSR
     output wire        ex_tlb_reload,
     // ERTN�����ġ�CRMD
-    output wire        inst_ertn,
+    output wire        ertn_valid,
     // BADV
     output wire        csr_tlb_reload0,
     output wire        csr_tlb_plv0   ,//tlb��ҳ��Ȩ���Ϲ�
@@ -103,6 +103,7 @@ wire        ex_tlb_page_modify;//tlb��ҳ�޸�
 wire        ex_tlb_plv;     
 //IDLE
 wire        inst_idle;
+wire        inst_ertn;
 
 wire        has_int;
 
@@ -179,10 +180,20 @@ assign flush_target = wb_ex ? csr_rvalue :
                       ? wb_pc + 4
                       : csr_rvalue;
 // tlb �쳣
+// 真的有异常才能触发 防止 reg 旧缓存影响
+/*
 assign ex_tlb_reload = WB_valid & (ex_tlb_reload0 | ex_tlb_reload1);
-assign ex_tlb     = WB_valid & (ex_tlb_reload0 | ex_tlb_reload1 | ex_tlb_preif_unvalid |
+assign ex_tlb        = WB_valid & (ex_tlb_reload0 | ex_tlb_reload1 | ex_tlb_preif_unvalid |
                                 ex_tlb_plv0 | ex_tlb_plv1 | ex_tlb_ld_unvalid |
                                 ex_tlb_st_unvalid | ex_tlb_page_modify);
+*/
+assign ex_tlb_reload = WB_valid & (ecode == `ECODE_TLBR);
+assign ex_tlb        = WB_valid & ((ecode == `ECODE_PIF)  |
+                                   (ecode == `ECODE_PPI)  |
+                                   (ecode == `ECODE_TLBR) |
+                                   (ecode == `ECODE_PIL)  |
+                                   (ecode == `ECODE_PIS)  |
+                                   (ecode == `ECODE_PME));
 
 assign wb_pc      = pc;
 assign wb_ex      = (inst_syscall | inst_break | ex_INE | ex_ADEF | 
@@ -227,9 +238,9 @@ assign esubcode    = has_int              ? `ESUBCODE_INT   :
 
 //------------------------{BADV}begin-------------------------//
 assign csr_tlb_reload0 = ex_tlb_reload0 & WB_valid;
-assign csr_tlb_plv0    = ex_tlb_plv0 & WB_valid;
+assign csr_tlb_plv0    = ex_tlb_plv0    & WB_valid;
 assign csr_tlb_reload1 = ex_tlb_reload1 & WB_valid;
-assign csr_tlb_plv1    = ex_tlb_plv1 & WB_valid;
+assign csr_tlb_plv1    = ex_tlb_plv1    & WB_valid;
 //------------------------{BADV}begin-------------------------//
 
 //------------------------{ready_go}begin-------------------------//
@@ -246,6 +257,10 @@ always @(posedge clk) begin
     end
 end
 //------------------------{ready_go}end-------------------------//
+
+//------------------------{ertn_valid}begin-------------------------//
+assign ertn_valid = inst_ertn & WB_valid & ~wb_ex;
+//------------------------{ertn_valid}end-------------------------//
 
 //------------------------{front_push}begin-------------------------//
 assign wb_front_data = rf_wdata;
