@@ -35,7 +35,7 @@ module wb #(
     output wire [31:0] csr_wmask,
     // ERTN���쳣����ʱ��ˢ��ˮ�ߣ���������תĿ��
     output wire        flush,
-    output wire [31:0] csr_target,
+    output wire [31:0] flush_target,
     // ��ˮ��ȡ������
     input  wire        WB_need_cancel,
     // �쳣��Ϣ
@@ -65,7 +65,9 @@ module wb #(
     // ex_tlb --> TLBEHI
     output wire        ex_tlb,
     //can_not_front_push
-    output wire        wb_can_not_front_push
+    output wire        wb_can_not_front_push,
+    //IDLE_stall
+    output wire        IDLE_stall
 );
 wire [31:0] pc;
 
@@ -98,7 +100,8 @@ wire        ex_tlb_st_unvalid;//tlb��storeҳ��Ч
 wire        ex_tlb_plv1;//tlb��ҳ��Ȩ���Ϲ�        
 wire        ex_tlb_page_modify;//tlb��ҳ�޸�
 wire        ex_tlb_plv;     
-
+//IDLE
+wire        inst_idle;
 
 wire        has_int;
 
@@ -139,7 +142,7 @@ assign {
         pc,need_stall_csr,alu_result_with_rdct,
         inst_csrrd, inst_csrwr,inst_csrxchg,inst_ertn,inst_syscall,inst_break,ex_INE,ex_ADEF,ex_ALE,has_int,inst_rdcntvl_w,inst_rdcntvh_w,inst_rdcntid,csr_num_wr,mem_we,rj_value,rkd_value,rf_dest,rf_alu_wdata,rf_gr_we_ex,
         inst_tlbsrch,TLBIDX_new_tlbsrch,inst_tlbrd,inst_tlbwr,inst_tlbfill,inst_invtlb,//WB
-        ex_tlb_reload0,ex_tlb_preif_unvalid,ex_tlb_plv0,ex_tlb_reload1,ex_tlb_ld_unvalid,ex_tlb_st_unvalid,ex_tlb_plv1,ex_tlb_page_modify
+        ex_tlb_reload0,ex_tlb_preif_unvalid,ex_tlb_plv0,ex_tlb_reload1,ex_tlb_ld_unvalid,ex_tlb_st_unvalid,ex_tlb_plv1,ex_tlb_page_modify,inst_idle
     }=bus;
 
 assign rf_wdata   = csr_WB_rd ? csr_rvalue :  rf_alu_wdata;
@@ -148,7 +151,7 @@ assign rf_we      = rf_gr_we_ex & WB_valid & ~wb_ex;
 assign csr_wmask  = (inst_csrwr | inst_tlbsrch) ? 32'hffffffff : rj_value;
 assign csr_wdata  = inst_tlbsrch ? {TLBIDX_new_tlbsrch[10],csr_TLBIDX[30:10],TLBIDX_new_tlbsrch[9:0]} : rkd_value;
 assign csr_we     = (inst_tlbsrch | csr_rd_WB_each) & WB_valid & ~wb_ex;
-assign flush      = (inst_ertn | inst_csrwr | inst_csrxchg | inst_tlbfill | inst_tlbwr | inst_tlbrd | inst_tlbsrch | wb_ex) & WB_valid;
+assign flush      = (inst_ertn | inst_csrwr | inst_csrxchg | inst_tlbfill | inst_tlbwr | inst_tlbrd | inst_tlbsrch | wb_ex | inst_idle) & WB_valid;
 assign csr_re     = (csr_WB_rd | flush) & WB_valid;
 assign csr_num    = has_int         ? `CSR_EENTRY      :
                     ex_ADEF         ? `CSR_EENTRY      :
@@ -168,7 +171,7 @@ assign csr_num    = has_int         ? `CSR_EENTRY      :
                     inst_rdcntid    ? `CSR_TID         : 
                     inst_tlbsrch    ? `CSR_TLBIDX      : 
                     csr_num_wr;
-assign csr_target = inst_csrwr | inst_csrxchg | inst_tlbfill | inst_tlbwr | inst_tlbrd | inst_tlbsrch? wb_pc + 4 : csr_rvalue;
+assign flush_target = inst_csrwr | inst_csrxchg | inst_tlbfill | inst_tlbwr | inst_tlbrd | inst_tlbsrch | inst_idle ? wb_pc + 4 : csr_rvalue;
 // tlb �쳣
 assign ex_tlb_reload = WB_valid & (ex_tlb_reload0 | ex_tlb_reload1);
 assign ex_tlb     = WB_valid & (ex_tlb_reload0 | ex_tlb_reload1 | ex_tlb_preif_unvalid |
@@ -240,6 +243,10 @@ assign wb_front_data = mem_we ? rkd_value : rf_wdata;
 assign wb_front_addr = rf_dest;
 assign wb_can_not_front_push = ~rf_gr_we_ex;
 //------------------------{front_push}end-------------------------//
+
+//------------------------{IDLE_stall}end-------------------------//
+assign IDLE_stall = inst_idle & WB_valid & ~WB_ex & ~WB_need_cancel
+//------------------------{IDLE_stall}end-------------------------//
 
 //------------------------{exp_front}begin-------------------------//
 assign WB_ex = WB_valid &
