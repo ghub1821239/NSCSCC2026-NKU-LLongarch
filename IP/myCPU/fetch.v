@@ -25,7 +25,7 @@ module fetch #(
     //req_to_dataok_trigger
     input  wire        req_to_dataok_trigger
 );
-//------------------------{ç¼“å­˜inst}begin-------------------------//
+//------------------------{»º´æinst}begin-------------------------//
 reg [31:0] inst_reg;
 reg        inst_reg_valid;
 always @ (posedge clk)begin
@@ -40,12 +40,12 @@ always @ (posedge clk)begin
         inst_reg <= inst_sram_rdata;
         inst_reg_valid <= 1'b1;
     end
-    // åŒæ—¶çš„é‚£ä¹ˆä¹Ÿå¾—å–æ¶ˆæŽ‰ï¼Œå› ä¸ºå·²ç»æ”¶åˆ°äº†discard
+    // Í¬Ê±µÄÄÇÃ´Ò²µÃÈ¡Ïûµô£¬ÒòÎªÒÑ¾­ÊÕµ½ÁËdiscard
     else if(inst_sram_data_ok & inst_resp_discard)begin
         inst_reg_valid <= 1'b0;
     end*/
     else if (inst_resp_valid & req_to_dataok_trigger & ~deliver_now) begin
-        // æˆ–ï¼š~ID_allow_in æ—¶é”å­˜
+        // »ò£º~ID_allow_in Ê±Ëø´æ
         inst_reg       <= inst_sram_rdata;
         inst_reg_valid <= 1'b1;
     end
@@ -53,20 +53,20 @@ always @ (posedge clk)begin
         inst_reg_valid <= 1'b0;
     end
 end
-//------------------------{ç¼“å­˜inst}end-------------------------//
+//------------------------{»º´æinst}end-------------------------//
 
 //------------------------{bus}begin-------------------------//
 wire [31:0] pc;
 wire        ex_ADEF;
-wire        ex_tlb_reload0;//tlbé‡å¡«ä¾‹å¤–
-wire        ex_tlb_preif_unvalid;//tlbä¸­å–æŒ‡é¡µæ— æ•ˆ
-wire        ex_tlb_plv0;//tlbä¸­é¡µç‰¹æƒä¸åˆè§„
-wire        btb_query_hit;//validä¸”tag
+wire        ex_tlb_reload0;//tlbÖØÌîÀýÍâ
+wire        ex_tlb_preif_unvalid;//tlbÖÐÈ¡Ö¸Ò³ÎÞÐ§
+wire        ex_tlb_plv0;//tlbÖÐÒ³ÌØÈ¨²»ºÏ¹æ
+wire        btb_query_hit;//validÇÒtag
 wire [31:0] btb_query_target;        
-wire        ras_query_hit;//validä¸”tag
+wire        ras_query_hit;//validÇÒtag
 wire [31:0] ras_query_target;        
 wire [ 1:0] query_type;              
-wire        query_taken;//é¢„æµ‹æ˜¯å¦è·³è½¬ 
+wire        query_taken;//Ô¤²âÊÇ·ñÌø×ª 
         
 reg [inbus_width-1:0] bus;
 always @(posedge clk)begin

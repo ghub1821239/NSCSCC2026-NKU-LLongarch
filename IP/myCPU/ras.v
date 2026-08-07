@@ -1,19 +1,19 @@
 module ras(
     input         clk,
     input         resetn,
-    // å‰ç«¯é¢„æµ‹æŸ¥è¯¢
+    // Ç°¶ËÔ¤²â²éÑ¯
     input         query_valid,
     output        query_hit,
     output [31:0] query_target,
-    // åç«¯çœŸå® call æ›´æ–°
+    // ºó¶ËÕæÊµ call ¸üĞÂ
     input         push_valid,
     input  [31:0] push_target,
-    // åç«¯çœŸå® return æ›´æ–°
+    // ºó¶ËÕæÊµ return ¸üĞÂ
     input         pop_valid
 );
 
-reg  [31:0] ras_stack [15:0];//16ä¸ª32ä½çš„ç›®æ ‡åœ°å€
-reg  [4:0]  ras_sp;//æŒ‡å‘ä¸‹ä¸€ä¸ªç©ºä½ç½®ï¼Œ16ä¸ªåœ°å€çš„ä¸‹æ ‡å¯¹åº”çš„æ˜¯(1~16),0è¡¨ç¤ºç©ºæ ˆï¼Œ16è¡¨ç¤ºæ»¡
+reg  [31:0] ras_stack [15:0];//16¸ö32Î»µÄÄ¿±êµØÖ·
+reg  [4:0]  ras_sp;//Ö¸ÏòÏÂÒ»¸ö¿ÕÎ»ÖÃ£¬16¸öµØÖ·µÄÏÂ±ê¶ÔÓ¦µÄÊÇ(1~16),0±íÊ¾¿ÕÕ»£¬16±íÊ¾Âú
 
 assign query_hit = query_valid && (ras_sp != 0) ? 1'b1 :
                    1'b0;
@@ -22,16 +22,16 @@ assign query_target = query_valid && (ras_sp != 0) ? ras_stack[ras_sp - 1] :
 
 always @(posedge clk)begin
     if(!resetn)begin
-        ras_sp<=5'd0;//å¤ä½æ—¶æ ˆæŒ‡é’ˆæ¸…0ï¼ŒRASç©º
+        ras_sp<=5'd0;//¸´Î»Ê±Õ»Ö¸ÕëÇå0£¬RAS¿Õ
     end
     else if (push_valid) begin
-        if (ras_sp < 5'd16) begin//æ ˆæœªæ»¡æ—¶æ‰èƒ½push
+        if (ras_sp < 5'd16) begin//Õ»Î´ÂúÊ±²ÅÄÜpush
             ras_stack[ras_sp] <= push_target;
-            ras_sp <= ras_sp + 5'd1;//æœ‰æ•ˆåœ°å€æ•°+1
+            ras_sp <= ras_sp + 5'd1;//ÓĞĞ§µØÖ·Êı+1
         end
     end
     else if (pop_valid) begin
-        if (ras_sp != 5'd0) begin//æ ˆéç©ºæ—¶æ‰èƒ½pop
+        if (ras_sp != 5'd0) begin//Õ»·Ç¿ÕÊ±²ÅÄÜpop
             ras_sp <= ras_sp - 5'd1;
         end
     end

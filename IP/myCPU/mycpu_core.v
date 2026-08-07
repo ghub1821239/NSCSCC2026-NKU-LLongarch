@@ -6,8 +6,8 @@ module mycpu_core #(
     input  wire        resetn,
     // inst sram interface [handshake]
     output wire        inst_sram_req,
-    output wire        inst_sram_wr, // 1è¡¨ç¤ºwrite 0è¡¨ç¤ºread
-    output wire [ 3:0] inst_sram_wstrb,// wstrb å¯¹åº”åŸå§‹æ•°æ®çš„å­—èŠ‚å†™ä½¿èƒ½
+    output wire        inst_sram_wr, // 1±íÊ¾write 0±íÊ¾read
+    output wire [ 3:0] inst_sram_wstrb,// wstrb ¶ÔÓ¦Ô­Ê¼Êı¾İµÄ×Ö½ÚĞ´Ê¹ÄÜ
     output wire [ 1:0] inst_sram_size,
     output wire [31:0] inst_sram_addr,// 
     output wire [31:0] inst_sram_wdata,
@@ -18,8 +18,8 @@ module mycpu_core #(
     output wire        inst_uncache_wr,
     // data sram interface
     output wire        data_sram_req,
-    output wire        data_sram_wr, // 1è¡¨ç¤ºwrite 0è¡¨ç¤ºread
-    output wire [ 3:0] data_sram_wstrb,// wstrb å¯¹åº”åŸå§‹æ•°æ®çš„å­—èŠ‚å†™ä½¿èƒ½
+    output wire        data_sram_wr, // 1±íÊ¾write 0±íÊ¾read
+    output wire [ 3:0] data_sram_wstrb,// wstrb ¶ÔÓ¦Ô­Ê¼Êı¾İµÄ×Ö½ÚĞ´Ê¹ÄÜ
     output wire [ 1:0] data_sram_size,//
     output wire [31:0] data_sram_addr,// 
     output wire [31:0] data_sram_wdata,
@@ -37,7 +37,7 @@ module mycpu_core #(
     output wire [ 3:0] debug_wb_rf_we,
     output wire [ 4:0] debug_wb_rf_wnum,
     output wire [31:0] debug_wb_rf_wdata,
-    //ç¡¬ä»¶ä¸­æ–­è¾“å…¥
+    //Ó²¼şÖĞ¶ÏÊäÈë
     input  wire [ 7:0] hw_int_in
 );
 //------------------------{5-stage pipeline control signals define}begin-------------------------//
@@ -160,7 +160,7 @@ reg [3:0]   tlbfill_random;
 // tlbfill random begin
 always @(posedge clk) begin
     if (!resetn)
-        tlbfill_random <= 4'b0001; // åˆå§‹å€¼ä¸ä¸º 0
+        tlbfill_random <= 4'b0001; // ³õÊ¼Öµ²»Îª 0
     else if (tlbfill_we)
         tlbfill_random <= {tlbfill_random[2:0],
                            tlbfill_random[3] ^ tlbfill_random[2]};
@@ -171,7 +171,7 @@ wire [18:0] s0_vppn;
 wire        s0_va_bit12;
 wire [9:0]  s0_asid;
 wire        s0_found;
-wire [$clog2(TLBNUM)-1:0] s0_index; // å®é™…ä½¿ç”¨çš„indexä½å®½ä¸ºlog2(TLBNUM)
+wire [$clog2(TLBNUM)-1:0] s0_index; // Êµ¼ÊÊ¹ÓÃµÄindexÎ»¿íÎªlog2(TLBNUM)
 wire [19:0] s0_ppn;
 wire [5:0]  s0_ps;
 wire [1:0]  s0_plv;
@@ -242,14 +242,14 @@ wire        r_d1;
 wire        r_v1;
 
 //tlb_ex
-wire       ex_tlb_reload0;//tlbé‡å¡«å¼‚å¸¸
-wire       ex_tlb_reload1;//tlbé‡å¡«å¼‚å¸¸
-wire       ex_tlb_ld_unvalid;//tlbçš„loadé¡µæ— æ•ˆ
-wire       ex_tlb_st_unvalid;//tlbçš„storeé¡µæ— æ•ˆ
-wire       ex_tlb_preif_unvalid;//tlbå–æŒ‡é¡µæ— æ•ˆ
-wire       ex_tlb_plv0;//tlbçš„é¡µæƒé™ä¸Šè®¿
-wire       ex_tlb_plv1;//tlbçš„é¡µæƒé™ä¸Šè®¿
-wire       ex_tlb_page_modify;//tlbé¡µä¿®æ”¹
+wire       ex_tlb_reload0;//tlbÖØÌîÒì³£
+wire       ex_tlb_reload1;//tlbÖØÌîÒì³£
+wire       ex_tlb_ld_unvalid;//tlbµÄloadÒ³ÎŞĞ§
+wire       ex_tlb_st_unvalid;//tlbµÄstoreÒ³ÎŞĞ§
+wire       ex_tlb_preif_unvalid;//tlbÈ¡Ö¸Ò³ÎŞĞ§
+wire       ex_tlb_plv0;//tlbµÄÒ³È¨ÏŞÉÏ·Ã
+wire       ex_tlb_plv1;//tlbµÄÒ³È¨ÏŞÉÏ·Ã
+wire       ex_tlb_page_modify;//tlbÒ³ĞŞ¸Ä
 
 wire tlb_inst_req;
 wire tlb_data_req;
@@ -265,7 +265,7 @@ tlb u_tlb(
     .s0_va_bit12(s0_va_bit12),
     .s0_asid(s0_asid),
     .s0_found(s0_found),
-    .s0_index(s0_index), // å®é™…ä½¿ç”¨çš„indexä½å®½ä¸ºlog2(TLBNUM)
+    .s0_index(s0_index), // Êµ¼ÊÊ¹ÓÃµÄindexÎ»¿íÎªlog2(TLBNUM)
     .s0_ppn(s0_ppn),
     .s0_ps(s0_ps),
     .s0_plv(s0_plv),
@@ -329,14 +329,14 @@ tlb u_tlb(
     .csr_CRMD_PLV(csr_CRMD_PLV),
 
     //tlb_ex
-    .ex_tlb_reload0         (ex_tlb_reload0),//tlbé‡å¡«å¼‚å¸¸
-    .ex_tlb_reload1         (ex_tlb_reload1),//tlbé‡å¡«å¼‚å¸¸
-    .ex_tlb_ld_unvalid      (ex_tlb_ld_unvalid),//tlbçš„loadé¡µæ— æ•ˆ
-    .ex_tlb_st_unvalid      (ex_tlb_st_unvalid),//tlbçš„storeé¡µæ— æ•ˆ
-    .ex_tlb_preif_unvalid   (ex_tlb_preif_unvalid),//tlbå–æŒ‡é¡µæ— æ•ˆ
-    .ex_tlb_plv0            (ex_tlb_plv0),//tlbçš„é¡µæƒé™ä¸Šè®¿
-    .ex_tlb_plv1            (ex_tlb_plv1),//tlbçš„é¡µæƒé™ä¸Šè®¿
-    .ex_tlb_page_modify     (ex_tlb_page_modify),//tlbé¡µä¿®æ”¹
+    .ex_tlb_reload0         (ex_tlb_reload0),//tlbÖØÌîÒì³£
+    .ex_tlb_reload1         (ex_tlb_reload1),//tlbÖØÌîÒì³£
+    .ex_tlb_ld_unvalid      (ex_tlb_ld_unvalid),//tlbµÄloadÒ³ÎŞĞ§
+    .ex_tlb_st_unvalid      (ex_tlb_st_unvalid),//tlbµÄstoreÒ³ÎŞĞ§
+    .ex_tlb_preif_unvalid   (ex_tlb_preif_unvalid),//tlbÈ¡Ö¸Ò³ÎŞĞ§
+    .ex_tlb_plv0            (ex_tlb_plv0),//tlbµÄÒ³È¨ÏŞÉÏ·Ã
+    .ex_tlb_plv1            (ex_tlb_plv1),//tlbµÄÒ³È¨ÏŞÉÏ·Ã
+    .ex_tlb_page_modify     (ex_tlb_page_modify),//tlbÒ³ĞŞ¸Ä
     .tlb_inst_req(tlb_inst_req),
     .tlb_data_req (tlb_data_req),
     .tlb_load_req (tlb_load_req),
@@ -361,7 +361,7 @@ assign older_ex_for_mem = WB_ex;
 //------------------------{front_push}begin-------------------------//
 wire        flush;
 wire [31:0] flush_target;
-wire [31:0] flush_cacop_cancel_target;//ä» WB ä¼ å›æ¥çš„ flush_target & cacop å–æ¶ˆ
+wire [31:0] flush_cacop_cancel_target;//´Ó WB ´«»ØÀ´µÄ flush_target & cacop È¡Ïû
 
 
 wire [31:0] exe1_front_data;
@@ -383,7 +383,7 @@ assign front_push_rdata2 = rf_raddr2 == 5'b0 ? 32'b0 : (exe2_front_addr == rf_ra
                                                        (mem_front_addr == rf_raddr2 & MEM_valid & ~mem_can_not_front_push) ? mem_front_data :
                                                        (wb_front_addr  == rf_raddr2 & WB_valid & !flush & ~ wb_can_not_front_push) ? wb_front_data  :
                                                        rf_rdata2;             
-//ibarä¹Ÿåœ¨EXE2 æ‰€ä»¥å¯ä»¥ç›´æ¥èµ‹å€¼cacop_pc
+//ibarÒ²ÔÚEXE2 ËùÒÔ¿ÉÒÔÖ±½Ó¸³Öµcacop_pc
 assign flush_cacop_cancel_target = (cacop_need_cancel | ibar_cancel) ? cacop_pc : flush_target;
 //------------------------{front_push}end-------------------------//
 
@@ -465,7 +465,7 @@ btb u_btb(
     .update_pc          (update_pc    ),
     .update_target      (update_target),//real target
     .update_type        (update_type  ),
-    //å–æ¶ˆå–æŒ‡å’Œé”™è¯¯é¢„æµ‹
+    //È¡ÏûÈ¡Ö¸ºÍ´íÎóÔ¤²â
     .update_cancel (flush | cacop_need_cancel)
 );
 
@@ -484,7 +484,7 @@ bht u_bht(
     .update_valid   (bht_update_valid),//update BHT
     .update_pc      (update_pc   ),//branch pc
     .update_taken   (update_taken),//real taken
-    .update_cancel  (flush | cacop_need_cancel)//å–æ¶ˆå–æŒ‡å’Œé”™è¯¯é¢„æµ‹
+    .update_cancel  (flush | cacop_need_cancel)//È¡ÏûÈ¡Ö¸ºÍ´íÎóÔ¤²â
 );
 
 //ras
@@ -508,7 +508,7 @@ ras u_ras(
 );
 //------------------------{branch prediction}end---------------------------//
 
-//------------------------{é¢„æµ‹è¾“å‡ºä¸è·³è½¬ä¿¡å·å¤„ç†}begin-------------------------//
+//------------------------{Ô¤²âÊä³öÓëÌø×ªĞÅºÅ´¦Àí}begin-------------------------//
 wire        br_taken;
 wire [31:0] br_target;
 
@@ -523,7 +523,7 @@ wire need_br_cancel;
 
 //cacop cancel
 wire [31:0] cacop_pc;
-//[NOTICE:å­¦ä¸€ä¸‹]CEå‡ºå£å¯„å­˜å™¨ <= é€‰é€š,WNSä¼šå¥½ä¸€äº›
+//[NOTICE:Ñ§Ò»ÏÂ]CE³ö¿Ú¼Ä´æÆ÷ <= Ñ¡Í¨,WNS»áºÃÒ»Ğ©
 always @(posedge clk) begin
     if (!resetn) begin
         br_afterpred_taken_r  <= 1'b0;
@@ -540,7 +540,7 @@ end
 assign br_taken       = br_afterpred_taken_r;
 assign br_target      = br_afterpred_target_r;
 assign need_br_cancel = br_afterpred_taken_r;
-//------------------------{é¢„æµ‹è¾“å‡ºä¸è·³è½¬ä¿¡å·å¤„ç†}end-------------------------//
+//------------------------{Ô¤²âÊä³öÓëÌø×ªĞÅºÅ´¦Àí}end-------------------------//
 
 //------------------------{cacop}begin-------------------------//
 wire [31:0] inst_sram_addr_without_cacop;
@@ -619,24 +619,24 @@ wire [8:0]  wb_esubcode;
 wire        has_int;
 wire        csr_CRMD_DA;
 wire        csr_CRMD_PG;
-//tlbreload é‡å¡«ä¼ å…¥CSR
+//tlbreload ÖØÌî´«ÈëCSR
 wire        ex_tlb_reload;
 
-// ERTN æ›´æ”¹ CRMD
+// ERTN ¸ü¸Ä CRMD
 wire        ertn_valid;
-// æ›´æ–°BADV
+// ¸üĞÂBADV
 wire        csr_tlb_reload0;
 wire        csr_tlb_plv0   ;
 wire        csr_tlb_reload1; 
 wire        csr_tlb_plv1   ;     
-// æ›´æ–°TLBEHI ex_tlb
+// ¸üĞÂTLBEHI ex_tlb
 wire ex_tlb;
-//mat:å­˜å‚¨è®¿é—®ç±»å‹
+//mat:´æ´¢·ÃÎÊÀàĞÍ
 wire   [1:0] csr_CRMD_DATF;
 wire   [1:0] csr_CRMD_DATM;
 wire   [1:0] dmw_mat0;
 wire   [1:0] dmw_mat1;
-//è¯´æ˜s1_matæ˜¯å·²ç»æ¢ç®—å¥½çš„ï¼Ÿ
+//ËµÃ÷s1_matÊÇÒÑ¾­»»ËãºÃµÄ£¿
 wire   [1:0] inst_mat;
 wire   [1:0] data_mat;
 
@@ -648,12 +648,12 @@ wire         LLbit;
 assign ipi_int_in= 1'h0;
 
 
-//----------------Icache ç›¸å…³ä¿¡å·-----------
+//----------------Icache Ïà¹ØĞÅºÅ-----------
 assign inst_uncache_valid   = (inst_mat == 2'b00);
 assign inst_uncache_wr      =  inst_wr;
 //---------------------------------------------
 
-//----------------Dcache ç›¸å…³ä¿¡å·-----------
+//----------------Dcache Ïà¹ØĞÅºÅ-----------
 assign data_uncache_valid   = (data_mat == 2'b00);
 assign data_uncache_wr      =  data_wr;
 //---------------------------------------------
@@ -678,11 +678,11 @@ csr_regfile #(
     .wb_vaddr    (wb_vaddr),
     .has_int     (has_int),
     .coreid_in   (32'b0  ),
-    //TLBä¸csræ¥å£
+    //TLBÓëcsr½Ó¿Ú
     .csr_TLBEHI  (csr_TLBEHI),
     .csr_TLBIDX  (csr_TLBIDX),
     .csr_CRMD_PLV(csr_CRMD_PLV),
-    //tlbrdè¯» read port,å†™csr
+    //tlbrd¶Á read port,Ğ´csr
     .r_index     (r_index),
     .s0_asid     (s0_asid),
     .s1_asid_without_invtlb(s1_asid_without_invtlb),
@@ -722,7 +722,7 @@ csr_regfile #(
     .tlbrd_we    (tlbrd_we),
     .csr_CRMD_DA (csr_CRMD_DA),
     .csr_CRMD_PG (csr_CRMD_PG),
-    //tlbreload é‡å¡«ä¼ å…¥CSR
+    //tlbreload ÖØÌî´«ÈëCSR
     .ex_tlb_reload  (ex_tlb_reload),
     //DMW
     .dmw_vseg0(dmw_vseg0),
@@ -731,7 +731,7 @@ csr_regfile #(
     .dmw_vseg1(dmw_vseg1),
     .dmw_found1(dmw_found1),
     .dmw_pseg1(dmw_pseg1),
-    // ERTN æ›´æ”¹ CRMD
+    // ERTN ¸ü¸Ä CRMD
     .ertn_valid(ertn_valid),
     // BADV
     .csr_tlb_reload0(csr_tlb_reload0),
@@ -740,7 +740,7 @@ csr_regfile #(
     .csr_tlb_plv1   (csr_tlb_plv1   ),
     //ex_tlb TLBEHI
     .ex_tlb         (ex_tlb         ),
-    //mat:å­˜å‚¨è®¿é—®ç±»å‹
+    //mat:´æ´¢·ÃÎÊÀàĞÍ
     .csr_CRMD_DATF          (csr_CRMD_DATF),
     .csr_CRMD_DATM          (csr_CRMD_DATM),
     .dmw_mat0               (dmw_mat0),
@@ -778,7 +778,7 @@ pre_IF1 #(
     .s0_vppn(s0_vppn),
     .s0_va_bit12(s0_va_bit12),
     .s0_found(s0_found),
-    .s0_index(s0_index), //å®é™…ä½¿ç”¨çš„indexä½å®½ä¸ºlog2(TLBNUM)
+    .s0_index(s0_index), //Êµ¼ÊÊ¹ÓÃµÄindexÎ»¿íÎªlog2(TLBNUM)
     .s0_ppn(s0_ppn),
     .s0_ps(s0_ps),
     .s0_plv(s0_plv),
@@ -786,9 +786,9 @@ pre_IF1 #(
     .s0_d(s0_d),
     .s0_v(s0_v),
     //tlb_ex
-    .ex_tlb_reload0         (ex_tlb_reload0),//tlbé‡å¡«å¼‚å¸¸
-    .ex_tlb_preif_unvalid   (ex_tlb_preif_unvalid),//tlbå–æŒ‡é¡µæ— æ•ˆ
-    .ex_tlb_plv0            (ex_tlb_plv0),//tlbçš„é¡µæƒé™ä¸Šè®¿
+    .ex_tlb_reload0         (ex_tlb_reload0),//tlbÖØÌîÒì³£
+    .ex_tlb_preif_unvalid   (ex_tlb_preif_unvalid),//tlbÈ¡Ö¸Ò³ÎŞĞ§
+    .ex_tlb_plv0            (ex_tlb_plv0),//tlbµÄÒ³È¨ÏŞÉÏ·Ã
     .tlb_inst_req           (tlb_inst_req),
     //DMW
     .dmw_vseg0(dmw_vseg0),
@@ -797,7 +797,7 @@ pre_IF1 #(
     //CRMD PG DA
     .csr_CRMD_DA     (csr_CRMD_DA),
     .csr_CRMD_PG     (csr_CRMD_PG),
-    //mat:å­˜å‚¨è®¿é—®ç±»å‹
+    //mat:´æ´¢·ÃÎÊÀàĞÍ
     .csr_CRMD_DATF          (csr_CRMD_DATF),
     .csr_CRMD_DATM          (csr_CRMD_DATM),
     .dmw_mat0               (dmw_mat0),
@@ -838,8 +838,8 @@ pre_IF2 #(
     .need_stall(need_stall),
     //handshake
     .inst_sram_req(inst_sram_req),
-    .inst_sram_wr(inst_sram_wr), // 1è¡¨ç¤ºwrite 0è¡¨ç¤ºread
-    .inst_sram_wstrb(inst_sram_wstrb),// wstrb å¯¹åº”åŸå§‹æ•°æ®çš„å­—èŠ‚å†™ä½¿èƒ½
+    .inst_sram_wr(inst_sram_wr), // 1±íÊ¾write 0±íÊ¾read
+    .inst_sram_wstrb(inst_sram_wstrb),// wstrb ¶ÔÓ¦Ô­Ê¼Êı¾İµÄ×Ö½ÚĞ´Ê¹ÄÜ
     .inst_sram_size(inst_sram_size),
     .inst_sram_addr_without_cacop(inst_sram_addr_without_cacop),
     .inst_sram_wdata(inst_sram_wdata),
@@ -851,7 +851,7 @@ pre_IF2 #(
     //CRMD
     .csr_CRMD_DA(csr_CRMD_DA),
     .csr_CRMD_PG(csr_CRMD_PG),
-    //è¯´æ˜s1_matæ˜¯å·²ç»æ¢ç®—å¥½çš„ï¼Ÿ
+    //ËµÃ÷s1_matÊÇÒÑ¾­»»ËãºÃµÄ£¿
     .inst_mat               (inst_mat),
     .inst_wr                (inst_wr)
 );
@@ -907,7 +907,7 @@ decode #(
     .ID_need_cancel(ID_need_cancel),
     //stall
     .need_stall(need_stall),
-    //ä¸­æ–­
+    //ÖĞ¶Ï
     .has_int(has_int),
     //branch prediction
     // update port: Decode writes back real result
@@ -967,11 +967,11 @@ exe1 #(
     .csr_CRMD_DA     (csr_CRMD_DA),
     .csr_CRMD_PG     (csr_CRMD_PG),
     //tlb_ex
-    .ex_tlb_reload1         (ex_tlb_reload1),//tlbé‡å¡«å¼‚å¸¸
-    .ex_tlb_ld_unvalid      (ex_tlb_ld_unvalid),//tlbçš„loadé¡µæ— æ•ˆ
-    .ex_tlb_st_unvalid      (ex_tlb_st_unvalid),//tlbçš„storeé¡µæ— æ•ˆ
-    .ex_tlb_plv1            (ex_tlb_plv1),//tlbçš„é¡µæƒé™ä¸Šè®¿
-    .ex_tlb_page_modify     (ex_tlb_page_modify),//tlbé¡µä¿®æ”¹
+    .ex_tlb_reload1         (ex_tlb_reload1),//tlbÖØÌîÒì³£
+    .ex_tlb_ld_unvalid      (ex_tlb_ld_unvalid),//tlbµÄloadÒ³ÎŞĞ§
+    .ex_tlb_st_unvalid      (ex_tlb_st_unvalid),//tlbµÄstoreÒ³ÎŞĞ§
+    .ex_tlb_plv1            (ex_tlb_plv1),//tlbµÄÒ³È¨ÏŞÉÏ·Ã
+    .ex_tlb_page_modify     (ex_tlb_page_modify),//tlbÒ³ĞŞ¸Ä
     .tlb_data_req           (tlb_data_req),
     .tlb_load_req           (tlb_load_req),
     .tlb_store_req          (tlb_store_req),
@@ -979,7 +979,7 @@ exe1 #(
     .dmw_vseg1              (dmw_vseg1),
     .dmw_found1             (dmw_found1),
     .dmw_pseg1              (dmw_pseg1),
-    //mat:å­˜å‚¨è®¿é—®ç±»å‹
+    //mat:´æ´¢·ÃÎÊÀàĞÍ
     .csr_CRMD_DATF          (csr_CRMD_DATF),
     .csr_CRMD_DATM          (csr_CRMD_DATM),
     .dmw_mat1               (dmw_mat1)
@@ -1110,7 +1110,7 @@ wb #(
     .flush(flush),
     //cancel
     .WB_need_cancel(WB_need_cancel),
-    //wbæ¥å£
+    //wb½Ó¿Ú
     .wb_pc(wb_pc),
     .wb_ex(wb_ex),
     .wb_vaddr(wb_vaddr),
@@ -1124,11 +1124,11 @@ wb #(
     .tlbfill_we(tlbfill_we),
     //tlbidx
     .csr_TLBIDX(csr_TLBIDX),
-    //tlbreload é‡å¡«ä¼ å…¥CSR
+    //tlbreload ÖØÌî´«ÈëCSR
     .ex_tlb_reload(ex_tlb_reload),
-    //ERTN æ›´æ”¹ CRMD
+    //ERTN ¸ü¸Ä CRMD
     .ertn_valid(ertn_valid),
-    // æ›´æ–° csr_regfile ç›¸å…³çš„ BADV
+    // ¸üĞÂ csr_regfile Ïà¹ØµÄ BADV
     .csr_tlb_reload0(csr_tlb_reload0),
     .csr_tlb_plv0   (csr_tlb_plv0   ),
     .csr_tlb_reload1(csr_tlb_reload1),  
