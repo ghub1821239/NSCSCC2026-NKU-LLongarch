@@ -121,7 +121,7 @@ reg is_dividing;
 wire div_ready_go;
 wire divide_begin;
 assign divide_begin= (op_div | op_mod) & EXE1_valid;
-reg  kill;//濡傛灉鏈塮lush鎺夌殑div绛夋寚浠ら渶瑕佸彇娑堥敊璇殑杩斿洖
+reg  kill;//如果有flush掉的div等指令需要取消错误的返回
 always @(posedge clk) begin
     if (~resetn) begin
         kill <= 1'b0;
@@ -176,7 +176,7 @@ wire div_ready_go_u;
 reg is_dividing_u;
 wire divide_begin_u;
 assign divide_begin_u= (op_divu | op_modu) & EXE1_valid;
-reg  kill_u;//濡傛灉鏈塮lush鎺夌殑div绛夋寚浠ら渶瑕佸彇娑堥敊璇殑杩斿洖
+reg  kill_u;//如果有flush掉的div等指令需要取消错误的返回
 always @(posedge clk) begin
     if (~resetn) begin
         kill_u <= 1'b0;

@@ -1,18 +1,18 @@
 module bht(
     input         clk,
     input         resetn,
-    //æŸ¥è¯¢ç«¯å£
+    //²éÑ¯¶Ë¿Ú
     input  wire        query_valid,
-    input  wire [31:0] query_pc,//å½“å‰é¢„æµ‹çš„æŒ‡ä»¤pc
-    output wire        query_taken,//é¢„æµ‹æ˜¯å¦è·³è½¬
-    //æ›´æ–°ç«¯å£
-    input  wire        update_valid,//æ˜¯å¦è¦æ›´æ–° BHT
-    input  wire [31:0] update_pc,//åˆ†æ”¯æŒ‡ä»¤è‡ªå·±çš„ PC
-    input  wire        update_taken,//çœŸå®æ˜¯å¦è·³è½¬
-    input  wire        update_cancel//å¦‚æœå–æ¶ˆå°±ä¸åŒæ­¥æ›´æ–°
+    input  wire [31:0] query_pc,//µ±Ç°Ô¤²âµÄÖ¸Áîpc
+    output wire        query_taken,//Ô¤²âÊÇ·ñÌø×ª
+    //¸üĞÂ¶Ë¿Ú
+    input  wire        update_valid,//ÊÇ·ñÒª¸üĞÂ BHT
+    input  wire [31:0] update_pc,//·ÖÖ§Ö¸Áî×Ô¼ºµÄ PC
+    input  wire        update_taken,//ÕæÊµÊÇ·ñÌø×ª
+    input  wire        update_cancel//Èç¹ûÈ¡Ïû¾Í²»Í¬²½¸üĞÂ
 );
 
-//------------------------{reg é”å­˜æå‡ä¸»é¢‘}begin-------------------------//
+//------------------------{reg Ëø´æÌáÉıÖ÷Æµ}begin-------------------------//
 reg        update_valid_r;
 reg [31:0] update_pc_r;
 reg        update_taken_r;
@@ -29,35 +29,35 @@ always @(posedge clk) begin
     end
 end
 
-//------------------------{reg é”å­˜æå‡ä¸»é¢‘}end-------------------------//
+//------------------------{reg Ëø´æÌáÉıÖ÷Æµ}end-------------------------//
 
-reg [1:0] bht_counter [0:63];//BHTæ•°ç»„ï¼Œ64ä¸ª2ä½è®¡æ•°å™¨
+reg [1:0] bht_counter [0:63];//BHTÊı×é£¬64¸ö2Î»¼ÆÊıÆ÷
 
 wire [5:0] query_index;
 wire [5:0] update_index;
 
-assign query_index  = query_pc[7:2];//BHTç´¢å¼•
+assign query_index  = query_pc[7:2];//BHTË÷Òı
 assign update_index = update_pc_r[7:2];
-//æœ€é«˜ä½æ˜¯1å³å¯è·³è½¬
+//×î¸ßÎ»ÊÇ1¼´¿ÉÌø×ª
 assign query_taken = query_valid &
                      bht_counter[query_index][1];
-//å¤ä½å¾ªç¯
+//¸´Î»Ñ­»·
 integer i;
 
 always @(posedge clk) begin
     if (!resetn) begin
         for (i = 0; i < 64; i = i + 1) begin
-            bht_counter[i] <= 2'b01;//åˆå§‹åŒ–ä¸º01
+            bht_counter[i] <= 2'b01;//³õÊ¼»¯Îª01
         end
     end
-    else if (update_valid_r & ~update_cancel) begin//æ²¡æœ‰å¤ä½å¹¶ä¸”æœ¬å‘¨æœŸæ›´æ–°æœ‰æ•ˆæ—¶ä¿®æ”¹è®¡æ•°å™¨
-        if (update_taken_r) begin//çœŸå®è·³è½¬æ—¶çš„æ›´æ–°
+    else if (update_valid_r & ~update_cancel) begin//Ã»ÓĞ¸´Î»²¢ÇÒ±¾ÖÜÆÚ¸üĞÂÓĞĞ§Ê±ĞŞ¸Ä¼ÆÊıÆ÷
+        if (update_taken_r) begin//ÕæÊµÌø×ªÊ±µÄ¸üĞÂ
             if (bht_counter[update_index] != 2'b11)
                 bht_counter[update_index]
                     <= bht_counter[update_index] + 2'b01;
         end
         else begin
-            if (bht_counter[update_index] != 2'b00)//çœŸå®ä¸è·³è½¬æ—¶çš„æ›´æ–°
+            if (bht_counter[update_index] != 2'b00)//ÕæÊµ²»Ìø×ªÊ±µÄ¸üĞÂ
                 bht_counter[update_index]
                     <= bht_counter[update_index] - 2'b01;
         end

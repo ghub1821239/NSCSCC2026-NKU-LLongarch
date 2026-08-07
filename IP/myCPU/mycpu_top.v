@@ -89,55 +89,55 @@ wire [31:0] cpu_data_rdata;
 wire        data_uncache_valid;
 wire        data_uncache_wr;
 
-//Icache                                        æ¥è‡ª(input)/å»å¾€ï¼ˆoutput)
-wire            inst_valid;//è¡¨æ˜è¯·æ±‚æœ‰æ•ˆ                                       CPU
-wire            inst_op; // opï¼š0è¯»ï¼Œ1å†™                                        CPU
-wire [7 :0]     inst_index;// CPU ç›´æ¥æˆªå–çš„12ï¼š4(è‚¯å®šä¸æ¶‰åŠè™šå®æ˜ å°„)     CPU
-wire [19:0]     inst_tag;  // CPUå¤„ç†å¥½çš„paddr    (è™šå®æ˜ å°„)              CPU
-wire [3 :0]     inst_offset;// CPU ç›´æ¥æˆªå–çš„3:0 (è‚¯å®šä¸æ¶‰åŠè™šå®æ˜ å°„)     CPU
+//Icache                                        À´×Ô(input)/È¥Íù£¨output)
+wire            inst_valid;//±íÃ÷ÇëÇóÓĞĞ§                                       CPU
+wire            inst_op; // op£º0¶Á£¬1Ğ´                                        CPU
+wire [7 :0]     inst_index;// CPU Ö±½Ó½ØÈ¡µÄ12£º4(¿Ï¶¨²»Éæ¼°ĞéÊµÓ³Éä)     CPU
+wire [19:0]     inst_tag;  // CPU´¦ÀíºÃµÄpaddr    (ĞéÊµÓ³Éä)              CPU
+wire [3 :0]     inst_offset;// CPU Ö±½Ó½ØÈ¡µÄ3:0 (¿Ï¶¨²»Éæ¼°ĞéÊµÓ³Éä)     CPU
 wire [3 :0]     inst_wstrb;//                                            CPU
 wire [31:0]     inst_wdata;//                                            CPU
-wire            inst_addr_ok;//æ¥æ”¶åˆ°è½¬æ¥æ¡¥çš„ è¯»/å†™ çš„ addrok ç»™CPU               CPUï¼ˆOï¼‰                                   
-wire            inst_rd_rdy;   // arready                                      æ€»çº¿
-wire  [31:0]    inst_rd_addr; // CPUç»™çš„paddr VA ä»–æ‹¼æ¥ä¸€ä¸‹             æ€»çº¿ï¼ˆOï¼‰
-wire            inst_data_ok;//æ€»çº¿è¿”å›çš„                                       CPUï¼ˆOï¼‰
-wire  [31:0]    inst_rdata;// æ€»çº¿è¯»å‡ºæ¥çš„æ•°æ®                           CPUï¼ˆOï¼‰
-wire            inst_rd_req;// CPU çš„è¯»è¯·æ±‚                                     æ€»çº¿ï¼ˆOï¼‰
-wire  [2 :0]    inst_rd_type; // å’Œæ€»çº¿çš„sizeç›´æ¥æ¥                      æ€»çº¿ï¼šrsize 010   arlen 8'd3 ï¼ˆOï¼‰  
-wire            inst_ret_valid;// æ€»çº¿è¿”å›çš„æ•°æ˜¯æœ‰æ•ˆçš„                           æ€»çº¿ï¼šrvalid
-wire  [0:0]     inst_ret_last;// æ€»çº¿è¿”å›ç»“æŸäº†                                 æ€»çº¿: last
-wire  [31:0]    inst_ret_data;// æ€»çº¿ç»™çš„è¯»æ•°æ® rdata                    æ€»çº¿
-wire            inst_wr_req;//CPUå‘èµ·çš„                                        æ€»çº¿ï¼ˆOï¼‰
-wire  [2 :0]    inst_wr_type;//                                        æ€»çº¿ï¼ˆOï¼‰
-wire  [31:0]    inst_wr_addr;//                                        æ€»çº¿ï¼ˆOï¼‰
-wire  [3 :0]    inst_wr_wstrb;//                                       æ€»çº¿ï¼ˆOï¼‰
-wire  [127:0]   inst_wr_wdata;//                                        æ€»çº¿ï¼ˆOï¼‰
+wire            inst_addr_ok;//½ÓÊÕµ½×ª½ÓÇÅµÄ ¶Á/Ğ´ µÄ addrok ¸øCPU               CPU£¨O£©                                   
+wire            inst_rd_rdy;   // arready                                      ×ÜÏß
+wire  [31:0]    inst_rd_addr; // CPU¸øµÄpaddr VA ËûÆ´½ÓÒ»ÏÂ             ×ÜÏß£¨O£©
+wire            inst_data_ok;//×ÜÏß·µ»ØµÄ                                       CPU£¨O£©
+wire  [31:0]    inst_rdata;// ×ÜÏß¶Á³öÀ´µÄÊı¾İ                           CPU£¨O£©
+wire            inst_rd_req;// CPU µÄ¶ÁÇëÇó                                     ×ÜÏß£¨O£©
+wire  [2 :0]    inst_rd_type; // ºÍ×ÜÏßµÄsizeÖ±½Ó½Ó                      ×ÜÏß£ºrsize 010   arlen 8'd3 £¨O£©  
+wire            inst_ret_valid;// ×ÜÏß·µ»ØµÄÊıÊÇÓĞĞ§µÄ                           ×ÜÏß£ºrvalid
+wire  [0:0]     inst_ret_last;// ×ÜÏß·µ»Ø½áÊøÁË                                 ×ÜÏß: last
+wire  [31:0]    inst_ret_data;// ×ÜÏß¸øµÄ¶ÁÊı¾İ rdata                    ×ÜÏß
+wire            inst_wr_req;//CPU·¢ÆğµÄ                                        ×ÜÏß£¨O£©
+wire  [2 :0]    inst_wr_type;//                                        ×ÜÏß£¨O£©
+wire  [31:0]    inst_wr_addr;//                                        ×ÜÏß£¨O£©
+wire  [3 :0]    inst_wr_wstrb;//                                       ×ÜÏß£¨O£©
+wire  [127:0]   inst_wr_wdata;//                                        ×ÜÏß£¨O£©
 wire            inst_wr_rdy;// 
 wire            inst_cacop_done;
 
-//Dcache                                        æ¥è‡ª(input)/å»å¾€ï¼ˆoutput)
-wire            data_valid;//è¡¨æ˜è¯·æ±‚æœ‰æ•ˆ                                       CPU
-wire            data_op; // opï¼š0è¯»ï¼Œ1å†™                                        CPU
-wire [7 :0]     data_index;// CPU ç›´æ¥æˆªå–çš„12ï¼š4(è‚¯å®šä¸æ¶‰åŠè™šå®æ˜ å°„)     CPU
-wire [19:0]     data_tag;  // CPUå¤„ç†å¥½çš„paddr    (è™šå®æ˜ å°„)              CPU
-wire [3 :0]     data_offset;// CPU ç›´æ¥æˆªå–çš„3:0 (è‚¯å®šä¸æ¶‰åŠè™šå®æ˜ å°„)     CPU
+//Dcache                                        À´×Ô(input)/È¥Íù£¨output)
+wire            data_valid;//±íÃ÷ÇëÇóÓĞĞ§                                       CPU
+wire            data_op; // op£º0¶Á£¬1Ğ´                                        CPU
+wire [7 :0]     data_index;// CPU Ö±½Ó½ØÈ¡µÄ12£º4(¿Ï¶¨²»Éæ¼°ĞéÊµÓ³Éä)     CPU
+wire [19:0]     data_tag;  // CPU´¦ÀíºÃµÄpaddr    (ĞéÊµÓ³Éä)              CPU
+wire [3 :0]     data_offset;// CPU Ö±½Ó½ØÈ¡µÄ3:0 (¿Ï¶¨²»Éæ¼°ĞéÊµÓ³Éä)     CPU
 wire [3 :0]     data_wstrb;//                                            CPU
 wire [31:0]     data_wdata;//                                            CPU
-wire            data_addr_ok;//æ¥æ”¶åˆ°è½¬æ¥æ¡¥çš„ è¯»/å†™ çš„ addrok ç»™CPU               CPUï¼ˆOï¼‰                                   
-wire            data_rd_rdy;   // arready                                      æ€»çº¿
-wire  [31:0]    data_rd_addr; // CPUç»™çš„paddr VA ä»–æ‹¼æ¥ä¸€ä¸‹             æ€»çº¿ï¼ˆOï¼‰
-wire            data_data_ok;//æ€»çº¿è¿”å›çš„                                       CPUï¼ˆOï¼‰
-wire  [31:0]    data_rdata;// æ€»çº¿è¯»å‡ºæ¥çš„æ•°æ®                           CPUï¼ˆOï¼‰
-wire            data_rd_req;// CPU çš„è¯»è¯·æ±‚                                     æ€»çº¿ï¼ˆOï¼‰
-wire  [2 :0]    data_rd_type; // å’Œæ€»çº¿çš„sizeç›´æ¥æ¥                      æ€»çº¿ï¼šrsize 010   arlen 8'd3 ï¼ˆOï¼‰  
-wire            data_ret_valid;// æ€»çº¿è¿”å›çš„æ•°æ˜¯æœ‰æ•ˆçš„                           æ€»çº¿ï¼šrvalid
-wire  [0:0]     data_ret_last;// æ€»çº¿è¿”å›ç»“æŸäº†                                 æ€»çº¿: last
-wire  [31:0]    data_ret_data;// æ€»çº¿ç»™çš„è¯»æ•°æ® rdata                    æ€»çº¿
-wire            data_wr_req;//CPUå‘èµ·çš„                                        æ€»çº¿ï¼ˆOï¼‰
-wire  [2 :0]    data_wr_type;//                                        æ€»çº¿ï¼ˆOï¼‰
-wire  [31:0]    data_wr_addr;//                                        æ€»çº¿ï¼ˆOï¼‰
-wire  [3 :0]    data_wr_wstrb;//                                       æ€»çº¿ï¼ˆOï¼‰
-wire  [127:0]   data_wr_wdata;//                                        æ€»çº¿ï¼ˆOï¼‰
+wire            data_addr_ok;//½ÓÊÕµ½×ª½ÓÇÅµÄ ¶Á/Ğ´ µÄ addrok ¸øCPU               CPU£¨O£©                                   
+wire            data_rd_rdy;   // arready                                      ×ÜÏß
+wire  [31:0]    data_rd_addr; // CPU¸øµÄpaddr VA ËûÆ´½ÓÒ»ÏÂ             ×ÜÏß£¨O£©
+wire            data_data_ok;//×ÜÏß·µ»ØµÄ                                       CPU£¨O£©
+wire  [31:0]    data_rdata;// ×ÜÏß¶Á³öÀ´µÄÊı¾İ                           CPU£¨O£©
+wire            data_rd_req;// CPU µÄ¶ÁÇëÇó                                     ×ÜÏß£¨O£©
+wire  [2 :0]    data_rd_type; // ºÍ×ÜÏßµÄsizeÖ±½Ó½Ó                      ×ÜÏß£ºrsize 010   arlen 8'd3 £¨O£©  
+wire            data_ret_valid;// ×ÜÏß·µ»ØµÄÊıÊÇÓĞĞ§µÄ                           ×ÜÏß£ºrvalid
+wire  [0:0]     data_ret_last;// ×ÜÏß·µ»Ø½áÊøÁË                                 ×ÜÏß: last
+wire  [31:0]    data_ret_data;// ×ÜÏß¸øµÄ¶ÁÊı¾İ rdata                    ×ÜÏß
+wire            data_wr_req;//CPU·¢ÆğµÄ                                        ×ÜÏß£¨O£©
+wire  [2 :0]    data_wr_type;//                                        ×ÜÏß£¨O£©
+wire  [31:0]    data_wr_addr;//                                        ×ÜÏß£¨O£©
+wire  [3 :0]    data_wr_wstrb;//                                       ×ÜÏß£¨O£©
+wire  [127:0]   data_wr_wdata;//                                        ×ÜÏß£¨O£©
 wire            data_wr_rdy;// 
 wire            data_cacop_done;
 
@@ -190,7 +190,7 @@ mycpu_core u_mycpu_core(
     .debug_wb_rf_we     (debug0_wb_rf_wen  ),
     .debug_wb_rf_wnum   (debug0_wb_rf_wnum ),
     .debug_wb_rf_wdata  (debug0_wb_rf_wdata),
-    //ç¡¬ä¸­æ–­
+    //Ó²ÖĞ¶Ï
     .hw_int_in          (intrpt)
 );
 
@@ -275,7 +275,7 @@ bridge_SRAM_AXI u_bridge_SRAM_AXI(
     .data_awlen        (data_awlen       )
 );
 
-//icacheæ¥å£:cpu----icache
+//icache½Ó¿Ú:cpu----icache
 assign inst_valid           = cpu_inst_req;
 assign inst_op              = cpu_inst_wr;
 assign inst_index           = cpu_inst_addr[11:4];
@@ -286,38 +286,38 @@ assign inst_wdata           = cpu_inst_wdata;
 assign cpu_inst_addr_ok     = inst_addr_ok;
 assign cpu_inst_data_ok     = inst_data_ok;
 assign cpu_inst_rdata       = inst_rdata;
-//icacheæ€»çº¿:icache-----bridge
+//icache×ÜÏß:icache-----bridge
 
 
 icache u_Icache (
     .clk        (aclk),
     .resetn     (aresetn  ),
-//                                                                 æ¥è‡ª(input)/å»å¾€ï¼ˆoutput)
-    .valid      (inst_valid   ),//è¡¨æ˜è¯·æ±‚æœ‰æ•ˆ                                       CPU
-    .op         (inst_op      ), // opï¼š0è¯»ï¼Œ1å†™                                        CPU
-    .index      (inst_index   ),// CPU ç›´æ¥æˆªå–çš„12ï¼š4(è‚¯å®šä¸æ¶‰åŠè™šå®æ˜ å°„)     CPU
-    .tag        (inst_tag     ),  // CPUå¤„ç†å¥½çš„paddr    (è™šå®æ˜ å°„)              CPU
-    .offset     (inst_offset  ),// CPU ç›´æ¥æˆªå–çš„3:0 (è‚¯å®šä¸æ¶‰åŠè™šå®æ˜ å°„)     CPU
+//                                                                 À´×Ô(input)/È¥Íù£¨output)
+    .valid      (inst_valid   ),//±íÃ÷ÇëÇóÓĞĞ§                                       CPU
+    .op         (inst_op      ), // op£º0¶Á£¬1Ğ´                                        CPU
+    .index      (inst_index   ),// CPU Ö±½Ó½ØÈ¡µÄ12£º4(¿Ï¶¨²»Éæ¼°ĞéÊµÓ³Éä)     CPU
+    .tag        (inst_tag     ),  // CPU´¦ÀíºÃµÄpaddr    (ĞéÊµÓ³Éä)              CPU
+    .offset     (inst_offset  ),// CPU Ö±½Ó½ØÈ¡µÄ3:0 (¿Ï¶¨²»Éæ¼°ĞéÊµÓ³Éä)     CPU
     .wstrb      (inst_wstrb   ),//                                            CPU
     .wdata      (inst_wdata   ),//                                            CPU
 
-    .addr_ok    (inst_addr_ok ),//æ¥æ”¶åˆ°è½¬æ¥æ¡¥çš„ è¯»/å†™ çš„ addrok ç»™CPU               CPUï¼ˆOï¼‰                                   
-    .rd_rdy     (inst_rd_rdy  ),   // arready                                      æ€»çº¿
-    .rd_addr    (inst_rd_addr ), // CPUç»™çš„paddr VA ä»–æ‹¼æ¥ä¸€ä¸‹             æ€»çº¿ï¼ˆOï¼‰
+    .addr_ok    (inst_addr_ok ),//½ÓÊÕµ½×ª½ÓÇÅµÄ ¶Á/Ğ´ µÄ addrok ¸øCPU               CPU£¨O£©                                   
+    .rd_rdy     (inst_rd_rdy  ),   // arready                                      ×ÜÏß
+    .rd_addr    (inst_rd_addr ), // CPU¸øµÄpaddr VA ËûÆ´½ÓÒ»ÏÂ             ×ÜÏß£¨O£©
 
-    .data_ok    (inst_data_ok  ),//æ€»çº¿è¿”å›çš„                                       CPUï¼ˆOï¼‰
-    .rdata      (inst_rdata    ),// æ€»çº¿è¯»å‡ºæ¥çš„æ•°æ®                           CPUï¼ˆOï¼‰
-    .rd_req     (inst_rd_req   ),// CPU çš„è¯»è¯·æ±‚                                     æ€»çº¿ï¼ˆOï¼‰
-    .rd_type    (inst_rd_type  ), // å’Œæ€»çº¿çš„sizeç›´æ¥æ¥                      æ€»çº¿ï¼šrsize 010   arlen 8'd3 ï¼ˆOï¼‰  
-    .ret_valid  (inst_ret_valid),// æ€»çº¿è¿”å›çš„æ•°æ˜¯æœ‰æ•ˆçš„                           æ€»çº¿ï¼šrvalid
-    .ret_last   (inst_ret_last ), // æ€»çº¿è¿”å›ç»“æŸäº†                                 æ€»çº¿: last
-    .ret_data   (inst_ret_data ),// æ€»çº¿ç»™çš„è¯»æ•°æ® rdata                    æ€»çº¿
+    .data_ok    (inst_data_ok  ),//×ÜÏß·µ»ØµÄ                                       CPU£¨O£©
+    .rdata      (inst_rdata    ),// ×ÜÏß¶Á³öÀ´µÄÊı¾İ                           CPU£¨O£©
+    .rd_req     (inst_rd_req   ),// CPU µÄ¶ÁÇëÇó                                     ×ÜÏß£¨O£©
+    .rd_type    (inst_rd_type  ), // ºÍ×ÜÏßµÄsizeÖ±½Ó½Ó                      ×ÜÏß£ºrsize 010   arlen 8'd3 £¨O£©  
+    .ret_valid  (inst_ret_valid),// ×ÜÏß·µ»ØµÄÊıÊÇÓĞĞ§µÄ                           ×ÜÏß£ºrvalid
+    .ret_last   (inst_ret_last ), // ×ÜÏß·µ»Ø½áÊøÁË                                 ×ÜÏß: last
+    .ret_data   (inst_ret_data ),// ×ÜÏß¸øµÄ¶ÁÊı¾İ rdata                    ×ÜÏß
 
-    .wr_req     (inst_wr_req  ),//CPUå‘èµ·çš„                                        æ€»çº¿ï¼ˆOï¼‰
-    .wr_type    (inst_wr_type ),//                                        æ€»çº¿ï¼ˆOï¼‰
-    .wr_addr    (inst_wr_addr ),//                                        æ€»çº¿ï¼ˆOï¼‰
-    .wr_wstrb   (inst_wr_wstrb),//                                       æ€»çº¿ï¼ˆOï¼‰
-    .wr_data    (inst_wr_wdata),//                                        æ€»çº¿ï¼ˆOï¼‰
+    .wr_req     (inst_wr_req  ),//CPU·¢ÆğµÄ                                        ×ÜÏß£¨O£©
+    .wr_type    (inst_wr_type ),//                                        ×ÜÏß£¨O£©
+    .wr_addr    (inst_wr_addr ),//                                        ×ÜÏß£¨O£©
+    .wr_wstrb   (inst_wr_wstrb),//                                       ×ÜÏß£¨O£©
+    .wr_data    (inst_wr_wdata),//                                        ×ÜÏß£¨O£©
     .wr_rdy     (inst_wr_rdy  ),// 
     
     .uncache_valid   (inst_uncache_valid),
@@ -331,7 +331,7 @@ icache u_Icache (
     .cacop_done      (inst_cacop_done)
 );
 
-//Dcache æ¥å£
+//Dcache ½Ó¿Ú
 assign data_valid           = cpu_data_req;
 assign data_op              = cpu_data_wr;
 assign data_index           = cpu_data_addr[11:4];
@@ -348,32 +348,32 @@ cache #(
 )   u_Dcache(
     .clk        (aclk),
     .resetn     (aresetn  ),
-//                                                                 æ¥è‡ª(input)/å»å¾€ï¼ˆoutput)
-    .valid      (data_valid   ),//è¡¨æ˜è¯·æ±‚æœ‰æ•ˆ                                       CPU
-    .op         (data_op      ), // opï¼š0è¯»ï¼Œ1å†™                                        CPU
-    .index      (data_index   ),// CPU ç›´æ¥æˆªå–çš„12ï¼š4(è‚¯å®šä¸æ¶‰åŠè™šå®æ˜ å°„)     CPU
-    .tag        (data_tag     ),  // CPUå¤„ç†å¥½çš„paddr    (è™šå®æ˜ å°„)              CPU
-    .offset     (data_offset  ),// CPU ç›´æ¥æˆªå–çš„3:0 (è‚¯å®šä¸æ¶‰åŠè™šå®æ˜ å°„)     CPU
+//                                                                 À´×Ô(input)/È¥Íù£¨output)
+    .valid      (data_valid   ),//±íÃ÷ÇëÇóÓĞĞ§                                       CPU
+    .op         (data_op      ), // op£º0¶Á£¬1Ğ´                                        CPU
+    .index      (data_index   ),// CPU Ö±½Ó½ØÈ¡µÄ12£º4(¿Ï¶¨²»Éæ¼°ĞéÊµÓ³Éä)     CPU
+    .tag        (data_tag     ),  // CPU´¦ÀíºÃµÄpaddr    (ĞéÊµÓ³Éä)              CPU
+    .offset     (data_offset  ),// CPU Ö±½Ó½ØÈ¡µÄ3:0 (¿Ï¶¨²»Éæ¼°ĞéÊµÓ³Éä)     CPU
     .wstrb      (data_wstrb   ),//                                            CPU
     .wdata      (data_wdata   ),//                                            CPU
 
-    .addr_ok    (data_addr_ok ),//æ¥æ”¶åˆ°è½¬æ¥æ¡¥çš„ è¯»/å†™ çš„ addrok ç»™CPU               CPUï¼ˆOï¼‰                                   
-    .rd_rdy     (data_rd_rdy  ),   // arready                                      æ€»çº¿
-    .rd_addr    (data_rd_addr ), // CPUç»™çš„paddr VA ä»–æ‹¼æ¥ä¸€ä¸‹             æ€»çº¿ï¼ˆOï¼‰
+    .addr_ok    (data_addr_ok ),//½ÓÊÕµ½×ª½ÓÇÅµÄ ¶Á/Ğ´ µÄ addrok ¸øCPU               CPU£¨O£©                                   
+    .rd_rdy     (data_rd_rdy  ),   // arready                                      ×ÜÏß
+    .rd_addr    (data_rd_addr ), // CPU¸øµÄpaddr VA ËûÆ´½ÓÒ»ÏÂ             ×ÜÏß£¨O£©
 
-    .data_ok    (data_data_ok  ),//æ€»çº¿è¿”å›çš„                                       CPUï¼ˆOï¼‰
-    .rdata      (data_rdata    ),// æ€»çº¿è¯»å‡ºæ¥çš„æ•°æ®                           CPUï¼ˆOï¼‰
-    .rd_req     (data_rd_req   ),// CPU çš„è¯»è¯·æ±‚                                     æ€»çº¿ï¼ˆOï¼‰
-    .rd_type    (data_rd_type  ), // å’Œæ€»çº¿çš„sizeç›´æ¥æ¥                      æ€»çº¿ï¼šrsize 010   arlen 8'd3 ï¼ˆOï¼‰  
-    .ret_valid  (data_ret_valid),// æ€»çº¿è¿”å›çš„æ•°æ˜¯æœ‰æ•ˆçš„                           æ€»çº¿ï¼šrvalid
-    .ret_last   (data_ret_last ), // æ€»çº¿è¿”å›ç»“æŸäº†                                 æ€»çº¿: last
-    .ret_data   (data_ret_data ),// æ€»çº¿ç»™çš„è¯»æ•°æ® rdata                    æ€»çº¿
+    .data_ok    (data_data_ok  ),//×ÜÏß·µ»ØµÄ                                       CPU£¨O£©
+    .rdata      (data_rdata    ),// ×ÜÏß¶Á³öÀ´µÄÊı¾İ                           CPU£¨O£©
+    .rd_req     (data_rd_req   ),// CPU µÄ¶ÁÇëÇó                                     ×ÜÏß£¨O£©
+    .rd_type    (data_rd_type  ), // ºÍ×ÜÏßµÄsizeÖ±½Ó½Ó                      ×ÜÏß£ºrsize 010   arlen 8'd3 £¨O£©  
+    .ret_valid  (data_ret_valid),// ×ÜÏß·µ»ØµÄÊıÊÇÓĞĞ§µÄ                           ×ÜÏß£ºrvalid
+    .ret_last   (data_ret_last ), // ×ÜÏß·µ»Ø½áÊøÁË                                 ×ÜÏß: last
+    .ret_data   (data_ret_data ),// ×ÜÏß¸øµÄ¶ÁÊı¾İ rdata                    ×ÜÏß
 
-    .wr_req     (data_wr_req  ),//CPUå‘èµ·çš„                                        æ€»çº¿ï¼ˆOï¼‰
-    .wr_type    (data_wr_type ),//                                        æ€»çº¿ï¼ˆOï¼‰
-    .wr_addr    (data_wr_addr ),//                                        æ€»çº¿ï¼ˆOï¼‰
-    .wr_wstrb   (data_wr_wstrb),//                                       æ€»çº¿ï¼ˆOï¼‰
-    .wr_data    (data_wr_wdata),//                                        æ€»çº¿ï¼ˆOï¼‰
+    .wr_req     (data_wr_req  ),//CPU·¢ÆğµÄ                                        ×ÜÏß£¨O£©
+    .wr_type    (data_wr_type ),//                                        ×ÜÏß£¨O£©
+    .wr_addr    (data_wr_addr ),//                                        ×ÜÏß£¨O£©
+    .wr_wstrb   (data_wr_wstrb),//                                       ×ÜÏß£¨O£©
+    .wr_data    (data_wr_wdata),//                                        ×ÜÏß£¨O£©
     .wr_rdy     (data_wr_rdy  ),// 
     
     .uncache_valid  (data_uncache_valid),
