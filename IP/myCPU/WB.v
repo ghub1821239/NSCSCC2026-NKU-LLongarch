@@ -20,7 +20,7 @@ module wb #(
     output wire [ 4:0] rf_waddr,
     output wire [31:0] rf_wdata,
     output wire        rf_we,
-    // ���������ͣ�ٿ���?
+    // ���������ͣ�ٿ���?
     output wire [ 4:0] WB_rf_dest,
     output wire        need_stall_csr,
     // д�ؼ�����ǰ��
@@ -88,6 +88,7 @@ wire [13:0] csr_num_wr;
 wire        inst_syscall;
 wire        inst_break;
 wire        ex_INE;
+wire        ex_IPE;
 wire        ex_ADEF;
 wire        ex_ALE;
 //tlb_ex
@@ -137,10 +138,10 @@ always @(posedge clk)begin
         bus<=MEM_WB_bus;
     end
 end
-// csr_num_wr��MEM�������ָ���?ʼCSR��ţ�ERTN���쳣��RDCNTID����WB����ѡ����CSR
+// csr_num_wr��MEM�������ָ���?ʼCSR��ţ�ERTN���쳣��RDCNTID����WB����ѡ����CSR
 assign {
         pc,need_stall_csr,alu_result_with_rdct,
-        inst_csrrd, inst_csrwr,inst_csrxchg,inst_ertn,inst_syscall,inst_break,ex_INE,ex_ADEF,ex_ALE,has_int,inst_rdcntvl_w,inst_rdcntvh_w,inst_rdcntid,csr_num_wr,mem_we,rj_value,rkd_value,rf_dest,rf_alu_wdata,rf_gr_we_ex,
+        inst_csrrd, inst_csrwr,inst_csrxchg,inst_ertn,inst_syscall,inst_break,ex_INE,ex_IPE,ex_ADEF,ex_ALE,has_int,inst_rdcntvl_w,inst_rdcntvh_w,inst_rdcntid,csr_num_wr,mem_we,rj_value,rkd_value,rf_dest,rf_alu_wdata,rf_gr_we_ex,
         inst_tlbsrch,TLBIDX_new_tlbsrch,inst_tlbrd,inst_tlbwr,inst_tlbfill,inst_invtlb,//WB
         ex_tlb_reload0,ex_tlb_preif_unvalid,ex_tlb_plv0,ex_tlb_reload1,ex_tlb_ld_unvalid,ex_tlb_st_unvalid,ex_tlb_plv1,ex_tlb_page_modify,inst_idle
     }=bus;
@@ -159,6 +160,7 @@ assign csr_num    = has_int         ? `CSR_EENTRY      :
                     ex_tlb_plv0     ? `CSR_EENTRY      :
                     ex_tlb_reload0  ? `CSR_TLBRENTRY   :
                     ex_INE          ? `CSR_EENTRY      :
+                    ex_IPE          ? `CSR_EENTRY      :
                     inst_syscall    ? `CSR_EENTRY      :
                     inst_break      ? `CSR_EENTRY      :
                     inst_ertn       ? `CSR_ERA         : 
@@ -183,9 +185,10 @@ assign ex_tlb     = WB_valid & (ex_tlb_reload0 | ex_tlb_reload1 | ex_tlb_preif_u
                                 ex_tlb_st_unvalid | ex_tlb_page_modify);
 
 assign wb_pc      = pc;
-assign wb_ex      = (inst_syscall | inst_break | ex_INE | ex_ADEF | ex_ALE | has_int | ex_tlb) & WB_valid;
+assign wb_ex      = (inst_syscall | inst_break | ex_INE | ex_ADEF | 
+                     ex_ALE       | has_int    | ex_tlb | ex_IPE  ) & WB_valid;
 assign ex_tlb_plv = ex_tlb_plv0 | ex_tlb_plv1;
-// ��ַ�������쳣ʱ����¼load/storeָ�������ķô���?
+// ��ַ�������쳣ʱ����¼load/storeָ�������ķô���?
 assign wb_vaddr   = alu_result_with_rdct;
 assign ecode      = has_int         ? `ECODE_INT  :
                     ex_ADEF         ? `ECODE_ADE  :
@@ -193,6 +196,7 @@ assign ecode      = has_int         ? `ECODE_INT  :
                     ex_tlb_plv0     ? `ECODE_PPI  :
                     ex_tlb_reload0  ? `ECODE_TLBR :
                     ex_INE          ? `ECODE_INE  :
+                    ex_IPE          ? `ECODE_IPE  :
                     inst_syscall    ? `ECODE_SYS  :
                     inst_break      ? `ECODE_BRK  :
                     ex_ALE          ? `ECODE_ALE  :
@@ -209,6 +213,7 @@ assign esubcode    = has_int              ? `ESUBCODE_INT   :
                      ex_tlb_plv0          ? `ESUBCODE_PPI   :
                      ex_tlb_reload0       ? `ESUBCODE_TLBR  :
                      ex_INE               ? `ESUBCODE_INE   :
+                     ex_IPE               ? `ESUBCODE_IPE   :
                      inst_syscall         ? `ESUBCODE_SYS   :  
                      inst_break           ? `ESUBCODE_BRK   :  
                      ex_ALE               ? `ESUBCODE_ALE   :
@@ -254,8 +259,8 @@ assign IDLE_stall = inst_idle & WB_valid & ~WB_ex;
 
 //------------------------{exp_front}begin-------------------------//
 assign WB_ex = WB_valid &
-               (inst_syscall | inst_ertn | inst_break | ex_INE | ex_ADEF | ex_ALE |
-                has_int | ex_tlb);
+               (inst_syscall | inst_ertn | inst_break | ex_INE | ex_IPE |
+                ex_ADEF      | ex_ALE    | has_int    | ex_tlb );
 //------------------------{exp_front}end-------------------------//
 
 //------------------------{debug_var}begin-------------------------//

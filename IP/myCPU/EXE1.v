@@ -95,6 +95,7 @@ wire        inst_ertn;
 wire        inst_syscall;
 wire        inst_break;
 wire        ex_INE;
+wire        ex_IPE;
 wire        ex_ADEF;
 wire        ex_ALE;
 wire        has_int;
@@ -139,7 +140,7 @@ assign {
             pc,
             rkd_value,alu_op,alu_src1,alu_src2,need_stall_inst,need_stall_csr,inst_st_b,inst_st_h,inst_st_w,inst_ld_w,//EXE
             res_from_mem,mem_we,inst_ld_b,inst_ld_h,inst_ld_bu ,inst_ld_hu,//MEM read and write
-            inst_csrrd, inst_csrwr,inst_csrxchg,inst_ertn,inst_syscall,inst_break,ex_INE,ex_ADEF,has_int,inst_rdcntvl_w,inst_rdcntvh_w,inst_rdcntid,csr_num,rj_value,rf_dest,rf_gr_we,//WB destination and write_enable
+            inst_csrrd, inst_csrwr,inst_csrxchg,inst_ertn,inst_syscall,inst_break,ex_INE,ex_IPE,ex_ADEF,has_int,inst_rdcntvl_w,inst_rdcntvh_w,inst_rdcntid,csr_num,rj_value,rf_dest,rf_gr_we,//WB destination and write_enable
             inst_tlbsrch,inst_tlbrd,inst_tlbwr,inst_tlbfill,inst_invtlb,
             ex_tlb_reload0,ex_tlb_preif_unvalid,ex_tlb_plv0,
             cache_code,inst_cacop,inst_ibar,inst_dbar,inst_sc_w,inst_ll_w,inst_idle
@@ -170,7 +171,7 @@ assign s1_vppn = inst_tlbsrch ? csr_TLBEHI[`CSR_TLBEHI_VPPN]
 assign s1_va_bit12  = mem_vaddr[12];
 assign tlbinv_asid  = alu_src1[9:0];
 assign invtlb_op    = rf_dest;
-assign invtlb_valid = inst_invtlb & ~ex_INE & EXE1_valid; // Ҳ���������op������δ�����?
+assign invtlb_valid = inst_invtlb & ~ex_INE & ~ex_IPE & EXE1_valid; // Ҳ���������op������δ�����?
 
 wire [10:0] TLBIDX_new_tlbsrch;
 assign TLBIDX_new_tlbsrch = {~s1_found,{6{1'b0}},s1_index};
@@ -286,16 +287,16 @@ assign ex_ALE  = (ex_half | ex_word);
 
 //------------------------{exp_front}begin-------------------------//
 assign EXE1_ex = EXE1_valid &
-               (inst_syscall | inst_ertn | inst_break | ex_INE | ex_ADEF | ex_ALE |
-                ex_tlb_reload0 | ex_tlb_reload1 | ex_tlb_preif_unvalid | ex_tlb_plv0 |
-                ex_tlb_plv1 | ex_tlb_ld_unvalid | ex_tlb_st_unvalid | ex_tlb_page_modify |
-                has_int);
+               (inst_syscall   | inst_ertn         | inst_break           | ex_INE             |
+                ex_tlb_reload0 | ex_tlb_reload1    | ex_tlb_preif_unvalid | ex_tlb_plv0        |
+                ex_tlb_plv1    | ex_tlb_ld_unvalid | ex_tlb_st_unvalid    | ex_tlb_page_modify |
+                has_int        | ex_IPE            | ex_ADEF              | ex_ALE  );
 //------------------------{exp_front}end-------------------------//
 
 //------------------------{bus}begin-------------------------//
 assign EXE1_EXE2_bus = {pc,
                         rkd_value,res_from_mem,mem_we,need_stall_csr,inst_ld_b,inst_ld_h,inst_ld_bu ,inst_ld_hu,alu_result_with_rdct,//MEM
-                        inst_csrrd, inst_csrwr,inst_csrxchg,inst_ertn,inst_syscall,inst_break,ex_INE,ex_ADEF,ex_ALE,has_int,inst_rdcntvl_w,inst_rdcntvh_w,inst_rdcntid,csr_num,rj_value,rf_dest,rf_gr_we,//WB
+                        inst_csrrd, inst_csrwr,inst_csrxchg,inst_ertn,inst_syscall,inst_break,ex_INE,ex_IPE,ex_ADEF,ex_ALE,has_int,inst_rdcntvl_w,inst_rdcntvh_w,inst_rdcntid,csr_num,rj_value,rf_dest,rf_gr_we,//WB
                         inst_tlbsrch,TLBIDX_new_tlbsrch,inst_tlbrd,inst_tlbwr,inst_tlbfill,inst_invtlb,
                         ex_tlb_reload0,ex_tlb_preif_unvalid,ex_tlb_plv0,ex_tlb_reload1,ex_tlb_ld_unvalid,ex_tlb_st_unvalid,ex_tlb_plv1,ex_tlb_page_modify,
                         data_sram_addr,data_sram_wdata,data_sram_size,data_sram_wstrb,data_mat,data_wr,inst_cacop,cache_code,inst_ibar,inst_dbar,inst_sc_w,inst_ll_w,inst_idle

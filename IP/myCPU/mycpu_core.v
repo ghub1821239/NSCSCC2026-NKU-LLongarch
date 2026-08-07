@@ -37,7 +37,7 @@ module mycpu_core #(
     output wire [ 3:0] debug_wb_rf_we,
     output wire [ 4:0] debug_wb_rf_wnum,
     output wire [31:0] debug_wb_rf_wdata,
-    // ç¡?ä¸?æ–?
+    // ï¿½?ï¿½?ï¿½?
     input  wire [ 7:0] hw_int_in
 );
 //------------------------{5-stage pipeline control signals define}begin-------------------------//
@@ -361,7 +361,7 @@ assign older_ex_for_mem = WB_ex;
 //------------------------{front_push}begin-------------------------//
 wire        flush;
 wire [31:0] flush_target;
-wire [31:0] flush_cacop_cancel_target;// ä»? WB ä¼ å›æ¥çš„ flush_target & cacop çš?
+wire [31:0] flush_cacop_cancel_target;// ï¿½? WB ä¼ å›æ¥çš„ flush_target & cacop ï¿½?
 
 
 wire [31:0] exe1_front_data;
@@ -383,7 +383,7 @@ assign front_push_rdata2 = rf_raddr2 == 5'b0 ? 32'b0 : (exe2_front_addr == rf_ra
                                                        (mem_front_addr == rf_raddr2 & MEM_valid & ~mem_can_not_front_push) ? mem_front_data :
                                                        (wb_front_addr  == rf_raddr2 & WB_valid & !flush & ~ wb_can_not_front_push) ? wb_front_data  :
                                                        rf_rdata2;             
-//ibarÒ²ÊÇEXE2 Òò´Ë¿ÉÒÔÖ±½Ó¸´ÓÃcacop_pc
+//ibarÒ²ï¿½ï¿½EXE2 ï¿½ï¿½Ë¿ï¿½ï¿½ï¿½Ö±ï¿½Ó¸ï¿½ï¿½ï¿½cacop_pc
 assign flush_cacop_cancel_target = (cacop_need_cancel | ibar_cancel) ? cacop_pc : flush_target;
 //------------------------{front_push}end-------------------------//
 
@@ -465,7 +465,7 @@ btb u_btb(
     .update_pc          (update_pc    ),
     .update_target      (update_target),//real target
     .update_type        (update_type  ),
-    // ï¿½ï¿½ï¿½È¡ï¿½ï¿½ï¿½Í²ï¿½Í?ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+    // ï¿½ï¿½ï¿½È¡ï¿½ï¿½ï¿½Í²ï¿½ï¿½?ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
     .update_cancel (flush | cacop_need_cancel)
 );
 
@@ -484,7 +484,7 @@ bht u_bht(
     .update_valid   (bht_update_valid),//update BHT
     .update_pc      (update_pc   ),//branch pc
     .update_taken   (update_taken),//real taken
-    .update_cancel  (flush | cacop_need_cancel)//ï¿½ï¿½ï¿½È¡ï¿½ï¿½ï¿½Í²ï¿½Í?ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+    .update_cancel  (flush | cacop_need_cancel)//ï¿½ï¿½ï¿½È¡ï¿½ï¿½ï¿½Í²ï¿½ï¿½?ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 );
 
 //ras
@@ -523,7 +523,7 @@ wire need_br_cancel;
 
 //cacop cancel
 wire [31:0] cacop_pc;
-//[NOTICE:Ñ§ï¿½ï¿½Ò»ï¿½ï¿½]CEï¿½ï¿½ï¿½ï¿½Åµï¿? <= Ñ¡ï¿½ï¿½,WNSï¿½ï¿½ï¿½Üºï¿½Ò»ï¿½ï¿½
+//[NOTICE:Ñ§ï¿½ï¿½Ò»ï¿½ï¿½]CEï¿½ï¿½ï¿½ï¿½Åµï¿½? <= Ñ¡ï¿½ï¿½,WNSï¿½ï¿½ï¿½Üºï¿½Ò»ï¿½ï¿½
 always @(posedge clk) begin
     if (!resetn) begin
         br_afterpred_taken_r  <= 1'b0;
@@ -585,20 +585,20 @@ assign WB_need_cancel     = flush;
 
 //------------------------{5 pipeline bus + inst ram control}begin-------------------------//
 localparam preIF1_preIF2_bus_width = 147;
-localparam preIF2_IF_bus_width    = 105;
-localparam IF_ID_bus_width    = 137;
-localparam ID_EXE1_bus_width   = 242;//263+5+1-32
-localparam EXE1_EXE2_bus_width  = 276;//226-32
-localparam EXE2_MEM_bus_width  = 197;//226-32
-localparam MEM_WB_bus_width   = 220;
+localparam preIF2_IF_bus_width     = 105;
+localparam IF_ID_bus_width         = 137;
+localparam ID_EXE1_bus_width       = 243;
+localparam EXE1_EXE2_bus_width     = 277;
+localparam EXE2_MEM_bus_width      = 198;
+localparam MEM_WB_bus_width        = 221;
 
 wire [preIF1_preIF2_bus_width-1:0] preIF1_preIF2_bus;
-wire [preIF2_IF_bus_width-1:0] preIF2_IF_bus;
-wire [IF_ID_bus_width-1:0] IF_ID_bus;
-wire [ID_EXE1_bus_width-1:0]ID_EXE1_bus;
-wire [EXE1_EXE2_bus_width-1:0] EXE1_EXE2_bus;
-wire [EXE2_MEM_bus_width-1:0] EXE2_MEM_bus;
-wire [MEM_WB_bus_width-1:0] MEM_WB_bus;
+wire [preIF2_IF_bus_width-1:0]     preIF2_IF_bus;
+wire [IF_ID_bus_width-1:0]         IF_ID_bus;
+wire [ID_EXE1_bus_width-1:0]       ID_EXE1_bus;
+wire [EXE1_EXE2_bus_width-1:0]     EXE1_EXE2_bus;
+wire [EXE2_MEM_bus_width-1:0]      EXE2_MEM_bus;
+wire [MEM_WB_bus_width-1:0]        MEM_WB_bus;
 //------------------------{5-stage pipeline bus + inst ram control}end------------------------//
 
 //------------------------{csr_regfile}begin-------------------------//
@@ -625,10 +625,10 @@ wire        ex_tlb_reload;
 // ERTN ???? CRMD
 wire        inst_ertn;
 // ????BADV
-wire csr_tlb_reload0;
-wire csr_tlb_plv0   ;
-wire csr_tlb_reload1; 
-wire csr_tlb_plv1   ;     
+wire        csr_tlb_reload0;
+wire        csr_tlb_plv0   ;
+wire        csr_tlb_reload1; 
+wire        csr_tlb_plv1   ;     
 // ????TLBEHI ex_tlb
 wire ex_tlb;
 //mat:??????????
@@ -921,7 +921,9 @@ decode #(
     .push_valid         (push_valid ),
     .push_target        (push_target),
     // backend real return update
-    .pop_valid          (pop_valid)
+    .pop_valid          (pop_valid),
+    //PLV
+    .csr_CRMD_PLV       (csr_CRMD_PLV)
 );
 
 exe1 #(
