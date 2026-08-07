@@ -189,7 +189,9 @@ mycpu_core u_mycpu_core(
     .debug_wb_pc        (debug0_wb_pc      ),
     .debug_wb_rf_we     (debug0_wb_rf_wen  ),
     .debug_wb_rf_wnum   (debug0_wb_rf_wnum ),
-    .debug_wb_rf_wdata  (debug0_wb_rf_wdata)
+    .debug_wb_rf_wdata  (debug0_wb_rf_wdata),
+    //硬中断
+    .hw_int_in          (intrpt)
 );
 
 bridge_SRAM_AXI u_bridge_SRAM_AXI(

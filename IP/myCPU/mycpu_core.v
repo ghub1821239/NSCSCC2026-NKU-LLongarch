@@ -36,7 +36,9 @@ module mycpu_core #(
     output wire [31:0] debug_wb_pc,
     output wire [ 3:0] debug_wb_rf_we,
     output wire [ 4:0] debug_wb_rf_wnum,
-    output wire [31:0] debug_wb_rf_wdata
+    output wire [31:0] debug_wb_rf_wdata,
+    // 硬中断
+    input  wire [ 7:0] hw_int_in
 );
 //------------------------{5-stage pipeline control signals define}begin-------------------------//
 wire valid_in;
@@ -153,8 +155,6 @@ wire        tlbrd_we;
 wire        tlbsrch_we;
 wire        tlbwr_we;
 wire        tlbfill_we;
-// the csr & ex need cancel
-wire        flush;
 reg [3:0]   tlbfill_random;
 
 // tlbfill random begin
@@ -359,6 +359,11 @@ assign older_ex_for_mem = WB_ex;
 //------------------------{csr_ex_front}end-------------------------//
 
 //------------------------{front_push}begin-------------------------//
+wire        flush;
+wire [31:0] flush_target;
+wire [31:0] flush_cacop_cancel_target;// 从 WB 传回来的 flush_target & cacop 的
+
+
 wire [31:0] exe1_front_data;
 wire [31:0] exe2_front_data;
 wire [31:0] mem_front_data;
@@ -377,7 +382,8 @@ assign front_push_rdata1 = rf_raddr1 == 5'b0 ? 32'b0 : (exe2_front_addr == rf_ra
 assign front_push_rdata2 = rf_raddr2 == 5'b0 ? 32'b0 : (exe2_front_addr == rf_raddr2 & EXE2_valid & ~exe2_can_not_front_push) ? exe2_front_data :
                                                        (mem_front_addr == rf_raddr2 & MEM_valid & ~mem_can_not_front_push) ? mem_front_data :
                                                        (wb_front_addr  == rf_raddr2 & WB_valid & !flush & ~ wb_can_not_front_push) ? wb_front_data  :
-                                                       rf_rdata2;                        
+                                                       rf_rdata2;                       
+assign flush_cacop_cancel_target = cacop_need_cancel ? cacop_pc : flush_target;
 //------------------------{front_push}end-------------------------//
 
 //------------------------{stall}begin-------------------------//
@@ -410,6 +416,20 @@ assign src2_stall = (rf_raddr2 != 5'd0) &&
                      ((rf_raddr2 == MEM_rf_dest) && MEM_valid && (mem_load_wait || mem_need_stall_csr)) ||
                      ((rf_raddr2 == WB_rf_dest) && WB_valid && wb_need_stall_csr));
 assign need_stall = src1_stall | src2_stall;
+
+wire IDLE_stall;
+reg preIF1_IDLE_stall;
+always @(posedge clk)begin
+    if(!resetn)begin
+        preIF1_IDLE_stall <= 1'b0;
+    end
+    else if (has_int)begin
+        preIF1_IDLE_stall <= 1'b0;
+    end
+    else if (IDLE_stall)begin
+        preIF1_IDLE_stall <= 1'b1;
+    end
+end
 //------------------------{stall}end-------------------------//
 
 //------------------------{req_to_dataok_trigger}begin-------------------------//
@@ -590,13 +610,11 @@ wire [31:0] csr_wmask;
 wire        csr_re;
 wire        wb_ex;
 wire [31:0] timer_cnt;
-wire [7:0]  hw_int_in;
 wire        ipi_int_in;
 wire [31:0] wb_pc;
 wire [31:0] wb_vaddr;
 wire [5:0]  wb_ecode;
 wire [8:0]  wb_esubcode;
-wire [31:0] csr_target;
 wire        has_int;
 wire        csr_CRMD_DA;
 wire        csr_CRMD_PG;
@@ -625,7 +643,6 @@ wire   [1:0] data_mat;
 wire         LLbit_wb;
 wire         LLbit;
 
-assign hw_int_in = 8'h0;
 assign ipi_int_in= 1'h0;
 
 
@@ -753,7 +770,7 @@ pre_IF1 #(
     .preIF1_need_cancel(preIF1_need_cancel),
     //stall
     .need_stall(need_stall),
-    .csr_target(cacop_need_cancel ? cacop_pc : csr_target),
+    .flush_target(flush_cacop_cancel_target),
     // search port 0 (for fetch the inst)
     .s0_vppn(s0_vppn),
     .s0_va_bit12(s0_va_bit12),
@@ -790,7 +807,9 @@ pre_IF1 #(
     .ras_query_hit      (ras_query_hit   ),//valid and tag match
     .ras_query_target   (ras_query_target),
     .query_type         (query_type  ),
-    .query_taken        (query_taken)//predict taken
+    .query_taken        (query_taken),//predict taken
+    //IDLE
+    .preIF1_IDLE_stall  (preIF1_IDLE_stall)
 );
 
 pre_IF2 #(
@@ -1081,7 +1100,7 @@ wb #(
     .csr_wmask(csr_wmask),
     .csr_we(csr_we),
     .csr_re(csr_re),
-    .csr_target(csr_target),
+    .flush_target(flush_target),
     .flush(flush),
     //cancel
     .WB_need_cancel(WB_need_cancel),
@@ -1109,7 +1128,9 @@ wb #(
     .csr_tlb_reload1(csr_tlb_reload1),  
     .csr_tlb_plv1   (csr_tlb_plv1   ),
     //ex_tlb TLBEHI
-    .ex_tlb         (ex_tlb         )
+    .ex_tlb         (ex_tlb         ),
+    //IDLE_stall
+    .IDLE_stall     (IDLE_stall     )
 );
 //------------------------{5-stage pipeline instantiation}end-------------------------//
 

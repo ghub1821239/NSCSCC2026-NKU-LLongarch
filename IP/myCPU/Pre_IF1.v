@@ -19,7 +19,7 @@ module pre_IF1 #(
     input  wire        preIF1_need_cancel,
     //stall
     input  wire        need_stall,
-    input  wire [31:0] csr_target,
+    input  wire [31:0] flush_target,
     // tlb port s0
     output wire [18:0] s0_vppn,
     output wire        s0_va_bit12,
@@ -56,7 +56,8 @@ module pre_IF1 #(
     input   wire        ras_query_hit,//valid且tag匹配
     input   wire [31:0] ras_query_target,
     input   wire [ 1:0] query_type,
-    input   wire        query_taken//预测是否跳转
+    input   wire        query_taken,//预测是否跳转
+    input   wire        preIF1_IDLE_stall
 );
 localparam TYPE_COND = 2'b00;//2'b00  COND   条件分支 beq/bne/blt/bge/bltu/bgeu
 localparam TYPE_JUMP = 2'b01;//2'b01  JUMP   无条件直接跳 b
@@ -79,7 +80,7 @@ always @(posedge clk) begin
 //        pc <= 32'h1c000000;
     end
     else if (preIF1_need_cancel)begin
-        pc <= csr_target;
+        pc <= flush_target;
     end
     // 直接br_taken在当前clk更改pc那么就可以把preIF的错指令给覆盖掉
     else if(preIF1_allow_in | br_taken) begin
@@ -113,7 +114,7 @@ assign tlb_paddr = (s0_ps == 6'd21) ? {s0_ppn[19:9], pc[20:0]}  // 4MB页
 //------------------------{虚地址转物理地址}end-------------------------//
 
 //------------------------{ready_go}begin-------------------------//
-assign preIF1_ready_go = need_stall ? 1'b0 : 1'b1;
+assign preIF1_ready_go = need_stall | preIF1_IDLE_stall ? 1'b0 : 1'b1;
 always @(posedge clk) begin
     if(!resetn)begin
         preIF1_valid <= 1'b0;

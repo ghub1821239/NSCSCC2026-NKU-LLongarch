@@ -79,6 +79,9 @@ wire        inst_invtlb;
 // sc_w
 wire        inst_sc_w;
 
+//IDLE
+wire        inst_idle;
+
 wire [31:0] rkd_value;
 reg  [inbus_width-1:0] bus;
 
@@ -124,7 +127,7 @@ assign {
         rkd_value,res_from_mem,mem_we,need_stall_csr,inst_ld_b,inst_ld_h,inst_ld_bu ,inst_ld_hu,data_sram_addr_l,alu_result_with_rdct,//MEM
         inst_csrrd, inst_csrwr,inst_csrxchg,inst_ertn,inst_syscall,inst_break,ex_INE,ex_ADEF,ex_ALE,has_int,inst_rdcntvl_w,inst_rdcntvh_w,inst_rdcntid,csr_num,rj_value,rf_dest,rf_gr_we,
         inst_tlbsrch,TLBIDX_new_tlbsrch,inst_tlbrd,inst_tlbwr,inst_tlbfill,inst_invtlb,//WB
-        ex_tlb_reload0,ex_tlb_preif_unvalid,ex_tlb_plv0,ex_tlb_reload1,ex_tlb_ld_unvalid,ex_tlb_st_unvalid,ex_tlb_plv1,ex_tlb_page_modify,inst_sc_w
+        ex_tlb_reload0,ex_tlb_preif_unvalid,ex_tlb_plv0,ex_tlb_reload1,ex_tlb_ld_unvalid,ex_tlb_st_unvalid,ex_tlb_plv1,ex_tlb_page_modify,inst_sc_w,inst_idle
     }=bus;
 assign MEM_rf_dest = rf_dest;
 assign need_stall_inst = res_from_mem;
@@ -136,7 +139,7 @@ assign MEM_WB_bus ={
         pc,need_stall_csr,alu_result_with_rdct,
         inst_csrrd, inst_csrwr,inst_csrxchg,inst_ertn,inst_syscall,inst_break,ex_INE,ex_ADEF,ex_ALE,has_int,inst_rdcntvl_w,inst_rdcntvh_w,inst_rdcntid,csr_num,mem_we,rj_value,rkd_value,rf_dest,rf_wdata,rf_gr_we_ex,
         inst_tlbsrch,TLBIDX_new_tlbsrch,inst_tlbrd,inst_tlbwr,inst_tlbfill,inst_invtlb,//WB
-        ex_tlb_reload0,ex_tlb_preif_unvalid,ex_tlb_plv0,ex_tlb_reload1,ex_tlb_ld_unvalid,ex_tlb_st_unvalid,ex_tlb_plv1,ex_tlb_page_modify
+        ex_tlb_reload0,ex_tlb_preif_unvalid,ex_tlb_plv0,ex_tlb_reload1,ex_tlb_ld_unvalid,ex_tlb_st_unvalid,ex_tlb_plv1,ex_tlb_page_modify,inst_idle
     };//[todo: change bus]
 //------------------------{bus}end-------------------------//
 
