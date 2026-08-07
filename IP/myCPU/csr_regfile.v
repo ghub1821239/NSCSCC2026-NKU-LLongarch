@@ -108,6 +108,7 @@ module csr_regfile#(
     output   wire  [1:0] dmw_mat1,
     //LLbit
     input    wire        LLbit_wb,
+    input    wire        LLbit_wdata,
     output   wire        LLbit
 );
 
@@ -619,9 +620,9 @@ end
 
 //【LLBCTL】
 always @(posedge clk)begin
-    if(LLbit_wb)begin
-        LLBCTL[`CSR_LLBCTL_ROLLB] <= 1'b1;
-    end
+    // 指导手册没说resetn 但是resetn应该问题不大
+    if (!resetn)
+        LLBCTL[`CSR_LLBCTL_ROLLB] <= 1'b0;
     else if (csr_we && csr_num == `CSR_LLBCTL)begin
         if(csr_wmask[`CSR_LLBCTL_WCLLB] & csr_wvalue[`CSR_LLBCTL_WCLLB])begin
             LLBCTL[`CSR_LLBCTL_ROLLB] <= 1'b0;
@@ -630,13 +631,8 @@ always @(posedge clk)begin
     else if (inst_ertn & ~LLBCTL[`CSR_LLBCTL_KLO])begin
         LLBCTL[`CSR_LLBCTL_ROLLB] <= 1'b0;
     end
-end
-
-always @ (posedge clk)begin
-    if (csr_we && csr_num == `CSR_LLBCTL)begin
-        if(csr_wmask[`CSR_LLBCTL_WCLLB] & csr_wvalue[`CSR_LLBCTL_WCLLB])begin
-            LLBCTL[`CSR_LLBCTL_WCLLB] <= 1'b1;
-        end
+    else if(LLbit_wb)begin
+        LLBCTL[`CSR_LLBCTL_ROLLB] <= LLbit_wdata;
     end
 end
 
@@ -743,7 +739,7 @@ assign csr_asid_rvalue   = {{8'b0},{8'ha},{6'b0},ASID[`CSR_ASID_ASID]};
 assign csr_tlbrentry_rvalue = {TLBRENTRY[`CSR_TLBRENTRY_PA],{6'b0}};
 assign csr_dmw0_rvalue = {DMW0[`CSR_DMW0_VSEG],{1{1'b0}},DMW0[`CSR_DMW0_PSEG],{19{1'b0}},DMW0[`CSR_DMW0_MAT],DMW0[`CSR_DMW0_PLV3],{2{1'b0}},DMW0[`CSR_DMW0_PLV0]};
 assign csr_dmw1_rvalue = {DMW1[`CSR_DMW1_VSEG],{1{1'b0}},DMW1[`CSR_DMW1_PSEG],{19{1'b0}},DMW1[`CSR_DMW1_MAT],DMW1[`CSR_DMW1_PLV3],{2{1'b0}},DMW1[`CSR_DMW1_PLV0]};
-assign csr_llbctl_rvalue = {29'h0,LLBCTL[`CSR_LLBCTL_KLO],LLBCTL[`CSR_LLBCTL_WCLLB],LLBCTL[`CSR_LLBCTL_ROLLB]};
+assign csr_llbctl_rvalue = {29'h0,LLBCTL[`CSR_LLBCTL_KLO],1'b0,LLBCTL[`CSR_LLBCTL_ROLLB]};
 
 //csr锟斤拷tlb锟侥接口斤拷锟斤拷
 assign r_index = TLBIDX[`CSR_TLBIDX_INDEX];

@@ -31,13 +31,13 @@ module decode #(
     output wire        update_valid ,
     output wire        bht_update_valid,
     output wire [31:0] update_pc    ,
-    output wire [31:0] update_target,//��ʵĿ���ַ
+    output wire [31:0] update_target,//��ʵĿ����?
     output wire [1:0]  update_type  ,
     output wire        update_taken ,//��ʵ�Ƿ���ת
-    // �����ʵ call ����
+    // ������? call ����
     output wire        push_valid   ,
     output wire [31:0] push_target  ,
-    // �����ʵ return ����
+    // ������? return ����
     output wire        pop_valid   
 );
 //------------------------{bus decode}begin-------------------------//
@@ -282,7 +282,7 @@ assign inst_ertn   = op_31_26_d[6'h01] & op_25_22_d[4'h9] & op_21_20_d[2'h0] & o
 assign inst_syscall= op_31_26_d[6'h00] & op_25_22_d[4'h0] & op_21_20_d[2'h2] & op_19_15_d[5'h16];
 assign inst_break  = op_31_26_d[6'h00] & op_25_22_d[4'h0] & op_21_20_d[2'h2] & op_19_15_d[5'h14];
 assign inst_csr    = inst_csrrd | inst_csrwr | inst_csrxchg;
-assign inst_rdcntvl_w=op_31_26_d[6'h00] & op_25_22_d[4'h0] & op_21_20_d[2'h0] & op_19_15_d[5'h0] & rk == 5'b11000 & rj == 5'b00000 & rd != 5'b00000;//notice:我�?�加�??!=的condition，操作手册上没写，但�??加上更完善，因为�??0号寄存器和不写一样，因�?�可以排除�??
+assign inst_rdcntvl_w=op_31_26_d[6'h00] & op_25_22_d[4'h0] & op_21_20_d[2'h0] & op_19_15_d[5'h0] & rk == 5'b11000 & rj == 5'b00000 & rd != 5'b00000;//notice:我�?�加�???!=的condition，操作手册上没写，但�???加上更完善，因为�???0号寄存器和不写一样，因�?�可以排除�??
 assign inst_rdcntvh_w=op_31_26_d[6'h00] & op_25_22_d[4'h0] & op_21_20_d[2'h0] & op_19_15_d[5'h0] & rk == 5'b11001 & rj == 5'b00000;
 assign inst_rdcntid= op_31_26_d[6'h00] & op_25_22_d[4'h0] & op_21_20_d[2'h0] & op_19_15_d[5'h0] & rk == 5'b11000 & rj != 5'b00000 & rd == 5'b00000;
 //chapter 9 exp18:new add
@@ -296,8 +296,8 @@ assign inst_cacop  = op_31_26_d[6'h01] & op_25_22_d[4'h8];
 //cpucfg
 assign inst_cpucfg = op_31_26_d[6'h00] & op_25_22_d[4'h0] & op_21_20_d[2'h0] & op_19_15_d[5'h0] & rk == 5'b11011;
 //system inst
-assign inst_ibar   = op_31_26_d[6'h0e] & op_25_22_d[4'h1] & op_21_20_d[2'h3] & op_19_15_d[5'h4] & inst[14:0] == 15'h0;
-assign inst_dbar   = op_31_26_d[6'h0e] & op_25_22_d[4'h1] & op_21_20_d[2'h3] & op_19_15_d[5'h5] & inst[14:0] == 15'h0;
+assign inst_ibar   = op_31_26_d[6'h0e] & op_25_22_d[4'h1] & op_21_20_d[2'h3] & op_19_15_d[5'h4];
+assign inst_dbar   = op_31_26_d[6'h0e] & op_25_22_d[4'h1] & op_21_20_d[2'h3] & op_19_15_d[5'h5];
 assign inst_ll_w   = op_31_26_d[6'h08] & op_25_24_d[2'h0];
 assign inst_sc_w   = op_31_26_d[6'h08] & op_25_24_d[2'h1];
 // IDLE
@@ -332,8 +332,7 @@ wire rf_gr_we;
 assign rf_gr_we= ~inst_st_w    & ~inst_beq   & ~inst_bne   & ~inst_b       & ~inst_blt  &
                  ~inst_bge     & ~inst_bltu  & ~inst_bgeu  & ~inst_st_b    & ~inst_st_h &
                  ~inst_tlbsrch & ~inst_tlbrd & ~inst_tlbwr & ~inst_tlbfill & ~inst_invtlb &
-                 ~inst_cacop.  & ~inst_ibar  & ~inst_dbar  & ~inst_sc_w
-                 ~inst_idle;
+                 ~inst_cacop   & ~inst_ibar  & ~inst_dbar  & ~inst_idle;
 
 assign need_ui5   =  inst_slli_w | inst_srli_w | inst_srai_w;
 assign need_ui12  =  inst_andi   | inst_ori    | inst_xori;
@@ -352,7 +351,7 @@ assign src2_is_4  =  inst_jirl | inst_bl;
 assign imm = src2_is_4 ? 32'h4                         :
              need_si20 ? {i20[19:0], 12'b0}            :
              need_ui12 ? {{20{1'b0}},i12[11:0]}        :
-             need_si14 ? {{16{i14[13]},i14[13:0],2'b0} :
+             need_si14 ? {{16{i14[13]}},i14[13:0],2'b0}:
 /*need_ui5 || need_si12*/{{20{i12[11]}}, i12[11:0]} ;
 
 assign br_offs = need_si26 ? {{ 4{i26[25]}}, i26[25:0], 2'b0} :
@@ -397,7 +396,7 @@ assign dst_is_r1     = inst_bl;
 assign res_from_mem  = inst_ld_w | inst_ld_b | inst_ld_h | inst_ld_bu | inst_ld_hu | inst_ll_w;
 assign mem_we        = inst_st_w | inst_st_b | inst_st_h | inst_sc_w;
 assign rf_dest       = dst_is_r1 ? 5'd1 : (inst_rdcntid ? rj : rd);
-// src1/2不会被使用
+// src1/2不会�?使用
 wire src1_unused = inst_b | inst_bl | inst_lu12i_w | inst_pcaddu12i_w;
 wire src2_unused = (src2_is_imm && !mem_we) | inst_b;
 
@@ -432,22 +431,6 @@ wire need_stall_csr;
 assign need_stall_inst = inst_ld_w | inst_ld_b | inst_ld_h | inst_ld_bu | inst_ld_hu | inst_ll_w;
 assign need_stall_csr =  inst_csrrd | inst_csrwr | inst_csrxchg | inst_rdcntid | inst_rdcntvl_w | inst_rdcntvh_w;
 //------------------------{stall}end-------------------------//
-
-//------------------------{ready_go}begin-------------------------//
-assign ID_ready_go= need_stall ? 1'b0 : 1'b1;
-
-always @(posedge clk) begin
-    if(!resetn)begin
-        ID_valid<=1'b0;
-    end
-    else if(ID_need_cancel)begin
-        ID_valid<=1'b0;
-    end
-    else if(ID_allow_in)begin
-        ID_valid<= redirect ? 1'b0 : IF_ID_valid;
-    end
-end
-//------------------------{ready_go}end-------------------------//
 
 //------------------------{ex_INE}begin-------------------------//
 wire ex_tlbinv_op;
@@ -491,7 +474,7 @@ wire [31:0] direct_target;
 
     //---------------{��ת����}begin---------------//
     wire is_cond ;
-    wire is_jirl_call;// jirl $rd==$r1 ʱ�����Ϊ����call
+    wire is_jirl_call;// jirl $rd==$r1 ʱ������?����call
     wire is_jump ;// b �� jirl �� rd!=0
     wire is_call ;
     wire is_ret  ;
@@ -501,7 +484,7 @@ wire [31:0] direct_target;
     assign is_jump = inst_b | is_indirect_jump;
     assign is_call = inst_bl | is_jirl_call;
     assign is_ret  = inst_jirl & (rd == 5'd0) & (rj == 5'b1) & (i16 == 16'b0);
-    assign is_indirect_jump = inst_jirl && !is_jirl_call && !is_ret;//����call��return��jirl���Ǽ����ת
+    assign is_indirect_jump = inst_jirl && !is_jirl_call && !is_ret;//����call��return��jirl���Ǽ�����?
     //---------------{��ת����}end---------------//
 
     //---------------{��ת�ͱ��Ա� ��Ч & ƥ��}begin---------------//
@@ -509,7 +492,7 @@ wire [31:0] direct_target;
     wire pred_ok ;
     /*
         ֮ǰ���ֻ��� dcache->rj->rj+imm->�Ա�real->btb
-        ���Բ�ֳ�
+        ���Բ�ֳ�?
             dache->rj
                         ->�Ա�real-imm & rj ->btb
             real-imm
