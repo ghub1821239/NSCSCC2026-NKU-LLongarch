@@ -91,10 +91,14 @@ wire [ 1:0] op_21_20;
 wire [ 4:0] op_19_15;
 wire [ 1:0] op_25_24;
 wire [4:0]  op_14_10;
+
 wire [ 4:0] rd;
 wire [ 4:0] rj;
 wire [ 4:0] rk;
 wire [13:0] csr_num;
+wire [ 4:0] hint;
+
+
 wire [11:0] i12;
 wire [13:0] i14;
 wire [19:0] i20;
@@ -185,6 +189,8 @@ wire        inst_ll_w;
 wire        inst_sc_w;
 // IDLE
 wire        inst_idle;
+// preld
+wire        inst_preld;
 
 wire        need_ui5;
 wire        need_ui12;
@@ -213,6 +219,7 @@ assign  rd       = inst[ 4: 0];
 assign  rj       = inst[ 9: 5];
 assign  rk       = inst[14:10];
 assign  csr_num  = inst[23:10];
+assign  hint     = inst[ 4: 0];
 
 assign  i12      = inst[21:10];
 assign  i14      = inst[23:10];
@@ -305,12 +312,15 @@ assign  inst_ll_w        = op_31_26_d[6'h08] & op_25_24_d[2'h0];
 assign  inst_sc_w        = op_31_26_d[6'h08] & op_25_24_d[2'h1];
 // IDLE
 assign  inst_idle        = op_31_26_d[6'h01] & op_25_22_d[4'h9] & op_21_20_d[2'h0] & op_19_15_d[5'h11];
+//preld
+assign  inst_preld       = op_31_26_d[6'h0a] & op_25_22_d[4'hb];
 
-assign  alu_op[ 0]       = inst_add_w | inst_addi_w | inst_ld_w | inst_st_w
-                                      | inst_jirl | inst_bl | inst_pcaddu12i_w 
-                                      | inst_ld_b | inst_ld_h | inst_ld_bu | inst_ld_hu 
-                                      | inst_st_b | inst_st_h | inst_cacop | inst_cpucfg
-                                      | inst_ll_w | inst_sc_w;
+
+assign  alu_op[ 0]       = inst_add_w | inst_addi_w | inst_ld_w        | inst_st_w | 
+                           inst_jirl  | inst_bl     | inst_pcaddu12i_w | inst_ld_b | 
+                           inst_ld_h  | inst_ld_bu  | inst_ld_hu       | inst_st_b | 
+                           inst_st_h  | inst_cacop  | inst_cpucfg      | inst_ll_w | 
+                           inst_sc_w  | inst_preld;
 assign  alu_op[ 1]       = inst_sub_w;
 assign  alu_op[ 2]       = inst_slt   | inst_slti;
 assign  alu_op[ 3]       = inst_sltu  | inst_sltui;
@@ -335,14 +345,13 @@ wire    rf_gr_we;
 assign  rf_gr_we         = ~inst_st_w    & ~inst_beq   & ~inst_bne   & ~inst_b       & ~inst_blt  &
                            ~inst_bge     & ~inst_bltu  & ~inst_bgeu  & ~inst_st_b    & ~inst_st_h &
                            ~inst_tlbsrch & ~inst_tlbrd & ~inst_tlbwr & ~inst_tlbfill & ~inst_invtlb &
-                           ~inst_cacop   & ~inst_ibar  & ~inst_dbar  & ~inst_idle;
+                           ~inst_cacop   & ~inst_ibar  & ~inst_dbar  & ~inst_idle    & ~inst_preld;
 
 assign  need_ui5         = inst_slli_w | inst_srli_w | inst_srai_w;
 assign  need_ui12        = inst_andi   | inst_ori    | inst_xori;
-assign  need_si12        = inst_addi_w | inst_ld_w | inst_st_w | inst_slti | inst_sltui
-                                       | inst_ld_b | inst_ld_h | inst_ld_bu | inst_ld_hu
-                                       | inst_st_b | inst_st_h 
-                                       | inst_cacop;
+assign  need_si12        = inst_addi_w | inst_ld_w   | inst_st_w  | inst_slti  | inst_sltui |
+                           inst_ld_b   | inst_ld_h   | inst_ld_bu | inst_ld_hu | inst_st_b  | 
+                           inst_st_h   | inst_cacop  | inst_preld; 
 assign  need_si14        = inst_ll_w | inst_sc_w;
 assign  need_si16        = inst_jirl | inst_beq | inst_bne
                                      | inst_blt | inst_bge | inst_bltu | inst_bgeu;
@@ -390,7 +399,8 @@ assign  src2_is_imm      = inst_slli_w |
                            inst_st_h   |
                            inst_cacop  |
                            inst_ll_w   |
-                           inst_sc_w;
+                           inst_sc_w   |
+                           inst_preld;
                        
 //------------------------{one hot}end-------------------------//
 
@@ -459,7 +469,7 @@ assign  ex_INE        = ~(inst_add_w        | inst_sub_w        | inst_slt      
                         inst_rdcntid        | inst_rdcntvl_w    | inst_rdcntvh_w    | inst_tlbsrch                |
                         inst_tlbrd          | inst_tlbwr        | inst_tlbfill      | inst_invtlb & ~ex_tlbinv_op |
                         inst_cacop          | inst_cpucfg       | inst_dbar         | inst_ibar                   |
-                        inst_ll_w           | inst_sc_w         | inst_idle);
+                        inst_ll_w           | inst_sc_w         | inst_idle         | inst_preld);
 
 wire    ex_IPE;
 wire    IPE_inst_plv0 = (inst_csrrd   | inst_csrwr | inst_csrxchg | inst_idle  |
@@ -593,3 +603,4 @@ always @(posedge clk) begin
 end
 //------------------------{ready_go}end-------------------------//
 endmodule
+
