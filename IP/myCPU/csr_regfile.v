@@ -118,6 +118,7 @@ module csr_regfile#(
 // ----------DEFINE--------------
 reg [31:0] CRMD;
 reg [31:0] PRMD;
+reg [31:0] EUEN;
 reg [31:0] ESTAT;
 reg [31:0] ERA;
 reg [31:0] EENTRY;
@@ -140,6 +141,8 @@ reg [31:0] TLBRENTRY;
 reg [31:0] DMW0;
 reg [31:0] DMW1;
 reg [31:0] LLBCTL;
+reg [31:0] PGDL;
+reg [31:0] PGDH;
 // ----------DEFINE END----------
 
 // ----------WRITE IN--------------
@@ -243,6 +246,17 @@ always @(posedge clk)begin
     else if (csr_we & csr_num == `CSR_PRMD)begin
         PRMD[`CSR_PRMD_PIE] <= (csr_wmask[`CSR_PRMD_PIE] & csr_wvalue[`CSR_PRMD_PIE]) |
                                (~csr_wmask[`CSR_PRMD_PIE] & PRMD[`CSR_PRMD_PIE]);
+    end
+end
+
+//【EUEN】
+always @(posedge clk)begin
+    if(!resetn)begin
+        EUEN[`CSR_EUEN_FPE] <= 1'b0;
+    end
+    else if(csr_we & csr_num == `CSR_EUEN)begin
+        EUEN[`CSR_EUEN_FPE] <= (csr_wmask[`CSR_EUEN_FPE] & csr_wvalue[`CSR_EUEN_FPE]) |
+                               (~csr_wmask[`CSR_EUEN_FPE] & EUEN[`CSR_EUEN_FPE]);
     end
 end
 
@@ -633,6 +647,22 @@ always @(posedge clk)begin
     end
 end
 
+//【PGDL】
+always @(posedge clk)begin
+    if (csr_we && csr_num == `CSR_PGDL)begin
+        PGDL[`CSR_PGDL_BASE] <= (csr_wmask[`CSR_PGDL_BASE] & csr_wvalue[`CSR_PGDL_BASE]) |
+                                (~csr_wmask[`CSR_PGDL_BASE] & PGDL[`CSR_PGDL_BASE]);
+    end
+end
+
+//【PGDH】
+always @(posedge clk)begin
+    if (csr_we && csr_num == `CSR_PGDH)begin
+        PGDH[`CSR_PGDH_BASE] <= (csr_wmask[`CSR_PGDH_BASE] & csr_wvalue[`CSR_PGDH_BASE]) |
+                                (~csr_wmask[`CSR_PGDH_BASE] & PGDH[`CSR_PGDH_BASE]);
+    end
+end
+
 // ----------WRITE IN END--------------
 always @(posedge clk)begin
     // 手册没说resetn 时resetn应该默认清零
@@ -727,6 +757,10 @@ wire   [31:0] csr_tlbrentry_rvalue;
 wire   [31:0] csr_dmw0_rvalue;
 wire   [31:0] csr_dmw1_rvalue;
 wire   [31:0] csr_llbctl_rvalue;
+wire   [31:0] csr_euen_rvalue;
+wire   [31:0] csr_pgdl_rvalue;
+wire   [31:0] csr_pgdh_rvalue;
+wire   [31:0] csr_pgd_rvalue;
 
 assign        csr_crmd_rvalue        = {{23{1'b0}},CRMD[`CSR_CRMD_DATM],CRMD[`CSR_CRMD_DATF],CRMD[`CSR_CRMD_PG],CRMD[`CSR_CRMD_DA], CRMD[`CSR_CRMD_IE],CRMD[`CSR_CRMD_PLV]};
 assign        csr_prmd_rvalue        = {{29{1'b0}},PRMD[`CSR_PRMD_PIE],PRMD[`CSR_PRMD_PPLV]};
@@ -754,6 +788,11 @@ assign        csr_tlbrentry_rvalue   = {TLBRENTRY[`CSR_TLBRENTRY_PA],{6'b0}};
 assign        csr_dmw0_rvalue        = {DMW0[`CSR_DMW0_VSEG],{1{1'b0}},DMW0[`CSR_DMW0_PSEG],{19{1'b0}},DMW0[`CSR_DMW0_MAT],DMW0[`CSR_DMW0_PLV3],{2{1'b0}},DMW0[`CSR_DMW0_PLV0]};
 assign        csr_dmw1_rvalue        = {DMW1[`CSR_DMW1_VSEG],{1{1'b0}},DMW1[`CSR_DMW1_PSEG],{19{1'b0}},DMW1[`CSR_DMW1_MAT],DMW1[`CSR_DMW1_PLV3],{2{1'b0}},DMW1[`CSR_DMW1_PLV0]};
 assign        csr_llbctl_rvalue      = {29'h0,LLBCTL[`CSR_LLBCTL_KLO],1'b0,LLBCTL[`CSR_LLBCTL_ROLLB]};
+
+assign        csr_euen_rvalue        = {31'd0,EUEN[`CSR_EUEN_FPE]};
+assign        csr_pgdl_rvalue        = {PGDL[`CSR_PGDL_BASE],12'd0};
+assign        csr_pgdh_rvalue        = {PGDH[`CSR_PGDH_BASE],12'd0};
+assign        csr_pgd_rvalue         = BADV[31] ? csr_pgdh_rvalue : csr_pgdl_rvalue;
 
 //write TLB接口
 assign        r_index                = TLBIDX[`CSR_TLBIDX_INDEX];
@@ -810,7 +849,11 @@ assign  csr_rvalue    = ({32{csr_num == `CSR_CRMD}}      & csr_crmd_rvalue)     
                         ({32{csr_num == `CSR_TLBRENTRY}} & csr_tlbrentry_rvalue)      |
                         ({32{csr_num == `CSR_DMW0}}      & csr_dmw0_rvalue)           |
                         ({32{csr_num == `CSR_DMW1}}      & csr_dmw1_rvalue)           |
-                        ({32{csr_num == `CSR_LLBCTL}}    & csr_llbctl_rvalue);
+                        ({32{csr_num == `CSR_LLBCTL}}    & csr_llbctl_rvalue)         |
+                        ({32{csr_num == `CSR_EUEN}}      & csr_euen_rvalue)           |
+                        ({32{csr_num == `CSR_PGDL}}      & csr_pgdl_rvalue)           |
+                        ({32{csr_num == `CSR_PGDH}}      & csr_pgdh_rvalue)           |
+                        ({32{csr_num == `CSR_PGD}}       & csr_pgd_rvalue);
 
 // ---------- READ END --------------
 endmodule
