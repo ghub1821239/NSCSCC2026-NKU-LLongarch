@@ -3,9 +3,9 @@ module decoder_5_32(
     output wire [31:0] out
 );
 
-genvar  i;
+genvar i;
 generate for (i=0; i<32; i=i+1) begin : gen_for_dec_5_32
-    assign  out[i] = (in == i);
+    assign out[i] = (in == i);
 end endgenerate
 
 endmodule
