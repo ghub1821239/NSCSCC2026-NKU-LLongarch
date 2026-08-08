@@ -3,9 +3,9 @@ module decoder_4_16(
     output wire [15:0] out
 );
 
-genvar  i;
+genvar i;
 generate for (i=0; i<16; i=i+1) begin : gen_for_dec_4_16
-    assign  out[i] = (in == i);
+    assign out[i] = (in == i);
 end endgenerate
 
 endmodule
