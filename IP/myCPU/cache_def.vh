@@ -4,12 +4,14 @@
 //----------------------------- 参数定义开始 --------------------------
 `define REPLACE_MODE  1'b0  //0：LRU，1：伪随机
 
-//2路组相连，每路256组，每行16字节
-`define GROUP_NUM      256
-`define INDEX_WIDTH    8
-`define TAG_WIDTH      20
+//2路组相连，每路1024组，每行16字节 → 每侧 32KB（16KB 为 512 组）
+// 地址划分: tag[31:14] | index[13:4] | offset[3:0]
+// 说明：优先扩容量优于同容量 4 路；4 路改动大且冲突 miss 收益通常小于容量翻倍
+`define GROUP_NUM      1024
+`define INDEX_WIDTH    10
+`define TAG_WIDTH      18
 `define OFFSET_WIDTH   4
-`define TAGV_WIDTH     21   //高位为标签，低位为有效位
+`define TAGV_WIDTH     21   // {pad[2:0] 高位, tag[17:0], V} 固定 21bit BRAM
 `define BANK_NUM       4
 `define BANK_SIZE      32
 `define LINE_SIZE      128
