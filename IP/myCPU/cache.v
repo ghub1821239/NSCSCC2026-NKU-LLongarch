@@ -9,8 +9,8 @@ module cache #(
     //                                                          来自(input)/去往（output)
     input  wire         valid,//表明请求有效                                       CPU
     input  wire         op, // op：0读，1写                                        CPU
-    input  wire [7 :0]  index,// CPU 直接截取的12：4(肯定不涉及虚实映射)               CPU
-    input  wire [19:0]  tag,  // CPU处理好的paddr    (虚实映射)                     CPU
+    input  wire [9 :0]  index,// CPU 直接截取的13：4(肯定不涉及虚实映射)               CPU
+    input  wire [17:0]  tag,  // CPU处理好的paddr    (虚实映射)                     CPU
     input  wire [3 :0]  offset,// CPU 直接截取的3:0 (肯定不涉及虚实映射)              CPU
     input  wire [3 :0]  wstrb,//                                                 CPU
     input  wire [31:0]  wdata,//                                                 CPU
@@ -254,7 +254,7 @@ assign  tagv_way1_dina  = (tagv_way1_wea & code0) ? {21'b0} :
                           (tagv_way1_wea & code1) ? {replace_tag_r,1'b0} :
                           (tagv_way1_code2&code2) ? {20'b0,1'b0} :
                           {miss_tag_r, 1'b1};
-// TagV RAM：每路一张 256x21 表，位[20:1]为标签，位[0]为有效位
+// TagV RAM：每路一张 1024x21 表，位[18:1]为标签，位[0]为有效位
 tagv_ram tagv_way0 (
     .clka  (clk                             ),
     .wea   (tagv_way0_wea | tagv_way0_code2 ),
@@ -380,8 +380,8 @@ data_bank_ram data_way1_bank3 (
 //----------------------------- DATA BANK RAM 访问逻辑 begin --------------------------
 
 //----------------------------- LOOKUP/REPLACE/REFILL 组合逻辑开始 --------------------------
-assign  way0_tag               = tagv_way0_r[20:1];
-assign  way1_tag               = tagv_way1_r[20:1];
+assign  way0_tag               = tagv_way0_r[18:1];
+assign  way1_tag               = tagv_way1_r[18:1];
 assign  way0_v                 = tagv_way0_r[0];
 assign  way1_v                 = tagv_way1_r[0];
 assign  way0_d                 = dirty_way0_r;
