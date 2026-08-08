@@ -154,125 +154,125 @@ wire           cacop_done;
 assign         cacop_done         = inst_cacop_done | data_cacop_done;
 
 mycpu_core u_mycpu_core(
-    .clk                (aclk   ),
-    .resetn             (aresetn),
+    .clk                (aclk               ),
+    .resetn             (aresetn            ),
 
-    .inst_sram_req      (cpu_inst_req    ),
-    .inst_sram_wr       (cpu_inst_wr     ),
-    .inst_sram_size     (cpu_inst_size   ),
-    .inst_sram_wstrb    (cpu_inst_wstrb  ),
-    .inst_sram_addr     (cpu_inst_addr   ),
-    .inst_sram_wdata    (cpu_inst_wdata  ),
-    .inst_sram_addr_ok  (cpu_inst_addr_ok),
-    .inst_sram_data_ok  (cpu_inst_data_ok),
-    .inst_sram_rdata    (cpu_inst_rdata  ),
-    .inst_uncache_valid (inst_uncache_valid),
-    .inst_uncache_wr    (inst_uncache_wr),
+    .inst_sram_req      (cpu_inst_req       ),
+    .inst_sram_wr       (cpu_inst_wr        ),
+    .inst_sram_size     (cpu_inst_size      ),
+    .inst_sram_wstrb    (cpu_inst_wstrb     ),
+    .inst_sram_addr     (cpu_inst_addr      ),
+    .inst_sram_wdata    (cpu_inst_wdata     ),
+    .inst_sram_addr_ok  (cpu_inst_addr_ok   ),
+    .inst_sram_data_ok  (cpu_inst_data_ok   ),
+    .inst_sram_rdata    (cpu_inst_rdata     ),
+    .inst_uncache_valid (inst_uncache_valid ),
+    .inst_uncache_wr    (inst_uncache_wr    ),
 
-    .data_sram_req      (cpu_data_req    ),
-    .data_sram_wr       (cpu_data_wr     ),
-    .data_sram_size     (cpu_data_size   ),
-    .data_sram_wstrb    (cpu_data_wstrb  ),
-    .data_sram_addr     (cpu_data_addr   ),
-    .data_sram_wdata    (cpu_data_wdata  ),
-    .data_sram_addr_ok  (cpu_data_addr_ok),
-    .data_sram_data_ok  (cpu_data_data_ok),
-    .data_sram_rdata    (cpu_data_rdata  ),
-    .data_uncache_valid (data_uncache_valid),
-    .data_uncache_wr    (data_uncache_wr),
+    .data_sram_req      (cpu_data_req       ),
+    .data_sram_wr       (cpu_data_wr        ),
+    .data_sram_size     (cpu_data_size      ),
+    .data_sram_wstrb    (cpu_data_wstrb     ),
+    .data_sram_addr     (cpu_data_addr      ),
+    .data_sram_wdata    (cpu_data_wdata     ),
+    .data_sram_addr_ok  (cpu_data_addr_ok   ),
+    .data_sram_data_ok  (cpu_data_data_ok   ),
+    .data_sram_rdata    (cpu_data_rdata     ),
+    .data_uncache_valid (data_uncache_valid ),
+    .data_uncache_wr    (data_uncache_wr    ),
     
     //cache_cacop
-    .cacop_valid        (cacop_valid),
-    .cache_code         (cache_code),
-    .cacop_done         (cacop_done),
+    .cacop_valid        (cacop_valid        ),
+    .cache_code         (cache_code         ),
+    .cacop_done         (cacop_done         ),
 
-    .debug_wb_pc        (debug0_wb_pc      ),
-    .debug_wb_rf_we     (debug0_wb_rf_wen  ),
-    .debug_wb_rf_wnum   (debug0_wb_rf_wnum ),
-    .debug_wb_rf_wdata  (debug0_wb_rf_wdata),
+    .debug_wb_pc        (debug0_wb_pc       ),
+    .debug_wb_rf_we     (debug0_wb_rf_wen   ),
+    .debug_wb_rf_wnum   (debug0_wb_rf_wnum  ),
+    .debug_wb_rf_wdata  (debug0_wb_rf_wdata ),
     //硬中断
-    .hw_int_in          (intrpt)
+    .hw_int_in          (intrpt             )
 );
 
 bridge_SRAM_AXI u_bridge_SRAM_AXI(
-    .clk               (aclk             ),
-    .resetn            (aresetn          ),
+    .clk            (aclk           ),
+    .resetn         (aresetn        ),
 
     // inst cache interface
-    .inst_rd_req       (inst_rd_req      ),
-    .inst_rd_type      (inst_rd_type     ),
-    .inst_rd_addr      (inst_rd_addr     ),
-    .inst_rd_rdy       (inst_rd_rdy      ),
-    .inst_ret_valid    (inst_ret_valid   ),
-    .inst_ret_last     (inst_ret_last    ),
-    .inst_ret_data     (inst_ret_data    ),
-    .inst_wr_req       (inst_wr_req      ),
-    .inst_wr_type      (inst_wr_type     ),
-    .inst_wr_addr      (inst_wr_addr     ),
-    .inst_wr_wstrb     (inst_wr_wstrb    ),
-    .inst_wr_wdata     (inst_wr_wdata    ),
-    .inst_wr_rdy       (inst_wr_rdy      ),
+    .inst_rd_req    (inst_rd_req    ),
+    .inst_rd_type   (inst_rd_type   ),
+    .inst_rd_addr   (inst_rd_addr   ),
+    .inst_rd_rdy    (inst_rd_rdy    ),
+    .inst_ret_valid (inst_ret_valid ),
+    .inst_ret_last  (inst_ret_last  ),
+    .inst_ret_data  (inst_ret_data  ),
+    .inst_wr_req    (inst_wr_req    ),
+    .inst_wr_type   (inst_wr_type   ),
+    .inst_wr_addr   (inst_wr_addr   ),
+    .inst_wr_wstrb  (inst_wr_wstrb  ),
+    .inst_wr_wdata  (inst_wr_wdata  ),
+    .inst_wr_rdy    (inst_wr_rdy    ),
 
     // data cache interface
-    .data_rd_req       (data_rd_req      ),
-    .data_rd_type      (data_rd_type     ),
-    .data_rd_addr      (data_rd_addr     ),
-    .data_rd_rdy       (data_rd_rdy      ),
-    .data_ret_valid    (data_ret_valid   ),
-    .data_ret_last     (data_ret_last    ),
-    .data_ret_data     (data_ret_data    ),
-    .data_wr_req       (data_wr_req      ),
-    .data_wr_type      (data_wr_type     ),
-    .data_wr_addr      (data_wr_addr     ),
-    .data_wr_wstrb     (data_wr_wstrb    ),
-    .data_wr_wdata     (data_wr_wdata     ),
-    .data_wr_rdy       (data_wr_rdy      ),
+    .data_rd_req    (data_rd_req    ),
+    .data_rd_type   (data_rd_type   ),
+    .data_rd_addr   (data_rd_addr   ),
+    .data_rd_rdy    (data_rd_rdy    ),
+    .data_ret_valid (data_ret_valid ),
+    .data_ret_last  (data_ret_last  ),
+    .data_ret_data  (data_ret_data  ),
+    .data_wr_req    (data_wr_req    ),
+    .data_wr_type   (data_wr_type   ),
+    .data_wr_addr   (data_wr_addr   ),
+    .data_wr_wstrb  (data_wr_wstrb  ),
+    .data_wr_wdata  (data_wr_wdata  ),
+    .data_wr_rdy    (data_wr_rdy    ),
 
-    .arid              (arid             ),
-    .araddr            (araddr           ),
-    .arlen             (arlen            ),
-    .arsize            (arsize           ),
-    .arburst           (arburst          ),
-    .arlock            (arlock           ),
-    .arcache           (arcache          ),
-    .arprot            (arprot           ),
-    .arvalid           (arvalid          ),
-    .arready           (arready          ),
+    .arid           (arid           ),
+    .araddr         (araddr         ),
+    .arlen          (arlen          ),
+    .arsize         (arsize         ),
+    .arburst        (arburst        ),
+    .arlock         (arlock         ),
+    .arcache        (arcache        ),
+    .arprot         (arprot         ),
+    .arvalid        (arvalid        ),
+    .arready        (arready        ),
 
-    .rid               (rid              ),
-    .rdata             (rdata            ),
-    .rresp             (rresp            ),
-    .rlast             (rlast            ),
-    .rvalid            (rvalid           ),
-    .rready            (rready           ),
+    .rid            (rid            ),
+    .rdata          (rdata          ),
+    .rresp          (rresp          ),
+    .rlast          (rlast          ),
+    .rvalid         (rvalid         ),
+    .rready         (rready         ),
 
-    .awid              (awid             ),
-    .awaddr            (awaddr           ),
-    .awlen             (awlen            ),
-    .awsize            (awsize           ),
-    .awburst           (awburst          ),
-    .awlock            (awlock           ),
-    .awcache           (awcache          ),
-    .awprot            (awprot           ),
-    .awvalid           (awvalid          ),
-    .awready           (awready          ),
+    .awid           (awid           ),
+    .awaddr         (awaddr         ),
+    .awlen          (awlen          ),
+    .awsize         (awsize         ),
+    .awburst        (awburst        ),
+    .awlock         (awlock         ),
+    .awcache        (awcache        ),
+    .awprot         (awprot         ),
+    .awvalid        (awvalid        ),
+    .awready        (awready        ),
 
-    .wid               (wid              ),
-    .wdata             (wdata            ),
-    .wstrb             (wstrb            ),
-    .wlast             (wlast            ),
-    .wvalid            (wvalid           ),
-    .wready            (wready           ),
+    .wid            (wid            ),
+    .wdata          (wdata          ),
+    .wstrb          (wstrb          ),
+    .wlast          (wlast          ),
+    .wvalid         (wvalid         ),
+    .wready         (wready         ),
 
-    .bid               (bid              ),
-    .bresp             (bresp            ),
-    .bvalid            (bvalid           ),
-    .bready            (bready           ),
+    .bid            (bid            ),
+    .bresp          (bresp          ),
+    .bvalid         (bvalid         ),
+    .bready         (bready         ),
     
-    .inst_arlen        (inst_arlen       ),
-    .data_arlen        (data_arlen       ),
-    .inst_awlen        (inst_awlen       ),
-    .data_awlen        (data_awlen       )
+    .inst_arlen     (inst_arlen     ),
+    .data_arlen     (data_arlen     ),
+    .inst_awlen     (inst_awlen     ),
+    .data_awlen     (data_awlen     )
 );
 
 //icache接口:cpu----icache
@@ -290,45 +290,45 @@ assign  cpu_inst_rdata   = inst_rdata;
 
 
 icache u_Icache (
-    .clk        (aclk),
-    .resetn     (aresetn  ),
+    .clk           (aclk               ),
+    .resetn        (aresetn            ),
 //                                                                 来自(input)/去往（output)
-    .valid      (inst_valid   ),//表明请求有效                                       CPU
-    .op         (inst_op      ), // op：0读，1写                                        CPU
-    .index      (inst_index   ),// CPU 直接截取的12：4(肯定不涉及虚实映射)     CPU
-    .tag        (inst_tag     ),  // CPU处理好的paddr    (虚实映射)              CPU
-    .offset     (inst_offset  ),// CPU 直接截取的3:0 (肯定不涉及虚实映射)     CPU
-    .wstrb      (inst_wstrb   ),//                                            CPU
-    .wdata      (inst_wdata   ),//                                            CPU
+    .valid         (inst_valid         ),//表明请求有效                                       CPU
+    .op            (inst_op            ), // op：0读，1写                                        CPU
+    .index         (inst_index         ),// CPU 直接截取的12：4(肯定不涉及虚实映射)     CPU
+    .tag           (inst_tag           ),  // CPU处理好的paddr    (虚实映射)              CPU
+    .offset        (inst_offset        ),// CPU 直接截取的3:0 (肯定不涉及虚实映射)     CPU
+    .wstrb         (inst_wstrb         ),//                                            CPU
+    .wdata         (inst_wdata         ),//                                            CPU
 
-    .addr_ok    (inst_addr_ok ),//接收到转接桥的 读/写 的 addrok 给CPU               CPU（O）                                   
-    .rd_rdy     (inst_rd_rdy  ),   // arready                                      总线
-    .rd_addr    (inst_rd_addr ), // CPU给的paddr VA 他拼接一下             总线（O）
+    .addr_ok       (inst_addr_ok       ),//接收到转接桥的 读/写 的 addrok 给CPU               CPU（O）                                   
+    .rd_rdy        (inst_rd_rdy        ),   // arready                                      总线
+    .rd_addr       (inst_rd_addr       ), // CPU给的paddr VA 他拼接一下             总线（O）
 
-    .data_ok    (inst_data_ok  ),//总线返回的                                       CPU（O）
-    .rdata      (inst_rdata    ),// 总线读出来的数据                           CPU（O）
-    .rd_req     (inst_rd_req   ),// CPU 的读请求                                     总线（O）
-    .rd_type    (inst_rd_type  ), // 和总线的size直接接                      总线：rsize 010   arlen 8'd3 （O）  
-    .ret_valid  (inst_ret_valid),// 总线返回的数是有效的                           总线：rvalid
-    .ret_last   (inst_ret_last ), // 总线返回结束了                                 总线: last
-    .ret_data   (inst_ret_data ),// 总线给的读数据 rdata                    总线
+    .data_ok       (inst_data_ok       ),//总线返回的                                       CPU（O）
+    .rdata         (inst_rdata         ),// 总线读出来的数据                           CPU（O）
+    .rd_req        (inst_rd_req        ),// CPU 的读请求                                     总线（O）
+    .rd_type       (inst_rd_type       ), // 和总线的size直接接                      总线：rsize 010   arlen 8'd3 （O）  
+    .ret_valid     (inst_ret_valid     ),// 总线返回的数是有效的                           总线：rvalid
+    .ret_last      (inst_ret_last      ), // 总线返回结束了                                 总线: last
+    .ret_data      (inst_ret_data      ),// 总线给的读数据 rdata                    总线
 
-    .wr_req     (inst_wr_req  ),//CPU发起的                                        总线（O）
-    .wr_type    (inst_wr_type ),//                                        总线（O）
-    .wr_addr    (inst_wr_addr ),//                                        总线（O）
-    .wr_wstrb   (inst_wr_wstrb),//                                       总线（O）
-    .wr_data    (inst_wr_wdata),//                                        总线（O）
-    .wr_rdy     (inst_wr_rdy  ),// 
+    .wr_req        (inst_wr_req        ),//CPU发起的                                        总线（O）
+    .wr_type       (inst_wr_type       ),//                                        总线（O）
+    .wr_addr       (inst_wr_addr       ),//                                        总线（O）
+    .wr_wstrb      (inst_wr_wstrb      ),//                                       总线（O）
+    .wr_data       (inst_wr_wdata      ),//                                        总线（O）
+    .wr_rdy        (inst_wr_rdy        ),// 
     
-    .uncache_valid   (inst_uncache_valid),
-    .uncache_wr      (inst_uncache_wr   ),
-    .ar_len          (inst_arlen),
-    .aw_len          (inst_awlen),
+    .uncache_valid (inst_uncache_valid ),
+    .uncache_wr    (inst_uncache_wr    ),
+    .ar_len        (inst_arlen         ),
+    .aw_len        (inst_awlen         ),
     //cacop
-    .cacop_valid     (cacop_valid),
-    .cache_code      (cache_code),
+    .cacop_valid   (cacop_valid        ),
+    .cache_code    (cache_code         ),
 
-    .cacop_done      (inst_cacop_done)
+    .cacop_done    (inst_cacop_done    )
 );
 
 //Dcache 接口
@@ -344,46 +344,46 @@ assign  cpu_data_data_ok = data_data_ok;
 assign  cpu_data_rdata   = data_rdata;
 
 cache #(
-    .code2_0(3'b001)
+    .code2_0       (3'b001             )
 )   u_Dcache(
-    .clk        (aclk),
-    .resetn     (aresetn  ),
+    .clk           (aclk               ),
+    .resetn        (aresetn            ),
 //                                                                 来自(input)/去往（output)
-    .valid      (data_valid   ),//表明请求有效                                       CPU
-    .op         (data_op      ), // op：0读，1写                                        CPU
-    .index      (data_index   ),// CPU 直接截取的12：4(肯定不涉及虚实映射)     CPU
-    .tag        (data_tag     ),  // CPU处理好的paddr    (虚实映射)              CPU
-    .offset     (data_offset  ),// CPU 直接截取的3:0 (肯定不涉及虚实映射)     CPU
-    .wstrb      (data_wstrb   ),//                                            CPU
-    .wdata      (data_wdata   ),//                                            CPU
+    .valid         (data_valid         ),//表明请求有效                                       CPU
+    .op            (data_op            ), // op：0读，1写                                        CPU
+    .index         (data_index         ),// CPU 直接截取的12：4(肯定不涉及虚实映射)     CPU
+    .tag           (data_tag           ),  // CPU处理好的paddr    (虚实映射)              CPU
+    .offset        (data_offset        ),// CPU 直接截取的3:0 (肯定不涉及虚实映射)     CPU
+    .wstrb         (data_wstrb         ),//                                            CPU
+    .wdata         (data_wdata         ),//                                            CPU
 
-    .addr_ok    (data_addr_ok ),//接收到转接桥的 读/写 的 addrok 给CPU               CPU（O）                                   
-    .rd_rdy     (data_rd_rdy  ),   // arready                                      总线
-    .rd_addr    (data_rd_addr ), // CPU给的paddr VA 他拼接一下             总线（O）
+    .addr_ok       (data_addr_ok       ),//接收到转接桥的 读/写 的 addrok 给CPU               CPU（O）                                   
+    .rd_rdy        (data_rd_rdy        ),   // arready                                      总线
+    .rd_addr       (data_rd_addr       ), // CPU给的paddr VA 他拼接一下             总线（O）
 
-    .data_ok    (data_data_ok  ),//总线返回的                                       CPU（O）
-    .rdata      (data_rdata    ),// 总线读出来的数据                           CPU（O）
-    .rd_req     (data_rd_req   ),// CPU 的读请求                                     总线（O）
-    .rd_type    (data_rd_type  ), // 和总线的size直接接                      总线：rsize 010   arlen 8'd3 （O）  
-    .ret_valid  (data_ret_valid),// 总线返回的数是有效的                           总线：rvalid
-    .ret_last   (data_ret_last ), // 总线返回结束了                                 总线: last
-    .ret_data   (data_ret_data ),// 总线给的读数据 rdata                    总线
+    .data_ok       (data_data_ok       ),//总线返回的                                       CPU（O）
+    .rdata         (data_rdata         ),// 总线读出来的数据                           CPU（O）
+    .rd_req        (data_rd_req        ),// CPU 的读请求                                     总线（O）
+    .rd_type       (data_rd_type       ), // 和总线的size直接接                      总线：rsize 010   arlen 8'd3 （O）  
+    .ret_valid     (data_ret_valid     ),// 总线返回的数是有效的                           总线：rvalid
+    .ret_last      (data_ret_last      ), // 总线返回结束了                                 总线: last
+    .ret_data      (data_ret_data      ),// 总线给的读数据 rdata                    总线
 
-    .wr_req     (data_wr_req  ),//CPU发起的                                        总线（O）
-    .wr_type    (data_wr_type ),//                                        总线（O）
-    .wr_addr    (data_wr_addr ),//                                        总线（O）
-    .wr_wstrb   (data_wr_wstrb),//                                       总线（O）
-    .wr_data    (data_wr_wdata),//                                        总线（O）
-    .wr_rdy     (data_wr_rdy  ),// 
+    .wr_req        (data_wr_req        ),//CPU发起的                                        总线（O）
+    .wr_type       (data_wr_type       ),//                                        总线（O）
+    .wr_addr       (data_wr_addr       ),//                                        总线（O）
+    .wr_wstrb      (data_wr_wstrb      ),//                                       总线（O）
+    .wr_data       (data_wr_wdata      ),//                                        总线（O）
+    .wr_rdy        (data_wr_rdy        ),// 
     
-    .uncache_valid  (data_uncache_valid),
-    .uncache_wr     (data_uncache_wr   ),
-    .aw_len          (data_awlen),
-    .ar_len          (data_arlen),
+    .uncache_valid (data_uncache_valid ),
+    .uncache_wr    (data_uncache_wr    ),
+    .aw_len        (data_awlen         ),
+    .ar_len        (data_arlen         ),
     //cacop
-    .cacop_valid     (cacop_valid),
-    .cache_code      (cache_code),
+    .cacop_valid   (cacop_valid        ),
+    .cache_code    (cache_code         ),
 
-    .cacop_done      (data_cacop_done)
+    .cacop_done    (data_cacop_done    )
 );
 endmodule

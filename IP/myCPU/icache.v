@@ -227,9 +227,9 @@ assign  code0            = (cacop_this_cache_r && cache_code_r[4:3] == 2'b00);
 assign  code1            = (cacop_this_cache_r && cache_code_r[4:3] == 2'b01);
 assign  code2            = (cacop_this_cache_r && cache_code_r[4:3] == 2'b10);
 
-assign  cacop_done       = ((main_state == `MAIN_REFILL)   && (code0 || code1)) |   |
-                           ((main_state == `MAIN_LOOKUP)   && code2 && !cache_hit) ||
-                           ((wb_state   == `WB_WRITE)      && code2);
+assign  cacop_done       = ((main_state == `MAIN_REFILL)      && (code0 || code1)) |   |
+                           ((main_state == `MAIN_LOOKUP)      && code2 && !cache_hit) ||
+                           ((wb_state   == `WB_WRITE)         && code2);
 //----------------------------- CACOP end  --------------------------
 
 //----------------------------- TAGV RAM 访问逻辑 begin --------------------------
@@ -253,19 +253,19 @@ assign  tagv_way1_dina  = (tagv_way1_wea & code0) ? {21'b0} :
                           {miss_tag_r, 1'b1};
 // TagV RAM：每路一张 256x21 表，位[20:1]为标签，位[0]为有效位
 tagv_ram tagv_way0 (
-    .clka  (clk),
-    .wea   (tagv_way0_wea | tagv_way0_code2),
-    .addra (tagv_way0_addr),
-    .dina  (tagv_way0_dina),
-    .douta (tagv_way0_r)
+    .clka  (clk                             ),
+    .wea   (tagv_way0_wea | tagv_way0_code2 ),
+    .addra (tagv_way0_addr                  ),
+    .dina  (tagv_way0_dina                  ),
+    .douta (tagv_way0_r                     )
 );
 
 tagv_ram tagv_way1 (
-    .clka  (clk),
-    .wea   (tagv_way1_wea | tagv_way1_code2),
-    .addra (tagv_way1_addr),
-    .dina  (tagv_way1_dina),
-    .douta (tagv_way1_r)
+    .clka  (clk                             ),
+    .wea   (tagv_way1_wea | tagv_way1_code2 ),
+    .addra (tagv_way1_addr                  ),
+    .dina  (tagv_way1_dina                  ),
+    .douta (tagv_way1_r                     )
 );
 //----------------------------- TAGV RAM 访问逻辑 end --------------------------
 
@@ -275,22 +275,22 @@ tagv_ram tagv_way1 (
 
 //(refill_write && !replace_way_r):从 inst/data RAM 读回替换
 //(wb_write && !wb_way_r && (wb_bank_r == 2'b00) cache 命中下的st
-assign  data_way0_bank0_wea  = (refill_write   && !cacop_this_cache_r && !replace_way_r) ? 4'b1111 :
-                               (wb_write       && !wb_way_r && (wb_bank_r == 2'b00) && !cacop_this_cache_r) ? wb_wstrb_r : 4'b0000;
-assign  data_way0_bank1_wea  = (refill_write   && !cacop_this_cache_r && !replace_way_r) ? 4'b1111 :
-                               (wb_write       && !wb_way_r && (wb_bank_r == 2'b01) && !cacop_this_cache_r) ? wb_wstrb_r : 4'b0000;
-assign  data_way0_bank2_wea  = (refill_write   && !cacop_this_cache_r && !replace_way_r) ? 4'b1111 :
-                               (wb_write       && !wb_way_r && (wb_bank_r == 2'b10) && !cacop_this_cache_r) ? wb_wstrb_r : 4'b0000;
-assign  data_way0_bank3_wea  = (refill_write   && !cacop_this_cache_r && !replace_way_r) ? 4'b1111 :
-                               (wb_write       && !wb_way_r && (wb_bank_r == 2'b11) && !cacop_this_cache_r) ? wb_wstrb_r : 4'b0000;
-assign  data_way1_bank0_wea  = (refill_write   && !cacop_this_cache_r &&  replace_way_r) ? 4'b1111 :
-                               (wb_write       &&  wb_way_r && (wb_bank_r == 2'b00) && !cacop_this_cache_r) ? wb_wstrb_r : 4'b0000;
-assign  data_way1_bank1_wea  = (refill_write   && !cacop_this_cache_r &&  replace_way_r) ? 4'b1111 :
-                               (wb_write       &&  wb_way_r && (wb_bank_r == 2'b01) && !cacop_this_cache_r) ? wb_wstrb_r : 4'b0000;
-assign  data_way1_bank2_wea  = (refill_write   && !cacop_this_cache_r &&  replace_way_r) ? 4'b1111 :
-                               (wb_write       &&  wb_way_r && (wb_bank_r == 2'b10) && !cacop_this_cache_r) ? wb_wstrb_r : 4'b0000;
-assign  data_way1_bank3_wea  = (refill_write   && !cacop_this_cache_r &&  replace_way_r) ? 4'b1111 :
-                               (wb_write       &&  wb_way_r && (wb_bank_r == 2'b11) && !cacop_this_cache_r) ? wb_wstrb_r : 4'b0000;
+assign  data_way0_bank0_wea  = (refill_write      && !cacop_this_cache_r && !replace_way_r)                    ? 4'b1111 :
+                               (wb_write          && !wb_way_r && (wb_bank_r == 2'b00) && !cacop_this_cache_r) ? wb_wstrb_r : 4'b0000;
+assign  data_way0_bank1_wea  = (refill_write      && !cacop_this_cache_r && !replace_way_r)                    ? 4'b1111 :
+                               (wb_write          && !wb_way_r && (wb_bank_r == 2'b01) && !cacop_this_cache_r) ? wb_wstrb_r : 4'b0000;
+assign  data_way0_bank2_wea  = (refill_write      && !cacop_this_cache_r && !replace_way_r)                    ? 4'b1111 :
+                               (wb_write          && !wb_way_r && (wb_bank_r == 2'b10) && !cacop_this_cache_r) ? wb_wstrb_r : 4'b0000;
+assign  data_way0_bank3_wea  = (refill_write      && !cacop_this_cache_r && !replace_way_r)                    ? 4'b1111 :
+                               (wb_write          && !wb_way_r && (wb_bank_r == 2'b11) && !cacop_this_cache_r) ? wb_wstrb_r : 4'b0000;
+assign  data_way1_bank0_wea  = (refill_write      && !cacop_this_cache_r &&  replace_way_r)                    ? 4'b1111 :
+                               (wb_write          &&  wb_way_r && (wb_bank_r == 2'b00) && !cacop_this_cache_r) ? wb_wstrb_r : 4'b0000;
+assign  data_way1_bank1_wea  = (refill_write      && !cacop_this_cache_r &&  replace_way_r)                    ? 4'b1111 :
+                               (wb_write          &&  wb_way_r && (wb_bank_r == 2'b01) && !cacop_this_cache_r) ? wb_wstrb_r : 4'b0000;
+assign  data_way1_bank2_wea  = (refill_write      && !cacop_this_cache_r &&  replace_way_r)                    ? 4'b1111 :
+                               (wb_write          &&  wb_way_r && (wb_bank_r == 2'b10) && !cacop_this_cache_r) ? wb_wstrb_r : 4'b0000;
+assign  data_way1_bank3_wea  = (refill_write      && !cacop_this_cache_r &&  replace_way_r)                    ? 4'b1111 :
+                               (wb_write          &&  wb_way_r && (wb_bank_r == 2'b11) && !cacop_this_cache_r) ? wb_wstrb_r : 4'b0000;
 
 assign  data_way0_bank0_addr = (|data_way0_bank0_wea) ? ((refill_write && !replace_way_r) ? miss_index_r : wb_index_r) : index;
 assign  data_way0_bank1_addr = (|data_way0_bank1_wea) ? ((refill_write && !replace_way_r) ? miss_index_r : wb_index_r) : index;
@@ -312,67 +312,67 @@ assign  data_way1_bank3_dina = (refill_write &&  replace_way_r) ? refill_final_b
 
 // 数据按每路 4 个 Data Bank 组织
 data_bank_ram data_way0_bank0 (
-    .clka  (clk),
-    .wea   (data_way0_bank0_wea),
-    .addra (data_way0_bank0_addr),
-    .dina  (data_way0_bank0_dina),
-    .douta (data_way0_bank0_r)
+    .clka  (clk                  ),
+    .wea   (data_way0_bank0_wea  ),
+    .addra (data_way0_bank0_addr ),
+    .dina  (data_way0_bank0_dina ),
+    .douta (data_way0_bank0_r    )
 );
 
 data_bank_ram data_way0_bank1 (
-    .clka  (clk),
-    .wea   (data_way0_bank1_wea),
-    .addra (data_way0_bank1_addr),
-    .dina  (data_way0_bank1_dina),
-    .douta (data_way0_bank1_r)
+    .clka  (clk                  ),
+    .wea   (data_way0_bank1_wea  ),
+    .addra (data_way0_bank1_addr ),
+    .dina  (data_way0_bank1_dina ),
+    .douta (data_way0_bank1_r    )
 );
 
 data_bank_ram data_way0_bank2 (
-    .clka  (clk),
-    .wea   (data_way0_bank2_wea),
-    .addra (data_way0_bank2_addr),
-    .dina  (data_way0_bank2_dina),
-    .douta (data_way0_bank2_r)
+    .clka  (clk                  ),
+    .wea   (data_way0_bank2_wea  ),
+    .addra (data_way0_bank2_addr ),
+    .dina  (data_way0_bank2_dina ),
+    .douta (data_way0_bank2_r    )
 );
 
 data_bank_ram data_way0_bank3 (
-    .clka  (clk),
-    .wea   (data_way0_bank3_wea),
-    .addra (data_way0_bank3_addr),
-    .dina  (data_way0_bank3_dina),
-    .douta (data_way0_bank3_r)
+    .clka  (clk                  ),
+    .wea   (data_way0_bank3_wea  ),
+    .addra (data_way0_bank3_addr ),
+    .dina  (data_way0_bank3_dina ),
+    .douta (data_way0_bank3_r    )
 );
 
 data_bank_ram data_way1_bank0 (
-    .clka  (clk),
-    .wea   (data_way1_bank0_wea),
-    .addra (data_way1_bank0_addr),
-    .dina  (data_way1_bank0_dina),
-    .douta (data_way1_bank0_r)
+    .clka  (clk                  ),
+    .wea   (data_way1_bank0_wea  ),
+    .addra (data_way1_bank0_addr ),
+    .dina  (data_way1_bank0_dina ),
+    .douta (data_way1_bank0_r    )
 );
 
 data_bank_ram data_way1_bank1 (
-    .clka  (clk),
-    .wea   (data_way1_bank1_wea),
-    .addra (data_way1_bank1_addr),
-    .dina  (data_way1_bank1_dina),
-    .douta (data_way1_bank1_r)
+    .clka  (clk                  ),
+    .wea   (data_way1_bank1_wea  ),
+    .addra (data_way1_bank1_addr ),
+    .dina  (data_way1_bank1_dina ),
+    .douta (data_way1_bank1_r    )
 );
 
 data_bank_ram data_way1_bank2 (
-    .clka  (clk),
-    .wea   (data_way1_bank2_wea),
-    .addra (data_way1_bank2_addr),
-    .dina  (data_way1_bank2_dina),
-    .douta (data_way1_bank2_r)
+    .clka  (clk                  ),
+    .wea   (data_way1_bank2_wea  ),
+    .addra (data_way1_bank2_addr ),
+    .dina  (data_way1_bank2_dina ),
+    .douta (data_way1_bank2_r    )
 );
 
 data_bank_ram data_way1_bank3 (
-    .clka  (clk),
-    .wea   (data_way1_bank3_wea),
-    .addra (data_way1_bank3_addr),
-    .dina  (data_way1_bank3_dina),
-    .douta (data_way1_bank3_r)
+    .clka  (clk                  ),
+    .wea   (data_way1_bank3_wea  ),
+    .addra (data_way1_bank3_addr ),
+    .dina  (data_way1_bank3_dina ),
+    .douta (data_way1_bank3_r    )
 );
 //----------------------------- DATA BANK RAM 访问逻辑 begin --------------------------
 
@@ -423,10 +423,10 @@ assign  refill_line_next       = ret_valid ? {(refill_cnt_r == 2'b11) ? ret_data
                                  (refill_cnt_r == 2'b01) ? ret_data : refill_buf_r[63:32],
                                  (refill_cnt_r == 2'b00) ? ret_data : refill_buf_r[31:0]}
                                  : refill_buf_r;
-assign  refill_word            = (miss_offset_r[3      :2] == 2'b00) ? refill_line_next[31:0]   :
-                                 (miss_offset_r[3      :2] == 2'b01) ? refill_line_next[63:32]  :
-                                 (miss_offset_r[3      :2] == 2'b10) ? refill_line_next[95:64]  :
-                                 refill_line_next[127  :96];
+assign  refill_word            = (miss_offset_r[3         :2] == 2'b00) ? refill_line_next[31:0]   :
+                                 (miss_offset_r[3         :2] == 2'b01) ? refill_line_next[63:32]  :
+                                 (miss_offset_r[3         :2] == 2'b10) ? refill_line_next[95:64]  :
+                                 refill_line_next[127     :96];
 assign  refill_merged_word     = (refill_word  & ~{{8{miss_wstrb_r[3]}}, {8{miss_wstrb_r[2]}}, {8{miss_wstrb_r[1]}}, {8{miss_wstrb_r[0]}}})
                                  | (miss_wdata_r &  {{8{miss_wstrb_r[3]}}, {8{miss_wstrb_r[2]}}, {8{miss_wstrb_r[1]}}, {8{miss_wstrb_r[0]}}});
 
@@ -459,8 +459,8 @@ wire    lookup_read_pipe       = (main_state == `MAIN_LOOKUP) &&
                                  lookup_read_hit &&
                                  !cacop_this_cache_r;
 
-wire    pipe_accept            = lookup_read_pipe         && valid &&
-                                 (wb_state == `WB_IDLE)   && !wb_valid_r;
+wire    pipe_accept            = lookup_read_pipe            && valid &&
+                                 (wb_state == `WB_IDLE)      && !wb_valid_r;
 
 assign  can_accept_req         = ((main_state == `MAIN_IDLE) && (wb_state == `WB_IDLE) && !wb_valid_r) ||
                                  pipe_accept;
@@ -818,7 +818,7 @@ assign  ar_len   = (main_state == `MAIN_REFILL) && ((uncache_valid_r && !uncache
                     : 8'd3;
 
 assign  wr_req   = (main_state == `MAIN_REPLACE) && !wr_req_sent_r && !code0 &&
-                    !code1  && 
+                    !code1                         &                      & 
                     ~(cache_code_r[2:0] == 3'b000 && cacop_this_cache_r);
 assign  wr_type  = 3'b010;
 assign  wr_addr  = ((main_state == `MAIN_REPLACE) && ~(cache_code_r[2:0] == 3'b00 & cacop_this_cache_r))

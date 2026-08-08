@@ -151,16 +151,16 @@ wire [31:0] mem_vaddr;
 wire        div_mod         = alu_op[15] | alu_op[16] | alu_op[17] | alu_op[18];
 wire        divide_ready_go;
 alu u_alu(
-    .clk        (clk       ),
-    .resetn     (resetn    ),
-    .EXE1_valid  (EXE1_valid ),
-    .EXE1_need_cancel(EXE1_need_cancel),
-    .alu_op     (alu_op    ),
-    .alu_src1   (alu_src1  ),
-    .alu_src2   (alu_src2  ),
-    .alu_result (alu_result),
-    .add_result (mem_vaddr ),
-    .divide_ready_go(divide_ready_go)
+    .clk              (clk              ),
+    .resetn           (resetn           ),
+    .EXE1_valid       (EXE1_valid       ),
+    .EXE1_need_cancel (EXE1_need_cancel ),
+    .alu_op           (alu_op           ),
+    .alu_src1         (alu_src1         ),
+    .alu_src2         (alu_src2         ),
+    .alu_result       (alu_result       ),
+    .add_result       (mem_vaddr        ),
+    .divide_ready_go  (divide_ready_go  )
 );
 //------------------------{alu}end-------------------------//
 
