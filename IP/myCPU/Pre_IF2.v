@@ -128,9 +128,9 @@ assign  inst_sram_wdata              = 32'b0;
 
 //------------------------{instRAM handshake}end-------------------------//
 wire    can_issue_inst = !req_without_dataok || inst_sram_data_ok;
-assign  inst_sram_req  = preIF2_valid & IF_allow_in & ~br_taken
-                         & ~preIF2_need_cancel & ~need_stall
-                         & can_issue_inst;
+assign  inst_sram_req  = preIF2_valid   & IF_allow_in & ~br_taken
+                                        & ~preIF2_need_cancel & ~need_stall
+                                        & can_issue_inst;
 assign  inst_sram_size = 2'b10;
 assign  inst_mat       = (csr_CRMD_DA == 1 & csr_CRMD_PG == 0) ? csr_CRMD_DATF :
                          (csr_CRMD_DA == 0 & csr_CRMD_PG == 1) &  dmw_found0  ? dmw_mat0 :

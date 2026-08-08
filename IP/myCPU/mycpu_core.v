@@ -404,18 +404,18 @@ wire          wb_need_stall_csr;
 //need to distribute inst for increasing effciency [todo]
 wire          mem_load_wait;
 assign        mem_load_wait        = mem_need_stall_inst & ~data_sram_data_ok;
-assign        src1_stall           = (rf_raddr1 != 5'd0) &&
-                                     ID_valid &&
-                                     (((rf_raddr1 == EXE1_rf_dest) && EXE1_valid && EXE1_rf_gr_we) ||
-                                     ((rf_raddr1 == EXE2_rf_dest) && EXE2_valid && (exe2_need_stall_inst || exe2_need_stall_csr)) ||
-                                     ((rf_raddr1 == MEM_rf_dest) && MEM_valid && (mem_load_wait || mem_need_stall_csr)) ||
-                                     ((rf_raddr1 == WB_rf_dest) && WB_valid && wb_need_stall_csr));
-assign        src2_stall           = (rf_raddr2 != 5'd0) &&
-                                     ID_valid &&
-                                     (((rf_raddr2 == EXE1_rf_dest) && EXE1_valid && EXE1_rf_gr_we) ||
-                                     ((rf_raddr2 == EXE2_rf_dest) && EXE2_valid && (exe2_need_stall_inst || exe2_need_stall_csr)) ||
-                                     ((rf_raddr2 == MEM_rf_dest) && MEM_valid && (mem_load_wait || mem_need_stall_csr)) ||
-                                     ((rf_raddr2 == WB_rf_dest) && WB_valid && wb_need_stall_csr));
+assign        src1_stall           = (rf_raddr1 != 5'd0)             &&
+                                     ID_valid                        &&
+                                     (((rf_raddr1 == EXE1_rf_dest)   && EXE1_valid && EXE1_rf_gr_we) |                                |
+                                     ((rf_raddr1 == EXE2_rf_dest)    && EXE2_valid && (exe2_need_stall_inst || exe2_need_stall_csr)) ||
+                                     ((rf_raddr1 == MEM_rf_dest)     && MEM_valid && (mem_load_wait || mem_need_stall_csr)) |         |
+                                     ((rf_raddr1 == WB_rf_dest)      && WB_valid && wb_need_stall_csr));
+assign        src2_stall           = (rf_raddr2 != 5'd0)             &&
+                                     ID_valid                        &&
+                                     (((rf_raddr2 == EXE1_rf_dest)   && EXE1_valid && EXE1_rf_gr_we) |                                |
+                                     ((rf_raddr2 == EXE2_rf_dest)    && EXE2_valid && (exe2_need_stall_inst || exe2_need_stall_csr)) ||
+                                     ((rf_raddr2 == MEM_rf_dest)     && MEM_valid && (mem_load_wait || mem_need_stall_csr)) |         |
+                                     ((rf_raddr2 == WB_rf_dest)      && WB_valid && wb_need_stall_csr));
 assign        need_stall           = src1_stall | src2_stall;
 
 wire          IDLE_stall;

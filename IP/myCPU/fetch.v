@@ -88,8 +88,8 @@ assign  IF_ID_bus = inst_reg_valid ? {pc,inst_reg,ex_ADEF,ex_tlb_reload0,ex_tlb_
 //------------------------{ready_go}begin-------------------------//
 wire  inst_resp_valid = inst_sram_data_ok & ~inst_resp_discard;
 //------------------------{ready_go}end-------------------------//
-wire    deliver_now = IF_valid & inst_resp_valid & req_to_dataok_trigger & ID_allow_in
-                      & ~need_stall & ~IF_need_cancel;
+wire    deliver_now = IF_valid   & inst_resp_valid & req_to_dataok_trigger & ID_allow_in
+                                 & ~need_stall & ~IF_need_cancel;
 
 assign  IF_ready_go = (need_stall | IF_need_cancel) ? 1'b0 :
                       (inst_resp_valid & req_to_dataok_trigger) | inst_reg_valid;

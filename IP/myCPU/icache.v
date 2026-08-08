@@ -227,9 +227,9 @@ assign  code0            = (cacop_this_cache_r && cache_code_r[4:3] == 2'b00);
 assign  code1            = (cacop_this_cache_r && cache_code_r[4:3] == 2'b01);
 assign  code2            = (cacop_this_cache_r && cache_code_r[4:3] == 2'b10);
 
-assign  cacop_done       = ((main_state == `MAIN_REFILL) && (code0 || code1)) ||
-                           ((main_state == `MAIN_LOOKUP) && code2 && !cache_hit) ||
-                           ((wb_state   == `WB_WRITE)    && code2);
+assign  cacop_done       = ((main_state == `MAIN_REFILL)   && (code0 || code1)) |   |
+                           ((main_state == `MAIN_LOOKUP)   && code2 && !cache_hit) ||
+                           ((wb_state   == `WB_WRITE)      && code2);
 //----------------------------- CACOP end  --------------------------
 
 //----------------------------- TAGV RAM 访问逻辑 begin --------------------------
@@ -275,22 +275,22 @@ tagv_ram tagv_way1 (
 
 //(refill_write && !replace_way_r):从 inst/data RAM 读回替换
 //(wb_write && !wb_way_r && (wb_bank_r == 2'b00) cache 命中下的st
-assign  data_way0_bank0_wea  = (refill_write && !cacop_this_cache_r && !replace_way_r) ? 4'b1111 :
-                               (wb_write && !wb_way_r && (wb_bank_r == 2'b00) && !cacop_this_cache_r) ? wb_wstrb_r : 4'b0000;
-assign  data_way0_bank1_wea  = (refill_write && !cacop_this_cache_r && !replace_way_r) ? 4'b1111 :
-                               (wb_write && !wb_way_r && (wb_bank_r == 2'b01) && !cacop_this_cache_r) ? wb_wstrb_r : 4'b0000;
-assign  data_way0_bank2_wea  = (refill_write && !cacop_this_cache_r && !replace_way_r) ? 4'b1111 :
-                               (wb_write && !wb_way_r && (wb_bank_r == 2'b10) && !cacop_this_cache_r) ? wb_wstrb_r : 4'b0000;
-assign  data_way0_bank3_wea  = (refill_write && !cacop_this_cache_r && !replace_way_r) ? 4'b1111 :
-                               (wb_write && !wb_way_r && (wb_bank_r == 2'b11) && !cacop_this_cache_r) ? wb_wstrb_r : 4'b0000;
-assign  data_way1_bank0_wea  = (refill_write && !cacop_this_cache_r &&  replace_way_r) ? 4'b1111 :
-                               (wb_write &&  wb_way_r && (wb_bank_r == 2'b00) && !cacop_this_cache_r) ? wb_wstrb_r : 4'b0000;
-assign  data_way1_bank1_wea  = (refill_write && !cacop_this_cache_r &&  replace_way_r) ? 4'b1111 :
-                               (wb_write &&  wb_way_r && (wb_bank_r == 2'b01) && !cacop_this_cache_r) ? wb_wstrb_r : 4'b0000;
-assign  data_way1_bank2_wea  = (refill_write && !cacop_this_cache_r &&  replace_way_r) ? 4'b1111 :
-                               (wb_write &&  wb_way_r && (wb_bank_r == 2'b10) && !cacop_this_cache_r) ? wb_wstrb_r : 4'b0000;
-assign  data_way1_bank3_wea  = (refill_write && !cacop_this_cache_r &&  replace_way_r) ? 4'b1111 :
-                               (wb_write &&  wb_way_r && (wb_bank_r == 2'b11) && !cacop_this_cache_r) ? wb_wstrb_r : 4'b0000;
+assign  data_way0_bank0_wea  = (refill_write   && !cacop_this_cache_r && !replace_way_r) ? 4'b1111 :
+                               (wb_write       && !wb_way_r && (wb_bank_r == 2'b00) && !cacop_this_cache_r) ? wb_wstrb_r : 4'b0000;
+assign  data_way0_bank1_wea  = (refill_write   && !cacop_this_cache_r && !replace_way_r) ? 4'b1111 :
+                               (wb_write       && !wb_way_r && (wb_bank_r == 2'b01) && !cacop_this_cache_r) ? wb_wstrb_r : 4'b0000;
+assign  data_way0_bank2_wea  = (refill_write   && !cacop_this_cache_r && !replace_way_r) ? 4'b1111 :
+                               (wb_write       && !wb_way_r && (wb_bank_r == 2'b10) && !cacop_this_cache_r) ? wb_wstrb_r : 4'b0000;
+assign  data_way0_bank3_wea  = (refill_write   && !cacop_this_cache_r && !replace_way_r) ? 4'b1111 :
+                               (wb_write       && !wb_way_r && (wb_bank_r == 2'b11) && !cacop_this_cache_r) ? wb_wstrb_r : 4'b0000;
+assign  data_way1_bank0_wea  = (refill_write   && !cacop_this_cache_r &&  replace_way_r) ? 4'b1111 :
+                               (wb_write       &&  wb_way_r && (wb_bank_r == 2'b00) && !cacop_this_cache_r) ? wb_wstrb_r : 4'b0000;
+assign  data_way1_bank1_wea  = (refill_write   && !cacop_this_cache_r &&  replace_way_r) ? 4'b1111 :
+                               (wb_write       &&  wb_way_r && (wb_bank_r == 2'b01) && !cacop_this_cache_r) ? wb_wstrb_r : 4'b0000;
+assign  data_way1_bank2_wea  = (refill_write   && !cacop_this_cache_r &&  replace_way_r) ? 4'b1111 :
+                               (wb_write       &&  wb_way_r && (wb_bank_r == 2'b10) && !cacop_this_cache_r) ? wb_wstrb_r : 4'b0000;
+assign  data_way1_bank3_wea  = (refill_write   && !cacop_this_cache_r &&  replace_way_r) ? 4'b1111 :
+                               (wb_write       &&  wb_way_r && (wb_bank_r == 2'b11) && !cacop_this_cache_r) ? wb_wstrb_r : 4'b0000;
 
 assign  data_way0_bank0_addr = (|data_way0_bank0_wea) ? ((refill_write && !replace_way_r) ? miss_index_r : wb_index_r) : index;
 assign  data_way0_bank1_addr = (|data_way0_bank1_wea) ? ((refill_write && !replace_way_r) ? miss_index_r : wb_index_r) : index;
@@ -423,10 +423,10 @@ assign  refill_line_next       = ret_valid ? {(refill_cnt_r == 2'b11) ? ret_data
                                  (refill_cnt_r == 2'b01) ? ret_data : refill_buf_r[63:32],
                                  (refill_cnt_r == 2'b00) ? ret_data : refill_buf_r[31:0]}
                                  : refill_buf_r;
-assign  refill_word            = (miss_offset_r[3:2] == 2'b00) ? refill_line_next[31:0]   :
-                                 (miss_offset_r[3:2] == 2'b01) ? refill_line_next[63:32]  :
-                                 (miss_offset_r[3:2] == 2'b10) ? refill_line_next[95:64]  :
-                                 refill_line_next[127:96];
+assign  refill_word            = (miss_offset_r[3      :2] == 2'b00) ? refill_line_next[31:0]   :
+                                 (miss_offset_r[3      :2] == 2'b01) ? refill_line_next[63:32]  :
+                                 (miss_offset_r[3      :2] == 2'b10) ? refill_line_next[95:64]  :
+                                 refill_line_next[127  :96];
 assign  refill_merged_word     = (refill_word  & ~{{8{miss_wstrb_r[3]}}, {8{miss_wstrb_r[2]}}, {8{miss_wstrb_r[1]}}, {8{miss_wstrb_r[0]}}})
                                  | (miss_wdata_r &  {{8{miss_wstrb_r[3]}}, {8{miss_wstrb_r[2]}}, {8{miss_wstrb_r[1]}}, {8{miss_wstrb_r[0]}}});
 
@@ -459,8 +459,8 @@ wire    lookup_read_pipe       = (main_state == `MAIN_LOOKUP) &&
                                  lookup_read_hit &&
                                  !cacop_this_cache_r;
 
-wire    pipe_accept            = lookup_read_pipe && valid &&
-                                 (wb_state == `WB_IDLE) && !wb_valid_r;
+wire    pipe_accept            = lookup_read_pipe         && valid &&
+                                 (wb_state == `WB_IDLE)   && !wb_valid_r;
 
 assign  can_accept_req         = ((main_state == `MAIN_IDLE) && (wb_state == `WB_IDLE) && !wb_valid_r) ||
                                  pipe_accept;

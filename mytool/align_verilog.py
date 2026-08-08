@@ -240,6 +240,9 @@ def rewrite_decl_assign(run, out):
     name_col = type_col + 1 + range_col + 1
     name_w = max(len(r['name']) for r in recs)
     rhs_col = len(recs[0]['indent']) + name_col + name_w + 3
+    for rec in recs:
+        if rec['multi']:
+            align_multiline_table(rec)
     for idx, rec in run:
         field = rec['kw'].ljust(type_col) + b' ' + rec['range'].ljust(range_col) + b' '
         if rec['has_eq']:
@@ -251,6 +254,62 @@ def rewrite_decl_assign(run, out):
                     out[ci] = (b' ' * rhs_col + rest + ccr) if rest else (rest + ccr)
         else:
             out[idx] = rec['indent'] + field + rec['name'] + rec['tail'] + rec['cr']
+
+
+def align_multiline_table(rec):
+    """Align a repeated operator column inside a multi-line statement.
+
+    If every body line (RHS of the first line plus all continuation lines)
+    has the same first single-char operator (e.g. '&'), pad the prefix so
+    those operators line up; then re-align a trailing '|' column so the
+    line-end ORs stay aligned as well.
+    """
+    cand = b'&|?:^+-*/'
+    bodies = [(rec['rhs'], rec['tail'])]
+    for _ci, st, _ccr in rec['cont']:
+        code, comment = split_comment(st)
+        bodies.append((code, comment))
+    if any(not code.strip() for code, _ in bodies):
+        return
+
+    ops = []
+    for code, _ in bodies:
+        best = None
+        for ch in cand:
+            chb = bytes([ch])
+            p = code.find(chb)
+            if p >= 0 and (best is None or p < best[0]):
+                best = (p, chb)
+        ops.append(best)
+    if any(o is None for o in ops):
+        return
+    op = ops[0][1]
+    if any(o[1] != op for o in ops):
+        return
+
+    max_pre = max(len(code[:p]) for (p, _), (code, _) in zip(ops, bodies))
+    aligned = []
+    for (code, comment), (p, _) in zip(bodies, ops):
+        aligned.append((code[:p].ljust(max_pre) + b' ' + op + code[p + 1:], comment))
+
+    has_pipe = [code.rstrip().endswith(b'|') for code, _ in aligned]
+    if any(has_pipe):
+        max_t = max(len(code.rstrip()) - 1
+                    for (code, _), hp in zip(aligned, has_pipe) if hp)
+        final = []
+        for (code, comment), hp in zip(aligned, has_pipe):
+            if hp:
+                t = len(code.rstrip()) - 1
+                code = code[:t].ljust(max_t) + code[t:]
+            final.append((code, comment))
+        aligned = final
+
+    rec['rhs'] = aligned[0][0]
+    rec['tail'] = aligned[0][1]
+    rec['cont'] = [
+        (ci, code + comment, ccr)
+        for (ci, _st, ccr), (code, comment) in zip(rec['cont'], aligned[1:])
+    ]
 
 
 def rewrite_always(run, out):
