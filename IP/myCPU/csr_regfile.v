@@ -340,17 +340,19 @@ always @ (posedge clk)begin
                             (~csr_wmask[`CSR_TCFG_INITVAL] & TCFG[`CSR_TCFG_INITVAL]);
     end
 end
-
+//【timer——cnt】
 reg [31:0] timer_cnt;
 // 新的TCFG
 wire [31:0] TCFG_next_val;
-assign TCFG_next_val = csr_wmask[31:0] & csr_wvalue[31:0] | ~csr_wmask[31:0] & TCFG[31:0];
+wire        TCFG_write_in_en1;
+assign TCFG_next_val       = csr_wmask[31:0] & csr_wvalue[31:0] | ~csr_wmask[31:0] & TCFG[31:0];
+assign TCFG_write_in_en1   = csr_we && csr_num == `CSR_TCFG && TCFG_next_val[`CSR_TCFG_EN];
 always @ (posedge clk) begin
     if (!resetn) begin
         timer_cnt <= 32'hffffffff;
     end
-    //【软中断】
-    else if (csr_we && csr_num == `CSR_TCFG && TCFG_next_val[`CSR_TCFG_EN]) begin
+    // 当写入tcfg & tcfg的EN是1时需要同步写入timer
+    else if (TCFG_write_in_en1) begin
         timer_cnt <= {TCFG_next_val[`CSR_TCFG_INITVAL],{2{1'b0}}};
     end
     else if (TCFG[`CSR_TCFG_EN] && timer_cnt != 32'hffffffff) begin
@@ -365,7 +367,7 @@ end
 
 //【ESTAT IS】中断状态位
 always @(posedge clk)begin
-    //【硬中断】由hw_int_in传入；未连接硬件中断源时应输入0
+    //【软中断】
     if (!resetn)begin
         ESTAT[`CSR_ESTAT_IS1_0] <= 2'b0;
     end
@@ -373,22 +375,26 @@ always @(posedge clk)begin
         ESTAT[`CSR_ESTAT_IS1_0] <= (csr_wmask[`CSR_ESTAT_IS1_0] & csr_wvalue[`CSR_ESTAT_IS1_0]) | 
                                     (~csr_wmask[`CSR_ESTAT_IS1_0] & ESTAT[`CSR_ESTAT_IS1_0]);
     end                            
-    //【保留位】
+   //【硬中断】由hw_int_in传入；未连接硬件中断源时应输入0
     ESTAT[`CSR_ESTAT_IS9_2] <= hw_int_in[7:0];
 
-    //【定时器中断】
+    //【保留位】
     ESTAT[10] <= 1'b0;
 
-    // TICLR的读值恒为0，写入CLR位时直接清除定时器中断状态
-    if(timer_cnt[31:0] == 32'b0)begin
+    //【定时器中断】
+    // InitVal==0 时与参考模型一致：写 TCFG.En 立即置 TI；其余保持 cnt==0 置位
+    if (TCFG_write_in_en1 && (TCFG_next_val[`CSR_TCFG_INITVAL] == 30'b0)) begin
         ESTAT[`CSR_ESTAT_IS11] <= 1'b1;
     end
-    //【核间中断】
+    else if(timer_cnt[31:0] == 32'b0)begin
+        ESTAT[`CSR_ESTAT_IS11] <= 1'b1;
+    end
+    // TICLR的读值恒为0，写入CLR位时直接清除定时器中断状态
     else if (csr_we && csr_num == `CSR_TICLR && csr_wmask[`CSR_TICLR_CLR] && csr_wvalue[`CSR_TICLR_CLR])begin
         ESTAT[`CSR_ESTAT_IS11] <= 1'b0;
     end
 
-    //tlbrd读取的是有效项
+    //【核间中断】
     ESTAT[`CSR_ESTAT_IS12] <= ipi_int_in;
 end
 //【ESTAT Ecode & Esubcode】异常类型和异常子类型
@@ -563,6 +569,9 @@ always @(posedge clk)begin
     if(!resetn)begin
         DMW0[`CSR_DMW0_PLV0] <= 1'b0;
         DMW0[`CSR_DMW0_PLV3] <= 1'b0;
+        DMW0[`CSR_DMW0_PSEG] <= 3'd0;
+        DMW0[`CSR_DMW0_VSEG] <= 3'd0;
+        DMW0[`CSR_DMW0_MAT]  <= 2'd0;
     end
     else begin
         if (csr_we && csr_num == `CSR_DMW0)begin
@@ -593,6 +602,9 @@ always @(posedge clk)begin
     if(!resetn)begin
         DMW1[`CSR_DMW1_PLV0] <= 1'b0;
         DMW1[`CSR_DMW1_PLV3] <= 1'b0;
+        DMW1[`CSR_DMW1_PSEG] <= 3'd0;
+        DMW1[`CSR_DMW1_VSEG] <= 3'd0;
+        DMW1[`CSR_DMW1_MAT]  <= 2'd0;
     end
     else begin
         if (csr_we && csr_num == `CSR_DMW1)begin
@@ -651,7 +663,7 @@ end
 // ----------TO PIPELINE END--------------
 
 // ----------TO PIPELINE IN END--------------
-assign has_int = (((ESTAT[`CSR_ESTAT_IS] & ECFG[`CSR_ECFG_LIE])!=13'b0) && (CRMD[`CSR_CRMD_IE] == 1'b1));
+assign has_int      = (((ESTAT[`CSR_ESTAT_IS] & ECFG[`CSR_ECFG_LIE])!=13'b0) && (CRMD[`CSR_CRMD_IE] == 1'b1));
 assign csr_CRMD_DA  = CRMD[`CSR_CRMD_DA];
 assign csr_CRMD_PG  = CRMD[`CSR_CRMD_PG];
 assign csr_CRMD_PLV = CRMD[`CSR_CRMD_PLV];
@@ -666,12 +678,10 @@ wire vseg0_0;
 wire vseg0_1;
 wire dmw0_plv_ok;
 wire dmw1_plv_ok;
-assign dmw0_plv_ok= DMW0[`CSR_DMW0_PLV0] ? (csr_CRMD_PLV == 2'b00) :
-                    DMW0[`CSR_DMW0_PLV3] ? (csr_CRMD_PLV == 2'b11) :
-                    1'b0;
-assign dmw1_plv_ok= DMW1[`CSR_DMW1_PLV0] ? (csr_CRMD_PLV == 2'b00) :
-                    DMW1[`CSR_DMW1_PLV3] ? (csr_CRMD_PLV == 2'b11) :
-                    1'b0;   
+assign dmw0_plv_ok= (DMW0[`CSR_DMW0_PLV0] && csr_CRMD_PLV == 2'b00) ||
+                    (DMW0[`CSR_DMW0_PLV3] && csr_CRMD_PLV == 2'b11);
+assign dmw1_plv_ok= (DMW1[`CSR_DMW1_PLV0] && csr_CRMD_PLV == 2'b00) ||
+                    (DMW1[`CSR_DMW1_PLV3] && csr_CRMD_PLV == 2'b11);
 assign vseg0_0    = (dmw_vseg0 == DMW0[`CSR_DMW0_VSEG]);
 assign vseg0_1    = (dmw_vseg0 == DMW1[`CSR_DMW0_VSEG]);
 //csr到tlb的接口接线
