@@ -431,6 +431,8 @@ always @(posedge clk)begin
         preIF1_IDLE_stall <= 1'b1;
     end
 end
+// 本拍 IDLE_stall 也要挡住取指，不能等寄存器晚一拍
+wire preIF1_idle_block = preIF1_IDLE_stall | IDLE_stall;
 //------------------------{stall}end-------------------------//
 
 //------------------------{req_to_dataok_trigger}begin-------------------------//
@@ -576,7 +578,7 @@ wire WB_need_cancel;
 assign preIF1_need_cancel = flush | cacop_need_cancel | ibar_cancel;
 assign preIF2_need_cancel = flush | cacop_need_cancel | ibar_cancel;
 assign IF_need_cancel     = flush | need_br_cancel    | cacop_need_cancel | ibar_cancel;
-assign ID_need_cancel     = flush | cacop_need_cancel | ibar_cancel;
+assign ID_need_cancel     = flush | cacop_need_cancel | ibar_cancel       | need_br_cancel;
 assign EXE1_need_cancel   = flush | ibar_cancel;
 assign EXE2_need_cancel   = flush | ibar_cancel;
 assign MEM_need_cancel    = flush;
@@ -610,7 +612,6 @@ wire [31:0] csr_wdata;
 wire [31:0] csr_wmask;
 wire        csr_re;
 wire        wb_ex;
-wire [31:0] timer_cnt;
 wire        ipi_int_in;
 wire [31:0] wb_pc;
 wire [31:0] wb_vaddr;
@@ -812,7 +813,7 @@ pre_IF1 #(
     .query_type         (query_type  ),
     .query_taken        (query_taken),//predict taken
     //IDLE
-    .preIF1_IDLE_stall  (preIF1_IDLE_stall)
+    .preIF1_IDLE_stall  (preIF1_idle_block)
 );
 
 pre_IF2 #(
@@ -1135,7 +1136,8 @@ wb #(
     .csr_tlb_plv1   (csr_tlb_plv1   ),
     //ex_tlb TLBEHI
     .ex_tlb         (ex_tlb         ),
-    //IDLE_stall
+    //IDLE
+    .csr_has_int    (has_int        ),
     .IDLE_stall     (IDLE_stall     )
 );
 //------------------------{5-stage pipeline instantiation}end-------------------------//

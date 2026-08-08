@@ -1,4 +1,4 @@
-module core_top(
+module mycpu_top(
     input  wire        aclk,
     input  wire        aresetn,
     input  wire [ 7:0] intrpt,
@@ -57,10 +57,10 @@ module core_top(
     output wire [31:0] rf_rdata,
 
     // trace debug interface
-    output wire [31:0] debug0_wb_pc,
-    output wire [ 3:0] debug0_wb_rf_wen,
-    output wire [ 4:0] debug0_wb_rf_wnum,
-    output wire [31:0] debug0_wb_rf_wdata
+    output wire [31:0] debug_wb_pc,
+    output wire [ 3:0] debug_wb_rf_we,
+    output wire [ 4:0] debug_wb_rf_wnum,
+    output wire [31:0] debug_wb_rf_wdata
 );
 
 // cpu inst sram
@@ -186,10 +186,10 @@ mycpu_core u_mycpu_core(
     .cache_code         (cache_code),
     .cacop_done         (cacop_done),
 
-    .debug_wb_pc        (debug0_wb_pc      ),
-    .debug_wb_rf_we     (debug0_wb_rf_wen  ),
-    .debug_wb_rf_wnum   (debug0_wb_rf_wnum ),
-    .debug_wb_rf_wdata  (debug0_wb_rf_wdata),
+    .debug_wb_pc        (debug_wb_pc      ),
+    .debug_wb_rf_we     (debug_wb_rf_we   ),
+    .debug_wb_rf_wnum   (debug_wb_rf_wnum ),
+    .debug_wb_rf_wdata  (debug_wb_rf_wdata),
     //Ó²ÖÐ¶Ï
     .hw_int_in          (intrpt)
 );
