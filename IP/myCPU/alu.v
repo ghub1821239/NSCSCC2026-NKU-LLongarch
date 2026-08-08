@@ -224,22 +224,22 @@ divider_unsigned u_divideru(
 );
 assign  divide_ready_go = (div_ready_go & ~kill) | (div_ready_go_u & ~kill_u);
 // final result mux
-assign  alu_result      = ({32{op_add|op_sub}} & add_sub_result)
-                          | ({32{op_slt       }} & slt_result)
-                          | ({32{op_sltu      }} & sltu_result)
-                          | ({32{op_and       }} & and_result)
-                          | ({32{op_nor       }} & nor_result)
-                          | ({32{op_or        }} & or_result)
-                          | ({32{op_xor       }} & xor_result)
-                          | ({32{op_lui       }} & lui_result)
-                          | ({32{op_sll       }} & sll_result)
-                          | ({32{op_srl|op_sra}} & sr_result)
-                          | ({32{op_mul       }} & mul_result[31: 0])
-                          | ({32{op_mulh      }} & mul_result[63:32])
-                          | ({32{op_mulh_wu   }} & mul_result[63:32])
-                          | ({32{op_div       }} & div_result[63:32])
-                          | ({32{op_mod       }} & div_result[31: 0])
-                          | ({32{op_divu      }} & div_result_u[63:32])
-                          | ({32{op_modu      }} & div_result_u[31: 0]);
+assign  alu_result      = ({32{op_add  |op_sub}} & add_sub_result)
+                                       | ({32{op_slt       }} & slt_result)
+                                       | ({32{op_sltu      }} & sltu_result)
+                                       | ({32{op_and       }} & and_result)
+                                       | ({32{op_nor       }} & nor_result)
+                                       | ({32{op_or        }} & or_result)
+                                       | ({32{op_xor       }} & xor_result)
+                                       | ({32{op_lui       }} & lui_result)
+                                       | ({32{op_sll       }} & sll_result)
+                                       | ({32{op_srl|op_sra}} & sr_result)
+                                       | ({32{op_mul       }} & mul_result[31: 0])
+                                       | ({32{op_mulh      }} & mul_result[63:32])
+                                       | ({32{op_mulh_wu   }} & mul_result[63:32])
+                                       | ({32{op_div       }} & div_result[63:32])
+                                       | ({32{op_mod       }} & div_result[31: 0])
+                                       | ({32{op_divu      }} & div_result_u[63:32])
+                                       | ({32{op_modu      }} & div_result_u[31: 0]);
 
 endmodule
