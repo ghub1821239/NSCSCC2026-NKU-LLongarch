@@ -1,0 +1,198 @@
+`include "csr_def.vh"
+module exe2 #(
+    parameter inbus_width  = 32,
+    parameter outbus_width = 64,
+    parameter TLBNUM       = 16
+)(
+    input  wire         clk,
+    input  wire         resetn,
+    // control signal
+    output wire         EXE2_ready_go,
+    output reg          EXE2_valid,
+    input  wire         EXE1_EXE2_valid,
+    input  wire         EXE2_allow_in,
+    // bus
+    input  wire [inbus_width-1:0] EXE1_EXE2_bus,
+    output wire [outbus_width-1:0] EXE2_MEM_bus,
+    //stall
+    output wire [ 4:0]  EXE2_rf_dest,
+    output wire         need_stall_inst, //bus����
+    output wire         need_stall_csr,  //bus����
+    //front_push
+    output wire [31:0]  exe2_front_data,
+    output wire [ 4:0]  exe2_front_addr,
+    output wire         exe2_can_not_front_push,// ��д�Ĵ����Ŀ��Բ�ǰ��
+    //cancel control
+    input  wire         need_cancel,
+    //ex_cancel ����write              exe2
+    input  wire        older_ex_for_exe2,
+    //handshake                        exe2
+    output wire        data_sram_req,
+    output wire        data_sram_wr, // 1��ʾwrite 0��ʾread
+    output wire [ 3:0] data_sram_wstrb,// wstrb ��Ӧԭ���ķ���дʹ��
+    output wire [ 1:0] data_sram_size,
+    output wire [31:0] data_sram_addr,
+    output wire [31:0] data_sram_wdata,
+    input  wire        data_sram_addr_ok,
+    input  wire        data_sram_data_ok,
+    input  wire        MEM_allow_in,
+    //uncacheʹ��
+    output wire   [1:0] data_mat,
+    output wire         data_wr,
+    //cache_code                      exe2
+    input  wire  [1:0]  csr_CRMD_PLV,
+    output wire  [4:0]  cache_code,
+    output wire         cacop_valid,
+    input  wire         cacop_done,
+    output wire  [31:0] cacop_pc
+);
+
+//------------------------{bus����&����}begin-------------------------//
+wire [31:0] pc;
+wire        res_from_mem;
+wire        mem_we;
+wire [31:0] alu_result_with_rdct;
+
+wire        inst_ld_b;
+wire        inst_ld_h;
+wire        inst_ld_bu;
+wire        inst_ld_hu;
+
+
+wire [4:0]  rf_dest;
+wire        rf_gr_we;
+
+// ex enum
+wire        inst_ertn;
+wire        inst_syscall;
+wire        inst_break;
+wire        ex_INE;
+wire        ex_ADEF;
+wire        ex_ALE;
+wire        has_int;
+
+wire [31:0] rj_value;
+//chapter 7 exp 12:new_add
+wire        inst_csrrd;
+wire        inst_csrwr;
+wire        inst_csrxchg;
+wire [13:0] csr_num;
+
+// timer_inst
+wire        inst_rdcntvl_w;
+wire        inst_rdcntvh_w;
+wire        inst_rdcntid;
+
+//tlb
+wire        inst_tlbrd;
+wire        inst_tlbsrch;
+wire [10:0] TLBIDX_new_tlbsrch;
+wire        inst_tlbwr;
+wire        inst_tlbfill;
+wire        inst_invtlb;
+
+wire [31:0] rkd_value;
+reg  [inbus_width-1:0] bus;
+
+//tlb_ex
+wire       ex_tlb_reload0;//tlb��������
+wire       ex_tlb_preif_unvalid;//tlb��ȡָҳ��Ч
+wire       ex_tlb_plv0;//tlb��ҳ��Ȩ���Ϲ�
+wire       ex_tlb_reload1;//tlb��������        
+wire       ex_tlb_ld_unvalid;//tlb��loadҳ��Ч 
+wire       ex_tlb_st_unvalid;//tlb��storeҳ��Ч
+wire       ex_tlb_plv1;//tlb��ҳ��Ȩ���Ϲ�        
+wire       ex_tlb_page_modify;//tlb��ҳ�޸�   
+
+wire       inst_cacop;
+
+
+always @(posedge clk)begin
+    if(!resetn)begin
+        bus<={inbus_width{1'b0}};
+    end
+    else if (EXE1_EXE2_valid && EXE2_allow_in)begin
+        bus<=EXE1_EXE2_bus;
+    end
+end
+assign {
+        pc,
+        rkd_value,res_from_mem,mem_we,need_stall_csr,inst_ld_b,inst_ld_h,inst_ld_bu ,inst_ld_hu,alu_result_with_rdct,//MEM
+        inst_csrrd, inst_csrwr,inst_csrxchg,inst_ertn,inst_syscall,inst_break,ex_INE,ex_ADEF,ex_ALE,has_int,inst_rdcntvl_w,inst_rdcntvh_w,inst_rdcntid,csr_num,rj_value,rf_dest,rf_gr_we,//WB
+        inst_tlbsrch,TLBIDX_new_tlbsrch,inst_tlbrd,inst_tlbwr,inst_tlbfill,inst_invtlb,
+        ex_tlb_reload0,ex_tlb_preif_unvalid,ex_tlb_plv0,ex_tlb_reload1,ex_tlb_ld_unvalid,ex_tlb_st_unvalid,ex_tlb_plv1,ex_tlb_page_modify,
+        data_sram_addr,data_sram_wdata,data_sram_size,data_sram_wstrb,data_mat,data_wr,inst_cacop,cache_code
+        }=bus;
+//------------------------{bus����&����}end-------------------------//
+
+//------------------------{����req&addr_ok}begin-------------------------//
+reg req_without_dataok;
+always @ (posedge clk)begin
+    if(!resetn)begin
+        req_without_dataok <= 1'b0;
+    end 
+    else if (data_sram_data_ok)begin
+        req_without_dataok <= 1'b0;
+    end
+    else if(data_sram_req & data_sram_addr_ok)begin
+        req_without_dataok <= 1'b1;
+    end
+end
+//------------------------{����req&addr_ok}end-------------------------//
+
+//------------------------{need_stall_inst}begins-------------------------//
+assign need_stall_inst = res_from_mem ;
+//------------------------{need_stall_inst}end-------------------------//
+
+//------------------------{dataRAM handshake}begin-------------------------//
+wire EXE2_ex;
+assign data_sram_req   = (res_from_mem | mem_we) & ~req_without_dataok & MEM_allow_in &
+                         ~EXE2_ex & ~older_ex_for_exe2 & EXE2_valid;
+assign data_sram_wr    = |data_sram_wstrb & ~older_ex_for_exe2 & ~EXE2_ex & EXE2_valid;
+
+assign cacop_valid     = EXE2_valid & inst_cacop & ~EXE2_ex & ~older_ex_for_exe2 &
+                        (cache_code[4:3] == 2'b01 | csr_CRMD_PLV == 2'b00);
+assign cacop_pc        = pc + 4;
+//------------------------{dataRAM handshake}end-------------------------//
+
+//------------------------{front_push}begin-------------------------//
+assign exe2_front_data = mem_we ? rkd_value : alu_result_with_rdct;
+assign exe2_front_addr = rf_dest;
+assign exe2_can_not_front_push = ~rf_gr_we;
+
+assign EXE2_ex = EXE2_valid &
+    (inst_syscall | inst_ertn | inst_break | ex_INE | ex_ADEF | ex_ALE |
+     ex_tlb_reload0 | ex_tlb_reload1 | ex_tlb_preif_unvalid | ex_tlb_plv0 |
+     ex_tlb_plv1 | ex_tlb_ld_unvalid | ex_tlb_st_unvalid | ex_tlb_page_modify |
+     has_int);
+//------------------------{front_push}end-------------------------//
+
+//------------------------{ready_go}begin-------------------------//
+assign EXE2_ready_go = (EXE2_ex | older_ex_for_exe2) ? 1'b1 :
+                        cacop_valid ? cacop_done :
+                        (res_from_mem | mem_we) ? (data_sram_addr_ok & data_sram_req) :
+                        1'b1;
+always @(posedge clk) begin
+    if(!resetn)begin
+        EXE2_valid<=1'b0;
+    end
+    else if(need_cancel)begin
+        EXE2_valid<=1'b0;
+    end
+    else if(EXE2_allow_in)begin
+        EXE2_valid<=EXE1_EXE2_valid;
+    end
+end
+//------------------------{ready_go}end-------------------------//
+
+//------------------------{bus}begin-------------------------//
+assign EXE2_MEM_bus={
+        pc,
+        rkd_value,res_from_mem,mem_we,need_stall_csr,inst_ld_b,inst_ld_h,inst_ld_bu ,inst_ld_hu,data_sram_addr[1:0],alu_result_with_rdct,//MEM
+        inst_csrrd, inst_csrwr,inst_csrxchg,inst_ertn,inst_syscall,inst_break,ex_INE,ex_ADEF,ex_ALE,has_int,inst_rdcntvl_w,inst_rdcntvh_w,inst_rdcntid,csr_num,rj_value,rf_dest,rf_gr_we,//WB
+        inst_tlbsrch,TLBIDX_new_tlbsrch,inst_tlbrd,inst_tlbwr,inst_tlbfill,inst_invtlb,
+        ex_tlb_reload0,ex_tlb_preif_unvalid,ex_tlb_plv0,ex_tlb_reload1,ex_tlb_ld_unvalid,ex_tlb_st_unvalid,ex_tlb_plv1,ex_tlb_page_modify
+    };                                                      
+assign EXE2_rf_dest = rf_dest;                               
+//------------------------{bus}end-------------------------//
+endmodule
