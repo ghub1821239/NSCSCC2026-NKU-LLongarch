@@ -305,9 +305,9 @@ end
 //【BADV】异常相关虚地址
 wire    wb_ex_addr_err;
 wire    ex_preIF_tlb;
-assign  wb_ex_addr_err = wb_ecode == `ECODE_ADE   || wb_ecode == `ECODE_ALE || wb_ecode == `ECODE_PIL ||
-                         wb_ecode == `ECODE_PIS   || wb_ecode == `ECODE_PIF || wb_ecode == `ECODE_PME ||
-                         wb_ecode == `ECODE_PPI   || wb_ecode == `ECODE_TLBR;
+assign  wb_ex_addr_err = wb_ecode == `ECODE_ADE      || wb_ecode == `ECODE_ALE || wb_ecode == `ECODE_PIL ||
+                         wb_ecode == `ECODE_PIS      || wb_ecode == `ECODE_PIF || wb_ecode == `ECODE_PME ||
+                         wb_ecode == `ECODE_PPI      || wb_ecode == `ECODE_TLBR;
 assign  ex_preIF_tlb   = (wb_ecode == `ECODE_PIF) | (wb_ecode == `ECODE_TLBR & csr_tlb_reload0) | (wb_ecode == `ECODE_PPI & csr_tlb_plv0);
 always @ (posedge clk)begin
     if(wb_ex && wb_ex_addr_err)begin
@@ -682,10 +682,10 @@ wire          vseg0_0;
 wire          vseg0_1;
 wire          dmw0_plv_ok;
 wire          dmw1_plv_ok;
-assign        dmw0_plv_ok            = (DMW0[`CSR_DMW0_PLV0]   && csr_CRMD_PLV == 2'b00) ||
-                                       (DMW0[`CSR_DMW0_PLV3]   && csr_CRMD_PLV == 2'b11);
-assign        dmw1_plv_ok            = (DMW1[`CSR_DMW1_PLV0]   && csr_CRMD_PLV == 2'b00) ||
-                                       (DMW1[`CSR_DMW1_PLV3]   && csr_CRMD_PLV == 2'b11);
+assign        dmw0_plv_ok            = (DMW0[`CSR_DMW0_PLV0]      && csr_CRMD_PLV == 2'b00) ||
+                                       (DMW0[`CSR_DMW0_PLV3]      && csr_CRMD_PLV == 2'b11);
+assign        dmw1_plv_ok            = (DMW1[`CSR_DMW1_PLV0]      && csr_CRMD_PLV == 2'b00) ||
+                                       (DMW1[`CSR_DMW1_PLV3]      && csr_CRMD_PLV == 2'b11);
 assign        vseg0_0                = (dmw_vseg0 == DMW0[`CSR_DMW0_VSEG]);
 assign        vseg0_1                = (dmw_vseg0 == DMW1[`CSR_DMW0_VSEG]);
 //csr到tlb的接口接线
@@ -787,30 +787,30 @@ assign  w_d1          = TLBELO1[`CSR_TLBELO1_D];
 assign  w_v1          = TLBELO1[`CSR_TLBELO1_V];  
  
 //CSR读接口   
-assign  csr_rvalue    = ({32{csr_num == `CSR_CRMD}}        & csr_crmd_rvalue)           |
-                        ({32{csr_num == `CSR_PRMD}}        & csr_prmd_rvalue)           |
-                        ({32{csr_num == `CSR_ESTAT}}       & csr_estat_rvalue)          |
-                        ({32{csr_num == `CSR_ERA}}         & csr_era_rvalue)            |
-                        ({32{csr_num == `CSR_EENTRY}}      & csr_eentry_rvalue)         |
-                        ({32{csr_num == `CSR_SAVE0}}       & csr_save0_rvalue)          |
-                        ({32{csr_num == `CSR_SAVE1}}       & csr_save1_rvalue)          |
-                        ({32{csr_num == `CSR_SAVE2}}       & csr_save2_rvalue)          |
-                        ({32{csr_num == `CSR_SAVE3}}       & csr_save3_rvalue)          |
-                        ({32{csr_num == `CSR_TICLR}}       & csr_ticlr_rvalue)          |
-                        ({32{csr_num == `CSR_ECFG}}        & csr_ecfg_rvalue)           |
-                        ({32{csr_num == `CSR_BADV}}        & csr_badv_rvalue)           |
-                        ({32{csr_num == `CSR_TID}}         & csr_tid_rvalue)            |
-                        ({32{csr_num == `CSR_TCFG}}        & csr_tcfg_rvalue)           |
-                        ({32{csr_num == `CSR_TVAL}}        & csr_tval_rvalue)           |
-                        ({32{csr_num == `CSR_TLBIDX}}      & csr_tlbidx_rvalue)         |
-                        ({32{csr_num == `CSR_TLBEHI}}      & csr_tlbehi_rvalue)         |
-                        ({32{csr_num == `CSR_TLBELO0}}     & csr_tlbelo0_rvalue)        |
-                        ({32{csr_num == `CSR_TLBELO1}}     & csr_tlbelo1_rvalue)        |
-                        ({32{csr_num == `CSR_ASID}}        & csr_asid_rvalue)           |
-                        ({32{csr_num == `CSR_TLBRENTRY}}   & csr_tlbrentry_rvalue)      |
-                        ({32{csr_num == `CSR_DMW0}}        & csr_dmw0_rvalue)           |
-                        ({32{csr_num == `CSR_DMW1}}        & csr_dmw1_rvalue)           |
-                        ({32{csr_num == `CSR_LLBCTL}}      & csr_llbctl_rvalue);
+assign  csr_rvalue    = ({32{csr_num == `CSR_CRMD}}           & csr_crmd_rvalue)           |
+                        ({32{csr_num == `CSR_PRMD}}           & csr_prmd_rvalue)           |
+                        ({32{csr_num == `CSR_ESTAT}}          & csr_estat_rvalue)          |
+                        ({32{csr_num == `CSR_ERA}}            & csr_era_rvalue)            |
+                        ({32{csr_num == `CSR_EENTRY}}         & csr_eentry_rvalue)         |
+                        ({32{csr_num == `CSR_SAVE0}}          & csr_save0_rvalue)          |
+                        ({32{csr_num == `CSR_SAVE1}}          & csr_save1_rvalue)          |
+                        ({32{csr_num == `CSR_SAVE2}}          & csr_save2_rvalue)          |
+                        ({32{csr_num == `CSR_SAVE3}}          & csr_save3_rvalue)          |
+                        ({32{csr_num == `CSR_TICLR}}          & csr_ticlr_rvalue)          |
+                        ({32{csr_num == `CSR_ECFG}}           & csr_ecfg_rvalue)           |
+                        ({32{csr_num == `CSR_BADV}}           & csr_badv_rvalue)           |
+                        ({32{csr_num == `CSR_TID}}            & csr_tid_rvalue)            |
+                        ({32{csr_num == `CSR_TCFG}}           & csr_tcfg_rvalue)           |
+                        ({32{csr_num == `CSR_TVAL}}           & csr_tval_rvalue)           |
+                        ({32{csr_num == `CSR_TLBIDX}}         & csr_tlbidx_rvalue)         |
+                        ({32{csr_num == `CSR_TLBEHI}}         & csr_tlbehi_rvalue)         |
+                        ({32{csr_num == `CSR_TLBELO0}}        & csr_tlbelo0_rvalue)        |
+                        ({32{csr_num == `CSR_TLBELO1}}        & csr_tlbelo1_rvalue)        |
+                        ({32{csr_num == `CSR_ASID}}           & csr_asid_rvalue)           |
+                        ({32{csr_num == `CSR_TLBRENTRY}}      & csr_tlbrentry_rvalue)      |
+                        ({32{csr_num == `CSR_DMW0}}           & csr_dmw0_rvalue)           |
+                        ({32{csr_num == `CSR_DMW1}}           & csr_dmw1_rvalue)           |
+                        ({32{csr_num == `CSR_LLBCTL}}         & csr_llbctl_rvalue);
 
 // ---------- READ END --------------
 endmodule

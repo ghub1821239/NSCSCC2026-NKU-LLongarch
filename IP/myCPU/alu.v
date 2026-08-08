@@ -157,15 +157,15 @@ always@(posedge clk)begin
     end
 end
 divider u_divider(
-    .aclk(clk),
-    .s_axis_divisor_tvalid(divisor_tvalid),    // input wire s_axis_divisor_tvalid
-    .s_axis_divisor_tready(divisor_tready),    // output wire s_axis_divisor_tready
-    .s_axis_divisor_tdata(alu_src2),      // input wire [31 : 0] s_axis_divisor_tdata
-    .s_axis_dividend_tvalid(dividend_tvalid),  // input wire s_axis_dividend_tvalid
-    .s_axis_dividend_tready(dividend_tready),  // output wire s_axis_dividend_tready
-    .s_axis_dividend_tdata(alu_src1),    // input wire [31 : 0] s_axis_dividend_tdata
-    .m_axis_dout_tvalid(div_ready_go),          // output wire m_axis_dout_tvalid
-    .m_axis_dout_tdata(div_result)            // output wire [63 : 0] m_axis_dout_tdata
+    .aclk                   (clk             ),
+    .s_axis_divisor_tvalid  (divisor_tvalid  ),    // input wire s_axis_divisor_tvalid
+    .s_axis_divisor_tready  (divisor_tready  ),    // output wire s_axis_divisor_tready
+    .s_axis_divisor_tdata   (alu_src2        ),      // input wire [31 : 0] s_axis_divisor_tdata
+    .s_axis_dividend_tvalid (dividend_tvalid ),  // input wire s_axis_dividend_tvalid
+    .s_axis_dividend_tready (dividend_tready ),  // output wire s_axis_dividend_tready
+    .s_axis_dividend_tdata  (alu_src1        ),    // input wire [31 : 0] s_axis_dividend_tdata
+    .m_axis_dout_tvalid     (div_ready_go    ),          // output wire m_axis_dout_tvalid
+    .m_axis_dout_tdata      (div_result      )            // output wire [63 : 0] m_axis_dout_tdata
 );
 //unsigned divider 
 wire    dividend_tready_u;
@@ -212,34 +212,34 @@ always@(posedge clk)begin
     end
 end
 divider_unsigned u_divideru(
-  .aclk(clk),                                      // input wire aclk
-  .s_axis_divisor_tvalid(divisor_tvalid_u),    // input wire s_axis_divisor_tvalid
-  .s_axis_divisor_tready(divisor_tready_u),    // output wire s_axis_divisor_tready
-  .s_axis_divisor_tdata(alu_src2),      // input wire [31 : 0] s_axis_divisor_tdata
-  .s_axis_dividend_tvalid(dividend_tvalid_u),  // input wire s_axis_dividend_tvalid
-  .s_axis_dividend_tready(dividend_tready_u),  // output wire s_axis_dividend_tready
-  .s_axis_dividend_tdata(alu_src1),    // input wire [31 : 0] s_axis_dividend_tdata
-  .m_axis_dout_tvalid(div_ready_go_u),          // output wire m_axis_dout_tvalid
-  .m_axis_dout_tdata(div_result_u)            // output wire [63 : 0] m_axis_dout_tdata
+  .aclk                   (clk               ),                                      // input wire aclk
+  .s_axis_divisor_tvalid  (divisor_tvalid_u  ),    // input wire s_axis_divisor_tvalid
+  .s_axis_divisor_tready  (divisor_tready_u  ),    // output wire s_axis_divisor_tready
+  .s_axis_divisor_tdata   (alu_src2          ),      // input wire [31 : 0] s_axis_divisor_tdata
+  .s_axis_dividend_tvalid (dividend_tvalid_u ),  // input wire s_axis_dividend_tvalid
+  .s_axis_dividend_tready (dividend_tready_u ),  // output wire s_axis_dividend_tready
+  .s_axis_dividend_tdata  (alu_src1          ),    // input wire [31 : 0] s_axis_dividend_tdata
+  .m_axis_dout_tvalid     (div_ready_go_u    ),          // output wire m_axis_dout_tvalid
+  .m_axis_dout_tdata      (div_result_u      )            // output wire [63 : 0] m_axis_dout_tdata
 );
 assign  divide_ready_go = (div_ready_go & ~kill) | (div_ready_go_u & ~kill_u);
 // final result mux
-assign  alu_result      = ({32{op_add  |op_sub}} & add_sub_result)
-                                       | ({32{op_slt       }} & slt_result)
-                                       | ({32{op_sltu      }} & sltu_result)
-                                       | ({32{op_and       }} & and_result)
-                                       | ({32{op_nor       }} & nor_result)
-                                       | ({32{op_or        }} & or_result)
-                                       | ({32{op_xor       }} & xor_result)
-                                       | ({32{op_lui       }} & lui_result)
-                                       | ({32{op_sll       }} & sll_result)
-                                       | ({32{op_srl|op_sra}} & sr_result)
-                                       | ({32{op_mul       }} & mul_result[31: 0])
-                                       | ({32{op_mulh      }} & mul_result[63:32])
-                                       | ({32{op_mulh_wu   }} & mul_result[63:32])
-                                       | ({32{op_div       }} & div_result[63:32])
-                                       | ({32{op_mod       }} & div_result[31: 0])
-                                       | ({32{op_divu      }} & div_result_u[63:32])
-                                       | ({32{op_modu      }} & div_result_u[31: 0]);
+assign  alu_result      = ({32{op_add     |op_sub}} & add_sub_result)
+                                          | ({32{op_slt       }} & slt_result)
+                                          | ({32{op_sltu      }} & sltu_result)
+                                          | ({32{op_and       }} & and_result)
+                                          | ({32{op_nor       }} & nor_result)
+                                          | ({32{op_or        }} & or_result)
+                                          | ({32{op_xor       }} & xor_result)
+                                          | ({32{op_lui       }} & lui_result)
+                                          | ({32{op_sll       }} & sll_result)
+                                          | ({32{op_srl|op_sra}} & sr_result)
+                                          | ({32{op_mul       }} & mul_result[31: 0])
+                                          | ({32{op_mulh      }} & mul_result[63:32])
+                                          | ({32{op_mulh_wu   }} & mul_result[63:32])
+                                          | ({32{op_div       }} & div_result[63:32])
+                                          | ({32{op_mod       }} & div_result[31: 0])
+                                          | ({32{op_divu      }} & div_result_u[63:32])
+                                          | ({32{op_modu      }} & div_result_u[31: 0]);
 
 endmodule

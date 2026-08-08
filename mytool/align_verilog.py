@@ -12,10 +12,21 @@ endings are preserved byte-for-byte):
      up with the RHS column (the text after '=').
   3. Inside each always block, 'lhs <= rhs;' / 'lhs = rhs;' statements are
      aligned together: LHS padded to the longest name, operator column fixed.
-  4. Module port lists are aligned as one block (direction/type/range/name).
+  4. Each module instantiation is aligned as one block: every '.port(...)'
+     connection (parameter list included) has the '.'/name field padded so the
+     '(' column is fixed and the signal field is padded so the ')' column is
+     fixed as well.
+  5. Module port lists are aligned as one block (direction/type/range/name).
 
 Usage:
-    python3 mytool/align_verilog.py [patterns...] [--dry-run]
+    # 默认格式化 IP/myCPU/*.v
+    python3 mytool/align_verilog.py
+
+    # 先看会改多少行，不写入
+    python3 mytool/align_verilog.py --dry-run
+
+    # 自定义范围
+    python3 mytool/align_verilog.py 'IP/myCPU/*.v' 'chip/soc_demo/nscscc-team/*.v'
 
 Default pattern: IP/myCPU/*.v
 """
@@ -68,6 +79,33 @@ def parse_range(code, pos):
             if depth == 0:
                 return code[pos:i + 1], i + 1
     return None, pos
+
+
+def parse_conn(code):
+    """Parse a single '.name(signal)' connection line; None if not one."""
+    m = re.match(rb'^\.([A-Za-z_][A-Za-z0-9_$]*)\s*\(', code)
+    if not m:
+        return None
+    pos = m.end() - 1
+    depth = 0
+    end = -1
+    for i in range(pos, len(code)):
+        c = code[i:i + 1]
+        if c == b'(':
+            depth += 1
+        elif c == b')':
+            depth -= 1
+            if depth == 0:
+                end = i
+                break
+    if end < 0:
+        return None
+    rest = code[end + 1:]
+    if b'.' in rest and b'(' in rest:
+        return None  # multiple connections on one line
+    return {'name': b'.' + m.group(1),
+            'signal': code[pos + 1:end].strip(),
+            'tail': rest}
 
 
 def is_banner(stripped):
@@ -264,7 +302,6 @@ def align_multiline_table(rec):
     those operators line up; then re-align a trailing '|' column so the
     line-end ORs stay aligned as well.
     """
-    cand = b'&|?:^+-*/'
     bodies = [(rec['rhs'], rec['tail'])]
     for _ci, st, _ccr in rec['cont']:
         code, comment = split_comment(st)
@@ -272,25 +309,17 @@ def align_multiline_table(rec):
     if any(not code.strip() for code, _ in bodies):
         return
 
-    ops = []
-    for code, _ in bodies:
-        best = None
-        for ch in cand:
-            chb = bytes([ch])
-            p = code.find(chb)
-            if p >= 0 and (best is None or p < best[0]):
-                best = (p, chb)
-        ops.append(best)
+    ops = [first_candidate(code) for code, _ in bodies]
     if any(o is None for o in ops):
         return
     op = ops[0][1]
     if any(o[1] != op for o in ops):
         return
 
-    max_pre = max(len(code[:p]) for (p, _), (code, _) in zip(ops, bodies))
+    max_pre = max(p for p, _ in ops)
     aligned = []
     for (code, comment), (p, _) in zip(bodies, ops):
-        aligned.append((code[:p].ljust(max_pre) + b' ' + op + code[p + 1:], comment))
+        aligned.append((code[:p].ljust(max_pre) + op + code[p + 1:], comment))
 
     has_pipe = [code.rstrip().endswith(b'|') for code, _ in aligned]
     if any(has_pipe):
@@ -322,6 +351,33 @@ def rewrite_always(run, out):
         if rec['multi']:
             for ci, rest, ccr in rec['cont']:
                 out[ci] = (b' ' * rhs_col + rest + ccr) if rest else (rest + ccr)
+
+
+def first_candidate(code):
+    """First column-operator candidate outside bit-range brackets.
+
+    Returns (position, byte) or None. Skips operators inside '[' ']' (e.g.
+    the ':' of a range) and two-character operators like '&&', '||' and '**'.
+    """
+    cand = b'&|?:^+-*/'
+    depth = 0
+    i = 0
+    while i < len(code):
+        c = code[i:i + 1]
+        if c == b'[':
+            depth += 1
+        elif c == b']':
+            depth -= 1
+        elif depth == 0 and c in cand:
+            nxt = code[i + 1:i + 2]
+            if (c == b'&' and nxt == b'&') or \
+               (c == b'|' and nxt == b'|') or \
+               (c == b'*' and nxt == b'*'):
+                i += 2
+                continue
+            return i, c
+        i += 1
+    return None
 
 
 def rewrite_ports(run, out):
@@ -360,6 +416,30 @@ def find_always_ranges(code_parts):
             i = j + 1
         else:
             i += 1
+    return ranges
+
+
+def find_inst_ranges(code_parts):
+    n = len(code_parts)
+    ranges = []
+    i = 0
+    while i < n:
+        m = re.match(rb'^[A-Za-z_][A-Za-z0-9_$]*'
+                     rb'(\s+[A-Za-z_][A-Za-z0-9_$]*)?\s*(#\s*)?\(',
+                     code_parts[i])
+        if m:
+            first = re.match(rb'[A-Za-z_][A-Za-z0-9_$]*',
+                             code_parts[i]).group()
+            if first not in EXCLUDED_FIRST:
+                j = i
+                while j < n:
+                    if code_parts[j].rstrip().endswith(b');'):
+                        break
+                    j += 1
+                ranges.append((i, j))
+                i = j + 1
+                continue
+        i += 1
     return ranges
 
 
@@ -486,6 +566,32 @@ def process(data):
             else:
                 j += 1
         rewrite_always(run, out)
+
+    for rs, re_ in find_inst_ranges(code_parts):
+        conns = []
+        for j in range(rs, re_ + 1):
+            line = lines[j]
+            body = line[:-1] if line.endswith(b'\r') else line
+            cr = b'\r' if line.endswith(b'\r') else b''
+            st = body.lstrip(b' \t')
+            if not st or st.startswith(b'//'):
+                continue
+            code, comment = split_comment(st)
+            if not code.startswith(b'.'):
+                continue
+            pc = parse_conn(code)
+            if pc is None:
+                continue
+            conns.append((j, body, cr, pc, comment))
+        if len(conns) < 2:
+            continue
+        max_name = max(len(pc['name']) for _, _, _, pc, _ in conns)
+        max_signal = max(len(pc['signal']) for _, _, _, pc, _ in conns)
+        for j, body, cr, pc, comment in conns:
+            indent = body[:len(body) - len(body.lstrip(b' \t'))]
+            out[j] = (indent + pc['name'].ljust(max_name) + b' ' + b'(' +
+                      pc['signal'].ljust(max_signal) + b' ' + b')' +
+                      pc['tail'] + comment + cr)
 
     return b'\n'.join(out)
 

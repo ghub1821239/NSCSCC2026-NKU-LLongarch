@@ -113,15 +113,15 @@ wire        rf_we;
 
 //regfile instantiation
 regfile u_regfile(
-    .clk    (clk      ),
-    .resetn (resetn   ),
-    .raddr1 (rf_raddr1),
-    .rdata1 (rf_rdata1),
-    .raddr2 (rf_raddr2),
-    .rdata2 (rf_rdata2),
-    .we     (rf_we    ),
-    .waddr  (rf_waddr ),
-    .wdata  (rf_wdata )
+    .clk    (clk       ),
+    .resetn (resetn    ),
+    .raddr1 (rf_raddr1 ),
+    .rdata1 (rf_rdata1 ),
+    .raddr2 (rf_raddr2 ),
+    .rdata2 (rf_rdata2 ),
+    .we     (rf_we     ),
+    .waddr  (rf_waddr  ),
+    .wdata  (rf_wdata  )
 );
 //------------------------{regfile}end-------------------------//
 
@@ -257,94 +257,94 @@ wire                        tlb_load_req;
 wire                        tlb_store_req;
 
 tlb u_tlb(
-    .clk(clk),
-    .resetn(resetn),
+    .clk                  (clk                  ),
+    .resetn               (resetn               ),
 
     // search port 0 (for fetch the inst)
-    .s0_vppn(s0_vppn),
-    .s0_va_bit12(s0_va_bit12),
-    .s0_asid(s0_asid),
-    .s0_found(s0_found),
-    .s0_index(s0_index), // 实际使用的index位宽为log2(TLBNUM)
-    .s0_ppn(s0_ppn),
-    .s0_ps(s0_ps),
-    .s0_plv(s0_plv),
-    .s0_mat(s0_mat),
-    .s0_d(s0_d),
-    .s0_v(s0_v),
+    .s0_vppn              (s0_vppn              ),
+    .s0_va_bit12          (s0_va_bit12          ),
+    .s0_asid              (s0_asid              ),
+    .s0_found             (s0_found             ),
+    .s0_index             (s0_index             ), // 实际使用的index位宽为log2(TLBNUM)
+    .s0_ppn               (s0_ppn               ),
+    .s0_ps                (s0_ps                ),
+    .s0_plv               (s0_plv               ),
+    .s0_mat               (s0_mat               ),
+    .s0_d                 (s0_d                 ),
+    .s0_v                 (s0_v                 ),
 
     // search port 1 (for load/store the data)
-    .s1_vppn(s1_vppn),
-    .s1_va_bit12(s1_va_bit12),
-    .s1_asid(s1_asid),
-    .s1_found(s1_found),
-    .s1_index(s1_index),
-    .s1_ppn(s1_ppn),
-    .s1_ps(s1_ps),
-    .s1_plv(s1_plv),
-    .s1_mat(s1_mat),
-    .s1_d(s1_d),
-    .s1_v(s1_v),
+    .s1_vppn              (s1_vppn              ),
+    .s1_va_bit12          (s1_va_bit12          ),
+    .s1_asid              (s1_asid              ),
+    .s1_found             (s1_found             ),
+    .s1_index             (s1_index             ),
+    .s1_ppn               (s1_ppn               ),
+    .s1_ps                (s1_ps                ),
+    .s1_plv               (s1_plv               ),
+    .s1_mat               (s1_mat               ),
+    .s1_d                 (s1_d                 ),
+    .s1_v                 (s1_v                 ),
 
     // invtlb opcode
-    .invtlb_valid(invtlb_valid),
-    .invtlb_op(invtlb_op),
+    .invtlb_valid         (invtlb_valid         ),
+    .invtlb_op            (invtlb_op            ),
     
     // write port
-    .we(we),
-    .w_index(w_index),
-    .w_e(w_e),
-    .w_vppn(w_vppn),
-    .w_ps(w_ps),
-    .w_asid(w_asid),
-    .w_g(w_g),
-    .w_ppn0(w_ppn0),
-    .w_plv0(w_plv0),
-    .w_mat0(w_mat0),
-    .w_d0(w_d0),
-    .w_v0(w_v0),
-    .w_ppn1(w_ppn1),
-    .w_plv1(w_plv1),
-    .w_mat1(w_mat1),
-    .w_d1(w_d1),
-    .w_v1(w_v1),
+    .we                   (we                   ),
+    .w_index              (w_index              ),
+    .w_e                  (w_e                  ),
+    .w_vppn               (w_vppn               ),
+    .w_ps                 (w_ps                 ),
+    .w_asid               (w_asid               ),
+    .w_g                  (w_g                  ),
+    .w_ppn0               (w_ppn0               ),
+    .w_plv0               (w_plv0               ),
+    .w_mat0               (w_mat0               ),
+    .w_d0                 (w_d0                 ),
+    .w_v0                 (w_v0                 ),
+    .w_ppn1               (w_ppn1               ),
+    .w_plv1               (w_plv1               ),
+    .w_mat1               (w_mat1               ),
+    .w_d1                 (w_d1                 ),
+    .w_v1                 (w_v1                 ),
 
     // read port
-    .r_index(r_index),
-    .r_e(r_e),
-    .r_vppn(r_vppn),
-    .r_ps(r_ps),
-    .r_asid(r_asid),
-    .r_g(r_g),
-    .r_ppn0(r_ppn0),
-    .r_plv0(r_plv0),
-    .r_mat0(r_mat0),
-    .r_d0(r_d0),
-    .r_v0(r_v0),
-    .r_ppn1(r_ppn1),
-    .r_plv1(r_plv1),
-    .r_mat1(r_mat1),
-    .r_d1(r_d1),
-    .r_v1(r_v1),
-    .csr_CRMD_PLV(csr_CRMD_PLV),
+    .r_index              (r_index              ),
+    .r_e                  (r_e                  ),
+    .r_vppn               (r_vppn               ),
+    .r_ps                 (r_ps                 ),
+    .r_asid               (r_asid               ),
+    .r_g                  (r_g                  ),
+    .r_ppn0               (r_ppn0               ),
+    .r_plv0               (r_plv0               ),
+    .r_mat0               (r_mat0               ),
+    .r_d0                 (r_d0                 ),
+    .r_v0                 (r_v0                 ),
+    .r_ppn1               (r_ppn1               ),
+    .r_plv1               (r_plv1               ),
+    .r_mat1               (r_mat1               ),
+    .r_d1                 (r_d1                 ),
+    .r_v1                 (r_v1                 ),
+    .csr_CRMD_PLV         (csr_CRMD_PLV         ),
 
     //tlb_ex
-    .ex_tlb_reload0         (ex_tlb_reload0),//tlb重填异常
-    .ex_tlb_reload1         (ex_tlb_reload1),//tlb重填异常
-    .ex_tlb_ld_unvalid      (ex_tlb_ld_unvalid),//tlb的load页无效
-    .ex_tlb_st_unvalid      (ex_tlb_st_unvalid),//tlb的store页无效
-    .ex_tlb_preif_unvalid   (ex_tlb_preif_unvalid),//tlb取指页无效
-    .ex_tlb_plv0            (ex_tlb_plv0),//tlb的页权限上访
-    .ex_tlb_plv1            (ex_tlb_plv1),//tlb的页权限上访
-    .ex_tlb_page_modify     (ex_tlb_page_modify),//tlb页修改
-    .tlb_inst_req(tlb_inst_req),
-    .tlb_data_req (tlb_data_req),
-    .tlb_load_req (tlb_load_req),
-    .tlb_store_req(tlb_store_req),
+    .ex_tlb_reload0       (ex_tlb_reload0       ),//tlb重填异常
+    .ex_tlb_reload1       (ex_tlb_reload1       ),//tlb重填异常
+    .ex_tlb_ld_unvalid    (ex_tlb_ld_unvalid    ),//tlb的load页无效
+    .ex_tlb_st_unvalid    (ex_tlb_st_unvalid    ),//tlb的store页无效
+    .ex_tlb_preif_unvalid (ex_tlb_preif_unvalid ),//tlb取指页无效
+    .ex_tlb_plv0          (ex_tlb_plv0          ),//tlb的页权限上访
+    .ex_tlb_plv1          (ex_tlb_plv1          ),//tlb的页权限上访
+    .ex_tlb_page_modify   (ex_tlb_page_modify   ),//tlb页修改
+    .tlb_inst_req         (tlb_inst_req         ),
+    .tlb_data_req         (tlb_data_req         ),
+    .tlb_load_req         (tlb_load_req         ),
+    .tlb_store_req        (tlb_store_req        ),
 
     //DWM
-    .dmw_found0(dmw_found0),
-    .dmw_found1(dmw_found1)
+    .dmw_found0           (dmw_found0           ),
+    .dmw_found1           (dmw_found1           )
 );
 //------------------------{TLB}end-------------------------//
 
@@ -404,18 +404,18 @@ wire          wb_need_stall_csr;
 //need to distribute inst for increasing effciency [todo]
 wire          mem_load_wait;
 assign        mem_load_wait        = mem_need_stall_inst & ~data_sram_data_ok;
-assign        src1_stall           = (rf_raddr1 != 5'd0)             &&
-                                     ID_valid                        &&
-                                     (((rf_raddr1 == EXE1_rf_dest)   && EXE1_valid && EXE1_rf_gr_we) |                                |
-                                     ((rf_raddr1 == EXE2_rf_dest)    && EXE2_valid && (exe2_need_stall_inst || exe2_need_stall_csr)) ||
-                                     ((rf_raddr1 == MEM_rf_dest)     && MEM_valid && (mem_load_wait || mem_need_stall_csr)) |         |
-                                     ((rf_raddr1 == WB_rf_dest)      && WB_valid && wb_need_stall_csr));
-assign        src2_stall           = (rf_raddr2 != 5'd0)             &&
-                                     ID_valid                        &&
-                                     (((rf_raddr2 == EXE1_rf_dest)   && EXE1_valid && EXE1_rf_gr_we) |                                |
-                                     ((rf_raddr2 == EXE2_rf_dest)    && EXE2_valid && (exe2_need_stall_inst || exe2_need_stall_csr)) ||
-                                     ((rf_raddr2 == MEM_rf_dest)     && MEM_valid && (mem_load_wait || mem_need_stall_csr)) |         |
-                                     ((rf_raddr2 == WB_rf_dest)      && WB_valid && wb_need_stall_csr));
+assign        src1_stall           = (rf_raddr1 != 5'd0)                &&
+                                     ID_valid                           &&
+                                     (((rf_raddr1 == EXE1_rf_dest)      && EXE1_valid && EXE1_rf_gr_we) |                                |
+                                     ((rf_raddr1 == EXE2_rf_dest)       && EXE2_valid && (exe2_need_stall_inst || exe2_need_stall_csr)) ||
+                                     ((rf_raddr1 == MEM_rf_dest)        && MEM_valid && (mem_load_wait || mem_need_stall_csr)) |         |
+                                     ((rf_raddr1 == WB_rf_dest)         && WB_valid && wb_need_stall_csr));
+assign        src2_stall           = (rf_raddr2 != 5'd0)                &&
+                                     ID_valid                           &&
+                                     (((rf_raddr2 == EXE1_rf_dest)      && EXE1_valid && EXE1_rf_gr_we) |                                |
+                                     ((rf_raddr2 == EXE2_rf_dest)       && EXE2_valid && (exe2_need_stall_inst || exe2_need_stall_csr)) ||
+                                     ((rf_raddr2 == MEM_rf_dest)        && MEM_valid && (mem_load_wait || mem_need_stall_csr)) |         |
+                                     ((rf_raddr2 == WB_rf_dest)         && WB_valid && wb_need_stall_csr));
 assign        need_stall           = src1_stall | src2_stall;
 
 wire          IDLE_stall;
@@ -454,21 +454,21 @@ wire [31:0] update_pc;
 wire [31:0] update_target;//real target
 wire [ 1:0] update_type;
 btb u_btb(
-    .clk                (clk   ),
-    .resetn             (resetn),
+    .clk           (clk                       ),
+    .resetn        (resetn                    ),
     // query port: preIF lookup
-    .query_valid        (query_valid ),
-    .query_pc           (query_pc    ),
-    .query_hit          (btb_query_hit   ),//valid and tag match
-    .query_target       (btb_query_target),
-    .query_type         (query_type  ),
+    .query_valid   (query_valid               ),
+    .query_pc      (query_pc                  ),
+    .query_hit     (btb_query_hit             ),//valid and tag match
+    .query_target  (btb_query_target          ),
+    .query_type    (query_type                ),
     // update port: Decode writes back real result
-    .update_valid       (update_valid ),
-    .update_pc          (update_pc    ),
-    .update_target      (update_target),//real target
-    .update_type        (update_type  ),
+    .update_valid  (update_valid              ),
+    .update_pc     (update_pc                 ),
+    .update_target (update_target             ),//real target
+    .update_type   (update_type               ),
     //取消取指和错误预测
-    .update_cancel (flush | cacop_need_cancel)
+    .update_cancel (flush | cacop_need_cancel )
 );
 
 wire  query_taken;
@@ -476,17 +476,17 @@ wire  update_taken;
 wire  bht_update_valid;
 //bht
 bht u_bht(
-    .clk            (clk   ),
-    .resetn         (resetn),
+    .clk           (clk                       ),
+    .resetn        (resetn                    ),
     // query port
-    .query_valid    (query_valid),
-    .query_pc       (query_pc   ),//pc being predicted
-    .query_taken    (query_taken),//predict taken
+    .query_valid   (query_valid               ),
+    .query_pc      (query_pc                  ),//pc being predicted
+    .query_taken   (query_taken               ),//predict taken
     // update port
-    .update_valid   (bht_update_valid),//update BHT
-    .update_pc      (update_pc   ),//branch pc
-    .update_taken   (update_taken),//real taken
-    .update_cancel  (flush | cacop_need_cancel)//取消取指和错误预测
+    .update_valid  (bht_update_valid          ),//update BHT
+    .update_pc     (update_pc                 ),//branch pc
+    .update_taken  (update_taken              ),//real taken
+    .update_cancel (flush | cacop_need_cancel )//取消取指和错误预测
 );
 
 //ras
@@ -496,17 +496,17 @@ wire        pop_valid;
 wire        ras_query_hit;
 wire [31:0] ras_query_target;
 ras u_ras(
-    .clk            (clk   ),
-    .resetn         (resetn),
+    .clk          (clk              ),
+    .resetn       (resetn           ),
     // frontend query
-    .query_valid    (query_valid ),
-    .query_hit      (ras_query_hit   ),
-    .query_target   (ras_query_target),
+    .query_valid  (query_valid      ),
+    .query_hit    (ras_query_hit    ),
+    .query_target (ras_query_target ),
     // backend real call update
-    .push_valid     (push_valid ),
-    .push_target    (push_target),
+    .push_valid   (push_valid       ),
+    .push_target  (push_target      ),
     // backend real return update
-    .pop_valid      (pop_valid)
+    .pop_valid    (pop_valid        )
 );
 //------------------------{branch prediction}end---------------------------//
 
@@ -661,487 +661,487 @@ assign  data_uncache_wr    = data_wr;
 //---------------------------------------------
 
 csr_regfile #(
-    .TLBNUM(TLBNUM)
+    .TLBNUM                 (TLBNUM                 )
 )u_csr_regfile (
-    .clk         (clk),
-    .resetn      (resetn),
-    .csr_num     (csr_num),
-    .csr_we      (csr_we),
-    .csr_wmask   (csr_wmask),
-    .csr_wvalue  (csr_wdata),
-    .csr_re      (csr_re),
-    .csr_rvalue  (csr_rvalue),
-    .wb_ex       (wb_ex),
-    .wb_ecode    (wb_ecode),
-    .wb_esubcode (wb_esubcode),
-    .hw_int_in   (hw_int_in),
-    .ipi_int_in  (ipi_int_in),
-    .wb_pc       (wb_pc),
-    .wb_vaddr    (wb_vaddr),
-    .has_int     (has_int),
-    .csr_tcfg_init0(csr_tcfg_init0),
-    .coreid_in   (32'b0  ),
+    .clk                    (clk                    ),
+    .resetn                 (resetn                 ),
+    .csr_num                (csr_num                ),
+    .csr_we                 (csr_we                 ),
+    .csr_wmask              (csr_wmask              ),
+    .csr_wvalue             (csr_wdata              ),
+    .csr_re                 (csr_re                 ),
+    .csr_rvalue             (csr_rvalue             ),
+    .wb_ex                  (wb_ex                  ),
+    .wb_ecode               (wb_ecode               ),
+    .wb_esubcode            (wb_esubcode            ),
+    .hw_int_in              (hw_int_in              ),
+    .ipi_int_in             (ipi_int_in             ),
+    .wb_pc                  (wb_pc                  ),
+    .wb_vaddr               (wb_vaddr               ),
+    .has_int                (has_int                ),
+    .csr_tcfg_init0         (csr_tcfg_init0         ),
+    .coreid_in              (32'b0                  ),
     //TLB与csr接口
-    .csr_TLBEHI  (csr_TLBEHI),
-    .csr_TLBIDX  (csr_TLBIDX),
-    .csr_CRMD_PLV(csr_CRMD_PLV),
+    .csr_TLBEHI             (csr_TLBEHI             ),
+    .csr_TLBIDX             (csr_TLBIDX             ),
+    .csr_CRMD_PLV           (csr_CRMD_PLV           ),
     //tlbrd读 read port,写csr
-    .r_index     (r_index),
-    .s0_asid     (s0_asid),
-    .s1_asid_without_invtlb(s1_asid_without_invtlb),
-    .r_e         (r_e),
-    .r_vppn      (r_vppn),
-    .r_ps        (r_ps),
-    .r_asid      (r_asid),
-    .r_g         (r_g),
-    .r_ppn0      (r_ppn0),
-    .r_plv0      (r_plv0),
-    .r_mat0      (r_mat0),
-    .r_d0        (r_d0),
-    .r_v0        (r_v0),
-    .r_ppn1      (r_ppn1),
-    .r_plv1      (r_plv1),
-    .r_mat1      (r_mat1),
-    .r_d1        (r_d1),
-    .r_v1        (r_v1),
+    .r_index                (r_index                ),
+    .s0_asid                (s0_asid                ),
+    .s1_asid_without_invtlb (s1_asid_without_invtlb ),
+    .r_e                    (r_e                    ),
+    .r_vppn                 (r_vppn                 ),
+    .r_ps                   (r_ps                   ),
+    .r_asid                 (r_asid                 ),
+    .r_g                    (r_g                    ),
+    .r_ppn0                 (r_ppn0                 ),
+    .r_plv0                 (r_plv0                 ),
+    .r_mat0                 (r_mat0                 ),
+    .r_d0                   (r_d0                   ),
+    .r_v0                   (r_v0                   ),
+    .r_ppn1                 (r_ppn1                 ),
+    .r_plv1                 (r_plv1                 ),
+    .r_mat1                 (r_mat1                 ),
+    .r_d1                   (r_d1                   ),
+    .r_v1                   (r_v1                   ),
     // write port [csr-tlb]
-    .w_index(w_index_from_csr),
-    .w_e(w_e),
-    .w_vppn(w_vppn),
-    .w_ps(w_ps),
-    .w_asid(w_asid),
-    .w_g(w_g),
-    .w_ppn0(w_ppn0),
-    .w_plv0(w_plv0),
-    .w_mat0(w_mat0),
-    .w_d0(w_d0),
-    .w_v0(w_v0),
-    .w_ppn1(w_ppn1),
-    .w_plv1(w_plv1),
-    .w_mat1(w_mat1),
-    .w_d1(w_d1),
-    .w_v1(w_v1),
+    .w_index                (w_index_from_csr       ),
+    .w_e                    (w_e                    ),
+    .w_vppn                 (w_vppn                 ),
+    .w_ps                   (w_ps                   ),
+    .w_asid                 (w_asid                 ),
+    .w_g                    (w_g                    ),
+    .w_ppn0                 (w_ppn0                 ),
+    .w_plv0                 (w_plv0                 ),
+    .w_mat0                 (w_mat0                 ),
+    .w_d0                   (w_d0                   ),
+    .w_v0                   (w_v0                   ),
+    .w_ppn1                 (w_ppn1                 ),
+    .w_plv1                 (w_plv1                 ),
+    .w_mat1                 (w_mat1                 ),
+    .w_d1                   (w_d1                   ),
+    .w_v1                   (w_v1                   ),
     //rlbrd
-    .tlbrd_we    (tlbrd_we),
-    .csr_CRMD_DA (csr_CRMD_DA),
-    .csr_CRMD_PG (csr_CRMD_PG),
+    .tlbrd_we               (tlbrd_we               ),
+    .csr_CRMD_DA            (csr_CRMD_DA            ),
+    .csr_CRMD_PG            (csr_CRMD_PG            ),
     //tlbreload 重填传入CSR
-    .ex_tlb_reload  (ex_tlb_reload),
+    .ex_tlb_reload          (ex_tlb_reload          ),
     //DMW
-    .dmw_vseg0(dmw_vseg0),
-    .dmw_found0(dmw_found0),
-    .dmw_pseg0(dmw_pseg0),
-    .dmw_vseg1(dmw_vseg1),
-    .dmw_found1(dmw_found1),
-    .dmw_pseg1(dmw_pseg1),
+    .dmw_vseg0              (dmw_vseg0              ),
+    .dmw_found0             (dmw_found0             ),
+    .dmw_pseg0              (dmw_pseg0              ),
+    .dmw_vseg1              (dmw_vseg1              ),
+    .dmw_found1             (dmw_found1             ),
+    .dmw_pseg1              (dmw_pseg1              ),
     // ERTN 更改 CRMD
-    .ertn_valid(ertn_valid),
+    .ertn_valid             (ertn_valid             ),
     // BADV
-    .csr_tlb_reload0(csr_tlb_reload0),
-    .csr_tlb_plv0   (csr_tlb_plv0   ),
-    .csr_tlb_reload1(csr_tlb_reload1),  
-    .csr_tlb_plv1   (csr_tlb_plv1   ),
+    .csr_tlb_reload0        (csr_tlb_reload0        ),
+    .csr_tlb_plv0           (csr_tlb_plv0           ),
+    .csr_tlb_reload1        (csr_tlb_reload1        ),  
+    .csr_tlb_plv1           (csr_tlb_plv1           ),
     //ex_tlb TLBEHI
-    .ex_tlb         (ex_tlb         ),
+    .ex_tlb                 (ex_tlb                 ),
     //mat:存储访问类型
-    .csr_CRMD_DATF          (csr_CRMD_DATF),
-    .csr_CRMD_DATM          (csr_CRMD_DATM),
-    .dmw_mat0               (dmw_mat0),
-    .dmw_mat1               (dmw_mat1),
+    .csr_CRMD_DATF          (csr_CRMD_DATF          ),
+    .csr_CRMD_DATM          (csr_CRMD_DATM          ),
+    .dmw_mat0               (dmw_mat0               ),
+    .dmw_mat1               (dmw_mat1               ),
     //LLbit
-    .LLbit_wb       (LLbit_wb),
-    .LLbit_wdata    (LLbit_wdata),
-    .LLbit          (LLbit)
+    .LLbit_wb               (LLbit_wb               ),
+    .LLbit_wdata            (LLbit_wdata            ),
+    .LLbit                  (LLbit                  )
 );
 //------------------------{csr_regfile}end-------------------------//
 
 //------------------------{5-stage pipeline instantiation}begin-------------------------//
 pre_IF1 #(
-    .outbus_width(preIF1_preIF2_bus_width)
+    .outbus_width         (preIF1_preIF2_bus_width   )
 ) u_pre_IF1
 (
-    .clk(clk),
-    .resetn(resetn),
+    .clk                  (clk                       ),
+    .resetn               (resetn                    ),
     //control signal
-    .valid_in(valid_in),
-    .preIF1_allow_in(preIF1_allow_in),
-    .preIF1_valid(preIF1_valid),
-    .preIF1_ready_go(preIF1_ready_go),
+    .valid_in             (valid_in                  ),
+    .preIF1_allow_in      (preIF1_allow_in           ),
+    .preIF1_valid         (preIF1_valid              ),
+    .preIF1_ready_go      (preIF1_ready_go           ),
 
-    .preIF1_preIF2_bus(preIF1_preIF2_bus),
+    .preIF1_preIF2_bus    (preIF1_preIF2_bus         ),
     
-    .br_target(br_target),
-    .br_taken(br_taken),
+    .br_target            (br_target                 ),
+    .br_taken             (br_taken                  ),
     //cancel
-    .preIF1_need_cancel(preIF1_need_cancel),
+    .preIF1_need_cancel   (preIF1_need_cancel        ),
     //stall
-    .need_stall(need_stall),
-    .flush_target(flush_cacop_cancel_target),
+    .need_stall           (need_stall                ),
+    .flush_target         (flush_cacop_cancel_target ),
     // search port 0 (for fetch the inst)
-    .s0_vppn(s0_vppn),
-    .s0_va_bit12(s0_va_bit12),
-    .s0_found(s0_found),
-    .s0_index(s0_index), //实际使用的index位宽为log2(TLBNUM)
-    .s0_ppn(s0_ppn),
-    .s0_ps(s0_ps),
-    .s0_plv(s0_plv),
-    .s0_mat(s0_mat),
-    .s0_d(s0_d),
-    .s0_v(s0_v),
+    .s0_vppn              (s0_vppn                   ),
+    .s0_va_bit12          (s0_va_bit12               ),
+    .s0_found             (s0_found                  ),
+    .s0_index             (s0_index                  ), //实际使用的index位宽为log2(TLBNUM)
+    .s0_ppn               (s0_ppn                    ),
+    .s0_ps                (s0_ps                     ),
+    .s0_plv               (s0_plv                    ),
+    .s0_mat               (s0_mat                    ),
+    .s0_d                 (s0_d                      ),
+    .s0_v                 (s0_v                      ),
     //tlb_ex
-    .ex_tlb_reload0         (ex_tlb_reload0),//tlb重填异常
-    .ex_tlb_preif_unvalid   (ex_tlb_preif_unvalid),//tlb取指页无效
-    .ex_tlb_plv0            (ex_tlb_plv0),//tlb的页权限上访
-    .tlb_inst_req           (tlb_inst_req),
+    .ex_tlb_reload0       (ex_tlb_reload0            ),//tlb重填异常
+    .ex_tlb_preif_unvalid (ex_tlb_preif_unvalid      ),//tlb取指页无效
+    .ex_tlb_plv0          (ex_tlb_plv0               ),//tlb的页权限上访
+    .tlb_inst_req         (tlb_inst_req              ),
     //DMW
-    .dmw_vseg0(dmw_vseg0),
-    .dmw_found0(dmw_found0),
-    .dmw_pseg0(dmw_pseg0),
+    .dmw_vseg0            (dmw_vseg0                 ),
+    .dmw_found0           (dmw_found0                ),
+    .dmw_pseg0            (dmw_pseg0                 ),
     //CRMD PG DA
-    .csr_CRMD_DA     (csr_CRMD_DA),
-    .csr_CRMD_PG     (csr_CRMD_PG),
+    .csr_CRMD_DA          (csr_CRMD_DA               ),
+    .csr_CRMD_PG          (csr_CRMD_PG               ),
     //mat:存储访问类型
-    .csr_CRMD_DATF          (csr_CRMD_DATF),
-    .csr_CRMD_DATM          (csr_CRMD_DATM),
-    .dmw_mat0               (dmw_mat0),
+    .csr_CRMD_DATF        (csr_CRMD_DATF             ),
+    .csr_CRMD_DATM        (csr_CRMD_DATM             ),
+    .dmw_mat0             (dmw_mat0                  ),
     //branch prediction
     // query port: preIF lookup
-    .query_valid        (query_valid ),
-    .query_pc           (query_pc    ),
-    .btb_query_hit      (btb_query_hit   ),//valid and tag match
-    .btb_query_target   (btb_query_target),
-    .ras_query_hit      (ras_query_hit   ),//valid and tag match
-    .ras_query_target   (ras_query_target),
-    .query_type         (query_type  ),
-    .query_taken        (query_taken),//predict taken
+    .query_valid          (query_valid               ),
+    .query_pc             (query_pc                  ),
+    .btb_query_hit        (btb_query_hit             ),//valid and tag match
+    .btb_query_target     (btb_query_target          ),
+    .ras_query_hit        (ras_query_hit             ),//valid and tag match
+    .ras_query_target     (ras_query_target          ),
+    .query_type           (query_type                ),
+    .query_taken          (query_taken               ),//predict taken
     //IDLE
-    .preIF1_IDLE_stall  (preIF1_idle_block)
+    .preIF1_IDLE_stall    (preIF1_idle_block         )
 );
 
 pre_IF2 #(
-    .inbus_width(preIF1_preIF2_bus_width),
-    .outbus_width(preIF2_IF_bus_width)
+    .inbus_width                  (preIF1_preIF2_bus_width      ),
+    .outbus_width                 (preIF2_IF_bus_width          )
 ) u_pre_IF2
 (
-    .clk(clk),
-    .resetn(resetn),
+    .clk                          (clk                          ),
+    .resetn                       (resetn                       ),
     //control signal
-    .preIF1_preIF2_valid(preIF1_preIF2_valid),
-    .preIF2_allow_in(preIF2_allow_in),
-    .preIF2_valid(preIF2_valid),
-    .preIF2_ready_go(preIF2_ready_go),
+    .preIF1_preIF2_valid          (preIF1_preIF2_valid          ),
+    .preIF2_allow_in              (preIF2_allow_in              ),
+    .preIF2_valid                 (preIF2_valid                 ),
+    .preIF2_ready_go              (preIF2_ready_go              ),
 
-    .preIF1_preIF2_bus(preIF1_preIF2_bus),
-    .preIF2_IF_bus(preIF2_IF_bus),
+    .preIF1_preIF2_bus            (preIF1_preIF2_bus            ),
+    .preIF2_IF_bus                (preIF2_IF_bus                ),
 
-    .br_taken(br_taken),
+    .br_taken                     (br_taken                     ),
     //cancel
-    .preIF2_need_cancel(preIF2_need_cancel),
+    .preIF2_need_cancel           (preIF2_need_cancel           ),
     //stall
-    .need_stall(need_stall),
+    .need_stall                   (need_stall                   ),
     //handshake
-    .inst_sram_req(inst_sram_req),
-    .inst_sram_wr(inst_sram_wr), // 1表示write 0表示read
-    .inst_sram_wstrb(inst_sram_wstrb),// wstrb 对应原始数据的字节写使能
-    .inst_sram_size(inst_sram_size),
-    .inst_sram_addr_without_cacop(inst_sram_addr_without_cacop),
-    .inst_sram_wdata(inst_sram_wdata),
-    .inst_sram_addr_ok(inst_sram_addr_ok),
-    .IF_allow_in(IF_allow_in),
-    .inst_sram_data_ok(inst_sram_data_ok),
-    .req_to_dataok_trigger(req_to_dataok_trigger),
-    .inst_resp_discard(inst_resp_discard),
+    .inst_sram_req                (inst_sram_req                ),
+    .inst_sram_wr                 (inst_sram_wr                 ), // 1表示write 0表示read
+    .inst_sram_wstrb              (inst_sram_wstrb              ),// wstrb 对应原始数据的字节写使能
+    .inst_sram_size               (inst_sram_size               ),
+    .inst_sram_addr_without_cacop (inst_sram_addr_without_cacop ),
+    .inst_sram_wdata              (inst_sram_wdata              ),
+    .inst_sram_addr_ok            (inst_sram_addr_ok            ),
+    .IF_allow_in                  (IF_allow_in                  ),
+    .inst_sram_data_ok            (inst_sram_data_ok            ),
+    .req_to_dataok_trigger        (req_to_dataok_trigger        ),
+    .inst_resp_discard            (inst_resp_discard            ),
     //CRMD
-    .csr_CRMD_DA(csr_CRMD_DA),
-    .csr_CRMD_PG(csr_CRMD_PG),
+    .csr_CRMD_DA                  (csr_CRMD_DA                  ),
+    .csr_CRMD_PG                  (csr_CRMD_PG                  ),
     //说明s1_mat是已经换算好的？
-    .inst_mat               (inst_mat),
-    .inst_wr                (inst_wr)
+    .inst_mat                     (inst_mat                     ),
+    .inst_wr                      (inst_wr                      )
 );
 
 fetch #(
-    .inbus_width(preIF2_IF_bus_width),
-    .outbus_width(IF_ID_bus_width)
+    .inbus_width           (preIF2_IF_bus_width   ),
+    .outbus_width          (IF_ID_bus_width       )
 )u_fetch(
-    .clk(clk),
-    .resetn(resetn),
+    .clk                   (clk                   ),
+    .resetn                (resetn                ),
     //control signal
-    .preIF2_IF_valid(preIF2_IF_valid),
-    .IF_valid(IF_valid),
-    .IF_allow_in(IF_allow_in),
-    .IF_ready_go(IF_ready_go),
+    .preIF2_IF_valid       (preIF2_IF_valid       ),
+    .IF_valid              (IF_valid              ),
+    .IF_allow_in           (IF_allow_in           ),
+    .IF_ready_go           (IF_ready_go           ),
     //bus
-    .preIF2_IF_bus(preIF2_IF_bus),
-    .IF_ID_bus(IF_ID_bus),
+    .preIF2_IF_bus         (preIF2_IF_bus         ),
+    .IF_ID_bus             (IF_ID_bus             ),
     //cancel
-    .IF_need_cancel(IF_need_cancel),
+    .IF_need_cancel        (IF_need_cancel        ),
     //stall
-    .need_stall(need_stall),
+    .need_stall            (need_stall            ),
     //handshake
-    .inst_sram_data_ok(inst_sram_data_ok),
-    .inst_sram_rdata(inst_sram_rdata),
-    .ID_allow_in(ID_allow_in),
-    .inst_resp_discard(inst_resp_discard),
-    .req_to_dataok_trigger(req_to_dataok_trigger)
+    .inst_sram_data_ok     (inst_sram_data_ok     ),
+    .inst_sram_rdata       (inst_sram_rdata       ),
+    .ID_allow_in           (ID_allow_in           ),
+    .inst_resp_discard     (inst_resp_discard     ),
+    .req_to_dataok_trigger (req_to_dataok_trigger )
 );
 decode #(
-    .inbus_width(IF_ID_bus_width),
-    .outbus_width(ID_EXE1_bus_width)
+    .inbus_width         (IF_ID_bus_width     ),
+    .outbus_width        (ID_EXE1_bus_width   )
 )u_decode(
-    .clk(clk),
-    .resetn(resetn),
+    .clk                 (clk                 ),
+    .resetn              (resetn              ),
     //control signal
-    .ID_valid(ID_valid),
-    .IF_ID_valid(IF_ID_valid),
-    .ID_allow_in(ID_allow_in),
-    .ID_ready_go(ID_ready_go),
+    .ID_valid            (ID_valid            ),
+    .IF_ID_valid         (IF_ID_valid         ),
+    .ID_allow_in         (ID_allow_in         ),
+    .ID_ready_go         (ID_ready_go         ),
     
-    .IF_ID_bus(IF_ID_bus),//bus
-    .ID_EXE1_bus(ID_EXE1_bus),
+    .IF_ID_bus           (IF_ID_bus           ),//bus
+    .ID_EXE1_bus         (ID_EXE1_bus         ),
     //br_prediction
-    .br_afterpred_taken(br_afterpred_taken),
-    .br_afterpred_target(br_afterpred_target),
+    .br_afterpred_taken  (br_afterpred_taken  ),
+    .br_afterpred_target (br_afterpred_target ),
 
-    .rf_raddr1(rf_raddr1),//decode src1&2 address   ---- stall need use 
-    .rf_raddr2(rf_raddr2),
-    .rf_rdata1(front_push_rdata1),
-    .rf_rdata2(front_push_rdata2),//have been front_push 
+    .rf_raddr1           (rf_raddr1           ),//decode src1&2 address   ---- stall need use 
+    .rf_raddr2           (rf_raddr2           ),
+    .rf_rdata1           (front_push_rdata1   ),
+    .rf_rdata2           (front_push_rdata2   ),//have been front_push 
     //cancel
-    .ID_need_cancel(ID_need_cancel),
+    .ID_need_cancel      (ID_need_cancel      ),
     //stall
-    .need_stall(need_stall),
+    .need_stall          (need_stall          ),
     //中断
-    .has_int(has_int),
+    .has_int             (has_int             ),
     //branch prediction
     // update port: Decode writes back real result
-    .update_valid       (update_valid ),
-    .bht_update_valid   (bht_update_valid),
-    .update_pc          (update_pc    ),
-    .update_target      (update_target),//real target
-    .update_type        (update_type  ),
-    .update_taken       (update_taken),//real taken
+    .update_valid        (update_valid        ),
+    .bht_update_valid    (bht_update_valid    ),
+    .update_pc           (update_pc           ),
+    .update_target       (update_target       ),//real target
+    .update_type         (update_type         ),
+    .update_taken        (update_taken        ),//real taken
     // backend real call update
-    .push_valid         (push_valid ),
-    .push_target        (push_target),
+    .push_valid          (push_valid          ),
+    .push_target         (push_target         ),
     // backend real return update
-    .pop_valid          (pop_valid),
+    .pop_valid           (pop_valid           ),
     //PLV
-    .csr_CRMD_PLV       (csr_CRMD_PLV)
+    .csr_CRMD_PLV        (csr_CRMD_PLV        )
 );
 
 exe1 #(
-    .inbus_width(ID_EXE1_bus_width),
-    .outbus_width(EXE1_EXE2_bus_width)
+    .inbus_width        (ID_EXE1_bus_width   ),
+    .outbus_width       (EXE1_EXE2_bus_width )
 )u_exe1(
-    .clk(clk),
-    .resetn(resetn),
+    .clk                (clk                 ),
+    .resetn             (resetn              ),
     //control signal
-    .EXE1_ready_go(EXE1_ready_go),
-    .EXE1_valid(EXE1_valid),
-    .ID_EXE1_valid(ID_EXE1_valid),
-    .EXE1_allow_in(EXE1_allow_in),
+    .EXE1_ready_go      (EXE1_ready_go       ),
+    .EXE1_valid         (EXE1_valid          ),
+    .ID_EXE1_valid      (ID_EXE1_valid       ),
+    .EXE1_allow_in      (EXE1_allow_in       ),
     
-    .ID_EXE1_bus(ID_EXE1_bus),//bus
-    .EXE1_EXE2_bus(EXE1_EXE2_bus),
+    .ID_EXE1_bus        (ID_EXE1_bus         ),//bus
+    .EXE1_EXE2_bus      (EXE1_EXE2_bus       ),
     //stall
-    .EXE1_rf_dest(EXE1_rf_dest),
-    .EXE1_rf_gr_we(EXE1_rf_gr_we),
+    .EXE1_rf_dest       (EXE1_rf_dest        ),
+    .EXE1_rf_gr_we      (EXE1_rf_gr_we       ),
     //cancel
-    .EXE1_need_cancel(EXE1_need_cancel),
+    .EXE1_need_cancel   (EXE1_need_cancel    ),
     //stable counter
-    .stable_counter(stable_counter),
+    .stable_counter     (stable_counter      ),
     // search port 1 (for load/store the data)
-    .s1_vppn(s1_vppn),
-    .s1_va_bit12(s1_va_bit12),
-    .tlbinv_asid(tlbinv_asid),
-    .s1_found(s1_found),
-    .s1_index(s1_index),
-    .s1_ppn(s1_ppn),
-    .s1_ps(s1_ps),
-    .s1_plv(s1_plv),
-    .s1_mat(s1_mat),
-    .s1_d(s1_d),
-    .s1_v(s1_v),
-    .csr_TLBEHI  (csr_TLBEHI),
+    .s1_vppn            (s1_vppn             ),
+    .s1_va_bit12        (s1_va_bit12         ),
+    .tlbinv_asid        (tlbinv_asid         ),
+    .s1_found           (s1_found            ),
+    .s1_index           (s1_index            ),
+    .s1_ppn             (s1_ppn              ),
+    .s1_ps              (s1_ps               ),
+    .s1_plv             (s1_plv              ),
+    .s1_mat             (s1_mat              ),
+    .s1_d               (s1_d                ),
+    .s1_v               (s1_v                ),
+    .csr_TLBEHI         (csr_TLBEHI          ),
     //invtlb
-    .invtlb_valid(invtlb_valid),
-    .invtlb_op(invtlb_op),
+    .invtlb_valid       (invtlb_valid        ),
+    .invtlb_op          (invtlb_op           ),
     //CRMD PG DA
-    .csr_CRMD_DA     (csr_CRMD_DA),
-    .csr_CRMD_PG     (csr_CRMD_PG),
+    .csr_CRMD_DA        (csr_CRMD_DA         ),
+    .csr_CRMD_PG        (csr_CRMD_PG         ),
     //tlb_ex
-    .ex_tlb_reload1         (ex_tlb_reload1),//tlb重填异常
-    .ex_tlb_ld_unvalid      (ex_tlb_ld_unvalid),//tlb的load页无效
-    .ex_tlb_st_unvalid      (ex_tlb_st_unvalid),//tlb的store页无效
-    .ex_tlb_plv1            (ex_tlb_plv1),//tlb的页权限上访
-    .ex_tlb_page_modify     (ex_tlb_page_modify),//tlb页修改
-    .tlb_data_req           (tlb_data_req),
-    .tlb_load_req           (tlb_load_req),
-    .tlb_store_req          (tlb_store_req),
+    .ex_tlb_reload1     (ex_tlb_reload1      ),//tlb重填异常
+    .ex_tlb_ld_unvalid  (ex_tlb_ld_unvalid   ),//tlb的load页无效
+    .ex_tlb_st_unvalid  (ex_tlb_st_unvalid   ),//tlb的store页无效
+    .ex_tlb_plv1        (ex_tlb_plv1         ),//tlb的页权限上访
+    .ex_tlb_page_modify (ex_tlb_page_modify  ),//tlb页修改
+    .tlb_data_req       (tlb_data_req        ),
+    .tlb_load_req       (tlb_load_req        ),
+    .tlb_store_req      (tlb_store_req       ),
     //DMW
-    .dmw_vseg1              (dmw_vseg1),
-    .dmw_found1             (dmw_found1),
-    .dmw_pseg1              (dmw_pseg1),
+    .dmw_vseg1          (dmw_vseg1           ),
+    .dmw_found1         (dmw_found1          ),
+    .dmw_pseg1          (dmw_pseg1           ),
     //mat:存储访问类型
-    .csr_CRMD_DATF          (csr_CRMD_DATF),
-    .csr_CRMD_DATM          (csr_CRMD_DATM),
-    .dmw_mat1               (dmw_mat1)
+    .csr_CRMD_DATF      (csr_CRMD_DATF       ),
+    .csr_CRMD_DATM      (csr_CRMD_DATM       ),
+    .dmw_mat1           (dmw_mat1            )
 );
 
 exe2 #(
-    .inbus_width(EXE1_EXE2_bus_width),
-    .outbus_width(EXE2_MEM_bus_width)
+    .inbus_width             (EXE1_EXE2_bus_width     ),
+    .outbus_width            (EXE2_MEM_bus_width      )
 )u_exe2(
-    .clk(clk),
-    .resetn(resetn),
+    .clk                     (clk                     ),
+    .resetn                  (resetn                  ),
     //control signal
-    .EXE2_ready_go(EXE2_ready_go),
-    .EXE2_valid(EXE2_valid),
-    .EXE1_EXE2_valid(EXE1_EXE2_valid),
-    .EXE2_allow_in(EXE2_allow_in),
+    .EXE2_ready_go           (EXE2_ready_go           ),
+    .EXE2_valid              (EXE2_valid              ),
+    .EXE1_EXE2_valid         (EXE1_EXE2_valid         ),
+    .EXE2_allow_in           (EXE2_allow_in           ),
     
-    .EXE1_EXE2_bus(EXE1_EXE2_bus),//bus
-    .EXE2_MEM_bus(EXE2_MEM_bus),
+    .EXE1_EXE2_bus           (EXE1_EXE2_bus           ),//bus
+    .EXE2_MEM_bus            (EXE2_MEM_bus            ),
     //stall
-    .EXE2_rf_dest(EXE2_rf_dest),
-    .need_stall_inst(exe2_need_stall_inst),
-    .need_stall_csr(exe2_need_stall_csr),
+    .EXE2_rf_dest            (EXE2_rf_dest            ),
+    .need_stall_inst         (exe2_need_stall_inst    ),
+    .need_stall_csr          (exe2_need_stall_csr     ),
     //front_push
-    .exe2_front_data(exe2_front_data),
-    .exe2_front_addr(exe2_front_addr),
+    .exe2_front_data         (exe2_front_data         ),
+    .exe2_front_addr         (exe2_front_addr         ),
     //can_not_front_push
-    .exe2_can_not_front_push(exe2_can_not_front_push),
+    .exe2_can_not_front_push (exe2_can_not_front_push ),
     //cancel
-    .EXE2_need_cancel(EXE2_need_cancel),
+    .EXE2_need_cancel        (EXE2_need_cancel        ),
     //ex
-    .older_ex_for_exe2(older_ex_for_exe2),
+    .older_ex_for_exe2       (older_ex_for_exe2       ),
     //handshake
-    .data_sram_req    (data_sram_req    ),
-    .data_sram_wr     (data_sram_wr     ),
-    .data_sram_wstrb  (data_sram_wstrb  ),
-    .data_sram_size   (data_sram_size   ),
-    .data_sram_addr   (data_sram_addr   ),
-    .data_sram_wdata  (data_sram_wdata  ),
-    .data_sram_addr_ok(data_sram_addr_ok),
-    .data_sram_data_ok(data_sram_data_ok),
-    .MEM_allow_in     (MEM_allow_in     ),
+    .data_sram_req           (data_sram_req           ),
+    .data_sram_wr            (data_sram_wr            ),
+    .data_sram_wstrb         (data_sram_wstrb         ),
+    .data_sram_size          (data_sram_size          ),
+    .data_sram_addr          (data_sram_addr          ),
+    .data_sram_wdata         (data_sram_wdata         ),
+    .data_sram_addr_ok       (data_sram_addr_ok       ),
+    .data_sram_data_ok       (data_sram_data_ok       ),
+    .MEM_allow_in            (MEM_allow_in            ),
     //uncache
-    .data_mat         (data_mat),
-    .data_wr          (data_wr),
+    .data_mat                (data_mat                ),
+    .data_wr                 (data_wr                 ),
     //cacop
-    .csr_CRMD_PLV     (csr_CRMD_PLV),
-    .cache_code       (cache_code  ),
-    .cacop_valid      (cacop_valid ),
-    .cacop_done       (cacop_done  ),
-    .cacop_pc         (cacop_pc    ),
+    .csr_CRMD_PLV            (csr_CRMD_PLV            ),
+    .cache_code              (cache_code              ),
+    .cacop_valid             (cacop_valid             ),
+    .cacop_done              (cacop_done              ),
+    .cacop_pc                (cacop_pc                ),
     //system inst_need_cancel
-    .ibar_cancel      (ibar_cancel),
-    .dbar_cancel      (dbar_cancel),
-    .LLbit_wb         (LLbit_wb),
-    .LLbit_wdata      (LLbit_wdata),
-    .LLbit            (LLbit)
+    .ibar_cancel             (ibar_cancel             ),
+    .dbar_cancel             (dbar_cancel             ),
+    .LLbit_wb                (LLbit_wb                ),
+    .LLbit_wdata             (LLbit_wdata             ),
+    .LLbit                   (LLbit                   )
 );
 
 mem #(
-    .inbus_width(EXE2_MEM_bus_width),
-    .outbus_width(MEM_WB_bus_width)
+    .inbus_width            (EXE2_MEM_bus_width     ),
+    .outbus_width           (MEM_WB_bus_width       )
 )u_mem(
-    .clk(clk),
-    .resetn(resetn),
+    .clk                    (clk                    ),
+    .resetn                 (resetn                 ),
     //control signal
-    .MEM_valid(MEM_valid),
-    .EXE2_MEM_valid(EXE2_MEM_valid),
-    .MEM_allow_in(MEM_allow_in),
-    .MEM_ready_go(MEM_ready_go),
-    .EXE2_MEM_bus(EXE2_MEM_bus),//bus
-    .MEM_WB_bus(MEM_WB_bus),
+    .MEM_valid              (MEM_valid              ),
+    .EXE2_MEM_valid         (EXE2_MEM_valid         ),
+    .MEM_allow_in           (MEM_allow_in           ),
+    .MEM_ready_go           (MEM_ready_go           ),
+    .EXE2_MEM_bus           (EXE2_MEM_bus           ),//bus
+    .MEM_WB_bus             (MEM_WB_bus             ),
     //stall
-    .MEM_rf_dest(MEM_rf_dest),
-    .need_stall_inst(mem_need_stall_inst),
-    .need_stall_csr(mem_need_stall_csr),
+    .MEM_rf_dest            (MEM_rf_dest            ),
+    .need_stall_inst        (mem_need_stall_inst    ),
+    .need_stall_csr         (mem_need_stall_csr     ),
     //front_push
-    .mem_front_data(mem_front_data),
-    .mem_front_addr(mem_front_addr),
+    .mem_front_data         (mem_front_data         ),
+    .mem_front_addr         (mem_front_addr         ),
     //cancel
-    .MEM_need_cancel(MEM_need_cancel),
-    .older_ex_for_mem(older_ex_for_mem),
+    .MEM_need_cancel        (MEM_need_cancel        ),
+    .older_ex_for_mem       (older_ex_for_mem       ),
     //ex_front
-    .MEM_ex(MEM_ex),
+    .MEM_ex                 (MEM_ex                 ),
     //handshake
-    .data_sram_data_ok(data_sram_data_ok),
-    .data_sram_rdata  (data_sram_rdata  ),
-    .WB_allow_in(WB_allow_in),
+    .data_sram_data_ok      (data_sram_data_ok      ),
+    .data_sram_rdata        (data_sram_rdata        ),
+    .WB_allow_in            (WB_allow_in            ),
      //can_not_front_push
-    .mem_can_not_front_push(mem_can_not_front_push)
+    .mem_can_not_front_push (mem_can_not_front_push )
 );
 
 wb #(
-    .inbus_width(MEM_WB_bus_width)
+    .inbus_width           (MEM_WB_bus_width      )
 )u_wb(
-    .clk(clk),
-    .resetn(resetn),
+    .clk                   (clk                   ),
+    .resetn                (resetn                ),
     //control signal
-    .WB_valid(WB_valid),
-    .MEM_WB_valid(MEM_WB_valid),
-    .WB_allow_in(WB_allow_in),
-    .WB_ready_go(WB_ready_go),
+    .WB_valid              (WB_valid              ),
+    .MEM_WB_valid          (MEM_WB_valid          ),
+    .WB_allow_in           (WB_allow_in           ),
+    .WB_ready_go           (WB_ready_go           ),
     
-    .MEM_WB_bus(MEM_WB_bus),
-    .debug_wb_pc(debug_wb_pc),
-    .debug_wb_rf_wdata(debug_wb_rf_wdata),
-    .debug_wb_rf_we(debug_wb_rf_we),
-    .debug_wb_rf_wnum(debug_wb_rf_wnum),
-    .rf_waddr(rf_waddr),
-    .rf_wdata(rf_wdata),
-    .rf_we(rf_we),
+    .MEM_WB_bus            (MEM_WB_bus            ),
+    .debug_wb_pc           (debug_wb_pc           ),
+    .debug_wb_rf_wdata     (debug_wb_rf_wdata     ),
+    .debug_wb_rf_we        (debug_wb_rf_we        ),
+    .debug_wb_rf_wnum      (debug_wb_rf_wnum      ),
+    .rf_waddr              (rf_waddr              ),
+    .rf_wdata              (rf_wdata              ),
+    .rf_we                 (rf_we                 ),
     //stall
-    .WB_rf_dest(WB_rf_dest),
-    .need_stall_csr(wb_need_stall_csr),
+    .WB_rf_dest            (WB_rf_dest            ),
+    .need_stall_csr        (wb_need_stall_csr     ),
     //front_push
-    .wb_front_data(wb_front_data),
-    .wb_front_addr(wb_front_addr),
+    .wb_front_data         (wb_front_data         ),
+    .wb_front_addr         (wb_front_addr         ),
      //can_not_front_push
-    .wb_can_not_front_push(wb_can_not_front_push),
+    .wb_can_not_front_push (wb_can_not_front_push ),
     //csr   
-    .csr_rvalue(csr_rvalue),
-    .csr_num(csr_num),
-    .csr_wdata(csr_wdata),
-    .csr_wmask(csr_wmask),
-    .csr_we(csr_we),
-    .csr_re(csr_re),
-    .flush_target(flush_target),
-    .flush(flush),
+    .csr_rvalue            (csr_rvalue            ),
+    .csr_num               (csr_num               ),
+    .csr_wdata             (csr_wdata             ),
+    .csr_wmask             (csr_wmask             ),
+    .csr_we                (csr_we                ),
+    .csr_re                (csr_re                ),
+    .flush_target          (flush_target          ),
+    .flush                 (flush                 ),
     //cancel
-    .WB_need_cancel(WB_need_cancel),
+    .WB_need_cancel        (WB_need_cancel        ),
     //wb接口
-    .wb_pc(wb_pc),
-    .wb_ex(wb_ex),
-    .wb_vaddr(wb_vaddr),
-    .ecode(wb_ecode),
-    .esubcode(wb_esubcode),
+    .wb_pc                 (wb_pc                 ),
+    .wb_ex                 (wb_ex                 ),
+    .wb_vaddr              (wb_vaddr              ),
+    .ecode                 (wb_ecode              ),
+    .esubcode              (wb_esubcode           ),
     //ex_front
-    .WB_ex(WB_ex),
+    .WB_ex                 (WB_ex                 ),
     //tlbrd
-    .tlbrd_we(tlbrd_we),
-    .tlbwr_we(tlbwr_we),
-    .tlbfill_we(tlbfill_we),
+    .tlbrd_we              (tlbrd_we              ),
+    .tlbwr_we              (tlbwr_we              ),
+    .tlbfill_we            (tlbfill_we            ),
     //tlbidx
-    .csr_TLBIDX(csr_TLBIDX),
+    .csr_TLBIDX            (csr_TLBIDX            ),
     //tlbreload 重填传入CSR
-    .ex_tlb_reload(ex_tlb_reload),
+    .ex_tlb_reload         (ex_tlb_reload         ),
     //ERTN 更改 CRMD
-    .ertn_valid(ertn_valid),
+    .ertn_valid            (ertn_valid            ),
     // 更新 csr_regfile 相关的 BADV
-    .csr_tlb_reload0(csr_tlb_reload0),
-    .csr_tlb_plv0   (csr_tlb_plv0   ),
-    .csr_tlb_reload1(csr_tlb_reload1),  
-    .csr_tlb_plv1   (csr_tlb_plv1   ),
+    .csr_tlb_reload0       (csr_tlb_reload0       ),
+    .csr_tlb_plv0          (csr_tlb_plv0          ),
+    .csr_tlb_reload1       (csr_tlb_reload1       ),  
+    .csr_tlb_plv1          (csr_tlb_plv1          ),
     //ex_tlb TLBEHI
-    .ex_tlb         (ex_tlb         ),
+    .ex_tlb                (ex_tlb                ),
     //IDLE
-    .csr_has_int    (has_int        ),
-    .csr_tcfg_init0 (csr_tcfg_init0 ),
-    .IDLE_stall     (IDLE_stall     )
+    .csr_has_int           (has_int               ),
+    .csr_tcfg_init0        (csr_tcfg_init0        ),
+    .IDLE_stall            (IDLE_stall            )
 );
 //------------------------{5-stage pipeline instantiation}end-------------------------//
 
