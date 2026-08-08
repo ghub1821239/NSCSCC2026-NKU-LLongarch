@@ -68,6 +68,7 @@ module wb #(
     output wire        wb_can_not_front_push,
     //IDLE
     input  wire        csr_has_int,
+    input  wire        csr_tcfg_init0, // TCFG.InitVal==0
     output wire        IDLE_stall
 );
 wire [31:0] pc;
@@ -148,23 +149,25 @@ assign {
     }=bus;
 
 //------------------------{IDLE}begin-------------------------//
-// 两分：
-// 1) IDLE 提交时已有中断：中断在 IDLE 进等待前响应，不进 is_idle，ERA=IDLE
-// 2) 已进入等待后被中断唤醒：ERA=IDLE+4（官方：醒后执行 IDLE 下一条）
+// golden / 参考模型：
+// - TCFG.InitVal==0：写 TCFG 后立即 TI，IDLE 视为被抢占，ERA = IDLE
+// - 其余（含短定时器在流水线中到期）：IDLE 仍进入等待，唤醒 ERA = IDLE+4
+//   （深流水下 timer=0x4 只有 4 拍，TI 常在 IDLE 提交前已置位，不能再用 csr_has_int 判断）
 reg         is_idle;
 reg  [31:0] idle_era_r;
 wire        idle_ex_other;
 wire        idle_valid;
 wire        idle_wake_ex;
-wire        idle_preempt;
+wire        idle_preempt; // timer=0 的抢占
 
 assign idle_ex_other = inst_syscall | inst_break | ex_INE | ex_IPE | ex_ADEF | ex_ALE |
                        ex_tlb_reload0 | ex_tlb_preif_unvalid | ex_tlb_plv0 |
                        ex_tlb_reload1 | ex_tlb_ld_unvalid | ex_tlb_st_unvalid |
                        ex_tlb_plv1 | ex_tlb_page_modify;
 assign idle_valid    = inst_idle & WB_valid & ~idle_ex_other;
-assign idle_preempt  = idle_valid & csr_has_int;
+assign idle_preempt  = idle_valid & csr_has_int & csr_tcfg_init0; // 提交时已有 TI(InitVal=0)
 assign idle_wake_ex  = is_idle & csr_has_int;
+// 抢占本拍直接取中断（不进 is_idle）；等待唤醒走 idle_wake_ex
 wire   idle_ex       = idle_preempt | idle_wake_ex;
 
 always @(posedge clk) begin
@@ -176,11 +179,13 @@ always @(posedge clk) begin
         is_idle <= 1'b0;
     end
     else if (idle_valid) begin
-        if (csr_has_int) begin
+        if (csr_has_int & csr_tcfg_init0) begin
+            // idle 与抢占中断同时：不进 idle，ERA=IDLE
             is_idle    <= 1'b0;
             idle_era_r <= pc;
         end
         else begin
+            // 真正进入等待
             is_idle    <= 1'b1;
             idle_era_r <= pc + 32'd4;
         end
@@ -232,7 +237,7 @@ assign ex_tlb        = WB_valid & ((ecode == `ECODE_PIF)  |
                                    (ecode == `ECODE_PIS)  |
                                    (ecode == `ECODE_PME));
 
-// IDLE 不走流水线 has_int；同拍抢占用 pc，等待唤醒用 idle_era_r(=IDLE+4)
+// IDLE 不走流水线 has_int；抢占用 pc，唤醒用 idle_era_r
 assign wb_pc = idle_preempt ? pc :
                idle_wake_ex ? idle_era_r :
                               pc;
