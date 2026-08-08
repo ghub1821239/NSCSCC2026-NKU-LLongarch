@@ -109,7 +109,10 @@ module csr_regfile#(
     // 操作手册6.3复位指出
     input    wire        LLbit_wb,
     input    wire        LLbit_wdata,
-    output   wire        LLbit
+    output   wire        LLbit,
+
+    // IDLE：TCFG.InitVal==0 时参考模型会在写 TCFG 后立刻抢占，ERA=IDLE 本身
+    output wire        csr_tcfg_init0
 );
 
 // ----------DEFINE--------------
@@ -664,6 +667,7 @@ end
 
 // ----------TO PIPELINE IN END--------------
 assign has_int      = (((ESTAT[`CSR_ESTAT_IS] & ECFG[`CSR_ECFG_LIE])!=13'b0) && (CRMD[`CSR_CRMD_IE] == 1'b1));
+assign csr_tcfg_init0 = (TCFG[`CSR_TCFG_INITVAL] == 30'b0);
 assign csr_CRMD_DA  = CRMD[`CSR_CRMD_DA];
 assign csr_CRMD_PG  = CRMD[`CSR_CRMD_PG];
 assign csr_CRMD_PLV = CRMD[`CSR_CRMD_PLV];

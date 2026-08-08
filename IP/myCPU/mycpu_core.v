@@ -618,6 +618,7 @@ wire [31:0] wb_vaddr;
 wire [5:0]  wb_ecode;
 wire [8:0]  wb_esubcode;
 wire        has_int;
+wire        csr_tcfg_init0;
 wire        csr_CRMD_DA;
 wire        csr_CRMD_PG;
 //tlbreload 重填传入CSR
@@ -678,6 +679,7 @@ csr_regfile #(
     .wb_pc       (wb_pc),
     .wb_vaddr    (wb_vaddr),
     .has_int     (has_int),
+    .csr_tcfg_init0(csr_tcfg_init0),
     .coreid_in   (32'b0  ),
     //TLB与csr接口
     .csr_TLBEHI  (csr_TLBEHI),
@@ -1138,6 +1140,7 @@ wb #(
     .ex_tlb         (ex_tlb         ),
     //IDLE
     .csr_has_int    (has_int        ),
+    .csr_tcfg_init0 (csr_tcfg_init0 ),
     .IDLE_stall     (IDLE_stall     )
 );
 //------------------------{5-stage pipeline instantiation}end-------------------------//
