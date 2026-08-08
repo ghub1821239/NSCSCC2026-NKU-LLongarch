@@ -14,7 +14,7 @@ wire         word1_UAL              = 1'b0;//支持非对齐访存
 wire         word1_RI               = 1'b0;//支持读禁止页属性
 wire         word1_EP               = 1'b0;//支持执行保护页属性
 wire         word1_RPLV             = 1'b0;//支持RPLV页属性
-wire         word1_HP               = 1'b0;//支持huge page页属性
+wire         word1_HP               = 1'b1;//支持huge page页属性
 wire         word1_CRC              = 1'b0;//支持CSC校验指令
 wire         word1_MSG_INT          = 1'b0;//支持外部中断采用消息中断方式
 //word2
@@ -58,10 +58,10 @@ wire [16:13] word3_RVAMAX_1         = 4'b0;//最大可以配置虚拟地址缩短位数-1
 wire         word3_DBAR_hints       = 1'b0;//DBAR的非0值按手册推荐含义实现
 wire         word3_LD_SEQ_SA        = 1'b0;//保证同地址load操作顺序执行
 //word4
-wire [31:0]  word4_CC_FREQ          = 32'd50;//恒定频率计时器和定时器的晶振频率
+wire [31:0]  word4_CC_FREQ          = 32'd75;//恒定频率计时器和定时器的晶振频率
 //word5
 wire [15:0]  word5_CC_MUL           = 16'd1;//时钟的倍频因子
-wire [31:16] word5_CC_DIV           = 16'd0;//时钟的分频系数
+wire [31:16] word5_CC_DIV           = 16'd1;//时钟的分频系数
 //word6
 wire         word6_PMP              = 1'b0;//支持性能计数器
 wire [3:1]   word6_PMVER            = 3'b1;//性能检测器中的版本号
@@ -88,11 +88,11 @@ wire         word10_L3_D_Private    = 1'b0;//3级数据Cache是每个核私有的
 wire         word10_L3_D_Inclusive  = 1'b0;//3级数据Cache对更低层次是包含关系
 //word11
 wire [15:0]  word11_Way_1           = 16'd1;//1级指令Cache的Way数-1
-wire [23:16] word11_Index_log2      = 8'd8;//1级指令Cache的一路行数取log2
+wire [23:16] word11_Index_log2      = 8'd10;//1级指令Cache的一路行数取log2
 wire [30:24] word11_Linesize_log2   = 7'd4;//1级指令Cache的一行字节数取log2
 //word12
 wire [15:0]  word12_Way_1           = 16'd1;//1级数据Cache的Way数-1
-wire [23:16] word12_Index_log2      = 8'd8;//1级数据ache的一路行数取log2
+wire [23:16] word12_Index_log2      = 8'd10;//1级数据ache的一路行数取log2
 wire [30:24] word12_Linesize_log2   = 7'd4;//1级数据ache的一行字节数取log2
 //word13
 wire [15:0]  word13_Way_1           = 16'd0;//2级指令Cache的Way数-1

@@ -6,33 +6,33 @@ module icache (
     //                                                          来自(input)/去往（output)
     input  wire         valid,//表明请求有效                                       CPU
     input  wire         op, // op：0读，1写                                        CPU
-    input  wire [7 :0]  index,// CPU 直接截取的12：4(肯定不涉及虚实映射)     CPU
-    input  wire [19:0]  tag,  // CPU处理好的paddr    (虚实映射)              CPU
-    input  wire [3 :0]  offset,// CPU 直接截取的3:0 (肯定不涉及虚实映射)     CPU
-    input  wire [3 :0]  wstrb,//                                            CPU
-    input  wire [31:0]  wdata,//                                            CPU
+    input  wire [9 :0]  index,// CPU 直接截取的13：4(肯定不涉及虚实映射)               CPU
+    input  wire [17:0]  tag,  // CPU处理好的paddr    (虚实映射)                     CPU
+    input  wire [3 :0]  offset,// CPU 直接截取的3:0 (肯定不涉及虚实映射)              CPU
+    input  wire [3 :0]  wstrb,//表明请求有效                                       CPU
+    input  wire [31:0]  wdata,//表明请求有效                                       CPU
     input  wire         uncache_valid,
     input  wire         uncache_wr, // ld:0 st:1
 
     output wire         addr_ok,//接收到转接桥的 读/写 的 addrok 给CPU               CPU（O）                                   
     input  wire         rd_rdy,   // arready                                      总线
-    output wire [31:0]  rd_addr, // CPU给的paddr VA 他拼接一下             总线（O）
+    output wire [31:0]  rd_addr, // CPU给的paddr VA 他拼接一下                      总线（O）
 
     output wire         data_ok,//总线返回的                                       CPU（O）
-    output wire [31:0]  rdata,// 总线读出来的数据                           CPU（O）
+    output wire [31:0]  rdata,// 总线读出来的数据                                   CPU（O）
     output wire         rd_req,// CPU 的读请求                                     总线（O）
-    output wire [2 :0]  rd_type, // 和总线的size直接接                      总线：rsize 010   arlen 8'd3 （O）  
+    output wire [2 :0]  rd_type, // 和总线的size直接接                              总线：rsize 010   arlen 8'd3 （O）  
     output wire [7 :0]  ar_len,    
     input  wire         ret_valid,// 总线返回的数是有效的                           总线：rvalid
     input  wire         ret_last, // 总线返回结束了                                 总线: last
-    input  wire [31:0]  ret_data,// 总线给的读数据 rdata                    总线
+    input  wire [31:0]  ret_data,// 总线给的读数据 rdata                             总线
 
 
     output wire         wr_req,//CPU发起的                                        总线（O）
-    output wire [2 :0]  wr_type,//                                        总线（O）
-    output wire [31:0]  wr_addr,//                                        总线（O）
-    output wire [3 :0]  wr_wstrb,//                                       总线（O）
-    output wire [127:0] wr_data,//                                        总线（O）
+    output wire [2 :0]  wr_type,//                                               总线（O）
+    output wire [31:0]  wr_addr,//                                               总线（O）
+    output wire [3 :0]  wr_wstrb,//                                             总线（O）
+    output wire [127:0] wr_data,//                                              总线（O）
     output wire [7 :0]  aw_len,
     input  wire         wr_rdy,//                                                  总线
 
@@ -243,15 +243,16 @@ assign  tagv_way1_code2 = (wb_write && code2 &&  wb_way_r);
 assign  tagv_way0_addr  = tagv_way0_code2 ? wb_index_r : tagv_way0_wea ? miss_index_r : index;
 assign  tagv_way1_addr  = tagv_way1_code2 ? wb_index_r : tagv_way1_wea ? miss_index_r : index;
 // 写数据
-assign  tagv_way0_dina  = (tagv_way0_wea & code0) ? {21'b0} :
-                          (tagv_way0_wea & code1) ? {replace_tag_r,1'b0} :
-                          (tagv_way0_code2&code2) ? {20'b0,1'b0} :
-                          {miss_tag_r, 1'b1};
-assign  tagv_way1_dina  = (tagv_way1_wea & code0) ? {21'b0} :
-                          (tagv_way1_wea & code1) ? {replace_tag_r,1'b0} :
-                          (tagv_way1_code2&code2) ? {20'b0,1'b0} :
-                          {miss_tag_r, 1'b1};
-// TagV RAM：每路一张 256x21 表，位[20:1]为标签，位[0]为有效位
+// TagV entry layout (21b BRAM): {2'b0, tag[17:0], V}
+assign  tagv_way0_dina  = (tagv_way0_wea & code0) ? 21'b0 :
+                          (tagv_way0_wea & code1) ? {2'b0, replace_tag_r, 1'b0} :
+                          (tagv_way0_code2 & code2) ? 21'b0 :
+                          {2'b0, miss_tag_r, 1'b1};
+assign  tagv_way1_dina  = (tagv_way1_wea & code0) ? 21'b0 :
+                          (tagv_way1_wea & code1) ? {2'b0, replace_tag_r, 1'b0} :
+                          (tagv_way1_code2 & code2) ? 21'b0 :
+                          {2'b0, miss_tag_r, 1'b1};
+// TagV RAM：每路一张 1024x21 表，位[18:1]为标签，位[0]为有效位
 tagv_ram tagv_way0 (
     .clka  (clk                             ),
     .wea   (tagv_way0_wea | tagv_way0_code2 ),
@@ -377,8 +378,8 @@ data_bank_ram data_way1_bank3 (
 //----------------------------- DATA BANK RAM 访问逻辑 begin --------------------------
 
 //----------------------------- LOOKUP/REPLACE/REFILL 组合逻辑开始 --------------------------
-assign  way0_tag               = tagv_way0_r[20:1];
-assign  way1_tag               = tagv_way1_r[20:1];
+assign  way0_tag               = tagv_way0_r[18:1];
+assign  way1_tag               = tagv_way1_r[18:1];
 assign  way0_v                 = tagv_way0_r[0];
 assign  way1_v                 = tagv_way1_r[0];
 assign  way0_d                 = dirty_way0_r;

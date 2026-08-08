@@ -1,4 +1,4 @@
-module mycpu_top(
+module core_top(
     input  wire        aclk,
     input  wire        aresetn,
     input  wire [ 7:0] intrpt,
@@ -57,10 +57,10 @@ module mycpu_top(
     output wire [31:0] rf_rdata,
 
     // trace debug interface
-    output wire [31:0] debug_wb_pc,
-    output wire [ 3:0] debug_wb_rf_we,
-    output wire [ 4:0] debug_wb_rf_wnum,
-    output wire [31:0] debug_wb_rf_wdata
+    output wire [31:0] debug0_wb_pc,
+    output wire [ 3:0] debug0_wb_rf_wen,
+    output wire [ 4:0] debug0_wb_rf_wnum,
+    output wire [31:0] debug0_wb_rf_wdata
 );
 
 // cpu inst sram
@@ -92,11 +92,11 @@ wire           data_uncache_wr;
 //Icache                                        来自(input)/去往（output)
 wire           inst_valid;//表明请求有效                                       CPU
 wire           inst_op; // op：0读，1写                                        CPU
-wire   [7 :0]  inst_index;// CPU 直接截取的12：4(肯定不涉及虚实映射)     CPU
-wire   [19:0]  inst_tag;  // CPU处理好的paddr    (虚实映射)              CPU
+wire   [9 :0]  inst_index;// CPU 直接截取的13：4(肯定不涉及虚实映射)     CPU
+wire   [17:0]  inst_tag;  // CPU处理好的paddr    (虚实映射)              CPU
 wire   [3 :0]  inst_offset;// CPU 直接截取的3:0 (肯定不涉及虚实映射)     CPU
-wire   [3 :0]  inst_wstrb;//                                            CPU
-wire   [31:0]  inst_wdata;//                                            CPU
+wire   [3 :0]  inst_wstrb;//表明请求有效                                       CPU
+wire   [31:0]  inst_wdata;//表明请求有效                                       CPU
 wire           inst_addr_ok;//接收到转接桥的 读/写 的 addrok 给CPU               CPU（O）                                   
 wire           inst_rd_rdy;   // arready                                      总线
 wire   [31:0]  inst_rd_addr; // CPU给的paddr VA 他拼接一下             总线（O）
@@ -118,11 +118,11 @@ wire           inst_cacop_done;
 //Dcache                                        来自(input)/去往（output)
 wire           data_valid;//表明请求有效                                       CPU
 wire           data_op; // op：0读，1写                                        CPU
-wire   [7 :0]  data_index;// CPU 直接截取的12：4(肯定不涉及虚实映射)     CPU
-wire   [19:0]  data_tag;  // CPU处理好的paddr    (虚实映射)              CPU
+wire   [9 :0]  data_index;// CPU 直接截取的13：4(肯定不涉及虚实映射)     CPU
+wire   [17:0]  data_tag;  // CPU处理好的paddr    (虚实映射)              CPU
 wire   [3 :0]  data_offset;// CPU 直接截取的3:0 (肯定不涉及虚实映射)     CPU
-wire   [3 :0]  data_wstrb;//                                            CPU
-wire   [31:0]  data_wdata;//                                            CPU
+wire   [3 :0]  data_wstrb;//表明请求有效                                       CPU
+wire   [31:0]  data_wdata;//表明请求有效                                       CPU
 wire           data_addr_ok;//接收到转接桥的 读/写 的 addrok 给CPU               CPU（O）                                   
 wire           data_rd_rdy;   // arready                                      总线
 wire   [31:0]  data_rd_addr; // CPU给的paddr VA 他拼接一下             总线（O）
@@ -186,12 +186,10 @@ mycpu_core u_mycpu_core(
     .cache_code         (cache_code         ),
     .cacop_done         (cacop_done         ),
 
-    .debug_wb_pc        (debug_wb_pc        ),
-    .debug_wb_rf_we     (debug_wb_rf_we     ),
-    .debug_wb_rf_wnum   (debug_wb_rf_wnum   ),
-    .debug_wb_rf_wdata  (debug_wb_rf_wdata  ),
-    //硬中断
-    .hw_int_in          (intrpt             )
+    .debug_wb_pc        (debug0_wb_pc       ),
+    .debug_wb_rf_we     (debug0_wb_rf_wen   ),
+    .debug_wb_rf_wnum   (debug0_wb_rf_wnum  ),
+    .debug_wb_rf_wdata  (debug0_wb_rf_wdata )
 );
 
 bridge_SRAM_AXI u_bridge_SRAM_AXI(
@@ -278,8 +276,8 @@ bridge_SRAM_AXI u_bridge_SRAM_AXI(
 //icache接口:cpu----icache
 assign  inst_valid       = cpu_inst_req;
 assign  inst_op          = cpu_inst_wr;
-assign  inst_index       = cpu_inst_addr[11:4];
-assign  inst_tag         = cpu_inst_addr[31:12];
+assign  inst_index       = cpu_inst_addr[13:4];
+assign  inst_tag         = cpu_inst_addr[31:14];
 assign  inst_offset      = cpu_inst_addr[3:0];
 assign  inst_wstrb       = cpu_inst_wstrb;
 assign  inst_wdata       = cpu_inst_wdata;
@@ -295,11 +293,11 @@ icache u_Icache (
 //                                                                 来自(input)/去往（output)
     .valid         (inst_valid         ),//表明请求有效                                       CPU
     .op            (inst_op            ), // op：0读，1写                                        CPU
-    .index         (inst_index         ),// CPU 直接截取的12：4(肯定不涉及虚实映射)     CPU
+    .index         (inst_index         ),// CPU 直接截取的13：4(肯定不涉及虚实映射)     CPU
     .tag           (inst_tag           ),  // CPU处理好的paddr    (虚实映射)              CPU
     .offset        (inst_offset        ),// CPU 直接截取的3:0 (肯定不涉及虚实映射)     CPU
-    .wstrb         (inst_wstrb         ),//                                            CPU
-    .wdata         (inst_wdata         ),//                                            CPU
+    .wstrb         (inst_wstrb         ),//表明请求有效                                       CPU
+    .wdata         (inst_wdata         ),//表明请求有效                                       CPU
 
     .addr_ok       (inst_addr_ok       ),//接收到转接桥的 读/写 的 addrok 给CPU               CPU（O）                                   
     .rd_rdy        (inst_rd_rdy        ),   // arready                                      总线
@@ -334,8 +332,8 @@ icache u_Icache (
 //Dcache 接口
 assign  data_valid       = cpu_data_req;
 assign  data_op          = cpu_data_wr;
-assign  data_index       = cpu_data_addr[11:4];
-assign  data_tag         = cpu_data_addr[31:12];
+assign  data_index       = cpu_data_addr[13:4];
+assign  data_tag         = cpu_data_addr[31:14];
 assign  data_offset      = cpu_data_addr[3:0];
 assign  data_wstrb       = cpu_data_wstrb;
 assign  data_wdata       = cpu_data_wdata;
@@ -351,11 +349,11 @@ cache #(
 //                                                                 来自(input)/去往（output)
     .valid         (data_valid         ),//表明请求有效                                       CPU
     .op            (data_op            ), // op：0读，1写                                        CPU
-    .index         (data_index         ),// CPU 直接截取的12：4(肯定不涉及虚实映射)     CPU
+    .index         (data_index         ),// CPU 直接截取的13：4(肯定不涉及虚实映射)     CPU
     .tag           (data_tag           ),  // CPU处理好的paddr    (虚实映射)              CPU
     .offset        (data_offset        ),// CPU 直接截取的3:0 (肯定不涉及虚实映射)     CPU
-    .wstrb         (data_wstrb         ),//                                            CPU
-    .wdata         (data_wdata         ),//                                            CPU
+    .wstrb         (data_wstrb         ),//表明请求有效                                       CPU
+    .wdata         (data_wdata         ),//表明请求有效                                       CPU
 
     .addr_ok       (data_addr_ok       ),//接收到转接桥的 读/写 的 addrok 给CPU               CPU（O）                                   
     .rd_rdy        (data_rd_rdy        ),   // arready                                      总线
