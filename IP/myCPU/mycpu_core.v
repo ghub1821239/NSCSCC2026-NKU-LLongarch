@@ -736,7 +736,7 @@ csr_regfile #(
     .dmw_pseg1              (dmw_pseg1              ),
     // ERTN 更改 CRMD
     .ertn_valid             (ertn_valid             ),
-    // BADV
+    // 更新BADV
     .csr_tlb_reload0        (csr_tlb_reload0        ),
     .csr_tlb_plv0           (csr_tlb_plv0           ),
     .csr_tlb_reload1        (csr_tlb_reload1        ),  
