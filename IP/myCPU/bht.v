@@ -1,6 +1,6 @@
 module bht(
-    input              clk,
-    input              resetn,
+    input         clk,
+    input         resetn,
     //查询端口
     input  wire        query_valid,
     input  wire [31:0] query_pc,//当前预测的指令pc
@@ -31,18 +31,18 @@ end
 
 //------------------------{reg 锁存提升主频}end-------------------------//
 
-reg     [1:0] bht_counter [0:63];//BHT数组，64个2位计数器
+reg [1:0] bht_counter [0:63];//BHT数组，64个2位计数器
 
-wire    [5:0] query_index;
-wire    [5:0] update_index;
+wire [5:0] query_index;
+wire [5:0] update_index;
 
-assign        query_index  = query_pc[7:2];//BHT索引
-assign        update_index = update_pc_r[7:2];
+assign query_index  = query_pc[7:2];//BHT索引
+assign update_index = update_pc_r[7:2];
 //最高位是1即可跳转
-assign        query_taken  = query_valid &
-                             bht_counter[query_index][1];
+assign query_taken = query_valid &
+                     bht_counter[query_index][1];
 //复位循环
-integer       i;
+integer i;
 
 always @(posedge clk) begin
     if (!resetn) begin

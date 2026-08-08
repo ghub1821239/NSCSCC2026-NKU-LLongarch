@@ -245,12 +245,21 @@ def analyze(body, cr, in_always):
         first = IDENT_RE.match(code, 0)
         if first and first.group() in EXCLUDED_FIRST:
             return 'other', None
+        # A real assignment statement starts with an identifier or a
+        # concatenation '{'; continuation lines such as '(a != b)' must never
+        # be treated as assignments (their '=' belongs to a comparison).
+        if not (first or code[:1] == b'{'):
+            return 'other', None
         op_pos = code.find(b'<=')
         op = b'<='
         if op_pos < 0:
             op_pos = code.find(b'=')
             op = b'='
-        if op_pos >= 0:
+        if op_pos > 0:
+            prev = code[op_pos - 1:op_pos]
+            nxt = code[op_pos + len(op):op_pos + len(op) + 1]
+            if prev in b'!<>=&|' or nxt == b'=':
+                return 'other', None
             lhs = code[:op_pos].rstrip()
             if lhs and lhs[:1] not in b' \t':
                 semi = code.rstrip().rfind(b';')
@@ -323,12 +332,17 @@ def align_multiline_table(rec):
 
     has_pipe = [code.rstrip().endswith(b'|') for code, _ in aligned]
     if any(has_pipe):
-        max_t = max(len(code.rstrip()) - 1
+        def pipe_start(code):
+            t = len(code.rstrip()) - 1
+            if t > 0 and code[t - 1:t] == b'|':
+                t -= 1  # '||' is one token; align its start, never split it
+            return t
+        max_t = max(pipe_start(code)
                     for (code, _), hp in zip(aligned, has_pipe) if hp)
         final = []
         for (code, comment), hp in zip(aligned, has_pipe):
             if hp:
-                t = len(code.rstrip()) - 1
+                t = pipe_start(code)
                 code = code[:t].ljust(max_t) + code[t:]
             final.append((code, comment))
         aligned = final

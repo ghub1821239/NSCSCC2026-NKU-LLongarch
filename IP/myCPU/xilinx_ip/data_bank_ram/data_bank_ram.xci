@@ -155,7 +155,7 @@
         "C_DISABLE_WARN_BHV_RANGE": [ { "value": "0", "resolve_type": "generated", "format": "long", "usage": "all" } ],
         "C_COUNT_36K_BRAM": [ { "value": "1", "resolve_type": "generated", "usage": "all" } ],
         "C_COUNT_18K_BRAM": [ { "value": "0", "resolve_type": "generated", "usage": "all" } ],
-        "C_EST_POWER_SUMMARY": [ { "value": "Estimated Power for IP     :     3.53845 mW", "resolve_type": "generated", "usage": "all" } ]
+        "C_EST_POWER_SUMMARY": [ { "value": "Estimated Power for IP     :     2.96495 mW", "resolve_type": "generated", "usage": "all" } ]
       },
       "project_parameters": {
         "ARCHITECTURE": [ { "value": "artix7" } ],
@@ -166,7 +166,7 @@
         "PREFHDL": [ { "value": "VERILOG" } ],
         "SILICON_REVISION": [ { "value": "" } ],
         "SIMULATOR_LANGUAGE": [ { "value": "MIXED" } ],
-        "SPEEDGRADE": [ { "value": "-1" } ],
+        "SPEEDGRADE": [ { "value": "-2" } ],
         "STATIC_POWER": [ { "value": "" } ],
         "TEMPERATURE_GRADE": [ { "value": "" } ]
       },
@@ -185,7 +185,7 @@
       "ports": {
         "clka": [ { "direction": "in", "driver_value": "0" } ],
         "wea": [ { "direction": "in", "size_left": "3", "size_right": "0", "driver_value": "0" } ],
-        "addra": [ { "direction": "in", "size_left": "7", "size_right": "0", "driver_value": "0" } ],
+        "addra": [ { "direction": "in", "size_left": "9", "size_right": "0", "driver_value": "0" } ],
         "dina": [ { "direction": "in", "size_left": "31", "size_right": "0", "driver_value": "0" } ],
         "douta": [ { "direction": "out", "size_left": "31", "size_right": "0" } ]
       },
