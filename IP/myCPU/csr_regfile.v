@@ -719,11 +719,13 @@ assign        dmw1_plv_ok            = (DMW1[`CSR_DMW1_PLV0] && csr_CRMD_PLV == 
 genvar i0;
 generate
     for (i0 = 0; i0 < ISSUE; i0 = i0 + 1) begin : gen_dmw_preIF2
-        wire vseg0_0          = (dmw_vseg0[i0] == DMW0[`CSR_DMW0_VSEG]);
-        wire vseg0_1          = (dmw_vseg0[i0] == DMW1[`CSR_DMW1_VSEG]);
-        assign dmw_found0[i0] = (vseg0_0 & dmw0_plv_ok) | (vseg0_1 & dmw1_plv_ok);
-        assign dmw_mat0[i0]   = vseg0_0 ? DMW0[`CSR_DMW0_MAT]  : DMW1[`CSR_DMW1_MAT];
-        assign dmw_pseg0[i0]  = vseg0_0 ? DMW0[`CSR_DMW0_PSEG] : DMW1[`CSR_DMW1_PSEG];
+        wire vseg0_0 = (dmw_vseg0[i0] == DMW0[`CSR_DMW0_VSEG]);
+        wire vseg0_1 = (dmw_vseg0[i0] == DMW1[`CSR_DMW1_VSEG]);
+        wire dmw0_hit = vseg0_0 & dmw0_plv_ok;
+        wire dmw1_hit = vseg0_1 & dmw1_plv_ok;
+        assign dmw_found0[i0] = dmw0_hit | dmw1_hit;
+        assign dmw_mat0[i0]   = dmw0_hit ? DMW0[`CSR_DMW0_MAT]  : DMW1[`CSR_DMW1_MAT];
+        assign dmw_pseg0[i0]  = dmw0_hit ? DMW0[`CSR_DMW0_PSEG] : DMW1[`CSR_DMW1_PSEG];
     end
 endgenerate
 // ( DMW0/1 preIF2 end )
