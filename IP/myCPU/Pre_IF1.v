@@ -180,7 +180,8 @@ generate
                 ras_query_hit[i], ras_query_target[i],
                 query_type[i], query_taken[i]
             };
-        end else begin : s_rest
+        end 
+        else begin : s_rest
             // 当前只 query 槽0：槽1 预测位强制无效
             assign preIF1_preIF2_bus[i] = {
                 slot_valid[i],
