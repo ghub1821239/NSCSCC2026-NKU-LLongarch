@@ -1,6 +1,7 @@
 `include "csr_def.vh"
 module csr_regfile#(
-    parameter  TLBNUM = 16
+    parameter  TLBNUM = 16,
+    parameter  ISSUE  = 2
 )(
     input  wire                      clk,
     input  wire                      resetn,
@@ -83,9 +84,9 @@ module csr_regfile#(
     // CRMD重填异常
     input  wire                      ex_tlb_reload,
     // DMW0/1 
-    input  wire [2:0]                dmw_vseg0,
-    output wire                      dmw_found0,
-    output wire [2:0]                dmw_pseg0,
+    input  wire [2:0]                dmw_vseg0 [ISSUE-1:0],
+    output wire                      dmw_found0 [ISSUE-1:0],
+    output wire [2:0]                dmw_pseg0 [ISSUE-1:0],
 
     input  wire [2:0]                dmw_vseg1,
     output wire                      dmw_found1,
@@ -104,7 +105,7 @@ module csr_regfile#(
     //mat:存储访问类型
     output wire [1:0]                csr_CRMD_DATF,
     output wire [1:0]                csr_CRMD_DATM,
-    output wire [1:0]                dmw_mat0,
+    output wire [1:0]                dmw_mat0 [ISSUE-1:0],
     output wire [1:0]                dmw_mat1,
     // 操作手册6.3复位指出
     input  wire                      LLbit_wb,
@@ -708,20 +709,24 @@ assign  LLbit = LLBCTL[`CSR_LLBCTL_ROLLB];
 // ---------- DMW0/1 end --------------
 
 // ---------- READ --------------
-wire          vseg0_0;   
-wire          vseg0_1;
 wire          dmw0_plv_ok;
 wire          dmw1_plv_ok;
 assign        dmw0_plv_ok            = (DMW0[`CSR_DMW0_PLV0] && csr_CRMD_PLV == 2'b00) ||
                                        (DMW0[`CSR_DMW0_PLV3] && csr_CRMD_PLV == 2'b11);
 assign        dmw1_plv_ok            = (DMW1[`CSR_DMW1_PLV0] && csr_CRMD_PLV == 2'b00) ||
                                        (DMW1[`CSR_DMW1_PLV3] && csr_CRMD_PLV == 2'b11);
-assign        vseg0_0                = (dmw_vseg0 == DMW0[`CSR_DMW0_VSEG]);
-assign        vseg0_1                = (dmw_vseg0 == DMW1[`CSR_DMW0_VSEG]);
-//csr到tlb的接口接线
-assign        dmw_found0             = (vseg0_0 & dmw0_plv_ok) | (vseg0_1 & dmw1_plv_ok);
-assign        dmw_mat0               = vseg0_0 ? DMW0[`CSR_DMW0_MAT]  : DMW1[`CSR_DMW1_MAT];
-assign        dmw_pseg0              = vseg0_0 ? DMW0[`CSR_DMW0_PSEG] : DMW1[`CSR_DMW0_PSEG];
+// ( DMW0/1 preIF2 begin )
+genvar i0;
+generate
+    for (i0 = 0; i0 < ISSUE; i0 = i0 + 1) begin : gen_dmw_preIF2
+        wire vseg0_0          = (dmw_vseg0[i0] == DMW0[`CSR_DMW0_VSEG]);
+        wire vseg0_1          = (dmw_vseg0[i0] == DMW1[`CSR_DMW1_VSEG]);
+        assign dmw_found0[i0] = (vseg0_0 & dmw0_plv_ok) | (vseg0_1 & dmw1_plv_ok);
+        assign dmw_mat0[i0]   = vseg0_0 ? DMW0[`CSR_DMW0_MAT]  : DMW1[`CSR_DMW1_MAT];
+        assign dmw_pseg0[i0]  = vseg0_0 ? DMW0[`CSR_DMW0_PSEG] : DMW1[`CSR_DMW1_PSEG];
+    end
+endgenerate
+// ( DMW0/1 preIF2 end )
 
 wire          vseg1_0;   
 wire          vseg1_1;   
