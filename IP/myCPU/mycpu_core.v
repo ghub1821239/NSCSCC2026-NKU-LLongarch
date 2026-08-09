@@ -7,8 +7,8 @@ module mycpu_core #(
     input  wire        resetn,
     // inst sram interface [handshake]
     output wire        inst_sram_req,
-    output wire        inst_sram_wr, // 1±íÊ¾write 0±íÊ¾read
-    output wire [ 3:0] inst_sram_wstrb,// wstrb ¶ÔÓ¦Ô­Ê¼Êý¾ÝµÄ×Ö½ÚÐ´Ê¹ÄÜ
+    output wire        inst_sram_wr, // 1ï¿½ï¿½Ê¾write 0ï¿½ï¿½Ê¾read
+    output wire [ 3:0] inst_sram_wstrb,// wstrb ï¿½ï¿½Ó¦Ô­Ê¼ï¿½ï¿½ï¿½Ýµï¿½ï¿½Ö½ï¿½Ð´Ê¹ï¿½ï¿½
     output wire [ 1:0] inst_sram_size,
     output wire [31:0] inst_sram_addr,// 
     output wire [31:0] inst_sram_wdata,
@@ -19,8 +19,8 @@ module mycpu_core #(
     output wire        inst_uncache_wr,
     // data sram interface
     output wire        data_sram_req,
-    output wire        data_sram_wr, // 1±íÊ¾write 0±íÊ¾read
-    output wire [ 3:0] data_sram_wstrb,// wstrb ¶ÔÓ¦Ô­Ê¼Êý¾ÝµÄ×Ö½ÚÐ´Ê¹ÄÜ
+    output wire        data_sram_wr, // 1ï¿½ï¿½Ê¾write 0ï¿½ï¿½Ê¾read
+    output wire [ 3:0] data_sram_wstrb,// wstrb ï¿½ï¿½Ó¦Ô­Ê¼ï¿½ï¿½ï¿½Ýµï¿½ï¿½Ö½ï¿½Ð´Ê¹ï¿½ï¿½
     output wire [ 1:0] data_sram_size,//
     output wire [31:0] data_sram_addr,// 
     output wire [31:0] data_sram_wdata,
@@ -38,7 +38,7 @@ module mycpu_core #(
     output wire [ 3:0] debug_wb_rf_we,
     output wire [ 4:0] debug_wb_rf_wnum,
     output wire [31:0] debug_wb_rf_wdata,
-    //Ó²¼þÖÐ¶ÏÊäÈë
+    //Ó²ï¿½ï¿½ï¿½Ð¶ï¿½ï¿½ï¿½ï¿½ï¿½
     input  wire [ 7:0] hw_int_in
 );
 //------------------------{5-stage pipeline control signals define}begin-------------------------//
@@ -161,24 +161,24 @@ reg  [3:0]  tlbfill_random;
 // tlbfill random begin
 always @(posedge clk) begin
     if (!resetn)
-        tlbfill_random <= 4'b0001; // ³õÊ¼Öµ²»Îª 0
+        tlbfill_random <= 4'b0001; // ï¿½ï¿½Ê¼Öµï¿½ï¿½Îª 0
     else if (tlbfill_we)
         tlbfill_random <= {tlbfill_random[2:0],
                           tlbfill_random[3] ^ tlbfill_random[2]};
 end
 
 // search port 0 (for fetch the inst)
-wire   [18:0]               s0_vppn;
-wire                        s0_va_bit12;
+wire   [18:0]               s0_vppn[ISSUE-1:0];
+wire                        s0_va_bit12[ISSUE-1:0];
 wire   [9:0]                s0_asid;
-wire                        s0_found;
-wire   [$clog2(TLBNUM)-1:0] s0_index; // Êµ¼ÊÊ¹ÓÃµÄindexÎ»¿íÎªlog2(TLBNUM)
-wire   [19:0]               s0_ppn;
-wire   [5:0]                s0_ps;
-wire   [1:0]                s0_plv;
-wire   [1:0]                s0_mat;
-wire                        s0_d;
-wire                        s0_v;
+wire                        s0_found[ISSUE-1:0];
+wire   [$clog2(TLBNUM)-1:0] s0_index[ISSUE-1:0]; // Êµï¿½ï¿½Ê¹ï¿½Ãµï¿½indexÎ»ï¿½ï¿½Îªlog2(TLBNUM)
+wire   [19:0]               s0_ppn[ISSUE-1:0];
+wire   [5:0]                s0_ps[ISSUE-1:0];
+wire   [1:0]                s0_plv[ISSUE-1:0];
+wire   [1:0]                s0_mat[ISSUE-1:0];
+wire                        s0_d[ISSUE-1:0];
+wire                        s0_v[ISSUE-1:0];
 
 // search port 1 (for load/store the data)
 wire   [18:0]               s1_vppn;
@@ -243,21 +243,24 @@ wire                        r_d1;
 wire                        r_v1;
 
 //tlb_ex
-wire                        ex_tlb_reload0;//tlbÖØÌîÒì³£
-wire                        ex_tlb_reload1;//tlbÖØÌîÒì³£
-wire                        ex_tlb_ld_unvalid;//tlbµÄloadÒ³ÎÞÐ§
-wire                        ex_tlb_st_unvalid;//tlbµÄstoreÒ³ÎÞÐ§
-wire                        ex_tlb_preif_unvalid;//tlbÈ¡Ö¸Ò³ÎÞÐ§
-wire                        ex_tlb_plv0;//tlbµÄÒ³È¨ÏÞÉÏ·Ã
-wire                        ex_tlb_plv1;//tlbµÄÒ³È¨ÏÞÉÏ·Ã
-wire                        ex_tlb_page_modify;//tlbÒ³ÐÞ¸Ä
+wire                        ex_tlb_reload0 [ISSUE-1:0];//tlbï¿½ï¿½ï¿½ï¿½ï¿½ì³£
+wire                        ex_tlb_reload1;//tlbï¿½ï¿½ï¿½ï¿½ï¿½ì³£
+wire                        ex_tlb_ld_unvalid;//tlbï¿½ï¿½loadÒ³ï¿½ï¿½Ð§
+wire                        ex_tlb_st_unvalid;//tlbï¿½ï¿½storeÒ³ï¿½ï¿½Ð§
+wire                        ex_tlb_preif_unvalid [ISSUE-1:0];//tlbÈ¡Ö¸Ò³ï¿½ï¿½Ð§
+wire                        ex_tlb_plv0 [ISSUE-1:0];//tlbï¿½ï¿½Ò³È¨ï¿½ï¿½ï¿½Ï·ï¿½
+wire                        ex_tlb_plv1;//tlbï¿½ï¿½Ò³È¨ï¿½ï¿½ï¿½Ï·ï¿½
+wire                        ex_tlb_page_modify;//tlbÒ³ï¿½Þ¸ï¿½
 
 wire                        tlb_inst_req;
 wire                        tlb_data_req;
 wire                        tlb_load_req;
 wire                        tlb_store_req;
 
-tlb u_tlb(
+tlb #(
+    .TLBNUM (TLBNUM),
+    .ISSUE  (ISSUE)
+) u_tlb(
     .clk                  (clk                  ),
     .resetn               (resetn               ),
 
@@ -266,7 +269,7 @@ tlb u_tlb(
     .s0_va_bit12          (s0_va_bit12          ),
     .s0_asid              (s0_asid              ),
     .s0_found             (s0_found             ),
-    .s0_index             (s0_index             ), // Êµ¼ÊÊ¹ÓÃµÄindexÎ»¿íÎªlog2(TLBNUM)
+    .s0_index             (s0_index             ), // Êµï¿½ï¿½Ê¹ï¿½Ãµï¿½indexÎ»ï¿½ï¿½Îªlog2(TLBNUM)
     .s0_ppn               (s0_ppn               ),
     .s0_ps                (s0_ps                ),
     .s0_plv               (s0_plv               ),
@@ -330,14 +333,14 @@ tlb u_tlb(
     .csr_CRMD_PLV         (csr_CRMD_PLV         ),
 
     //tlb_ex
-    .ex_tlb_reload0       (ex_tlb_reload0       ),//tlbÖØÌîÒì³£
-    .ex_tlb_reload1       (ex_tlb_reload1       ),//tlbÖØÌîÒì³£
-    .ex_tlb_ld_unvalid    (ex_tlb_ld_unvalid    ),//tlbµÄloadÒ³ÎÞÐ§
-    .ex_tlb_st_unvalid    (ex_tlb_st_unvalid    ),//tlbµÄstoreÒ³ÎÞÐ§
-    .ex_tlb_preif_unvalid (ex_tlb_preif_unvalid ),//tlbÈ¡Ö¸Ò³ÎÞÐ§
-    .ex_tlb_plv0          (ex_tlb_plv0          ),//tlbµÄÒ³È¨ÏÞÉÏ·Ã
-    .ex_tlb_plv1          (ex_tlb_plv1          ),//tlbµÄÒ³È¨ÏÞÉÏ·Ã
-    .ex_tlb_page_modify   (ex_tlb_page_modify   ),//tlbÒ³ÐÞ¸Ä
+    .ex_tlb_reload0       (ex_tlb_reload0       ),//tlbï¿½ï¿½ï¿½ï¿½ï¿½ì³£
+    .ex_tlb_reload1       (ex_tlb_reload1       ),//tlbï¿½ï¿½ï¿½ï¿½ï¿½ì³£
+    .ex_tlb_ld_unvalid    (ex_tlb_ld_unvalid    ),//tlbï¿½ï¿½loadÒ³ï¿½ï¿½Ð§
+    .ex_tlb_st_unvalid    (ex_tlb_st_unvalid    ),//tlbï¿½ï¿½storeÒ³ï¿½ï¿½Ð§
+    .ex_tlb_preif_unvalid (ex_tlb_preif_unvalid ),//tlbÈ¡Ö¸Ò³ï¿½ï¿½Ð§
+    .ex_tlb_plv0          (ex_tlb_plv0          ),//tlbï¿½ï¿½Ò³È¨ï¿½ï¿½ï¿½Ï·ï¿½
+    .ex_tlb_plv1          (ex_tlb_plv1          ),//tlbï¿½ï¿½Ò³È¨ï¿½ï¿½ï¿½Ï·ï¿½
+    .ex_tlb_page_modify   (ex_tlb_page_modify   ),//tlbÒ³ï¿½Þ¸ï¿½
     .tlb_inst_req         (tlb_inst_req         ),
     .tlb_data_req         (tlb_data_req         ),
     .tlb_load_req         (tlb_load_req         ),
@@ -362,7 +365,7 @@ assign  older_ex_for_mem  = WB_ex;
 //------------------------{front_push}begin-------------------------//
 wire          flush;
 wire   [31:0] flush_target;
-wire   [31:0] flush_cacop_cancel_target;//´Ó WB ´«»ØÀ´µÄ flush_target & cacop È¡Ïû
+wire   [31:0] flush_cacop_cancel_target;//ï¿½ï¿½ WB ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ flush_target & cacop È¡ï¿½ï¿½
 
 
 wire   [31:0] exe1_front_data;
@@ -384,7 +387,7 @@ assign        front_push_rdata2         = rf_raddr2 == 5'b0 ? 32'b0 : (exe2_fron
                                           (mem_front_addr == rf_raddr2 & MEM_valid & ~mem_can_not_front_push) ? mem_front_data :
                                           (wb_front_addr  == rf_raddr2 & WB_valid & !flush & ~ wb_can_not_front_push) ? wb_front_data  :
                                           rf_rdata2;             
-//ibarÒ²ÔÚEXE2 ËùÒÔ¿ÉÒÔÖ±½Ó¸³Öµcacop_pc
+//ibarÒ²ï¿½ï¿½EXE2 ï¿½ï¿½ï¿½Ô¿ï¿½ï¿½ï¿½Ö±ï¿½Ó¸ï¿½Öµcacop_pc
 assign        flush_cacop_cancel_target = (cacop_need_cancel | ibar_cancel) ? cacop_pc : flush_target;
 //------------------------{front_push}end-------------------------//
 
@@ -432,7 +435,7 @@ always @(posedge clk)begin
         preIF1_IDLE_stall <= 1'b1;
     end
 end
-// ±¾ÅÄ IDLE_stall Ò²Òªµ²×¡È¡Ö¸£¬²»ÄÜµÈ¼Ä´æÆ÷ÍíÒ»ÅÄ
+// ï¿½ï¿½ï¿½ï¿½ IDLE_stall Ò²Òªï¿½ï¿½×¡È¡Ö¸ï¿½ï¿½ï¿½ï¿½ï¿½ÜµÈ¼Ä´ï¿½ï¿½ï¿½ï¿½ï¿½Ò»ï¿½ï¿½
 wire  preIF1_idle_block = preIF1_IDLE_stall | IDLE_stall;
 //------------------------{stall}end-------------------------//
 
@@ -444,11 +447,11 @@ wire  inst_resp_discard;
 //------------------------{branch prediction}begin---------------------------//
 //btb
 // query port: preIF lookup
-wire        query_valid;
-wire [31:0] query_pc;
-wire        btb_query_hit;//valid and tag match
-wire [31:0] btb_query_target;
-wire [ 1:0] query_type;
+wire        query_valid[ISSUE-1:0];
+wire [31:0] query_pc   [ISSUE-1:0];
+wire        btb_query_hit[ISSUE-1:0];//valid and tag match
+wire [31:0] btb_query_target[ISSUE-1:0];
+wire [ 1:0] query_type[ISSUE-1:0];
 // update port: Decode writes back real result
 wire        update_valid;
 wire [31:0] update_pc;
@@ -458,21 +461,27 @@ btb u_btb(
     .clk           (clk                       ),
     .resetn        (resetn                    ),
     // query port: preIF lookup
-    .query_valid   (query_valid               ),
-    .query_pc      (query_pc                  ),
-    .query_hit     (btb_query_hit             ),//valid and tag match
-    .query_target  (btb_query_target          ),
-    .query_type    (query_type                ),
+    .query_valid0   (query_valid[0]               ),
+    .query_pc0      (query_pc[0]                  ),
+    .query_hit0     (btb_query_hit[0]             ),//valid and tag match
+    .query_target0  (btb_query_target[0]          ),
+    .query_type0    (query_type[0]                ),
+
+    .query_valid1   (query_valid[1]               ),
+    .query_pc1      (query_pc[1]                  ),
+    .query_hit1     (btb_query_hit[1]             ),//valid and tag match
+    .query_target1  (btb_query_target[1]          ),
+    .query_type1    (query_type[1]                ),
     // update port: Decode writes back real result
     .update_valid  (update_valid              ),
     .update_pc     (update_pc                 ),
     .update_target (update_target             ),//real target
     .update_type   (update_type               ),
-    //È¡ÏûÈ¡Ö¸ºÍ´íÎóÔ¤²â
+    //È¡ï¿½ï¿½È¡Ö¸ï¿½Í´ï¿½ï¿½ï¿½Ô¤ï¿½ï¿½
     .update_cancel (flush | cacop_need_cancel )
 );
 
-wire  query_taken;
+wire  query_taken[ISSUE-1:0];
 wire  update_taken;
 wire  bht_update_valid;
 //bht
@@ -480,29 +489,37 @@ bht u_bht(
     .clk           (clk                       ),
     .resetn        (resetn                    ),
     // query port
-    .query_valid   (query_valid               ),
-    .query_pc      (query_pc                  ),//pc being predicted
-    .query_taken   (query_taken               ),//predict taken
+    .query_valid0   (query_valid[0]               ),
+    .query_pc0      (query_pc[0]                  ),//pc being predicted
+    .query_taken0   (query_taken[0]               ),//predict taken
+
+    .query_valid1   (query_valid[1]               ),
+    .query_pc1      (query_pc[1]                  ),//pc being predicted
+    .query_taken1   (query_taken[1]               ),//predict taken
     // update port
     .update_valid  (bht_update_valid          ),//update BHT
     .update_pc     (update_pc                 ),//branch pc
     .update_taken  (update_taken              ),//real taken
-    .update_cancel (flush | cacop_need_cancel )//È¡ÏûÈ¡Ö¸ºÍ´íÎóÔ¤²â
+    .update_cancel (flush | cacop_need_cancel )//È¡ï¿½ï¿½È¡Ö¸ï¿½Í´ï¿½ï¿½ï¿½Ô¤ï¿½ï¿½
 );
 
 //ras
 wire        push_valid;
 wire [31:0] push_target;
 wire        pop_valid;
-wire        ras_query_hit;
-wire [31:0] ras_query_target;
+wire        ras_query_hit[ISSUE-1:0];
+wire [31:0] ras_query_target[ISSUE-1:0];
 ras u_ras(
     .clk          (clk              ),
     .resetn       (resetn           ),
     // frontend query
-    .query_valid  (query_valid      ),
-    .query_hit    (ras_query_hit    ),
-    .query_target (ras_query_target ),
+    .query_valid0  (query_valid[0]      ),
+    .query_hit0    (ras_query_hit[0]    ),
+    .query_target0 (ras_query_target[0] ),
+
+    .query_valid1  (query_valid[1]      ),
+    .query_hit1    (ras_query_hit[1]    ),
+    .query_target1 (ras_query_target[1] ),
     // backend real call update
     .push_valid   (push_valid       ),
     .push_target  (push_target      ),
@@ -511,7 +528,7 @@ ras u_ras(
 );
 //------------------------{branch prediction}end---------------------------//
 
-//------------------------{Ô¤²âÊä³öÓëÌø×ªÐÅºÅ´¦Àí}begin-------------------------//
+//------------------------{Ô¤ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½×?ï¿½ÅºÅ´ï¿½ï¿½ï¿½}begin-------------------------//
 wire        br_taken;
 wire [31:0] br_target;
 
@@ -526,7 +543,7 @@ wire        need_br_cancel;
 
 //cacop cancel
 wire [31:0] cacop_pc;
-//[NOTICE:Ñ§Ò»ÏÂ]CE³ö¿Ú¼Ä´æÆ÷ <= Ñ¡Í¨,WNS»áºÃÒ»Ð©
+//[NOTICE:Ñ§Ò»ï¿½ï¿½]CEï¿½ï¿½ï¿½Ú¼Ä´ï¿½ï¿½ï¿½ <= Ñ¡Í¨,WNSï¿½ï¿½ï¿½Ò»Ð?
 always @(posedge clk) begin
     if (!resetn) begin
         br_afterpred_taken_r  <= 1'b0;
@@ -543,7 +560,7 @@ end
 assign  br_taken       = br_afterpred_taken_r;
 assign  br_target      = br_afterpred_target_r;
 assign  need_br_cancel = br_afterpred_taken_r;
-//------------------------{Ô¤²âÊä³öÓëÌø×ªÐÅºÅ´¦Àí}end-------------------------//
+//------------------------{Ô¤ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½×?ï¿½ÅºÅ´ï¿½ï¿½ï¿½}end-------------------------//
 
 //------------------------{cacop}begin-------------------------//
 wire   [31:0] inst_sram_addr_without_cacop;
@@ -587,7 +604,8 @@ assign  WB_need_cancel     = flush;
 //------------------------{i/dbar need cancel}end-------------------------//
 
 //------------------------{5 pipeline bus + inst ram control}begin-------------------------//
-localparam                               preIF1_preIF2_bus_width = 144;
+localparam                               preIF1_preIF2_slot0_bus_width = 144;
+localparam                               preIF1_preIF2_bus_width       = 142;
 localparam                               preIF2_IF_bus_width     = 106;
 localparam                               IF_ID_bus_width         = 137;
 localparam                               ID_EXE1_bus_width       = 243;
@@ -595,7 +613,8 @@ localparam                               EXE1_EXE2_bus_width     = 277;
 localparam                               EXE2_MEM_bus_width      = 198;
 localparam                               MEM_WB_bus_width        = 221;
 
-wire       [preIF1_preIF2_bus_width-1:0] preIF1_preIF2_bus [ISSUE-1:0];
+wire       [preIF1_preIF2_slot0_bus_width-1:0] preIF1_preIF2_bus_slot0;
+wire       [preIF1_preIF2_bus_width-1:0]       preIF1_preIF2_bus [ISSUE-1:1];
 wire       [preIF2_IF_bus_width-1:0]     preIF2_IF_bus [ISSUE-1:0];
 wire       [IF_ID_bus_width-1:0]         IF_ID_bus [ISSUE-1:0];
 wire       [ID_EXE1_bus_width-1:0]       ID_EXE1_bus [ISSUE-1:0];
@@ -622,24 +641,24 @@ wire          has_int;
 wire          csr_tcfg_init0;
 wire          csr_CRMD_DA;
 wire          csr_CRMD_PG;
-//tlbreload ÖØÌî´«ÈëCSR
+//tlbreload ï¿½ï¿½ï¿½î´«ï¿½ï¿½CSR
 wire          ex_tlb_reload;
 
-// ERTN ¸ü¸Ä CRMD
+// ERTN ï¿½ï¿½ï¿½ï¿½ CRMD
 wire          ertn_valid;
-// ¸üÐÂBADV
+// ï¿½ï¿½ï¿½ï¿½BADV
 wire          csr_tlb_reload0;
 wire          csr_tlb_plv0   ;
 wire          csr_tlb_reload1; 
 wire          csr_tlb_plv1   ;     
-// ¸üÐÂTLBEHI ex_tlb
+// ï¿½ï¿½ï¿½ï¿½TLBEHI ex_tlb
 wire          ex_tlb;
-//mat:´æ´¢·ÃÎÊÀàÐÍ
+//mat:ï¿½æ´¢ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 wire   [1:0]  csr_CRMD_DATF;
 wire   [1:0]  csr_CRMD_DATM;
-wire   [1:0]  dmw_mat0;
+wire   [1:0]  dmw_mat0 [ISSUE-1:0];
 wire   [1:0]  dmw_mat1;
-//ËµÃ÷s1_matÊÇÒÑ¾­»»ËãºÃµÄ£¿
+//Ëµï¿½ï¿½s1_matï¿½ï¿½ï¿½Ñ¾ï¿½ï¿½ï¿½ï¿½ï¿½ÃµÄ£ï¿?
 wire   [1:0]  inst_mat;
 wire   [1:0]  data_mat;
 
@@ -651,12 +670,12 @@ wire          LLbit;
 assign        ipi_int_in      = 1'h0;
 
 
-//----------------Icache Ïà¹ØÐÅºÅ-----------
+//----------------Icache ï¿½ï¿½ï¿½ï¿½Åºï¿?-----------
 assign  inst_uncache_valid = (inst_mat == 2'b00);
 assign  inst_uncache_wr    = inst_wr;
 //---------------------------------------------
 
-//----------------Dcache Ïà¹ØÐÅºÅ-----------
+//----------------Dcache ï¿½ï¿½ï¿½ï¿½Åºï¿?-----------
 assign  data_uncache_valid = (data_mat == 2'b00);
 assign  data_uncache_wr    = data_wr;
 //---------------------------------------------
@@ -683,11 +702,11 @@ csr_regfile #(
     .has_int                (has_int                ),
     .csr_tcfg_init0         (csr_tcfg_init0         ),
     .coreid_in              (32'b0                  ),
-    //TLBÓëcsr½Ó¿Ú
+    //TLBï¿½ï¿½csrï¿½Ó¿ï¿½
     .csr_TLBEHI             (csr_TLBEHI             ),
     .csr_TLBIDX             (csr_TLBIDX             ),
     .csr_CRMD_PLV           (csr_CRMD_PLV           ),
-    //tlbrd¶Á read port,Ð´csr
+    //tlbrdï¿½ï¿½ read port,Ð´csr
     .r_index                (r_index                ),
     .s0_asid                (s0_asid                ),
     .s1_asid_without_invtlb (s1_asid_without_invtlb ),
@@ -727,7 +746,7 @@ csr_regfile #(
     .tlbrd_we               (tlbrd_we               ),
     .csr_CRMD_DA            (csr_CRMD_DA            ),
     .csr_CRMD_PG            (csr_CRMD_PG            ),
-    //tlbreload ÖØÌî´«ÈëCSR
+    //tlbreload ï¿½ï¿½ï¿½î´«ï¿½ï¿½CSR
     .ex_tlb_reload          (ex_tlb_reload          ),
     //DMW
     .dmw_vseg0              (dmw_vseg0              ),
@@ -736,16 +755,16 @@ csr_regfile #(
     .dmw_vseg1              (dmw_vseg1              ),
     .dmw_found1             (dmw_found1             ),
     .dmw_pseg1              (dmw_pseg1              ),
-    // ERTN ¸ü¸Ä CRMD
+    // ERTN ï¿½ï¿½ï¿½ï¿½ CRMD
     .ertn_valid             (ertn_valid             ),
-    // ¸üÐÂBADV
+    // ï¿½ï¿½ï¿½ï¿½BADV
     .csr_tlb_reload0        (csr_tlb_reload0        ),
     .csr_tlb_plv0           (csr_tlb_plv0           ),
     .csr_tlb_reload1        (csr_tlb_reload1        ),  
     .csr_tlb_plv1           (csr_tlb_plv1           ),
     //ex_tlb TLBEHI
     .ex_tlb                 (ex_tlb                 ),
-    //mat:´æ´¢·ÃÎÊÀàÐÍ
+    //mat:ï¿½æ´¢ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
     .csr_CRMD_DATF          (csr_CRMD_DATF          ),
     .csr_CRMD_DATM          (csr_CRMD_DATM          ),
     .dmw_mat0               (dmw_mat0               ),
@@ -759,8 +778,9 @@ csr_regfile #(
 
 //------------------------{5-stage pipeline instantiation}begin-------------------------//
 pre_IF1 #(
-    .outbus_width         (preIF1_preIF2_bus_width   ),
-    .ISSUE                (ISSUE                     )
+    .slot0_outbus_width  (preIF1_preIF2_slot0_bus_width),
+    .outbus_width        (preIF1_preIF2_bus_width      ),
+    .ISSUE               (ISSUE                        )
 ) u_pre_IF1
 (
     .clk                  (clk                       ),
@@ -771,7 +791,8 @@ pre_IF1 #(
     .preIF1_valid         (preIF1_valid              ),
     .preIF1_ready_go      (preIF1_ready_go           ),
 
-    .preIF1_preIF2_bus    (preIF1_preIF2_bus         ),
+    .preIF1_preIF2_bus_slot0 (preIF1_preIF2_bus_slot0),
+    .preIF1_preIF2_bus       (preIF1_preIF2_bus      ),
     
     .br_target            (br_target                 ),
     .br_taken             (br_taken                  ),
@@ -784,7 +805,7 @@ pre_IF1 #(
     .s0_vppn              (s0_vppn                   ),
     .s0_va_bit12          (s0_va_bit12               ),
     .s0_found             (s0_found                  ),
-    .s0_index             (s0_index                  ), //Êµ¼ÊÊ¹ÓÃµÄindexÎ»¿íÎªlog2(TLBNUM)
+    .s0_index             (s0_index                  ), //Êµï¿½ï¿½Ê¹ï¿½Ãµï¿½indexÎ»ï¿½ï¿½Îªlog2(TLBNUM)
     .s0_ppn               (s0_ppn                    ),
     .s0_ps                (s0_ps                     ),
     .s0_plv               (s0_plv                    ),
@@ -792,9 +813,9 @@ pre_IF1 #(
     .s0_d                 (s0_d                      ),
     .s0_v                 (s0_v                      ),
     //tlb_ex
-    .ex_tlb_reload0       (ex_tlb_reload0            ),//tlbÖØÌîÒì³£
-    .ex_tlb_preif_unvalid (ex_tlb_preif_unvalid      ),//tlbÈ¡Ö¸Ò³ÎÞÐ§
-    .ex_tlb_plv0          (ex_tlb_plv0               ),//tlbµÄÒ³È¨ÏÞÉÏ·Ã
+    .ex_tlb_reload0       (ex_tlb_reload0            ),//tlbï¿½ï¿½ï¿½ï¿½ï¿½ì³£
+    .ex_tlb_preif_unvalid (ex_tlb_preif_unvalid      ),//tlbÈ¡Ö¸Ò³ï¿½ï¿½Ð§
+    .ex_tlb_plv0          (ex_tlb_plv0               ),//tlbï¿½ï¿½Ò³È¨ï¿½ï¿½ï¿½Ï·ï¿½
     .tlb_inst_req         (tlb_inst_req              ),
     //DMW
     .dmw_vseg0            (dmw_vseg0                 ),
@@ -803,6 +824,8 @@ pre_IF1 #(
     //CRMD PG DA
     .csr_CRMD_DA          (csr_CRMD_DA               ),
     .csr_CRMD_PG          (csr_CRMD_PG               ),
+    .csr_CRMD_DATF        (csr_CRMD_DATF             ),
+    .dmw_mat0             (dmw_mat0                  ),
     //branch prediction
     // query port: preIF lookup
     .query_valid          (query_valid               ),
@@ -818,8 +841,10 @@ pre_IF1 #(
 );
 
 pre_IF2 #(
+    .slot0_inbus_width            (preIF1_preIF2_slot0_bus_width),
     .inbus_width                  (preIF1_preIF2_bus_width      ),
-    .outbus_width                 (preIF2_IF_bus_width          )
+    .outbus_width                 (preIF2_IF_bus_width          ),
+    .ISSUE                        (ISSUE                        )
 ) u_pre_IF2
 (
     .clk                          (clk                          ),
@@ -830,8 +855,9 @@ pre_IF2 #(
     .preIF2_valid                 (preIF2_valid                 ),
     .preIF2_ready_go              (preIF2_ready_go              ),
 
+    .preIF1_preIF2_bus_slot0      (preIF1_preIF2_bus_slot0      ),
     .preIF1_preIF2_bus            (preIF1_preIF2_bus            ),
-    .preIF2_IF_bus                (preIF2_IF_bus                ),
+    .preIF2_IF_bus                (preIF2_IF_bus                 ),
 
     .br_taken                     (br_taken                     ),
     //cancel
@@ -840,8 +866,8 @@ pre_IF2 #(
     .need_stall                   (need_stall                   ),
     //handshake
     .inst_sram_req                (inst_sram_req                ),
-    .inst_sram_wr                 (inst_sram_wr                 ), // 1±íÊ¾write 0±íÊ¾read
-    .inst_sram_wstrb              (inst_sram_wstrb              ),// wstrb ¶ÔÓ¦Ô­Ê¼Êý¾ÝµÄ×Ö½ÚÐ´Ê¹ÄÜ
+    .inst_sram_wr                 (inst_sram_wr                 ), // 1ï¿½ï¿½Ê¾write 0ï¿½ï¿½Ê¾read
+    .inst_sram_wstrb              (inst_sram_wstrb              ),// wstrb ï¿½ï¿½Ó¦Ô­Ê¼ï¿½ï¿½ï¿½Ýµï¿½ï¿½Ö½ï¿½Ð´Ê¹ï¿½ï¿½
     .inst_sram_size               (inst_sram_size               ),
     .inst_sram_addr_without_cacop (inst_sram_addr_without_cacop ),
     .inst_sram_wdata              (inst_sram_wdata              ),
@@ -853,12 +879,9 @@ pre_IF2 #(
     //CRMD
     .csr_CRMD_DA                  (csr_CRMD_DA                  ),
     .csr_CRMD_PG                  (csr_CRMD_PG                  ),
-    //ËµÃ÷s1_matÊÇÒÑ¾­»»ËãºÃµÄ£¿
+    //Ëµï¿½ï¿½s1_matï¿½ï¿½ï¿½Ñ¾ï¿½ï¿½ï¿½ï¿½ï¿½ÃµÄ£ï¿?
     .inst_mat                     (inst_mat                     ),
-    .inst_wr                      (inst_wr                      ),
-    //mat:´æ´¢·ÃÎÊÀàÐÍ
-    .csr_CRMD_DATF                (csr_CRMD_DATF             ),
-    .dmw_mat0             (dmw_mat0                  ),
+    .inst_wr                      (inst_wr                      )
 );
 
 fetch #(
@@ -912,7 +935,7 @@ decode #(
     .ID_need_cancel      (ID_need_cancel      ),
     //stall
     .need_stall          (need_stall          ),
-    //ÖÐ¶Ï
+    //ï¿½Ð¶ï¿½
     .has_int             (has_int             ),
     //branch prediction
     // update port: Decode writes back real result
@@ -972,11 +995,11 @@ exe1 #(
     .csr_CRMD_DA        (csr_CRMD_DA         ),
     .csr_CRMD_PG        (csr_CRMD_PG         ),
     //tlb_ex
-    .ex_tlb_reload1     (ex_tlb_reload1      ),//tlbÖØÌîÒì³£
-    .ex_tlb_ld_unvalid  (ex_tlb_ld_unvalid   ),//tlbµÄloadÒ³ÎÞÐ§
-    .ex_tlb_st_unvalid  (ex_tlb_st_unvalid   ),//tlbµÄstoreÒ³ÎÞÐ§
-    .ex_tlb_plv1        (ex_tlb_plv1         ),//tlbµÄÒ³È¨ÏÞÉÏ·Ã
-    .ex_tlb_page_modify (ex_tlb_page_modify  ),//tlbÒ³ÐÞ¸Ä
+    .ex_tlb_reload1     (ex_tlb_reload1      ),//tlbï¿½ï¿½ï¿½ï¿½ï¿½ì³£
+    .ex_tlb_ld_unvalid  (ex_tlb_ld_unvalid   ),//tlbï¿½ï¿½loadÒ³ï¿½ï¿½Ð§
+    .ex_tlb_st_unvalid  (ex_tlb_st_unvalid   ),//tlbï¿½ï¿½storeÒ³ï¿½ï¿½Ð§
+    .ex_tlb_plv1        (ex_tlb_plv1         ),//tlbï¿½ï¿½Ò³È¨ï¿½ï¿½ï¿½Ï·ï¿½
+    .ex_tlb_page_modify (ex_tlb_page_modify  ),//tlbÒ³ï¿½Þ¸ï¿½
     .tlb_data_req       (tlb_data_req        ),
     .tlb_load_req       (tlb_load_req        ),
     .tlb_store_req      (tlb_store_req       ),
@@ -984,7 +1007,7 @@ exe1 #(
     .dmw_vseg1          (dmw_vseg1           ),
     .dmw_found1         (dmw_found1          ),
     .dmw_pseg1          (dmw_pseg1           ),
-    //mat:´æ´¢·ÃÎÊÀàÐÍ
+    //mat:ï¿½æ´¢ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
     .csr_CRMD_DATM      (csr_CRMD_DATM       ),
     .dmw_mat1           (dmw_mat1            )
 );
@@ -1114,7 +1137,7 @@ wb #(
     .flush                 (flush                 ),
     //cancel
     .WB_need_cancel        (WB_need_cancel        ),
-    //wb½Ó¿Ú
+    //wbï¿½Ó¿ï¿½
     .wb_pc                 (wb_pc                 ),
     .wb_ex                 (wb_ex                 ),
     .wb_vaddr              (wb_vaddr              ),
@@ -1128,11 +1151,11 @@ wb #(
     .tlbfill_we            (tlbfill_we            ),
     //tlbidx
     .csr_TLBIDX            (csr_TLBIDX            ),
-    //tlbreload ÖØÌî´«ÈëCSR
+    //tlbreload ï¿½ï¿½ï¿½î´«ï¿½ï¿½CSR
     .ex_tlb_reload         (ex_tlb_reload         ),
-    //ERTN ¸ü¸Ä CRMD
+    //ERTN ï¿½ï¿½ï¿½ï¿½ CRMD
     .ertn_valid            (ertn_valid            ),
-    // ¸üÐÂ csr_regfile Ïà¹ØµÄ BADV
+    // ï¿½ï¿½ï¿½ï¿½ csr_regfile ï¿½ï¿½Øµï¿? BADV
     .csr_tlb_reload0       (csr_tlb_reload0       ),
     .csr_tlb_plv0          (csr_tlb_plv0          ),
     .csr_tlb_reload1       (csr_tlb_reload1       ),  
