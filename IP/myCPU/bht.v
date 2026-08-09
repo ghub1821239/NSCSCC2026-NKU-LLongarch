@@ -2,9 +2,13 @@ module bht(
     input              clk,
     input              resetn,
     //查询端口
-    input  wire        query_valid,
-    input  wire [31:0] query_pc,//当前预测的指令pc
-    output wire        query_taken,//预测是否跳转
+    input  wire        query_valid0,
+    input  wire [31:0] query_pc0,//当前预测的指令pc
+    output wire        query_taken0,//预测是否跳转
+
+    input  wire        query_valid1,
+    input  wire [31:0] query_pc1,//当前预测的指令pc
+    output wire        query_taken1,//预测是否跳转
     //更新端口
     input  wire        update_valid,//是否要更新 BHT
     input  wire [31:0] update_pc,//分支指令自己的 PC
@@ -33,14 +37,18 @@ end
 
 reg     [1:0] bht_counter [0:63];//BHT数组，64个2位计数器
 
-wire    [5:0] query_index;
+wire    [5:0] query_index0;
+wire    [5:0] query_index1;
 wire    [5:0] update_index;
 
-assign        query_index  = query_pc[7:2];//BHT索引
+assign        query_index0  = query_pc0[7:2];//BHT索引
+assign        query_index1  = query_pc1[7:2];//BHT索引
+
 assign        update_index = update_pc_r[7:2];
 //最高位是1即可跳转
-assign        query_taken  = query_valid &
-                             bht_counter[query_index][1];
+assign        query_taken0  = query_valid0 & bht_counter[query_index0][1];
+assign        query_taken1  = query_valid1 & bht_counter[query_index1][1];
+
 //复位循环
 integer       i;
 
