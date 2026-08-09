@@ -528,7 +528,7 @@ ras u_ras(
 );
 //------------------------{branch prediction}end---------------------------//
 
-//------------------------{Ԥ����������?�źŴ���}begin-------------------------//
+//------------------------{Ԥ����������?�źŴ���}begin-------------------------//
 wire        br_taken;
 wire [31:0] br_target;
 
@@ -543,7 +543,7 @@ wire        need_br_cancel;
 
 //cacop cancel
 wire [31:0] cacop_pc;
-//[NOTICE:ѧһ��]CE���ڼĴ��� <= ѡͨ,WNS���һ�?
+//[NOTICE:ѧһ��]CE���ڼĴ��� <= ѡͨ,WNS���һ�?
 always @(posedge clk) begin
     if (!resetn) begin
         br_afterpred_taken_r  <= 1'b0;
@@ -560,7 +560,7 @@ end
 assign  br_taken       = br_afterpred_taken_r;
 assign  br_target      = br_afterpred_target_r;
 assign  need_br_cancel = br_afterpred_taken_r;
-//------------------------{Ԥ����������?�źŴ���}end-------------------------//
+//------------------------{Ԥ����������?�źŴ���}end-------------------------//
 
 //------------------------{cacop}begin-------------------------//
 wire   [31:0] inst_sram_addr_without_cacop;
@@ -607,7 +607,7 @@ assign  WB_need_cancel     = flush;
 localparam                               preIF1_preIF2_slot0_bus_width = 144;
 localparam                               preIF1_preIF2_bus_width       = 142;
 localparam                               preIF2_IF_bus_width     = 106;
-localparam                               IF_ID_bus_width         = 137;
+localparam                               IF_ID_bus_width         = 138;
 localparam                               ID_EXE1_bus_width       = 243;
 localparam                               EXE1_EXE2_bus_width     = 277;
 localparam                               EXE2_MEM_bus_width      = 198;
@@ -658,7 +658,7 @@ wire   [1:0]  csr_CRMD_DATF;
 wire   [1:0]  csr_CRMD_DATM;
 wire   [1:0]  dmw_mat0 [ISSUE-1:0];
 wire   [1:0]  dmw_mat1;
-//˵��s1_mat���Ѿ�����õģ�?
+//˵��s1_mat���Ѿ�����õģ�?
 wire   [1:0]  inst_mat;
 wire   [1:0]  data_mat;
 
@@ -670,12 +670,12 @@ wire          LLbit;
 assign        ipi_int_in      = 1'h0;
 
 
-//----------------Icache ����ź�?-----------
+//----------------Icache ����ź�?-----------
 assign  inst_uncache_valid = (inst_mat == 2'b00);
 assign  inst_uncache_wr    = inst_wr;
 //---------------------------------------------
 
-//----------------Dcache ����ź�?-----------
+//----------------Dcache ����ź�?-----------
 assign  data_uncache_valid = (data_mat == 2'b00);
 assign  data_uncache_wr    = data_wr;
 //---------------------------------------------
@@ -879,14 +879,15 @@ pre_IF2 #(
     //CRMD
     .csr_CRMD_DA                  (csr_CRMD_DA                  ),
     .csr_CRMD_PG                  (csr_CRMD_PG                  ),
-    //˵��s1_mat���Ѿ�����õģ�?
+    //˵��s1_mat���Ѿ�����õģ�?
     .inst_mat                     (inst_mat                     ),
     .inst_wr                      (inst_wr                      )
 );
 
 fetch #(
     .inbus_width           (preIF2_IF_bus_width   ),
-    .outbus_width          (IF_ID_bus_width       )
+    .outbus_width          (IF_ID_bus_width       ),
+    .ISSUE                 (ISSUE                 )
 )u_fetch(
     .clk                   (clk                   ),
     .resetn                (resetn                ),
@@ -1155,7 +1156,7 @@ wb #(
     .ex_tlb_reload         (ex_tlb_reload         ),
     //ERTN ���� CRMD
     .ertn_valid            (ertn_valid            ),
-    // ���� csr_regfile ��ص�? BADV
+    // ���� csr_regfile ��ص�? BADV
     .csr_tlb_reload0       (csr_tlb_reload0       ),
     .csr_tlb_plv0          (csr_tlb_plv0          ),
     .csr_tlb_reload1       (csr_tlb_reload1       ),  
