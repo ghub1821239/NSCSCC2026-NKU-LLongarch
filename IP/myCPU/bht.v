@@ -1,22 +1,22 @@
 module bht(
     input              clk,
     input              resetn,
-    //²éÑ¯¶Ë¿Ú
+    //ï¿½ï¿½Ñ¯ï¿½Ë¿ï¿½
     input  wire        query_valid0,
-    input  wire [31:0] query_pc0,//µ±Ç°Ô¤²âµÄÖ¸Áîpc
-    output wire        query_taken0,//Ô¤²âÊÇ·ñÌø×ª
+    input  wire [31:0] query_pc0,//ï¿½ï¿½Ç°Ô¤ï¿½ï¿½ï¿½Ö¸ï¿½ï¿½pc
+    output wire        query_taken0,//Ô¤ï¿½ï¿½ï¿½Ç·ï¿½ï¿½ï¿½×ª
 
     input  wire        query_valid1,
-    input  wire [31:0] query_pc1,//µ±Ç°Ô¤²âµÄÖ¸Áîpc
-    output wire        query_taken1,//Ô¤²âÊÇ·ñÌø×ª
-    //¸üÐÂ¶Ë¿Ú
-    input  wire        update_valid,//ÊÇ·ñÒª¸üÐÂ BHT
-    input  wire [31:0] update_pc,//·ÖÖ§Ö¸Áî×Ô¼ºµÄ PC
-    input  wire        update_taken,//ÕæÊµÊÇ·ñÌø×ª
-    input  wire        update_cancel//Èç¹ûÈ¡Ïû¾Í²»Í¬²½¸üÐÂ
+    input  wire [31:0] query_pc1,//ï¿½ï¿½Ç°Ô¤ï¿½ï¿½ï¿½Ö¸ï¿½ï¿½pc
+    output wire        query_taken1,//Ô¤ï¿½ï¿½ï¿½Ç·ï¿½ï¿½ï¿½×ª
+    //ï¿½ï¿½ï¿½Â¶Ë¿ï¿½
+    input  wire        update_valid,//ï¿½Ç·ï¿½Òªï¿½ï¿½ï¿½ï¿½ BHT
+    input  wire [31:0] update_pc,//ï¿½ï¿½Ö§Ö¸ï¿½ï¿½ï¿½Ô¼ï¿½ï¿½ï¿½ PC
+    input  wire        update_taken,//ï¿½ï¿½Êµï¿½Ç·ï¿½ï¿½ï¿½×ª
+    input  wire        update_cancel//ï¿½ï¿½ï¿½È¡ï¿½ï¿½ï¿½Í²ï¿½Í¬ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 );
 
-//------------------------{reg Ëø´æÌáÉýÖ÷Æµ}begin-------------------------//
+//------------------------{reg ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æµ}begin-------------------------//
 reg        update_valid_r;
 reg [31:0] update_pc_r;
 reg        update_taken_r;
@@ -33,39 +33,39 @@ always @(posedge clk) begin
     end
 end
 
-//------------------------{reg Ëø´æÌáÉýÖ÷Æµ}end-------------------------//
+//------------------------{reg ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æµ}end-------------------------//
 
-reg     [1:0] bht_counter [0:63];//BHTÊý×é£¬64¸ö2Î»¼ÆÊýÆ÷
+reg     [1:0] bht_counter [0:63];//BHTï¿½ï¿½ï¿½é£¬64ï¿½ï¿½2Î»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 
 wire    [5:0] query_index0;
 wire    [5:0] query_index1;
 wire    [5:0] update_index;
 
-assign        query_index0  = query_pc0[7:2];//BHTË÷Òý
-assign        query_index1  = query_pc1[7:2];//BHTË÷Òý
+assign        query_index0  = query_pc0[7:2];//BHTï¿½ï¿½ï¿½ï¿½
+assign        query_index1  = query_pc1[7:2];//BHTï¿½ï¿½ï¿½ï¿½
 
 assign        update_index = update_pc_r[7:2];
-//×î¸ßÎ»ÊÇ1¼´¿ÉÌø×ª
+//ï¿½ï¿½ï¿½Î»ï¿½ï¿½1ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½×ª
 assign        query_taken0  = query_valid0 & bht_counter[query_index0][1];
 assign        query_taken1  = query_valid1 & bht_counter[query_index1][1];
 
-//¸´Î»Ñ­»·
+//ï¿½ï¿½Î»Ñ­ï¿½ï¿½
 integer       i;
 
 always @(posedge clk) begin
     if (!resetn) begin
         for (i = 0; i < 64; i = i + 1) begin
-            bht_counter[i] <= 2'b01;//³õÊ¼»¯Îª01
+            bht_counter[i] <= 2'b01;//ï¿½ï¿½Ê¼ï¿½ï¿½Îª01
         end
     end
-    else if (update_valid_r & ~update_cancel) begin//Ã»ÓÐ¸´Î»²¢ÇÒ±¾ÖÜÆÚ¸üÐÂÓÐÐ§Ê±ÐÞ¸Ä¼ÆÊýÆ÷
-        if (update_taken_r) begin//ÕæÊµÌø×ªÊ±µÄ¸üÐÂ
+    else if (update_valid_r & ~update_cancel) begin//Ã»ï¿½Ð¸ï¿½Î»ï¿½ï¿½ï¿½Ò±ï¿½ï¿½ï¿½ï¿½Ú¸ï¿½ï¿½ï¿½ï¿½ï¿½Ð§Ê±ï¿½Þ¸Ä¼ï¿½ï¿½ï¿½ï¿½ï¿½
+        if (update_taken_r) begin//ï¿½ï¿½Êµï¿½ï¿½×ªÊ±ï¿½Ä¸ï¿½ï¿½ï¿½
             if (bht_counter[update_index] != 2'b11)
                 bht_counter[update_index]
                     <= bht_counter[update_index] + 2'b01;
         end
         else begin
-            if (bht_counter[update_index] != 2'b00)//ÕæÊµ²»Ìø×ªÊ±µÄ¸üÐÂ
+            if (bht_counter[update_index] != 2'b00)//ï¿½ï¿½Êµï¿½ï¿½ï¿½ï¿½×ªÊ±ï¿½Ä¸ï¿½ï¿½ï¿½
                 bht_counter[update_index]
                     <= bht_counter[update_index] - 2'b01;
         end

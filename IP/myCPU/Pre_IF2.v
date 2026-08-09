@@ -177,8 +177,6 @@ always @(posedge clk) begin
     end
 end
 
-
-
 genvar i2;
 generate 
     for(i2=0;i2<ISSUE;i2=i2+1)begin:gen_preIF2_IF_bus

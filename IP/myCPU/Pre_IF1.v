@@ -28,7 +28,7 @@ module pre_IF1 #(
     output wire [18:0]               s0_vppn[ISSUE - 1 : 0],
     output wire                      s0_va_bit12[ISSUE - 1 : 0],
     input  wire                      s0_found[ISSUE - 1 : 0],
-    input  wire [$clog2(TLBNUM)-1:0] s0_index[ISSUE - 1 : 0], // ÏÈÏòÉÏÈ¡ÕûÔÙ log2£¨£©£¬ÕâÑùÀ´Çó³öÀ´Î»¿í
+    input  wire [$clog2(TLBNUM)-1:0] s0_index[ISSUE - 1 : 0], // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È¡ï¿½ï¿½ï¿½ï¿½ log2ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Î»ï¿½ï¿½
     input  wire [19:0]               s0_ppn[ISSUE - 1 : 0],
     input  wire [5:0]                s0_ps[ISSUE - 1 : 0],
     input  wire [1:0]                s0_plv[ISSUE - 1 : 0],
@@ -36,9 +36,9 @@ module pre_IF1 #(
     input  wire                      s0_d[ISSUE - 1 : 0],
     input  wire                      s0_v[ISSUE - 1 : 0],
     //tlb_ex
-    input  wire                      ex_tlb_reload0[ISSUE - 1 : 0],//tlbÖØÌîÀýÍâ
-    input  wire                      ex_tlb_preif_unvalid[ISSUE - 1 : 0],//tlbÖÐÈ¡Ö¸Ò³ÎÞÐ§
-    input  wire                      ex_tlb_plv0[ISSUE - 1 : 0],//tlbÖÐÒ³ÌØÈ¨²»ºÏ¹æ
+    input  wire                      ex_tlb_reload0[ISSUE - 1 : 0],//tlbï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+    input  wire                      ex_tlb_preif_unvalid[ISSUE - 1 : 0],//tlbï¿½ï¿½È¡Ö¸Ò³ï¿½ï¿½Ð§
+    input  wire                      ex_tlb_plv0[ISSUE - 1 : 0],//tlbï¿½ï¿½Ò³ï¿½ï¿½È¨ï¿½ï¿½ï¿½Ï¹ï¿½
     output wire                      tlb_inst_req,
     //DMW
     output wire [2:0]                dmw_vseg0[ISSUE - 1 : 0],
@@ -50,21 +50,21 @@ module pre_IF1 #(
     input  wire [1:0]                csr_CRMD_DATF,
     input  wire [1:0]                dmw_mat0[ISSUE - 1 : 0],
     //branch prediction
-    //²éÑ¯¶Ë¿Ú£ºpreIFÈ¡Ö¸Ê±À´²éBTB
+    //ï¿½ï¿½Ñ¯ï¿½Ë¿Ú£ï¿½preIFÈ¡Ö¸Ê±ï¿½ï¿½ï¿½ï¿½BTB
     output wire                      query_valid[ISSUE-1:0],
     output wire [31:0]               query_pc   [ISSUE-1:0],
-    input  wire                      btb_query_hit[ISSUE - 1 : 0],//validÇÒtagÆ¥Åä
+    input  wire                      btb_query_hit[ISSUE - 1 : 0],//validï¿½ï¿½tagÆ¥ï¿½ï¿½
     input  wire [31:0]               btb_query_target[ISSUE - 1 : 0],
-    input  wire                      ras_query_hit[ISSUE - 1 : 0],//validÇÒtagÆ¥Åä
+    input  wire                      ras_query_hit[ISSUE - 1 : 0],//validï¿½ï¿½tagÆ¥ï¿½ï¿½
     input  wire [31:0]               ras_query_target[ISSUE - 1 : 0],
     input  wire [ 1:0]               query_type[ISSUE - 1 : 0],
-    input  wire                      query_taken[ISSUE - 1 : 0],//Ô¤²âÊÇ·ñÌø×ª
+    input  wire                      query_taken[ISSUE - 1 : 0],//Ô¤ï¿½ï¿½ï¿½Ç·ï¿½ï¿½ï¿½×ª
     input  wire                      preIF1_IDLE_stall
 );
-localparam  TYPE_COND = 2'b00;//2'b00  COND   Ìõ¼þ·ÖÖ§ beq/bne/blt/bge/bltu/bgeu
-localparam  TYPE_JUMP = 2'b01;//2'b01  JUMP   ÎÞÌõ¼þÖ±½ÓÌø b
-localparam  TYPE_CALL = 2'b10;//2'b10  CALL   bl£¬»ò jirl ÇÒ rd!=0
-localparam  TYPE_RET  = 2'b11;//2'b11  RET    jirl ÇÒ rd==0
+localparam  TYPE_COND = 2'b00;//2'b00  COND   ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö§ beq/bne/blt/bge/bltu/bgeu
+localparam  TYPE_JUMP = 2'b01;//2'b01  JUMP   ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö±ï¿½ï¿½ï¿½ï¿½ b
+localparam  TYPE_CALL = 2'b10;//2'b10  CALL   blï¿½ï¿½ï¿½ï¿½ jirl ï¿½ï¿½ rd!=0
+localparam  TYPE_RET  = 2'b11;//2'b11  RET    jirl ï¿½ï¿½ rd==0
 //------------------------{PC}begin-------------------------//
 reg    [31:0] pc;
 wire   [31:0] slot_pc[ISSUE - 1 : 0];
@@ -80,7 +80,8 @@ generate
     end
 endgenerate
 
-wire same_cacheline = (slot_pc[0][31:ICACHE_OFFSET_W] == slot_pc[1][31:ICACHE_OFFSET_W]);//Á½ÌõÖ¸ÁîÔÚÍ¬Ò»¸öcacheline
+wire same_cacheline = (slot_pc[0][31:ICACHE_OFFSET_W] == slot_pc[1][31:ICACHE_OFFSET_W]);//ï¿½ï¿½ï¿½ï¿½Ö¸ï¿½ï¿½ï¿½ï¿½Í¬Ò»ï¿½ï¿½cacheline
+//----------------------pred{begin}-------------------------------------------------
 //----------------------pred{begin}-------------------------------------------------
 wire pred_redirect0 = (ras_query_hit[0] && (query_type[0] == TYPE_RET)) || 
                       (btb_query_hit[0] && (query_type[0] == TYPE_CALL || query_type[0] == TYPE_JUMP)) || 
@@ -88,7 +89,7 @@ wire pred_redirect0 = (ras_query_hit[0] && (query_type[0] == TYPE_RET)) ||
 wire [31:0] pred_target0 =  (ras_query_hit[0] && (query_type[0] == TYPE_RET)) ? ras_query_target[0] :
                             (btb_query_hit[0] && (query_type[0] == TYPE_CALL || query_type[0] == TYPE_JUMP)) ? btb_query_target[0] :
                             (query_taken[0] && btb_query_hit[0] && (query_type[0] == TYPE_COND)) ? btb_query_target[0] :
-                            32'b0; // ²»»á±»ÓÃµ½
+                            32'b0; // ï¿½ï¿½ï¿½á±»ï¿½Ãµï¿½
 
 wire pred_redirect1 = (ras_query_hit[1] && (query_type[1] == TYPE_RET)) || 
                       (btb_query_hit[1] && (query_type[1] == TYPE_CALL || query_type[1] == TYPE_JUMP)) || 
@@ -96,13 +97,13 @@ wire pred_redirect1 = (ras_query_hit[1] && (query_type[1] == TYPE_RET)) ||
 wire [31:0] pred_target1 =  (ras_query_hit[1] && (query_type[1] == TYPE_RET)) ? ras_query_target[1] :
                             (btb_query_hit[1] && (query_type[1] == TYPE_CALL || query_type[1] == TYPE_JUMP)) ? btb_query_target[1] :
                             (query_taken[1] && btb_query_hit[1] && (query_type[1] == TYPE_COND)) ? btb_query_target[1] :
-                            32'b0; // ²»»á±»ÓÃµ½
+                            32'b0; // ï¿½ï¿½ï¿½á±»ï¿½Ãµï¿½
 //----------------------pred{end}-------------------------------------------------
 wire [1:0] inst_mat = (csr_CRMD_DA  && !csr_CRMD_PG) ? csr_CRMD_DATF :
                       (!csr_CRMD_DA &&  csr_CRMD_PG &&  dmw_found0[0]) ? dmw_mat0[0] :
                       (!csr_CRMD_DA &&  csr_CRMD_PG && !dmw_found0[0]) ? s0_mat[0] :
                       2'b0;
-wire uncache_fetch = (inst_mat == 2'b00);//uncacheÖ»·¢Ò»¸ö
+wire uncache_fetch = (inst_mat == 2'b00);//uncacheÖ»ï¿½ï¿½Ò»ï¿½ï¿½
 
 wire preIF1_ex = ex_ADEF[0] |  
                  ex_tlb_reload0[0] |  
@@ -116,7 +117,7 @@ assign next_PC = br_taken       ? br_target     :
                  pred_redirect0 ? pred_target0  :
                  (same_cacheline & !preIF1_ex & !pred_redirect0 & pred_redirect1 & !uncache_fetch) ? pred_target1 :
                  seq_PC;
-//assign next_PC = br_taken ? br_target : seq_PC;//¸ù¾ÝÊÇ·ñÌø×ª¸ü¸ÄseqPC THE UPDATE OF PC SHOULD CONSTRAIN MORE!
+//assign next_PC = br_taken ? br_target : seq_PC;//ï¿½ï¿½ï¿½ï¿½ï¿½Ç·ï¿½ï¿½ï¿½×ªï¿½ï¿½ï¿½ï¿½seqPC THE UPDATE OF PC SHOULD CONSTRAIN MORE!
 
 always @(posedge clk) begin
     if (!resetn) begin
@@ -126,7 +127,7 @@ always @(posedge clk) begin
     else if (preIF1_need_cancel)begin
         pc <= flush_target;
     end
-    // Ö±½Óbr_takenÔÚµ±Ç°clk¸ü¸ÄpcÄÇÃ´¾Í¿ÉÒÔ°ÑpreIFµÄ´íÖ¸Áî¸ø¸²¸Çµô
+    // Ö±ï¿½ï¿½br_takenï¿½Úµï¿½Ç°clkï¿½ï¿½ï¿½ï¿½pcï¿½ï¿½Ã´ï¿½Í¿ï¿½ï¿½Ô°ï¿½preIFï¿½Ä´ï¿½Ö¸ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Çµï¿½
     else if(preIF1_allow_in | br_taken) begin
         pc <= next_PC;
     end
@@ -134,10 +135,10 @@ end
 //------------------------{PC}end-------------------------//
 
 //------------------------{branch prediciton}begin------------------//
-assign  query_valid[0] = preIF1_valid & ~br_taken & ~preIF1_need_cancel;//preIF1_valid±íÊ¾Ö¸ÁîÓÐÐ§
-assign  query_pc[0]    = slot_pc[0];          //ÄÃpc
-assign  query_valid[1] = preIF1_valid & ~br_taken & ~preIF1_need_cancel & same_cacheline & ~uncache_fetch & ~preIF1_ex;//preIF1_valid±íÊ¾Ö¸ÁîÓÐÐ§
-assign  query_pc[1]    = slot_pc[1];          //ÄÃpc
+assign  query_valid[0] = preIF1_valid & ~br_taken & ~preIF1_need_cancel;//preIF1_validï¿½ï¿½Ê¾Ö¸ï¿½ï¿½ï¿½ï¿½Ð§
+assign  query_pc[0]    = slot_pc[0];          //ï¿½ï¿½pc
+assign  query_valid[1] = preIF1_valid & ~br_taken & ~preIF1_need_cancel & same_cacheline & ~uncache_fetch & ~preIF1_ex;//preIF1_validï¿½ï¿½Ê¾Ö¸ï¿½ï¿½ï¿½ï¿½Ð§
+assign  query_pc[1]    = slot_pc[1];          //ï¿½ï¿½pc
 //------------------------{branch prediciton}end------------------//
 
 //------------------------{ex_ADEF}begin-------------------------//
@@ -158,7 +159,7 @@ generate
 endgenerate
 //------------------------{DMW}end-------------------------//
 
-//------------------------{ÐéµØÖ·×ªÎïÀíµØÖ·}begin-------------------------//
+//------------------------{ï¿½ï¿½ï¿½Ö·×ªï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö·}begin-------------------------//
 generate
     for (i = 0; i < ISSUE; i = i + 1) begin
         assign        s0_vppn[i]      = slot_pc[i][31:13];
@@ -173,7 +174,7 @@ generate
                              : {s0_ppn[0][19:0],  slot_pc[i][11:0]}; // 4KBÒ³
     end
 endgenerate
-//------------------------{ÐéµØÖ·×ªÎïÀíµØÖ·}end-------------------------//
+//------------------------{ï¿½ï¿½ï¿½Ö·×ªï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö·}end-------------------------//
 
 //------------------------{ready_go}begin-------------------------//
 assign  preIF1_ready_go = need_stall | preIF1_IDLE_stall ? 1'b0 : 1'b1;
@@ -189,20 +190,20 @@ always @(posedge clk) begin
     end
 end
 
-// slot0: 144bit£¬×Ö¶ÎË³Ðò±ØÐëÓë Pre_IF2 ½â°üÒ»ÖÂ£¨º¬ inst_mat£©
+// slot0: 144bitï¿½ï¿½ï¿½Ö¶ï¿½Ë³ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ Pre_IF2 ï¿½ï¿½ï¿½Ò»ï¿½Â£ï¿½ï¿½ï¿½ inst_matï¿½ï¿½
 assign preIF1_preIF2_bus_slot0 = {
   slot_valid[0],
   slot_pc[0],
   ex_ADEF[0],
   ex_tlb_reload0[0], ex_tlb_preif_unvalid[0], ex_tlb_plv0[0],
   dmw_found0[0], dmw_pseg0[0],
-  inst_mat,                 // ±ØÐëÊÇ±¾Ä£¿éËãµÄ inst_mat£¬²»ÊÇ s0_mat
+  inst_mat,                 // ï¿½ï¿½ï¿½ï¿½ï¿½Ç±ï¿½Ä£ï¿½ï¿½ï¿½ï¿½ï¿½ inst_matï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ s0_mat
   tlb_paddr[0],
   btb_query_hit[0], btb_query_target[0],
   ras_query_hit[0], ras_query_target[0],
   query_type[0], query_taken[0]
 };
-// slot1..: 142bit£¬ÎÞ inst_mat
+// slot1..: 142bitï¿½ï¿½ï¿½ï¿½ inst_mat
 generate
   for (i = 1; i < ISSUE; i = i + 1) begin : gen_bus1
     assign preIF1_preIF2_bus[i] = {
@@ -211,7 +212,7 @@ generate
       ex_ADEF[i],
       ex_tlb_reload0[i], ex_tlb_preif_unvalid[i], ex_tlb_plv0[i],
       dmw_found0[i], dmw_pseg0[i],
-      tlb_paddr[i],          // ×¢Òâ£ºÕâÀïºóÃæ²»ÒªÆ´ s0_mat
+      tlb_paddr[i],          // ×¢ï¿½â£ºï¿½ï¿½ï¿½ï¿½ï¿½ï¿½æ²»ÒªÆ´ s0_mat
       btb_query_hit[i], btb_query_target[i],
       ras_query_hit[i], ras_query_target[i],
       query_type[i], query_taken[i]

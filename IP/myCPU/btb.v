@@ -2,30 +2,30 @@ module btb (
     input  wire        clk,
     input  wire        resetn,
 
-    //²éÑ¯¶Ë¿Ú£ºpreIFÈ¡Ö¸Ê±À´²éBTB
+    //ï¿½ï¿½Ñ¯ï¿½Ë¿Ú£ï¿½preIFÈ¡Ö¸Ê±ï¿½ï¿½ï¿½ï¿½BTB
     input  wire        query_valid0,
     input  wire [31:0] query_pc0,
-    output wire        query_hit0,//validÇÒtagÆ¥Åä
+    output wire        query_hit0,//validï¿½ï¿½tagÆ¥ï¿½ï¿½
     output wire [31:0] query_target0,
     output wire [ 1:0] query_type0,
 
     input  wire        query_valid1,
     input  wire [31:0] query_pc1,
-    output wire        query_hit1,//validÇÒtagÆ¥Åä
+    output wire        query_hit1,//validï¿½ï¿½tagÆ¥ï¿½ï¿½
     output wire [31:0] query_target1,
     output wire [ 1:0] query_type1,
 
-    //¸üÐÂ¶Ë¿Ú£ºDecodeÈ·¶¨ÕæÊµ½á¹ûºó»ØÀ´¸üÐÂBTB
+    //ï¿½ï¿½ï¿½Â¶Ë¿Ú£ï¿½DecodeÈ·ï¿½ï¿½ï¿½ï¿½Êµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½BTB
     input  wire        update_valid,
     input  wire [31:0] update_pc,
-    input  wire [31:0] update_target,//ÕæÊµÄ¿±êµØÖ·
+    input  wire [31:0] update_target,//ï¿½ï¿½ÊµÄ¿ï¿½ï¿½ï¿½Ö·
     input  wire [ 1:0] update_type,
     input  wire        update_cancel
 );
-//------------------------{reg Ëø´æÌáÉýÖ÷Æµ}begin-------------------------//
+//------------------------{reg ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æµ}begin-------------------------//
 reg        update_valid_r;
 reg [31:0] update_pc_r;
-reg [31:0] update_target_r;//ÕæÊµÄ¿±êµØÖ·
+reg [31:0] update_target_r;//ï¿½ï¿½ÊµÄ¿ï¿½ï¿½ï¿½Ö·
 reg [ 1:0] update_type_r;
 always @(posedge clk) begin
     if (!resetn) begin
@@ -42,12 +42,12 @@ always @(posedge clk) begin
     end
 end
 
-//------------------------{reg Ëø´æÌáÉýÖ÷Æµ}end-------------------------//
+//------------------------{reg ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æµ}end-------------------------//
 
-reg            btb_valid  [0:63];//64¸ö1Î»ÓÐÐ§Î»
-reg     [23:0] btb_tag    [0:63];//64¸ö24Î»tag
-reg     [31:0] btb_target [0:63];//64¸ö32Î»Ìø×ªÄ¿±êµØÖ·
-reg     [ 1:0] btb_type   [0:63];//64¸ö2Î»·ÖÖ§ÀàÐÍ
+reg            btb_valid  [0:63];//64ï¿½ï¿½1Î»ï¿½ï¿½Ð§Î»
+reg     [23:0] btb_tag    [0:63];//64ï¿½ï¿½24Î»tag
+reg     [31:0] btb_target [0:63];//64ï¿½ï¿½32Î»ï¿½ï¿½×ªÄ¿ï¿½ï¿½ï¿½Ö·
+reg     [ 1:0] btb_type   [0:63];//64ï¿½ï¿½2Î»ï¿½ï¿½Ö§ï¿½ï¿½ï¿½ï¿½
 
 wire    [ 5:0] query_index0;
 wire    [ 5:0] query_index1;
@@ -56,7 +56,7 @@ wire    [23:0] query_tag0;
 wire    [23:0] query_tag1;
 wire    [23:0] update_tag;
 
-//pc²ð·Ö³Étag+index+×Ö½ÚÆ«ÒÆ
+//pcï¿½ï¿½Ö³ï¿½tag+index+ï¿½Ö½ï¿½Æ«ï¿½ï¿½
 assign         query_index0  = query_pc0[7:2];
 assign         query_tag0    = query_pc0[31:8];
 
@@ -66,7 +66,7 @@ assign         query_tag1    = query_pc1[31:8];
 assign         update_index = update_pc_r[7:2];
 assign         update_tag   = update_pc_r[31:8];
 
-//²é±í£º²éÑ¯ÓÐÐ§&µ±Ç°ÏîÓÐÐ§&tagÆ¥Åä
+//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ñ¯ï¿½ï¿½Ð§&ï¿½ï¿½Ç°ï¿½ï¿½ï¿½ï¿½Ð§&tagÆ¥ï¿½ï¿½
 assign         query_hit0    = query_valid0 & btb_valid[query_index0] &
                               (btb_tag[query_index0] == query_tag0);
 assign         query_target0 = query_hit0 ? btb_target[query_index0] : 32'b0;
@@ -77,15 +77,15 @@ assign         query_hit1    = query_valid1 & btb_valid[query_index1] &
 assign         query_target1 = query_hit1 ? btb_target[query_index1] : 32'b0;
 assign         query_type1   = query_hit1 ? btb_type[query_index1] : 2'b0;
 
-//¸üÐÂ
+//ï¿½ï¿½ï¿½ï¿½
 integer        i;
 always @(posedge clk) begin
     if (!resetn) begin
         for (i = 0; i < 64; i = i + 1) begin
-            btb_valid[i]             <= 1'b0;//¸´Î»Ê±ËùÓÐvalidÇå0
+            btb_valid[i]             <= 1'b0;//ï¿½ï¿½Î»Ê±ï¿½ï¿½ï¿½ï¿½validï¿½ï¿½0
         end
     end
-    else if (update_valid_r & ~update_cancel) begin//ÔËÐÐÊ±ÐèÒª¸üÐÂ¾ÍÐ´Èë
+    else if (update_valid_r & ~update_cancel) begin//ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½Òªï¿½ï¿½ï¿½Â¾ï¿½Ð´ï¿½ï¿½
         btb_valid [update_index] <= 1'b1;
         btb_tag   [update_index] <= update_tag;
         btb_target[update_index] <= update_target_r;
