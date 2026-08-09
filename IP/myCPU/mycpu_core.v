@@ -595,13 +595,13 @@ localparam                               EXE1_EXE2_bus_width     = 277;
 localparam                               EXE2_MEM_bus_width      = 198;
 localparam                               MEM_WB_bus_width        = 221;
 
-wire       [preIF1_preIF2_bus_width-1:0] preIF1_preIF2_bus;
-wire       [preIF2_IF_bus_width-1:0]     preIF2_IF_bus;
-wire       [IF_ID_bus_width-1:0]         IF_ID_bus;
-wire       [ID_EXE1_bus_width-1:0]       ID_EXE1_bus;
-wire       [EXE1_EXE2_bus_width-1:0]     EXE1_EXE2_bus;
-wire       [EXE2_MEM_bus_width-1:0]      EXE2_MEM_bus;
-wire       [MEM_WB_bus_width-1:0]        MEM_WB_bus;
+wire       [preIF1_preIF2_bus_width-1:0] preIF1_preIF2_bus [ISSUE-1:0];
+wire       [preIF2_IF_bus_width-1:0]     preIF2_IF_bus [ISSUE-1:0];
+wire       [IF_ID_bus_width-1:0]         IF_ID_bus [ISSUE-1:0];
+wire       [ID_EXE1_bus_width-1:0]       ID_EXE1_bus [ISSUE-1:0];
+wire       [EXE1_EXE2_bus_width-1:0]     EXE1_EXE2_bus [ISSUE-1:0];
+wire       [EXE2_MEM_bus_width-1:0]      EXE2_MEM_bus [ISSUE-1:0];
+wire       [MEM_WB_bus_width-1:0]        MEM_WB_bus [ISSUE-1:0];
 //------------------------{5-stage pipeline bus + inst ram control}end------------------------//
 
 //------------------------{csr_regfile}begin-------------------------//
@@ -637,7 +637,7 @@ wire          ex_tlb;
 //mat:存储访问类型
 wire   [1:0]  csr_CRMD_DATF;
 wire   [1:0]  csr_CRMD_DATM;
-wire   [1:0]  dmw_mat0 [ISSUE-1:0];
+wire   [1:0]  dmw_mat0;
 wire   [1:0]  dmw_mat1;
 //说明s1_mat是已经换算好的？
 wire   [1:0]  inst_mat;
