@@ -1,6 +1,7 @@
 `include "csr_def.vh"
 module mycpu_core #(
-    parameter  TLBNUM = 16
+    parameter  TLBNUM = 16,
+    parameter  ISSUE  = 2
 )(
     input  wire        clk,
     input  wire        resetn,
@@ -11,7 +12,7 @@ module mycpu_core #(
     output wire [ 1:0] inst_sram_size,
     output wire [31:0] inst_sram_addr,// 
     output wire [31:0] inst_sram_wdata,
-    input  wire [31:0] inst_sram_rdata,
+    input  wire [127:0] inst_sram_rdata,
     input  wire        inst_sram_addr_ok,
     input  wire        inst_sram_data_ok,
     output wire        inst_uncache_valid,
@@ -138,9 +139,9 @@ end
 //------------------------{Stable counter}end-------------------------//
 
 //------------------------{DMW define}begin-------------------------//
-wire [2:0] dmw_vseg0;
-wire       dmw_found0;
-wire [2:0] dmw_pseg0;
+wire [2:0] dmw_vseg0 [ISSUE-1:0];
+wire       dmw_found0 [ISSUE-1:0];
+wire [2:0] dmw_pseg0 [ISSUE-1:0];
 wire [2:0] dmw_vseg1;
 wire       dmw_found1;
 wire [2:0] dmw_pseg1;
@@ -586,8 +587,8 @@ assign  WB_need_cancel     = flush;
 //------------------------{i/dbar need cancel}end-------------------------//
 
 //------------------------{5 pipeline bus + inst ram control}begin-------------------------//
-localparam                               preIF1_preIF2_bus_width = 147;
-localparam                               preIF2_IF_bus_width     = 105;
+localparam                               preIF1_preIF2_bus_width = 144;
+localparam                               preIF2_IF_bus_width     = 106;
 localparam                               IF_ID_bus_width         = 137;
 localparam                               ID_EXE1_bus_width       = 243;
 localparam                               EXE1_EXE2_bus_width     = 277;
@@ -636,7 +637,7 @@ wire          ex_tlb;
 //mat:存储访问类型
 wire   [1:0]  csr_CRMD_DATF;
 wire   [1:0]  csr_CRMD_DATM;
-wire   [1:0]  dmw_mat0;
+wire   [1:0]  dmw_mat0 [ISSUE-1:0];
 wire   [1:0]  dmw_mat1;
 //说明s1_mat是已经换算好的？
 wire   [1:0]  inst_mat;
@@ -661,7 +662,8 @@ assign  data_uncache_wr    = data_wr;
 //---------------------------------------------
 
 csr_regfile #(
-    .TLBNUM                 (TLBNUM                 )
+    .TLBNUM                 (TLBNUM                 ),
+    .ISSUE                  (ISSUE                  )
 )u_csr_regfile (
     .clk                    (clk                    ),
     .resetn                 (resetn                 ),
@@ -757,7 +759,8 @@ csr_regfile #(
 
 //------------------------{5-stage pipeline instantiation}begin-------------------------//
 pre_IF1 #(
-    .outbus_width         (preIF1_preIF2_bus_width   )
+    .outbus_width         (preIF1_preIF2_bus_width   ),
+    .ISSUE                (ISSUE                     )
 ) u_pre_IF1
 (
     .clk                  (clk                       ),
@@ -800,10 +803,6 @@ pre_IF1 #(
     //CRMD PG DA
     .csr_CRMD_DA          (csr_CRMD_DA               ),
     .csr_CRMD_PG          (csr_CRMD_PG               ),
-    //mat:存储访问类型
-    .csr_CRMD_DATF        (csr_CRMD_DATF             ),
-    .csr_CRMD_DATM        (csr_CRMD_DATM             ),
-    .dmw_mat0             (dmw_mat0                  ),
     //branch prediction
     // query port: preIF lookup
     .query_valid          (query_valid               ),
@@ -856,7 +855,10 @@ pre_IF2 #(
     .csr_CRMD_PG                  (csr_CRMD_PG                  ),
     //说明s1_mat是已经换算好的？
     .inst_mat                     (inst_mat                     ),
-    .inst_wr                      (inst_wr                      )
+    .inst_wr                      (inst_wr                      ),
+    //mat:存储访问类型
+    .csr_CRMD_DATF                (csr_CRMD_DATF             ),
+    .dmw_mat0             (dmw_mat0                  ),
 );
 
 fetch #(
@@ -983,7 +985,6 @@ exe1 #(
     .dmw_found1         (dmw_found1          ),
     .dmw_pseg1          (dmw_pseg1           ),
     //mat:存储访问类型
-    .csr_CRMD_DATF      (csr_CRMD_DATF       ),
     .csr_CRMD_DATM      (csr_CRMD_DATM       ),
     .dmw_mat1           (dmw_mat1            )
 );

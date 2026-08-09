@@ -72,7 +72,7 @@ wire   [31:0]  cpu_inst_addr;
 wire   [31:0]  cpu_inst_wdata;
 wire           cpu_inst_addr_ok;
 wire           cpu_inst_data_ok;
-wire   [31:0]  cpu_inst_rdata;
+wire   [127:0] cpu_inst_rdata;
 wire           inst_uncache_valid;
 wire           inst_uncache_wr;
 
@@ -101,13 +101,13 @@ wire           inst_addr_ok;//���յ�ת���ŵ� ��/д �� ad
 wire           inst_rd_rdy;   // arready                                      ����
 wire   [31:0]  inst_rd_addr; // CPU����paddr VA ��ƴ��һ��             ���ߣ�O��
 wire           inst_data_ok;//���߷��ص�                                       CPU��O��
-wire   [31:0]  inst_rdata;// ���߶�����������                           CPU��O��
+wire   [127:0] inst_rdata;// Icache ���ص����� cache line
 wire           inst_rd_req;// CPU �Ķ�����                                     ���ߣ�O��
 wire   [2 :0]  inst_rd_type; // �����ߵ�sizeֱ�ӽ�                      ���ߣ�rsize 010   arlen 8'd3 ��O��  
 wire           inst_ret_valid;// ���߷��ص�������Ч��                           ���ߣ�rvalid
 wire   [0:0]   inst_ret_last;// ���߷��ؽ�����                                 ����: last
 wire   [31:0]  inst_ret_data;// ���߸��Ķ����� rdata                    ����
-wire           inst_wr_req;//CPU�����                                        ���ߣ�O��
+wire           inst_wr_req;//CPU�����?                                        ���ߣ�O��
 wire   [2 :0]  inst_wr_type;//                                        ���ߣ�O��
 wire   [31:0]  inst_wr_addr;//                                        ���ߣ�O��
 wire   [3 :0]  inst_wr_wstrb;//                                       ���ߣ�O��
@@ -133,7 +133,7 @@ wire   [2 :0]  data_rd_type; // �����ߵ�sizeֱ�ӽ�              
 wire           data_ret_valid;// ���߷��ص�������Ч��                           ���ߣ�rvalid
 wire   [0:0]   data_ret_last;// ���߷��ؽ�����                                 ����: last
 wire   [31:0]  data_ret_data;// ���߸��Ķ����� rdata                    ����
-wire           data_wr_req;//CPU�����                                        ���ߣ�O��
+wire           data_wr_req;//CPU�����?                                        ���ߣ�O��
 wire   [2 :0]  data_wr_type;//                                        ���ߣ�O��
 wire   [31:0]  data_wr_addr;//                                        ���ߣ�O��
 wire   [3 :0]  data_wr_wstrb;//                                       ���ߣ�O��
@@ -306,14 +306,14 @@ icache u_Icache (
     .rd_addr       (inst_rd_addr       ), // CPU����paddr VA ��ƴ��һ��             ���ߣ�O��
 
     .data_ok       (inst_data_ok       ),//���߷��ص�                                       CPU��O��
-    .rdata         (inst_rdata         ),// ���߶�����������                           CPU��O��
+    .rdata_line    (inst_rdata         ),// Icache ���ص����� cache line
     .rd_req        (inst_rd_req        ),// CPU �Ķ�����                                     ���ߣ�O��
     .rd_type       (inst_rd_type       ), // �����ߵ�sizeֱ�ӽ�                      ���ߣ�rsize 010   arlen 8'd3 ��O��  
     .ret_valid     (inst_ret_valid     ),// ���߷��ص�������Ч��                           ���ߣ�rvalid
     .ret_last      (inst_ret_last      ), // ���߷��ؽ�����                                 ����: last
     .ret_data      (inst_ret_data      ),// ���߸��Ķ����� rdata                    ����
 
-    .wr_req        (inst_wr_req        ),//CPU�����                                        ���ߣ�O��
+    .wr_req        (inst_wr_req        ),//CPU�����?                                        ���ߣ�O��
     .wr_type       (inst_wr_type       ),//                                        ���ߣ�O��
     .wr_addr       (inst_wr_addr       ),//                                        ���ߣ�O��
     .wr_wstrb      (inst_wr_wstrb      ),//                                       ���ߣ�O��
@@ -369,7 +369,7 @@ cache #(
     .ret_last      (data_ret_last      ), // ���߷��ؽ�����                                 ����: last
     .ret_data      (data_ret_data      ),// ���߸��Ķ����� rdata                    ����
 
-    .wr_req        (data_wr_req        ),//CPU�����                                        ���ߣ�O��
+    .wr_req        (data_wr_req        ),//CPU�����?                                        ���ߣ�O��
     .wr_type       (data_wr_type       ),//                                        ���ߣ�O��
     .wr_addr       (data_wr_addr       ),//                                        ���ߣ�O��
     .wr_wstrb      (data_wr_wstrb      ),//                                       ���ߣ�O��
