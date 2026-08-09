@@ -1,0 +1,17 @@
+# Verilog/SV硬件代码统一仓库LF换行
+*.v     text eol=lf
+*.sv    text eol=lf
+*.svh   text eol=lf
+
+# C/头文件
+*.c     text eol=lf
+*.h     text eol=lf
+
+# 脚本、tcl约束文件
+*.tcl   text eol=lf
+*.sh    text eol=lf
+
+# 二进制文件不转换换行
+*.bit   binary
+*.wdb   binary
+*.zip   binary
