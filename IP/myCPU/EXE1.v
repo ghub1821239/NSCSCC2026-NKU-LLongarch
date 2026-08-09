@@ -54,7 +54,6 @@ module exe1 #(
   input  wire                      dmw_found1,
   input  wire [2:0]                dmw_pseg1,
   //mat:存储访问类型
-  input  wire [1:0]                csr_CRMD_DATF,//直接地址取指
   input  wire [1:0]                csr_CRMD_DATM,//直接地址ld/st
   input  wire [1:0]                dmw_mat1    //直接映射
 );

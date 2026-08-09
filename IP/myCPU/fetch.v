@@ -19,7 +19,7 @@ module fetch #(
     input  wire                    need_stall,
     //handshake
     input  wire                    inst_sram_data_ok,
-    input  wire [31:0]             inst_sram_rdata,
+    input  wire [127:0]            inst_sram_rdata,
     input  wire                    ID_allow_in,
     input  wire                    inst_resp_discard,
     //req_to_dataok_trigger

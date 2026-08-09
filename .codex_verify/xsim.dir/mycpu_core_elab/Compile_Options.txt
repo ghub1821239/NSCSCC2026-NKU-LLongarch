@@ -1,1 +1,0 @@
---relax "mycpu_core" -s "mycpu_core_elab" 
