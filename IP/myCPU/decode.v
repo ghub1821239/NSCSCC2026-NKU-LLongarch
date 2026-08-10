@@ -41,21 +41,39 @@ module decode #(
     // 是不是 return 返回
     output wire                    pop_valid    ,
     //PLV
-    input  wire [1:0]              csr_CRMD_PLV
+    input  wire [1:0]              csr_CRMD_PLV,
+    //ID_can_accept_IF
+    output wire                    ID_can_accept_IF
 );
 //------------------------{bus decode}begin-------------------------//
 reg [inbus_width-1:0] bus[ISSUE - 1 : 0];
+reg                   bus_has_inst;//bus中有未完成的IF的指令
+
 integer k;
 always @(posedge clk)begin
-    if(!resetn)begin
+    if(!resetn || ID_need_cancel)begin
         for (k = 0; k < ISSUE; k = k + 1) begin
             bus[k] <= {inbus_width{1'b0}};
         end
+        bus_has_inst <= 1'b0;
     end
-    else if(IF_ID_valid && ID_allow_in) begin
+    else if (id_fire & (redirect0 | redirect1))begin
+        for (k = 0; k < ISSUE; k = k + 1) begin
+            bus[k] <= {inbus_width{1'b0}};
+        end
+        bus_has_inst <= 1'b0;
+    end
+    else if (accept_IF_in_bus) begin
         for (k = 0; k < ISSUE; k = k + 1) begin
             bus[k] <= IF_ID_bus[k];
         end
+        bus_has_inst <= 1'b1;
+    end
+    else if(consume_bus) begin
+        for (k = 0; k < ISSUE; k = k + 1) begin
+            bus[k] <= {inbus_width{1'b0}};
+        end
+        bus_has_inst <= 1'b0;
     end
 end
 wire        slot_valid[ISSUE - 1 : 0];
@@ -73,6 +91,66 @@ wire [31:0] ras_query_target[ISSUE - 1 : 0];
 wire [ 1:0] query_type[ISSUE - 1 : 0];              
 wire        query_taken[ISSUE - 1 : 0];//预测是否跳转 
 
+wire bus0_valid = bus[0][inbus_width-1];
+wire bus1_valid = bus[1][inbus_width-1];
+
+//-------------------------{hold}begin---------------------------------------------//
+reg                     hold_valid;
+reg  [inbus_width-1:0]   hold_bus;
+wire [inbus_width-1 : 0] bus_eff [ISSUE - 1 : 0];//有效包，经过hold筛选后的bus
+wire create_hold;//hold开始信号
+wire update_hold;//hold更新信号
+wire clear_hold;//hold清空信号
+wire packed_mode;
+
+//assign create_hold = id_fire & soft_kill_slot1 & slot_issue[0];
+//assign drain_hold  = id_fire & hold_valid;//
+//assign packed_mode = hold_valid & bus_has_inst;
+
+wire create_hold_from_soft = id_fire & ~hold_valid & soft_kill_slot1 & slot_issue[0];//无hold指令，soft kill只发送slot0到后端，slot1住hold
+wire create_hold_from_tail = id_fire & hold_valid & bus_has_inst & slot_issue[0] & slot_issue[1] & bus1_valid & ~hard_kill_slot1;//重新拼包且双发成功，且原始包的slot1进hold
+wire pack_soft_keep_bus    = id_fire & hold_valid & slot_issue[0] & ~slot_issue[1] & soft_kill_slot1;//hold与下一条指令重新拼包后soft kill,则hold指令下一条指令留在bus
+
+wire consume_bus = id_fire & bus_has_inst & ~pack_soft_keep_bus & (
+                   //无hold指令并且发出slot0
+                   (~hold_valid & slot_issue[0]) |
+                   //重新拼包后next发出或者被hard丢弃
+                   (hold_valid & (slot_issue[1] | hard_kill_slot1))
+                   );
+wire accept_IF_in_bus = IF_ID_valid & ID_allow_in & (~bus_has_inst | consume_bus) &
+                        ~(id_fire & (redirect0 | redirect1));
+wire [inbus_width-1 : 0] hold_din = create_hold_from_soft ? bus_eff[1] :
+                                    create_hold_from_tail ? bus[1]     :
+                                    hold_bus;
+
+//output
+assign ID_can_accept_IF = (~bus_has_inst | consume_bus) & 
+                          ~(id_fire & (redirect0 | redirect1)) & 
+                          ~(ID_need_cancel);
+
+always @(posedge clk) begin
+    if (!resetn) begin
+        hold_valid <= 1'b0;
+        hold_bus   <= {inbus_width{1'b0}};
+    end
+    else if (ID_need_cancel) begin
+        hold_valid <= 1'b0;
+    end
+    else if (id_fire & (redirect0 | redirect1)) begin
+        hold_valid <= 1'b0;
+    end
+    else if (create_hold_from_soft | create_hold_from_tail) begin
+        hold_valid <= 1'b1;
+        hold_bus   <= hold_din;
+    end
+    else if (id_fire & hold_valid & slot_issue[0]) begin
+        hold_valid <= 1'b0;
+    end
+end
+
+//-------------------------{hold}end---------------------------------------------//
+assign bus_eff[0] = hold_valid ? hold_bus : bus[0];
+assign bus_eff[1] = hold_valid ? bus[0] : bus[1];
 genvar gi;
 generate
     for (gi = 0; gi < ISSUE; gi = gi + 1) begin : gen_i 
@@ -90,7 +168,7 @@ generate
             ras_query_target[gi],
             query_type[gi],
             query_taken[gi]
-        } = bus[gi];
+         } = bus_eff[gi];
     end 
 endgenerate
 
@@ -199,7 +277,15 @@ wire WAW_s1_s0 = slot_valid[0] & slot_valid[1] & rf_gr_we[0] & rf_gr_we[1] & (rf
 wire pred_not_neighbor_kill_s1 = pred_not_neighbor & (~real_taken[0] | redirect_lane[0]);//不是邻居，并且要么不是真跳转，要么要更新，即第一个跳转是错的
 wire pred_is_neighbor_kill_s1  = pred_is_neighbor  & (real_taken[0]  | redirect_lane[0]);//是邻居，但是要跳转或者更新
 wire slot0_fetch_ex = ex_ADEF[0] | ex_tlb_reload0[0] | ex_tlb_preif_unvalid[0] | ex_tlb_plv0[0] | ex_INE[0] | ex_IPE[0] | has_int;
-wire kill_slot1 = slot0_fetch_ex | RAW_s1_s0 | WAW_s1_s0 | struct_comflict | pred_not_neighbor_kill_s1 | pred_is_neighbor_kill_s1 | (is_br[0] & is_br[1]);//注意这里不要走双分支
+
+wire slot0_trap      = slot_valid[0] & (ex_ADEF[0] | ex_tlb_reload0[0] | 
+                                        ex_tlb_preif_unvalid[0] | ex_tlb_plv0[0] | 
+                                        ex_INE[0] | ex_IPE[0] | has_int);//会让slot1被杀的情况，名字叫slot0陷阱
+wire hard_kill_slot1 = slot0_trap | pred_not_neighbor_kill_s1 | pred_is_neighbor_kill_s1;//直接不要slot1,这里的逻辑是如果预测正确则至多soft kill,只有预测错误或者异常才会是hard kill被直接丢弃
+wire soft_kill_slot1 = slot_valid[0] & slot_valid[1] & ~hard_kill_slot1 & (
+                       RAW_s1_s0 | WAW_s1_s0 | struct_comflict | (is_br[0] & is_br[1]));//slot1只是暂时发不了，不能丢弃
+wire kill_slot1      = hard_kill_slot1 | soft_kill_slot1;
+//wire kill_slot1 = slot0_fetch_ex | RAW_s1_s0 | WAW_s1_s0 | struct_comflict | pred_not_neighbor_kill_s1 | pred_is_neighbor_kill_s1 | (is_br[0] & is_br[1]);//注意这里不要走双分支
 wire [1:0] slot_issue = {slot_valid[1] & ~kill_slot1, slot_valid[0]};
 //------------------------{issue}end-----------------------------//
 
@@ -255,7 +341,17 @@ always @(posedge clk) begin
         ID_valid <= 1'b0;
     end
     else if(ID_allow_in)begin
-        ID_valid <= (redirect0 | redirect1) ? 1'b0 : IF_ID_valid;
+        if (id_fire & (redirect0 | redirect1)) begin
+            ID_valid <= 1'b0;
+        end
+        else begin 
+            ID_valid <= (create_hold_from_soft | create_hold_from_tail) | 
+                        (hold_valid & ~(id_fire & slot_issue[0] & ~create_hold_from_tail)) |
+                        (accept_IF_in_bus) |
+                        (bus_has_inst & ~consume_bus) | 
+                        (IF_ID_valid & ~accept_IF_in_bus & ~bus_has_inst & 
+                        ~(hold_valid | create_hold_from_soft | create_hold_from_tail));
+        end
     end
 end
 //------------------------{ready_go}end-------------------------//

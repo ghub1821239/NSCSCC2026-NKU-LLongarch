@@ -24,7 +24,9 @@ module fetch #(
     input  wire                    ID_allow_in,
     input  wire                    inst_resp_discard,
     //req_to_dataok_trigger
-    input  wire                    req_to_dataok_trigger
+    input  wire                    req_to_dataok_trigger,
+    //ID_can_accept_IF
+    input  wire                    ID_can_accept_IF
 );
 //------------------------{缓存inst}begin-------------------------//
 /*reg [31:0] inst_reg;
@@ -111,7 +113,7 @@ endgenerate
 
 //------------------------{ready_go}begin-------------------------//
 wire    inst_resp_valid = inst_sram_data_ok & ~inst_resp_discard;//request 是有效的,discard表示已经发起req但是被取消，那么其返回的data_ok应是无效的,所以用discard取消
-wire    deliver_now = IF_valid & IF_ready_go & ID_allow_in & ~need_stall & ~IF_need_cancel;
+wire    deliver_now = IF_valid & IF_ready_go & ID_allow_in & ~need_stall & ~IF_need_cancel & ID_can_accept_IF;
 wire    slot0_has_ex = ex_ADEF[0] | ex_tlb_reload0[0] |
                        ex_tlb_preif_unvalid[0] | ex_tlb_plv0[0];
 // 与 Pre_IF2 一致：空槽 / 例外不访存
