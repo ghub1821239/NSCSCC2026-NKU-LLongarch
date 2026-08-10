@@ -4,64 +4,64 @@ module wb #(
 )(
     input  wire                   clk,
     input  wire                   resetn,
-    // Á÷Ë®Ïß¿ØÖÆĞÅºÅ
+    // æµæ°´çº¿æ§åˆ¶ä¿¡å·
     input  wire                   MEM_WB_valid,
     input  wire                   WB_allow_in,
     output wire                   WB_ready_go,
     output reg                    WB_valid,
     
-    input  wire [inbus_width-1:0] MEM_WB_bus,// MEMµ½WB¼¶×ÜÏß
-    // µ÷ÊÔ½Ó¿Ú
+    input  wire [inbus_width-1:0] MEM_WB_bus,// MEMåˆ°WBçº§æ€»çº¿
+    // è°ƒè¯•æ¥å£
     output wire [31:0]            debug_wb_pc,
     output wire [ 3:0]            debug_wb_rf_we,
     output wire [ 4:0]            debug_wb_rf_wnum,
     output wire [31:0]            debug_wb_rf_wdata,
-    // Í¨ÓÃ¼Ä´æÆ÷¶ÑĞ´»Ø½Ó¿Ú
+    // é€šç”¨å¯„å­˜å™¨å †å†™å›æ¥å£
     output wire [ 4:0]            rf_waddr,
     output wire [31:0]            rf_wdata,
     output wire                   rf_we,
-    // Êı¾İÏà¹ØÓëÍ£¶Ù¿ØÖÆ
+    // æ•°æ®ç›¸å…³ä¸åœé¡¿æ§åˆ¶
     output wire [ 4:0]            WB_rf_dest,
     output wire                   need_stall_csr,
-    // Ğ´»Ø¼¶Êı¾İÇ°µİ
+    // å†™å›çº§æ•°æ®å‰é€’
     output wire [31:0]            wb_front_data,
     output wire [ 4:0]            wb_front_addr,
-    // CSR¶ÁĞ´½Ó¿Ú
+    // CSRè¯»å†™æ¥å£
     output wire [13:0]            csr_num,
     output wire                   csr_re,
     input  wire [31:0]            csr_rvalue,
     output wire                   csr_we,
     output wire [31:0]            csr_wdata,
     output wire [31:0]            csr_wmask,
-    // ERTN»òÒì³£·¢ÉúÊ±³åË¢Á÷Ë®Ïß£¬²¢¸ø³öÌø×ªÄ¿±ê
+    // ERTNæˆ–å¼‚å¸¸å‘ç”Ÿæ—¶å†²åˆ·æµæ°´çº¿ï¼Œå¹¶ç»™å‡ºè·³è½¬ç›®æ ‡
     output wire                   flush,
     output wire [31:0]            flush_target,
-    // Á÷Ë®ÏßÈ¡Ïû¿ØÖÆ
+    // æµæ°´çº¿å–æ¶ˆæ§åˆ¶
     input  wire                   WB_need_cancel,
-    // Òì³£ĞÅÏ¢
+    // å¼‚å¸¸ä¿¡æ¯
     output wire [31:0]            wb_pc,
     output wire                   wb_ex,
     output wire [5:0]             ecode,
     output wire [8:0]             esubcode,
     output wire [31:0]            wb_vaddr,
-    // ÏòÇ°¼¶·´À¡Òì³£¿ØÖÆĞÅºÅ
+    // å‘å‰çº§åé¦ˆå¼‚å¸¸æ§åˆ¶ä¿¡å·
     output wire                   WB_ex,
-    // tlbrd ¿ØÖÆcsrµÄĞ´Èë
+    // tlbrd æ§åˆ¶csrçš„å†™å…¥
     output wire                   tlbrd_we,
-    // tlbwr,tlbfill ¿ØÖÆtlbĞ´Èë
+    // tlbwr,tlbfill æ§åˆ¶tlbå†™å…¥
     output wire                   tlbwr_we,
     output wire                   tlbfill_we,
     // tlbidx
     input  wire [31:0]            csr_TLBIDX,
-    //tlbreload ÖØÌî´«ÈëCSR
+    //tlbreload é‡å¡«ä¼ å…¥CSR
     output wire                   ex_tlb_reload,
-    // ERTN¡¡¸ü¸Ä¡¡CRMD
+    // ERTNã€€æ›´æ”¹ã€€CRMD
     output wire                   ertn_valid,
     // BADV
     output wire                   csr_tlb_reload0,
-    output wire                   csr_tlb_plv0   ,//tlbÖĞÒ³ÌØÈ¨²»ºÏ¹æ
-    output wire                   csr_tlb_reload1,//tlbÖØÌîÀıÍâ  
-    output wire                   csr_tlb_plv1,    //tlbÖĞÒ³ÌØÈ¨²»ºÏ¹æ 
+    output wire                   csr_tlb_plv0   ,//tlbä¸­é¡µç‰¹æƒä¸åˆè§„
+    output wire                   csr_tlb_reload1,//tlbé‡å¡«ä¾‹å¤–  
+    output wire                   csr_tlb_plv1,    //tlbä¸­é¡µç‰¹æƒä¸åˆè§„ 
     // ex_tlb --> TLBEHI
     output wire                   ex_tlb,
     //can_not_front_push
@@ -86,7 +86,7 @@ wire        inst_csrrd;
 wire        inst_csrwr;
 wire        inst_csrxchg;
 wire [13:0] csr_num_wr;
-// Òì³£ÀàĞÍ±êÖ¾
+// å¼‚å¸¸ç±»å‹æ ‡å¿—
 wire        inst_syscall;
 wire        inst_break;
 wire        ex_INE;
@@ -94,16 +94,16 @@ wire        ex_IPE;
 wire        ex_ADEF;
 wire        ex_ALE;
 //tlb_ex
-wire        ex_tlb_reload0;//tlbÖØÌîÀıÍâ
-wire        ex_tlb_preif_unvalid;//tlbÖĞÈ¡Ö¸Ò³ÎŞĞ§
-wire        ex_tlb_plv0;//tlbÖĞÒ³ÌØÈ¨²»ºÏ¹æ
-wire        ex_tlb_reload1;//tlbÖØÌîÀıÍâ        
-wire        ex_tlb_ld_unvalid;//tlbÖĞloadÒ³ÎŞĞ§ 
-wire        ex_tlb_st_unvalid;//tlbÖĞstoreÒ³ÎŞĞ§
-wire        ex_tlb_plv1;//tlbÖĞÒ³ÌØÈ¨²»ºÏ¹æ        
-wire        ex_tlb_page_modify;//tlbÖĞÒ³ĞŞ¸Ä
+wire        ex_tlb_reload0;//tlbé‡å¡«ä¾‹å¤–
+wire        ex_tlb_preif_unvalid;//tlbä¸­å–æŒ‡é¡µæ— æ•ˆ
+wire        ex_tlb_plv0;//tlbä¸­é¡µç‰¹æƒä¸åˆè§„
+wire        ex_tlb_reload1;//tlbé‡å¡«ä¾‹å¤–        
+wire        ex_tlb_ld_unvalid;//tlbä¸­loadé¡µæ— æ•ˆ 
+wire        ex_tlb_st_unvalid;//tlbä¸­storeé¡µæ— æ•ˆ
+wire        ex_tlb_plv1;//tlbä¸­é¡µç‰¹æƒä¸åˆè§„        
+wire        ex_tlb_page_modify;//tlbä¸­é¡µä¿®æ”¹
 wire        ex_tlb_plv;     
-// ¼ÆÊ±Æ÷¶ÁÈ¡Ö¸Áî
+// è®¡æ—¶å™¨è¯»å–æŒ‡ä»¤
 wire        inst_idle;
 wire        inst_ertn;
 
@@ -125,7 +125,7 @@ wire        inst_invtlb;
 assign tlbrd_we   = inst_tlbrd & WB_valid & ~wb_ex;
 assign tlbwr_we   = inst_tlbwr & WB_valid & ~wb_ex;
 assign tlbfill_we = inst_tlbfill & WB_valid & ~wb_ex;
-// csr_num_wrÊÇMEM¼¶´«ÈëµÄÖ¸ÁîÔ­Ê¼CSR±àºÅ£»ERTN¡¢Òì³£ºÍRDCNTID»áÔÚWB¼¶¸ÄÑ¡ÆäËûCSR
+// csr_num_wræ˜¯MEMçº§ä¼ å…¥çš„æŒ‡ä»¤åŸå§‹CSRç¼–å·ï¼›ERTNã€å¼‚å¸¸å’ŒRDCNTIDä¼šåœ¨WBçº§æ”¹é€‰å…¶ä»–CSR
 
 wire [31:0] alu_result_with_rdct;
 wire        csr_WB_rd;
@@ -140,7 +140,7 @@ always @(posedge clk) begin
         bus <= MEM_WB_bus;
     end
 end
-// tlb Òì³£
+// tlb å¼‚å¸¸
 assign {
         pc,need_stall_csr,alu_result_with_rdct,
         inst_csrrd, inst_csrwr,inst_csrxchg,inst_ertn,inst_syscall,inst_break,ex_INE,ex_IPE,ex_ADEF,ex_ALE,has_int,inst_rdcntvl_w,inst_rdcntvh_w,inst_rdcntid,csr_num_wr,mem_we,rj_value,rkd_value,rf_dest,rf_alu_wdata,rf_gr_we_ex,
@@ -149,25 +149,25 @@ assign {
     }=bus;
 
 //------------------------{IDLE}begin-------------------------//
-// golden / ²Î¿¼Ä£ĞÍ£º
-// - TCFG.InitVal==0£ºĞ´ TCFG ºóÁ¢¼´ TI£¬IDLE ÊÓÎª±»ÇÀÕ¼£¬ERA = IDLE
-// - ÆäÓà£¨º¬¶Ì¶¨Ê±Æ÷ÔÚÁ÷Ë®ÏßÖĞµ½ÆÚ£©£ºIDLE ÈÔ½øÈëµÈ´ı£¬»½ĞÑ ERA = IDLE+4
-//   £¨ÉîÁ÷Ë®ÏÂ timer=0x4 Ö»ÓĞ 4 ÅÄ£¬TI ³£ÔÚ IDLE Ìá½»Ç°ÒÑÖÃÎ»£¬²»ÄÜÔÙÓÃ csr_has_int ÅĞ¶Ï£©
+// golden / å‚è€ƒæ¨¡å‹ï¼š
+// - TCFG.InitVal==0ï¼šå†™ TCFG åç«‹å³ TIï¼ŒIDLE è§†ä¸ºè¢«æŠ¢å ï¼ŒERA = IDLE
+// - å…¶ä½™ï¼ˆå«çŸ­å®šæ—¶å™¨åœ¨æµæ°´çº¿ä¸­åˆ°æœŸï¼‰ï¼šIDLE ä»è¿›å…¥ç­‰å¾…ï¼Œå”¤é†’ ERA = IDLE+4
+//   ï¼ˆæ·±æµæ°´ä¸‹ timer=0x4 åªæœ‰ 4 æ‹ï¼ŒTI å¸¸åœ¨ IDLE æäº¤å‰å·²ç½®ä½ï¼Œä¸èƒ½å†ç”¨ csr_has_int åˆ¤æ–­ï¼‰
 reg         is_idle;
 reg  [31:0] idle_era_r;
 wire        idle_ex_other;
 wire        idle_valid;
 wire        idle_wake_ex;
-wire        idle_preempt; // timer=0 µÄÇÀÕ¼
+wire        idle_preempt; // timer=0 çš„æŠ¢å 
 
 assign idle_ex_other = inst_syscall | inst_break | ex_INE | ex_IPE | ex_ADEF | ex_ALE |
                        ex_tlb_reload0 | ex_tlb_preif_unvalid | ex_tlb_plv0 |
                        ex_tlb_reload1 | ex_tlb_ld_unvalid | ex_tlb_st_unvalid |
                        ex_tlb_plv1 | ex_tlb_page_modify;
 assign idle_valid    = inst_idle & WB_valid & ~idle_ex_other;
-assign idle_preempt  = idle_valid & csr_has_int & csr_tcfg_init0; // Ìá½»Ê±ÒÑÓĞ TI(InitVal=0)
+assign idle_preempt  = idle_valid & csr_has_int & csr_tcfg_init0; // æäº¤æ—¶å·²æœ‰ TI(InitVal=0)
 assign idle_wake_ex  = is_idle & csr_has_int;
-// ÇÀÕ¼±¾ÅÄÖ±½ÓÈ¡ÖĞ¶Ï£¨²»½ø is_idle£©£»µÈ´ı»½ĞÑ×ß idle_wake_ex
+// æŠ¢å æœ¬æ‹ç›´æ¥å–ä¸­æ–­ï¼ˆä¸è¿› is_idleï¼‰ï¼›ç­‰å¾…å”¤é†’èµ° idle_wake_ex
 wire   idle_ex       = idle_preempt | idle_wake_ex;
 
 always @(posedge clk) begin
@@ -180,12 +180,12 @@ always @(posedge clk) begin
     end
     else if (idle_valid) begin
         if (csr_has_int & csr_tcfg_init0) begin
-            // idle ÓëÇÀÕ¼ÖĞ¶ÏÍ¬Ê±£º²»½ø idle£¬ERA=IDLE
+            // idle ä¸æŠ¢å ä¸­æ–­åŒæ—¶ï¼šä¸è¿› idleï¼ŒERA=IDLE
             is_idle    <= 1'b0;
             idle_era_r <= pc;
         end
         else begin
-            // ÕæÕı½øÈëµÈ´ı
+            // çœŸæ­£è¿›å…¥ç­‰å¾…
             is_idle    <= 1'b1;
             idle_era_r <= pc + 32'd4;
         end
@@ -237,7 +237,7 @@ assign ex_tlb        = WB_valid & ((ecode == `ECODE_PIF)  |
                                    (ecode == `ECODE_PIS)  |
                                    (ecode == `ECODE_PME));
 
-// IDLE ²»×ßÁ÷Ë®Ïß has_int£»ÇÀÕ¼ÓÃ pc£¬»½ĞÑÓÃ idle_era_r
+// IDLE ä¸èµ°æµæ°´çº¿ has_intï¼›æŠ¢å ç”¨ pcï¼Œå”¤é†’ç”¨ idle_era_r
 assign wb_pc = idle_preempt ? pc :
                idle_wake_ex ? idle_era_r :
                               pc;
@@ -305,7 +305,7 @@ assign wb_front_data = rf_wdata;
 assign wb_front_addr = rf_dest;
 assign wb_can_not_front_push = ~rf_gr_we_ex;
 
-// ±¾ÅÄ×éºÏÍ£È¡Ö¸£¬±ÜÃâÍíÒ»ÅÄ
+// æœ¬æ‹ç»„åˆåœå–æŒ‡ï¼Œé¿å…æ™šä¸€æ‹
 assign IDLE_stall = (idle_valid & ~csr_has_int) | (is_idle & ~csr_has_int);
 
 assign WB_ex = (WB_valid &

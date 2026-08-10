@@ -81,7 +81,7 @@ wire                   inst_invtlb;
 wire                   inst_sc_w;
 wire                   sc_success;
 
-//[todo Òì³£¼ÇµÃÓëÉÏ]
+//[todo å¼‚å¸¸è®°å¾—ä¸ä¸Š]
 wire                   inst_idle;
 
 wire [31:0]            rkd_value;
@@ -94,14 +94,14 @@ wire [1:0]             data_sram_addr_l;
 
 
 //------------------------{bus}end-------------------------//
-wire    ex_tlb_reload0;//tlbÖØÌîÀıÍâ
-wire    ex_tlb_preif_unvalid;//tlbÖĞÈ¡Ö¸Ò³ÎŞĞ§
-wire    ex_tlb_plv0;//tlbÖĞÒ³ÌØÈ¨²»ºÏ¹æ
-wire    ex_tlb_reload1;//tlbÖØÌîÀıÍâ        
-wire    ex_tlb_ld_unvalid;//tlbÖĞloadÒ³ÎŞĞ§ 
-wire    ex_tlb_st_unvalid;//tlbÖĞstoreÒ³ÎŞĞ§
-wire    ex_tlb_plv1;//tlbÖĞÒ³ÌØÈ¨²»ºÏ¹æ        
-wire    ex_tlb_page_modify;//tlbÖĞÒ³ĞŞ¸Ä     
+wire    ex_tlb_reload0;//tlbé‡å¡«ä¾‹å¤–
+wire    ex_tlb_preif_unvalid;//tlbä¸­å–æŒ‡é¡µæ— æ•ˆ
+wire    ex_tlb_plv0;//tlbä¸­é¡µç‰¹æƒä¸åˆè§„
+wire    ex_tlb_reload1;//tlbé‡å¡«ä¾‹å¤–        
+wire    ex_tlb_ld_unvalid;//tlbä¸­loadé¡µæ— æ•ˆ 
+wire    ex_tlb_st_unvalid;//tlbä¸­storeé¡µæ— æ•ˆ
+wire    ex_tlb_plv1;//tlbä¸­é¡µç‰¹æƒä¸åˆè§„        
+wire    ex_tlb_page_modify;//tlbä¸­é¡µä¿®æ”¹     
 
 assign  ld_data_byte         = data_sram_addr_l == 2'b00 ? data_sram_rdata [7:0] :
                                data_sram_addr_l == 2'b01 ? data_sram_rdata [15:8] :

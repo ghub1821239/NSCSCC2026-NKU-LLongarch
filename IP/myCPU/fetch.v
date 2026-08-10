@@ -26,7 +26,7 @@ module fetch #(
     //req_to_dataok_trigger
     input  wire                    req_to_dataok_trigger
 );
-//------------------------{»º´æinst}begin-------------------------//
+//------------------------{ç¼“å­˜inst}begin-------------------------//
 /*reg [31:0] inst_reg;
 reg        inst_reg_valid;
 always @ (posedge clk)begin
@@ -38,7 +38,7 @@ always @ (posedge clk)begin
         inst_reg_valid <= 1'b0;
     end
     else if (inst_resp_valid & req_to_dataok_trigger & ~deliver_now) begin
-        // »ò£º~ID_allow_in Ê±Ëø´æ
+        // æˆ–ï¼š~ID_allow_in æ—¶é”å­˜
         inst_reg       <= inst_sram_rdata;
         inst_reg_valid <= 1'b1;
     end
@@ -46,8 +46,8 @@ always @ (posedge clk)begin
         inst_reg_valid <= 1'b0;
     end
 end*/
-reg [127:0] inst_line_reg;//lineµÄÊý¾Ý
-reg         inst_line_reg_valid;//lineÊý¾ÝÊÇ·ñÓÐÐ§
+reg [127:0] inst_line_reg;//lineçš„æ•°æ®
+reg         inst_line_reg_valid;//lineæ•°æ®æ˜¯å¦æœ‰æ•ˆ
 
 always @(posedge clk) begin
     if (!resetn) begin
@@ -65,21 +65,21 @@ always @(posedge clk) begin
     end
 end
 
-//------------------------{»º´æinst}end-------------------------//
+//------------------------{ç¼“å­˜inst}end-------------------------//
 
 //------------------------{bus}begin-------------------------//
 wire                   slot_valid[ISSUE - 1 : 0];
 wire [31:0]            pc[ISSUE - 1 : 0];
 wire                   ex_ADEF[ISSUE - 1 : 0];
-wire                   ex_tlb_reload0[ISSUE - 1 : 0];//tlbÖØÌîÀýÍâ
-wire                   ex_tlb_preif_unvalid[ISSUE - 1 : 0];//tlbÖÐÈ¡Ö¸Ò³ÎÞÐ§
-wire                   ex_tlb_plv0[ISSUE - 1 : 0];//tlbÖÐÒ³ÌØÈ¨²»ºÏ¹æ
-wire                   btb_query_hit[ISSUE - 1 : 0];//validÇÒtag
+wire                   ex_tlb_reload0[ISSUE - 1 : 0];//tlbé‡å¡«ä¾‹å¤–
+wire                   ex_tlb_preif_unvalid[ISSUE - 1 : 0];//tlbä¸­å–æŒ‡é¡µæ— æ•ˆ
+wire                   ex_tlb_plv0[ISSUE - 1 : 0];//tlbä¸­é¡µç‰¹æƒä¸åˆè§„
+wire                   btb_query_hit[ISSUE - 1 : 0];//validä¸”tag
 wire [31:0]            btb_query_target[ISSUE - 1 : 0];        
-wire                   ras_query_hit[ISSUE - 1 : 0];//validÇÒtag
+wire                   ras_query_hit[ISSUE - 1 : 0];//validä¸”tag
 wire [31:0]            ras_query_target[ISSUE - 1 : 0];        
 wire [ 1:0]            query_type[ISSUE - 1 : 0];              
-wire                   query_taken[ISSUE - 1 : 0];//Ô¤²âÊÇ·ñÌø×ª 
+wire                   query_taken[ISSUE - 1 : 0];//é¢„æµ‹æ˜¯å¦è·³è½¬ 
         
 reg  [inbus_width-1:0] bus [ISSUE - 1 : 0];
 integer k;
@@ -110,13 +110,13 @@ endgenerate
 //------------------------{bus}end-------------------------//
 
 //------------------------{ready_go}begin-------------------------//
-wire    inst_resp_valid = inst_sram_data_ok & ~inst_resp_discard;//request ÊÇÓÐÐ§µÄ,discard±íÊ¾ÒÑ¾­·¢Æðreqµ«ÊÇ±»È¡Ïû£¬ÄÇÃ´Æä·µ»ØµÄdata_okÓ¦ÊÇÎÞÐ§µÄ,ËùÒÔÓÃdiscardÈ¡Ïû
+wire    inst_resp_valid = inst_sram_data_ok & ~inst_resp_discard;//request æ˜¯æœ‰æ•ˆçš„,discardè¡¨ç¤ºå·²ç»å‘èµ·reqä½†æ˜¯è¢«å–æ¶ˆï¼Œé‚£ä¹ˆå…¶è¿”å›žçš„data_okåº”æ˜¯æ— æ•ˆçš„,æ‰€ä»¥ç”¨discardå–æ¶ˆ
 wire    deliver_now = IF_valid & IF_ready_go & ID_allow_in & ~need_stall & ~IF_need_cancel;
 wire    slot0_has_ex = ex_ADEF[0] | ex_tlb_reload0[0] |
                        ex_tlb_preif_unvalid[0] | ex_tlb_plv0[0];
-// Óë Pre_IF2 Ò»ÖÂ£º¿Õ²Û / ÀýÍâ²»·Ã´æ
+// ä¸Ž Pre_IF2 ä¸€è‡´ï¼šç©ºæ§½ / ä¾‹å¤–ä¸è®¿å­˜
 wire no_need_mem = (~slot_valid[0]) | slot0_has_ex;
-// Õý³£È¡Ö¸£ºdata_ok£¨±¾ÅÄ£©»ò line ÒÑËø´æ
+// æ­£å¸¸å–æŒ‡ï¼šdata_okï¼ˆæœ¬æ‹ï¼‰æˆ– line å·²é”å­˜
 wire mem_ready = (inst_resp_valid & req_to_dataok_trigger) | inst_line_reg_valid;
 
 assign  IF_ready_go = (need_stall | IF_need_cancel) ? 1'b0 :
@@ -138,8 +138,8 @@ end
 //------------------------{ready_go}end-------------------------//
 
 wire [127 : 0] inst_line_use = inst_line_reg_valid ? inst_line_reg : inst_sram_rdata;
-wire [31:0] inst_from_line[ISSUE - 1 : 0];//´ÓlineÖÐÄÃµ½µÄinst
-wire [31:0] inst_out      [ISSUE - 1 : 0];//´ÓIF´«µÝµ½IDµÄinst
+wire [31:0] inst_from_line[ISSUE - 1 : 0];//ä»Žlineä¸­æ‹¿åˆ°çš„inst
+wire [31:0] inst_out      [ISSUE - 1 : 0];//ä»ŽIFä¼ é€’åˆ°IDçš„inst
 generate
     for (i = 0; i < ISSUE; i = i + 1) begin 
         assign inst_from_line[i] =  (pc[i][3:2] == 2'b00) ? inst_line_use[31:0]   :
