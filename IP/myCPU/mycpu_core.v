@@ -80,9 +80,11 @@ wire  WB_ready_go;
 //------------------------{5-stage pipeline control signals define}end-------------------------//
 
 //------------------------{5-stage pipeline control signals assignment}begin-------------------------//
+wire ID_can_accept_IF;
+
 assign  preIF1_allow_in     = !preIF1_valid || (preIF2_allow_in && preIF1_ready_go);
 assign  preIF2_allow_in     = !preIF2_valid || (IF_allow_in && preIF2_ready_go);
-assign  IF_allow_in         = !IF_valid || (ID_allow_in && IF_ready_go);
+assign  IF_allow_in         = !IF_valid || (ID_allow_in && IF_ready_go && ID_can_accept_IF);
 assign  ID_allow_in         = !ID_valid || (EXE1_allow_in && ID_ready_go);
 assign  EXE1_allow_in       = !EXE1_valid || (EXE2_allow_in && EXE1_ready_go);
 assign  EXE2_allow_in       = !EXE2_valid || (MEM_allow_in && EXE2_ready_go);
@@ -908,7 +910,9 @@ fetch #(
     .inst_sram_rdata       (inst_sram_rdata       ),
     .ID_allow_in           (ID_allow_in           ),
     .inst_resp_discard     (inst_resp_discard     ),
-    .req_to_dataok_trigger (req_to_dataok_trigger )
+    .req_to_dataok_trigger (req_to_dataok_trigger ),
+    //ID_can_accept_IF
+    .ID_can_accept_IF      (ID_can_accept_IF      )
 );
 decode #(
     .inbus_width         (IF_ID_bus_width     ),
@@ -953,7 +957,9 @@ decode #(
     // backend real return update
     .pop_valid           (pop_valid           ),
     //PLV
-    .csr_CRMD_PLV        (csr_CRMD_PLV        )
+    .csr_CRMD_PLV        (csr_CRMD_PLV        ),
+    //ID_can_accept_IF
+    .ID_can_accept_IF    (ID_can_accept_IF    )
 );
 
 exe1 #(
