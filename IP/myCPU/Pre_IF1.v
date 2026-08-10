@@ -113,10 +113,11 @@ wire preIF1_ex = ex_ADEF[0] |
                  ex_tlb_plv0[0];
 
 assign slot_valid = !preIF1_valid | br_taken  | preIF1_need_cancel? {ISSUE{1'b0}} : 
-                    preIF1_ex | pred_redirect0 | ~same_cacheline | uncache_fetch ? {1'b0,{ISSUE-1{1'b1}}} :
+                    preIF1_ex | ~same_cacheline | uncache_fetch ? {1'b0,{ISSUE-1{1'b1}}} :
                     {ISSUE{1'b1}};
-assign next_PC = br_taken       ? br_target     :
-                 pred_redirect0 ? pred_target0  :
+assign next_PC = br_taken                               ? br_target     :
+                 (pred_redirect0 & slot_valid == 2'b01) ? pred_target0  :
+                 (pred_redirect0 & slot_valid == 2'b11) ? pred_target0  + 4 :
                  (same_cacheline & !preIF1_ex & !pred_redirect0 & pred_redirect1 & !uncache_fetch) ? pred_target1 :
                  seq_PC;
 //assign next_PC = br_taken ? br_target : seq_PC;//根据是否跳转更改seqPC THE UPDATE OF PC SHOULD CONSTRAIN MORE!
