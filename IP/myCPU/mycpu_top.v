@@ -89,55 +89,55 @@ wire   [31:0]  cpu_data_rdata;
 wire           data_uncache_valid;
 wire           data_uncache_wr;
 
-//Icache                                        ����(input)/ȥ����output)
-wire           inst_valid;//����������Ч                                       CPU
-wire           inst_op; // op��0����1д                                        CPU
-wire   [9 :0]  inst_index;// CPU ֱ�ӽ�ȡ��13��4(�϶����漰��ʵӳ��)     CPU
-wire   [17:0]  inst_tag;  // CPU�����õ�paddr    (��ʵӳ��)              CPU
-wire   [3 :0]  inst_offset;// CPU ֱ�ӽ�ȡ��3:0 (�϶����漰��ʵӳ��)     CPU
-wire   [3 :0]  inst_wstrb;//����������Ч                                       CPU
-wire   [31:0]  inst_wdata;//����������Ч                                       CPU
-wire           inst_addr_ok;//���յ�ת���ŵ� ��/д �� addrok ��CPU               CPU��O��                                   
-wire           inst_rd_rdy;   // arready                                      ����
-wire   [31:0]  inst_rd_addr; // CPU����paddr VA ��ƴ��һ��             ���ߣ�O��
-wire           inst_data_ok;//���߷��ص�                                       CPU��O��
-wire   [127:0] inst_rdata;// Icache ���ص����� cache line
-wire           inst_rd_req;// CPU �Ķ�����                                     ���ߣ�O��
-wire   [2 :0]  inst_rd_type; // �����ߵ�sizeֱ�ӽ�                      ���ߣ�rsize 010   arlen 8'd3 ��O��  
-wire           inst_ret_valid;// ���߷��ص�������Ч��                           ���ߣ�rvalid
-wire   [0:0]   inst_ret_last;// ���߷��ؽ�����                                 ����: last
-wire   [31:0]  inst_ret_data;// ���߸��Ķ����� rdata                    ����
-wire           inst_wr_req;//CPU�����?                                        ���ߣ�O��
-wire   [2 :0]  inst_wr_type;//                                        ���ߣ�O��
-wire   [31:0]  inst_wr_addr;//                                        ���ߣ�O��
-wire   [3 :0]  inst_wr_wstrb;//                                       ���ߣ�O��
-wire   [127:0] inst_wr_wdata;//                                        ���ߣ�O��
+//Icache                                        来自(input)/去往（output)
+wire           inst_valid;//表明请求有效                                       CPU
+wire           inst_op; // op：0读，1写                                        CPU
+wire   [9 :0]  inst_index;// CPU 直接截取的13：4(肯定不涉及虚实映射)     CPU
+wire   [17:0]  inst_tag;  // CPU处理好的paddr    (虚实映射)              CPU
+wire   [3 :0]  inst_offset;// CPU 直接截取的3:0 (肯定不涉及虚实映射)     CPU
+wire   [3 :0]  inst_wstrb;//表明请求有效                                       CPU
+wire   [31:0]  inst_wdata;//表明请求有效                                       CPU
+wire           inst_addr_ok;//接收到转接桥的 读/写 的 addrok 给CPU               CPU（O）                                   
+wire           inst_rd_rdy;   // arready                                      总线
+wire   [31:0]  inst_rd_addr; // CPU给的paddr VA 他拼接一下             总线（O）
+wire           inst_data_ok;//总线返回的                                       CPU（O）
+wire   [127:0] inst_rdata;// Icache 返回的完整 cache line
+wire           inst_rd_req;// CPU 的读请求                                     总线（O）
+wire   [2 :0]  inst_rd_type; // 和总线的size直接接                      总线：rsize 010   arlen 8'd3 （O）  
+wire           inst_ret_valid;// 总线返回的数是有效的                           总线：rvalid
+wire   [0:0]   inst_ret_last;// 总线返回结束了                                 总线: last
+wire   [31:0]  inst_ret_data;// 总线给的读数据 rdata                    总线
+wire           inst_wr_req;//CPU发起的                                        总线（O）
+wire   [2 :0]  inst_wr_type;//                                        总线（O）
+wire   [31:0]  inst_wr_addr;//                                        总线（O）
+wire   [3 :0]  inst_wr_wstrb;//                                       总线（O）
+wire   [127:0] inst_wr_wdata;//                                        总线（O）
 wire           inst_wr_rdy;// 
 wire           inst_cacop_done;
 
-//Dcache                                        ����(input)/ȥ����output)
-wire           data_valid;//����������Ч                                       CPU
-wire           data_op; // op��0����1д                                        CPU
-wire   [9 :0]  data_index;// CPU ֱ�ӽ�ȡ��13��4(�϶����漰��ʵӳ��)     CPU
-wire   [17:0]  data_tag;  // CPU�����õ�paddr    (��ʵӳ��)              CPU
-wire   [3 :0]  data_offset;// CPU ֱ�ӽ�ȡ��3:0 (�϶����漰��ʵӳ��)     CPU
-wire   [3 :0]  data_wstrb;//����������Ч                                       CPU
-wire   [31:0]  data_wdata;//����������Ч                                       CPU
-wire           data_addr_ok;//���յ�ת���ŵ� ��/д �� addrok ��CPU               CPU��O��                                   
-wire           data_rd_rdy;   // arready                                      ����
-wire   [31:0]  data_rd_addr; // CPU����paddr VA ��ƴ��һ��             ���ߣ�O��
-wire           data_data_ok;//���߷��ص�                                       CPU��O��
-wire   [31:0]  data_rdata;// ���߶�����������                           CPU��O��
-wire           data_rd_req;// CPU �Ķ�����                                     ���ߣ�O��
-wire   [2 :0]  data_rd_type; // �����ߵ�sizeֱ�ӽ�                      ���ߣ�rsize 010   arlen 8'd3 ��O��  
-wire           data_ret_valid;// ���߷��ص�������Ч��                           ���ߣ�rvalid
-wire   [0:0]   data_ret_last;// ���߷��ؽ�����                                 ����: last
-wire   [31:0]  data_ret_data;// ���߸��Ķ����� rdata                    ����
-wire           data_wr_req;//CPU�����?                                        ���ߣ�O��
-wire   [2 :0]  data_wr_type;//                                        ���ߣ�O��
-wire   [31:0]  data_wr_addr;//                                        ���ߣ�O��
-wire   [3 :0]  data_wr_wstrb;//                                       ���ߣ�O��
-wire   [127:0] data_wr_wdata;//                                        ���ߣ�O��
+//Dcache                                        来自(input)/去往（output)
+wire           data_valid;//表明请求有效                                       CPU
+wire           data_op; // op：0读，1写                                        CPU
+wire   [9 :0]  data_index;// CPU 直接截取的13：4(肯定不涉及虚实映射)     CPU
+wire   [17:0]  data_tag;  // CPU处理好的paddr    (虚实映射)              CPU
+wire   [3 :0]  data_offset;// CPU 直接截取的3:0 (肯定不涉及虚实映射)     CPU
+wire   [3 :0]  data_wstrb;//表明请求有效                                       CPU
+wire   [31:0]  data_wdata;//表明请求有效                                       CPU
+wire           data_addr_ok;//接收到转接桥的 读/写 的 addrok 给CPU               CPU（O）                                   
+wire           data_rd_rdy;   // arready                                      总线
+wire   [31:0]  data_rd_addr; // CPU给的paddr VA 他拼接一下             总线（O）
+wire           data_data_ok;//总线返回的                                       CPU（O）
+wire   [31:0]  data_rdata;// 总线读出来的数据                           CPU（O）
+wire           data_rd_req;// CPU 的读请求                                     总线（O）
+wire   [2 :0]  data_rd_type; // 和总线的size直接接                      总线：rsize 010   arlen 8'd3 （O）  
+wire           data_ret_valid;// 总线返回的数是有效的                           总线：rvalid
+wire   [0:0]   data_ret_last;// 总线返回结束了                                 总线: last
+wire   [31:0]  data_ret_data;// 总线给的读数据 rdata                    总线
+wire           data_wr_req;//CPU发起的                                        总线（O）
+wire   [2 :0]  data_wr_type;//                                        总线（O）
+wire   [31:0]  data_wr_addr;//                                        总线（O）
+wire   [3 :0]  data_wr_wstrb;//                                       总线（O）
+wire   [127:0] data_wr_wdata;//                                        总线（O）
 wire           data_wr_rdy;// 
 wire           data_cacop_done;
 
@@ -275,7 +275,7 @@ bridge_SRAM_AXI u_bridge_SRAM_AXI(
     .data_awlen     (data_awlen     )
 );
 
-//icache�ӿ�:cpu----icache
+//icache接口:cpu----icache
 assign  inst_valid       = cpu_inst_req;
 assign  inst_op          = cpu_inst_wr;
 assign  inst_index       = cpu_inst_addr[13:4];
@@ -286,38 +286,38 @@ assign  inst_wdata       = cpu_inst_wdata;
 assign  cpu_inst_addr_ok = inst_addr_ok;
 assign  cpu_inst_data_ok = inst_data_ok;
 assign  cpu_inst_rdata   = inst_rdata;
-//icache����:icache-----bridge
+//icache总线:icache-----bridge
 
 
 icache u_Icache (
     .clk           (aclk               ),
     .resetn        (aresetn            ),
-//                                                                 ����(input)/ȥ����output)
-    .valid         (inst_valid         ),//����������Ч                                       CPU
-    .op            (inst_op            ), // op��0����1д                                        CPU
-    .index         (inst_index         ),// CPU ֱ�ӽ�ȡ��13��4(�϶����漰��ʵӳ��)     CPU
-    .tag           (inst_tag           ),  // CPU�����õ�paddr    (��ʵӳ��)              CPU
-    .offset        (inst_offset        ),// CPU ֱ�ӽ�ȡ��3:0 (�϶����漰��ʵӳ��)     CPU
-    .wstrb         (inst_wstrb         ),//����������Ч                                       CPU
-    .wdata         (inst_wdata         ),//����������Ч                                       CPU
+//                                                                 来自(input)/去往（output)
+    .valid         (inst_valid         ),//表明请求有效                                       CPU
+    .op            (inst_op            ), // op：0读，1写                                        CPU
+    .index         (inst_index         ),// CPU 直接截取的13：4(肯定不涉及虚实映射)     CPU
+    .tag           (inst_tag           ),  // CPU处理好的paddr    (虚实映射)              CPU
+    .offset        (inst_offset        ),// CPU 直接截取的3:0 (肯定不涉及虚实映射)     CPU
+    .wstrb         (inst_wstrb         ),//表明请求有效                                       CPU
+    .wdata         (inst_wdata         ),//表明请求有效                                       CPU
 
-    .addr_ok       (inst_addr_ok       ),//���յ�ת���ŵ� ��/д �� addrok ��CPU               CPU��O��                                   
-    .rd_rdy        (inst_rd_rdy        ),   // arready                                      ����
-    .rd_addr       (inst_rd_addr       ), // CPU����paddr VA ��ƴ��һ��             ���ߣ�O��
+    .addr_ok       (inst_addr_ok       ),//接收到转接桥的 读/写 的 addrok 给CPU               CPU（O）                                   
+    .rd_rdy        (inst_rd_rdy        ),   // arready                                      总线
+    .rd_addr       (inst_rd_addr       ), // CPU给的paddr VA 他拼接一下             总线（O）
 
-    .data_ok       (inst_data_ok       ),//���߷��ص�                                       CPU��O��
-    .rdata_line    (inst_rdata         ),// Icache ���ص����� cache line
-    .rd_req        (inst_rd_req        ),// CPU �Ķ�����                                     ���ߣ�O��
-    .rd_type       (inst_rd_type       ), // �����ߵ�sizeֱ�ӽ�                      ���ߣ�rsize 010   arlen 8'd3 ��O��  
-    .ret_valid     (inst_ret_valid     ),// ���߷��ص�������Ч��                           ���ߣ�rvalid
-    .ret_last      (inst_ret_last      ), // ���߷��ؽ�����                                 ����: last
-    .ret_data      (inst_ret_data      ),// ���߸��Ķ����� rdata                    ����
+    .data_ok       (inst_data_ok       ),//总线返回的                                       CPU（O）
+    .rdata_line    (inst_rdata         ),// Icache 返回的完整 cache line
+    .rd_req        (inst_rd_req        ),// CPU 的读请求                                     总线（O）
+    .rd_type       (inst_rd_type       ), // 和总线的size直接接                      总线：rsize 010   arlen 8'd3 （O）  
+    .ret_valid     (inst_ret_valid     ),// 总线返回的数是有效的                           总线：rvalid
+    .ret_last      (inst_ret_last      ), // 总线返回结束了                                 总线: last
+    .ret_data      (inst_ret_data      ),// 总线给的读数据 rdata                    总线
 
-    .wr_req        (inst_wr_req        ),//CPU�����?                                        ���ߣ�O��
-    .wr_type       (inst_wr_type       ),//                                        ���ߣ�O��
-    .wr_addr       (inst_wr_addr       ),//                                        ���ߣ�O��
-    .wr_wstrb      (inst_wr_wstrb      ),//                                       ���ߣ�O��
-    .wr_data       (inst_wr_wdata      ),//                                        ���ߣ�O��
+    .wr_req        (inst_wr_req        ),//CPU发起的                                        总线（O）
+    .wr_type       (inst_wr_type       ),//                                        总线（O）
+    .wr_addr       (inst_wr_addr       ),//                                        总线（O）
+    .wr_wstrb      (inst_wr_wstrb      ),//                                       总线（O）
+    .wr_data       (inst_wr_wdata      ),//                                        总线（O）
     .wr_rdy        (inst_wr_rdy        ),// 
     
     .uncache_valid (inst_uncache_valid ),
@@ -331,7 +331,7 @@ icache u_Icache (
     .cacop_done    (inst_cacop_done    )
 );
 
-//Dcache �ӿ�
+//Dcache 接口
 assign  data_valid       = cpu_data_req;
 assign  data_op          = cpu_data_wr;
 assign  data_index       = cpu_data_addr[13:4];
@@ -348,32 +348,32 @@ cache #(
 )   u_Dcache(
     .clk           (aclk               ),
     .resetn        (aresetn            ),
-//                                                                 ����(input)/ȥ����output)
-    .valid         (data_valid         ),//����������Ч                                       CPU
-    .op            (data_op            ), // op��0����1д                                        CPU
-    .index         (data_index         ),// CPU ֱ�ӽ�ȡ��13��4(�϶����漰��ʵӳ��)     CPU
-    .tag           (data_tag           ),  // CPU�����õ�paddr    (��ʵӳ��)              CPU
-    .offset        (data_offset        ),// CPU ֱ�ӽ�ȡ��3:0 (�϶����漰��ʵӳ��)     CPU
-    .wstrb         (data_wstrb         ),//����������Ч                                       CPU
-    .wdata         (data_wdata         ),//����������Ч                                       CPU
+//                                                                 来自(input)/去往（output)
+    .valid         (data_valid         ),//表明请求有效                                       CPU
+    .op            (data_op            ), // op：0读，1写                                        CPU
+    .index         (data_index         ),// CPU 直接截取的13：4(肯定不涉及虚实映射)     CPU
+    .tag           (data_tag           ),  // CPU处理好的paddr    (虚实映射)              CPU
+    .offset        (data_offset        ),// CPU 直接截取的3:0 (肯定不涉及虚实映射)     CPU
+    .wstrb         (data_wstrb         ),//表明请求有效                                       CPU
+    .wdata         (data_wdata         ),//表明请求有效                                       CPU
 
-    .addr_ok       (data_addr_ok       ),//���յ�ת���ŵ� ��/д �� addrok ��CPU               CPU��O��                                   
-    .rd_rdy        (data_rd_rdy        ),   // arready                                      ����
-    .rd_addr       (data_rd_addr       ), // CPU����paddr VA ��ƴ��һ��             ���ߣ�O��
+    .addr_ok       (data_addr_ok       ),//接收到转接桥的 读/写 的 addrok 给CPU               CPU（O）                                   
+    .rd_rdy        (data_rd_rdy        ),   // arready                                      总线
+    .rd_addr       (data_rd_addr       ), // CPU给的paddr VA 他拼接一下             总线（O）
 
-    .data_ok       (data_data_ok       ),//���߷��ص�                                       CPU��O��
-    .rdata         (data_rdata         ),// ���߶�����������                           CPU��O��
-    .rd_req        (data_rd_req        ),// CPU �Ķ�����                                     ���ߣ�O��
-    .rd_type       (data_rd_type       ), // �����ߵ�sizeֱ�ӽ�                      ���ߣ�rsize 010   arlen 8'd3 ��O��  
-    .ret_valid     (data_ret_valid     ),// ���߷��ص�������Ч��                           ���ߣ�rvalid
-    .ret_last      (data_ret_last      ), // ���߷��ؽ�����                                 ����: last
-    .ret_data      (data_ret_data      ),// ���߸��Ķ����� rdata                    ����
+    .data_ok       (data_data_ok       ),//总线返回的                                       CPU（O）
+    .rdata         (data_rdata         ),// 总线读出来的数据                           CPU（O）
+    .rd_req        (data_rd_req        ),// CPU 的读请求                                     总线（O）
+    .rd_type       (data_rd_type       ), // 和总线的size直接接                      总线：rsize 010   arlen 8'd3 （O）  
+    .ret_valid     (data_ret_valid     ),// 总线返回的数是有效的                           总线：rvalid
+    .ret_last      (data_ret_last      ), // 总线返回结束了                                 总线: last
+    .ret_data      (data_ret_data      ),// 总线给的读数据 rdata                    总线
 
-    .wr_req        (data_wr_req        ),//CPU�����?                                        ���ߣ�O��
-    .wr_type       (data_wr_type       ),//                                        ���ߣ�O��
-    .wr_addr       (data_wr_addr       ),//                                        ���ߣ�O��
-    .wr_wstrb      (data_wr_wstrb      ),//                                       ���ߣ�O��
-    .wr_data       (data_wr_wdata      ),//                                        ���ߣ�O��
+    .wr_req        (data_wr_req        ),//CPU发起的                                        总线（O）
+    .wr_type       (data_wr_type       ),//                                        总线（O）
+    .wr_addr       (data_wr_addr       ),//                                        总线（O）
+    .wr_wstrb      (data_wr_wstrb      ),//                                       总线（O）
+    .wr_data       (data_wr_wdata      ),//                                        总线（O）
     .wr_rdy        (data_wr_rdy        ),// 
     
     .uncache_valid (data_uncache_valid ),

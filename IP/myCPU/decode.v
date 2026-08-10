@@ -27,17 +27,17 @@ module decode #(
     input  wire                    need_stall,
     input  wire                    has_int,
     //branch prediction
-    //¸üĞÂ¶Ë¿Ú£ºDecodeÈ·¶¨ÕæÊµÌø×ªºó¸üĞÂBTB
+    //æ›´æ–°ç«¯å£ï¼šDecodeç¡®å®šçœŸå®è·³è½¬åæ›´æ–°BTB
     output wire                    update_valid ,
     output wire                    bht_update_valid,
     output wire [31:0]             update_pc    ,
-    output wire [31:0]             update_target,//ÕæÊµÄ¿±êµØÖ·
+    output wire [31:0]             update_target,//çœŸå®ç›®æ ‡åœ°å€
     output wire [1:0]              update_type  ,
-    output wire                    update_taken ,//ÕæÊµÊÇ·ñÌø×ª
-    // ÊÇ²»ÊÇ call µ÷ÓÃ
+    output wire                    update_taken ,//çœŸå®æ˜¯å¦è·³è½¬
+    // æ˜¯ä¸æ˜¯ call è°ƒç”¨
     output wire                    push_valid   ,
     output wire [31:0]             push_target  ,
-    // ÊÇ²»ÊÇ return ·µ»Ø
+    // æ˜¯ä¸æ˜¯ return è¿”å›
     output wire                    pop_valid    ,
     //PLV
     input  wire [1:0]              csr_CRMD_PLV
@@ -55,16 +55,16 @@ end
 wire [31:0] pc;
 wire [31:0] inst;
 wire        ex_ADEF;
-wire        ex_tlb_reload0;//tlbÖØÌîÒì³£
-wire        ex_tlb_preif_unvalid;//tlbµÄÈ¡Ö¸Ò³ÎŞĞ§
-wire        ex_tlb_plv0;//tlbµÄÒ³È¨ÏŞÉÏ·Ã
+wire        ex_tlb_reload0;//tlbé‡å¡«å¼‚å¸¸
+wire        ex_tlb_preif_unvalid;//tlbçš„å–æŒ‡é¡µæ— æ•ˆ
+wire        ex_tlb_plv0;//tlbçš„é¡µæƒé™ä¸Šè®¿
 
-wire        btb_query_hit;//validÇÒtag
+wire        btb_query_hit;//validä¸”tag
 wire [31:0] btb_query_target;        
-wire        ras_query_hit;//validÇÒtag
+wire        ras_query_hit;//validä¸”tag
 wire [31:0] ras_query_target;        
 wire [ 1:0] query_type;              
-wire        query_taken;//Ô¤²âÊÇ·ñÌø×ª 
+wire        query_taken;//é¢„æµ‹æ˜¯å¦è·³è½¬ 
 assign {pc,inst,ex_ADEF,ex_tlb_reload0,ex_tlb_preif_unvalid,ex_tlb_plv0,
         btb_query_hit,btb_query_target,ras_query_hit,ras_query_target,query_type,query_taken} = bus;
 //------------------------{bus decode}end-------------------------//
@@ -292,7 +292,7 @@ assign  inst_ertn        = op_31_26_d[6'h01] & op_25_22_d[4'h9] & op_21_20_d[2'h
 assign  inst_syscall     = op_31_26_d[6'h00] & op_25_22_d[4'h0] & op_21_20_d[2'h2] & op_19_15_d[5'h16];
 assign  inst_break       = op_31_26_d[6'h00] & op_25_22_d[4'h0] & op_21_20_d[2'h2] & op_19_15_d[5'h14];
 assign  inst_csr         = inst_csrrd | inst_csrwr | inst_csrxchg;
-assign  inst_rdcntvl_w   = op_31_26_d[6'h00] & op_25_22_d[4'h0] & op_21_20_d[2'h0] & op_19_15_d[5'h0] & rk == 5'b11000 & rj == 5'b00000 & rd != 5'b00000;//notice:ÎÒĞÂ¼ÓµÄ!=µÄcondition£¬²Ù×÷ÊÖ²áÉÏÃ»Ğ´£¬µ«¼ÓÉÏ¸üÍêÉÆ£¬ÒòÎª0ºÅ¼Ä´æÆ÷ºÍ²»Ğ´Ò»Ñù£¬¿ÉÒÔÅÅ³ı
+assign  inst_rdcntvl_w   = op_31_26_d[6'h00] & op_25_22_d[4'h0] & op_21_20_d[2'h0] & op_19_15_d[5'h0] & rk == 5'b11000 & rj == 5'b00000 & rd != 5'b00000;//notice:æˆ‘æ–°åŠ çš„!=çš„conditionï¼Œæ“ä½œæ‰‹å†Œä¸Šæ²¡å†™ï¼Œä½†åŠ ä¸Šæ›´å®Œå–„ï¼Œå› ä¸º0å·å¯„å­˜å™¨å’Œä¸å†™ä¸€æ ·ï¼Œå¯ä»¥æ’é™¤
 assign  inst_rdcntvh_w   = op_31_26_d[6'h00] & op_25_22_d[4'h0] & op_21_20_d[2'h0] & op_19_15_d[5'h0] & rk == 5'b11001 & rj == 5'b00000;
 assign  inst_rdcntid     = op_31_26_d[6'h00] & op_25_22_d[4'h0] & op_21_20_d[2'h0] & op_19_15_d[5'h0] & rk == 5'b11000 & rj != 5'b00000 & rd == 5'b00000;
 //chapter 9 exp18:new add
@@ -409,7 +409,7 @@ assign  dst_is_r1    = inst_bl;
 assign  res_from_mem = inst_ld_w | inst_ld_b | inst_ld_h | inst_ld_bu | inst_ld_hu | inst_ll_w;
 assign  mem_we       = inst_st_w | inst_st_b | inst_st_h | inst_sc_w;
 assign  rf_dest      = dst_is_r1 ? 5'd1 : (inst_rdcntid ? rj : rd);
-// src1/2²»»áÍ¬Ê±Ê¹ÓÃ
+// src1/2ä¸ä¼šåŒæ—¶ä½¿ç”¨
 wire    src1_unused  = inst_b | inst_bl | inst_lu12i_w | inst_pcaddu12i_w;
 wire    src2_unused  = (src2_is_imm && !mem_we) | inst_b;
 
@@ -451,7 +451,7 @@ assign  ex_tlbinv_op  = ~((rf_dest == 5'd0) | (rf_dest == 5'd1) | (rf_dest == 5'
                         (rf_dest == 5'd3) | (rf_dest == 5'd4) | (rf_dest == 5'd5) |
                         (rf_dest == 5'd6));
 
-//[TODO ĞÂÔöÖ¸ÁîÎ´Íê³É]
+//[TODO æ–°å¢æŒ‡ä»¤æœªå®Œæˆ]
 wire    ex_INE;
 assign  ex_INE        = ~(inst_add_w        | inst_sub_w        | inst_slt          | inst_sltu                   |
                         inst_nor            | inst_and          | inst_or           | inst_xor                    |
@@ -480,10 +480,10 @@ assign  ex_IPE        = IPE_inst_plv0 | cacop_ipe;
 //------------------------{ex_INE}end-------------------------//
 
 //-------------------------{branch prediction updata}begin---------------//
-localparam        TYPE_COND     = 2'b00;//2'b00  COND   Ìõ¼ş·ÖÖ§ beq/bne/blt/bge/bltu/bgeu
-localparam        TYPE_JUMP     = 2'b01;//2'b01  JUMP   ÎŞÌõ¼şÖ±½ÓÌø×ª b
-localparam        TYPE_CALL     = 2'b10;//2'b10  CALL   blÌø×ª»ò jirl ÇÒ rd!=0
-localparam        TYPE_RET      = 2'b11;//2'b11  RET    jirl ÇÒ rd==0
+localparam        TYPE_COND     = 2'b00;//2'b00  COND   æ¡ä»¶åˆ†æ”¯ beq/bne/blt/bge/bltu/bgeu
+localparam        TYPE_JUMP     = 2'b01;//2'b01  JUMP   æ— æ¡ä»¶ç›´æ¥è·³è½¬ b
+localparam        TYPE_CALL     = 2'b10;//2'b10  CALL   blè·³è½¬æˆ– jirl ä¸” rd!=0
+localparam        TYPE_RET      = 2'b11;//2'b11  RET    jirl ä¸” rd==0
 
 wire              real_taken;
 wire       [31:0] real_target;
@@ -492,10 +492,10 @@ wire       [31:0] pred_target;
 wire              redirect;
 wire       [31:0] direct_target;
 
-    //---------------{Ìø×ª·ÖÀà}begin---------------//
+    //---------------{è·³è½¬åˆ†ç±»}begin---------------//
     wire    is_cond ;
-    wire    is_jirl_call;// jirl $rd==$r1 Ê±µ±×÷µ÷ÓÃcall
-    wire    is_jump ;// b »ò jirl ÇÒ rd!=0
+    wire    is_jirl_call;// jirl $rd==$r1 æ—¶å½“ä½œè°ƒç”¨call
+    wire    is_jump ;// b æˆ– jirl ä¸” rd!=0
     wire    is_call ;
     wire    is_ret  ;
     wire    is_indirect_jump;
@@ -504,28 +504,28 @@ wire       [31:0] direct_target;
     assign  is_jump          = inst_b | is_indirect_jump;
     assign  is_call          = inst_bl | is_jirl_call;
     assign  is_ret           = inst_jirl & (rd == 5'd0) & (rj == 5'b1) & (i16 == 16'b0);
-    assign  is_indirect_jump = inst_jirl && !is_jirl_call && !is_ret;//³ıÁËcallºÍreturnµÄjirl¶¼ÊÇ¼ä½ÓÌø×ª
-    //---------------{Ìø×ª·ÖÀà}end---------------//
+    assign  is_indirect_jump = inst_jirl && !is_jirl_call && !is_ret;//é™¤äº†callå’Œreturnçš„jirléƒ½æ˜¯é—´æ¥è·³è½¬
+    //---------------{è·³è½¬åˆ†ç±»}end---------------//
 
-    //---------------{Ìø×ªºÍ¶Ô±È±í ÓĞĞ§ & Æ¥Åä}begin---------------//
-    wire  pred_valid;// ±íÊ¾Ô¤²âÓĞĞ§
+    //---------------{è·³è½¬å’Œå¯¹æ¯”è¡¨ æœ‰æ•ˆ & åŒ¹é…}begin---------------//
+    wire  pred_valid;// è¡¨ç¤ºé¢„æµ‹æœ‰æ•ˆ
     wire  pred_ok ;
     /*
-        Ö®Ç°×öµÄÊÇ dcache->rj->rj+imm->¶Ô±Èreal->btb
-        ËùÒÔ¿ÉÒÔ²ğ³öÀ´?
+        ä¹‹å‰åšçš„æ˜¯ dcache->rj->rj+imm->å¯¹æ¯”real->btb
+        æ‰€ä»¥å¯ä»¥æ‹†å‡ºæ¥?
             dache->rj
-                        ->¶Ô±Èreal-imm & rj ->btb
+                        ->å¯¹æ¯”real-imm & rj ->btb
             real-imm
-        ÔÙ±ÈÈçjirl_pred_rj target_match
-        assign pred_ok = pred_valid & (real_taken == pred_taken) & (!real_taken || (real_target == pred_target));//Ô¤²âÒ»ÖÂ
+        å†æ¯”å¦‚jirl_pred_rj target_match
+        assign pred_ok = pred_valid & (real_taken == pred_taken) & (!real_taken || (real_target == pred_target));//é¢„æµ‹ä¸€è‡´
     */
     wire   [31:0] jirl_pred_rj;
     wire          target_match;
     assign        jirl_pred_rj = pred_target - jirl_offs;
     assign        target_match = inst_jirl ? (rj_value == jirl_pred_rj) : (direct_target == pred_target);
-    assign        pred_valid   = is_cond | is_jump | is_call | is_ret;//Ö»ĞèÒªÕâ¼¸ÖÖµÄbr
-    assign        pred_ok      = pred_valid & (real_taken == pred_taken) & (!real_taken || target_match);//Ô¤²âÒ»ÖÂ
-    //---------------{Ìø×ªºÍ¶Ô±È±í ÓĞĞ§ & Æ¥Åä}end---------------//
+    assign        pred_valid   = is_cond | is_jump | is_call | is_ret;//åªéœ€è¦è¿™å‡ ç§çš„br
+    assign        pred_ok      = pred_valid & (real_taken == pred_taken) & (!real_taken || target_match);//é¢„æµ‹ä¸€è‡´
+    //---------------{è·³è½¬å’Œå¯¹æ¯”è¡¨ æœ‰æ•ˆ & åŒ¹é…}end---------------//
 
 
 assign  pred_taken          = (ras_query_hit && (query_type == TYPE_RET)) ||
@@ -556,11 +556,11 @@ assign  update_type         = is_cond ? TYPE_COND :
                               is_jump ? TYPE_JUMP :
                               TYPE_COND;
 assign  update_taken        = real_taken;
-assign  push_valid          = ID_valid & ID_ready_go & ~ID_need_cancel & ID_allow_in  & is_call & ~ex_ADEF;//ÕæÊµcall Òª push
+assign  push_valid          = ID_valid & ID_ready_go & ~ID_need_cancel & ID_allow_in  & is_call & ~ex_ADEF;//çœŸå®call è¦ push
 assign  push_target         = pc + 32'd4;
-assign  pop_valid           = is_ret & ID_valid & ID_ready_go & ~ID_need_cancel & ID_allow_in  & ~ex_ADEF;//ÕæÊµreturn Òª pop
+assign  pop_valid           = is_ret & ID_valid & ID_ready_go & ~ID_need_cancel & ID_allow_in  & ~ex_ADEF;//çœŸå®return è¦ pop
 //assign real_target = inst_jirl ? rf_rdata1 + jirl_offs : pc + br_offs;
-//Ğ´»ØÊ±Ö»ÓĞinst_jirlÖ´ĞĞÍêÖ®ºó²Å»áÊ¹ÓÃpc+br_offs
+//å†™å›æ—¶åªæœ‰inst_jirlæ‰§è¡Œå®Œä¹‹åæ‰ä¼šä½¿ç”¨pc+br_offs
 assign  direct_target       = pc + br_offs;
 assign  real_target         = inst_jirl ? rf_rdata1 + jirl_offs : direct_target;
 assign  real_taken          = (
