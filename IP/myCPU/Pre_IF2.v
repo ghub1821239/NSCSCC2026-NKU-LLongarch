@@ -24,8 +24,8 @@ module pre_IF2 #(
     input  wire                    need_stall,
     //handshake
     output wire                    inst_sram_req,
-    output wire                    inst_sram_wr, // 1±íÊ¾ĞèÒªwrite 0±íÊ¾ĞèÒªread
-    output wire [ 3:0]             inst_sram_wstrb,// wstrbÒ²¾ÍÊÇ±íÊ¾ĞèÒªĞ´µÄÎ»ÖÃ 0 1 2 ·Ö±ğ¶ÔÓ¦b h w 
+    output wire                    inst_sram_wr, // 1è¡¨ç¤ºéœ€è¦write 0è¡¨ç¤ºéœ€è¦read
+    output wire [ 3:0]             inst_sram_wstrb,// wstrbä¹Ÿå°±æ˜¯è¡¨ç¤ºéœ€è¦å†™çš„ä½ç½® 0 1 2 åˆ†åˆ«å¯¹åº”b h w 
     output wire [ 1:0]             inst_sram_size,
     output wire [31:0]             inst_sram_addr_without_cacop,
     output wire [31:0]             inst_sram_wdata,
@@ -34,12 +34,12 @@ module pre_IF2 #(
     input  wire                    inst_sram_data_ok,
     //req&addr -> 1 dataok->0
     output wire                    req_to_dataok_trigger,
-    // µ±Ç°·µ»ØÊôÓÚÒÑ±»Ìø×ª/Òì³£È¡ÏûµÄÈ¡Ö¸ÇëÇó
+    // å½“å‰è¿”å›å±äºå·²è¢«è·³è½¬/å¼‚å¸¸å–æ¶ˆçš„å–æŒ‡è¯·æ±‚
     output wire                    inst_resp_discard,
     //CRMD PG DA
     input  wire                    csr_CRMD_DA,
     input  wire                    csr_CRMD_PG,
-    //»¹ÓĞs0_matÉÏÃæÒÑ¾­¶¨Òå¹ıÁË    // tlbÒ³±íÓ³Éä
+    //è¿˜æœ‰s0_matä¸Šé¢å·²ç»å®šä¹‰è¿‡äº†    // tlbé¡µè¡¨æ˜ å°„
     output wire [1:0]              inst_mat,
     output wire                    inst_wr
 );
@@ -47,18 +47,18 @@ module pre_IF2 #(
 wire                   slot_valid [ISSUE-1:0];
 wire [31:0]            pc [ISSUE-1:0];
 wire                   ex_ADEF [ISSUE-1:0];
-wire                   ex_tlb_reload0 [ISSUE-1:0];//tlbÖØÌîÀıÍâ
-wire                   ex_tlb_preif_unvalid [ISSUE-1:0];//tlbÖĞÈ¡Ö¸Ò³ÎŞĞ§
-wire                   ex_tlb_plv0 [ISSUE-1:0];//tlbÖĞÒ³ÌØÈ¨²»ºÏ¹æ
+wire                   ex_tlb_reload0 [ISSUE-1:0];//tlbé‡å¡«ä¾‹å¤–
+wire                   ex_tlb_preif_unvalid [ISSUE-1:0];//tlbä¸­å–æŒ‡é¡µæ— æ•ˆ
+wire                   ex_tlb_plv0 [ISSUE-1:0];//tlbä¸­é¡µç‰¹æƒä¸åˆè§„
 wire                   dmw_found0 [ISSUE-1:0];
 wire [2:0]             dmw_pseg0 [ISSUE-1:0];
 wire [31:0]            tlb_paddr [ISSUE-1:0];
-wire                   btb_query_hit [ISSUE-1:0];//validÇÒtag
+wire                   btb_query_hit [ISSUE-1:0];//validä¸”tag
 wire [31:0]            btb_query_target [ISSUE-1:0];        
-wire                   ras_query_hit [ISSUE-1:0];//validÇÒtag
+wire                   ras_query_hit [ISSUE-1:0];//validä¸”tag
 wire [31:0]            ras_query_target [ISSUE-1:0];        
 wire [ 1:0]            query_type [ISSUE-1:0];              
-wire                   query_taken [ISSUE-1:0];//Ô¤²âÊÇ·ñÌø×ª  
+wire                   query_taken [ISSUE-1:0];//é¢„æµ‹æ˜¯å¦è·³è½¬  
 
 reg                    req_without_dataok;   
 
@@ -98,7 +98,7 @@ generate
 endgenerate
 //------------------------{bus}end-------------------------//
 
-//------------------------{»º´æreq&addr_ok}begin-------------------------//
+//------------------------{ç¼“å­˜req&addr_ok}begin-------------------------//
 always @ (posedge clk)begin
     if(!resetn)begin
         req_without_dataok <= 1'b0;
@@ -111,9 +111,9 @@ always @ (posedge clk)begin
     end
 end
 assign  req_to_dataok_trigger = req_without_dataok;
-//------------------------{»º´æreq&addr_ok}end-------------------------//
+//------------------------{ç¼“å­˜req&addr_ok}end-------------------------//
 
-//------------------------{¶ªÆúÒÑÈ¡ÏûÈ¡Ö¸ÏìÓ¦}begin-------------------------//
+//------------------------{ä¸¢å¼ƒå·²å–æ¶ˆå–æŒ‡å“åº”}begin-------------------------//
 reg     discard_resp_pending;
 wire    redirect_now;
 assign  redirect_now         = preIF2_need_cancel | br_taken;
@@ -128,10 +128,10 @@ always @(posedge clk) begin
         discard_resp_pending <= 1'b1;
     end
 end
-// redirect Óë data_ok Í¬ÖÜÆÚÊ±Ò²±ØĞëÖ±½Ó¶ªÆú£¬²»ÄÜµÈ¼Ä´æÆ÷ÏÂÒ»ÅÄÉúĞ§¡£
+// redirect ä¸ data_ok åŒå‘¨æœŸæ—¶ä¹Ÿå¿…é¡»ç›´æ¥ä¸¢å¼ƒï¼Œä¸èƒ½ç­‰å¯„å­˜å™¨ä¸‹ä¸€æ‹ç”Ÿæ•ˆã€‚
 assign  inst_resp_discard = discard_resp_pending |
                             (redirect_now & req_without_dataok);
-//------------------------{¶ªÆúÒÑÈ¡ÏûÈ¡Ö¸ÏìÓ¦}end-------------------------//
+//------------------------{ä¸¢å¼ƒå·²å–æ¶ˆå–æŒ‡å“åº”}end-------------------------//
 
 //------------------------{instRAM handshake}begin-------------------------//
 assign  inst_sram_wstrb              = 4'b0;
@@ -141,9 +141,9 @@ assign  inst_sram_addr_without_cacop = (csr_CRMD_DA == 1 & csr_CRMD_PG == 0) ? p
                                        (csr_CRMD_DA == 0 & csr_CRMD_PG == 1) & ~dmw_found0[0] ? tlb_paddr[0] :
                                        32'b0;
 assign  inst_sram_wdata              = 32'b0;
-//1. Ìø×ªÖ®ºóµÄpreIFµÄÖ¸ÁîÖ±½ÓÈÃËûµÄreqÎª0£¬ÄÇÃ´µ±Ç°clk¾ÍÒ»¶¨²»»áready_go
-//2. ÎªÁË·ÀÖ¹preIF ready go IF²»allow_in ¾ÍÖ»ÔÚallow_inµÄÊ±ºò·¢Æğreq
-//3. ÎªÁË·ÀÖ¹¶à¸öreqÖ®ºó²ÅÏìÓ¦dataokËùÒÔĞèÒªÔÚÒ»´ÎreqÖ®ºóÊÖ¶¯À­µÍ
+//1. è·³è½¬ä¹‹åçš„preIFçš„æŒ‡ä»¤ç›´æ¥è®©ä»–çš„reqä¸º0ï¼Œé‚£ä¹ˆå½“å‰clkå°±ä¸€å®šä¸ä¼šready_go
+//2. ä¸ºäº†é˜²æ­¢preIF ready go IFä¸allow_in å°±åªåœ¨allow_inçš„æ—¶å€™å‘èµ·req
+//3. ä¸ºäº†é˜²æ­¢å¤šä¸ªreqä¹‹åæ‰å“åº”dataokæ‰€ä»¥éœ€è¦åœ¨ä¸€æ¬¡reqä¹‹åæ‰‹åŠ¨æ‹‰ä½
 
 //------------------------{instRAM handshake}end-------------------------//
 wire    can_issue_inst = !req_without_dataok || inst_sram_data_ok;
@@ -163,7 +163,7 @@ wire slot0_has_ex = ex_ADEF[0] | ex_tlb_reload0[0] |
 assign  preIF2_ready_go = need_stall ? 1'b0 :
                           !slot_valid[0] ? 1'b1 :
                           slot0_has_ex   ? 1'b1 :
-                          //ÎÕÊÖ³É¹¦
+                          //æ¡æ‰‹æˆåŠŸ
                           (inst_sram_req & inst_sram_addr_ok);
 always @(posedge clk) begin
     if(!resetn)begin

@@ -1,22 +1,22 @@
 module bht(
     input              clk,
     input              resetn,
-    //��ѯ�˿�
+    //查询端口
     input  wire        query_valid0,
-    input  wire [31:0] query_pc0,//��ǰԤ���ָ��pc
-    output wire        query_taken0,//Ԥ���Ƿ���ת
+    input  wire [31:0] query_pc0,//当前预测的指令pc
+    output wire        query_taken0,//预测是否跳转
 
     input  wire        query_valid1,
-    input  wire [31:0] query_pc1,//��ǰԤ���ָ��pc
-    output wire        query_taken1,//Ԥ���Ƿ���ת
-    //���¶˿�
-    input  wire        update_valid,//�Ƿ�Ҫ���� BHT
-    input  wire [31:0] update_pc,//��ָ֧���Լ��� PC
-    input  wire        update_taken,//��ʵ�Ƿ���ת
-    input  wire        update_cancel//���ȡ���Ͳ�ͬ������
+    input  wire [31:0] query_pc1,//当前预测的指令pc
+    output wire        query_taken1,//预测是否跳转
+    //更新端口
+    input  wire        update_valid,//是否要更新 BHT
+    input  wire [31:0] update_pc,//分支指令自己的 PC
+    input  wire        update_taken,//真实是否跳转
+    input  wire        update_cancel//如果取消就不同步更新
 );
 
-//------------------------{reg ����������Ƶ}begin-------------------------//
+//------------------------{reg 锁存提升主频}begin-------------------------//
 reg        update_valid_r;
 reg [31:0] update_pc_r;
 reg        update_taken_r;
@@ -33,39 +33,39 @@ always @(posedge clk) begin
     end
 end
 
-//------------------------{reg ����������Ƶ}end-------------------------//
+//------------------------{reg 锁存提升主频}end-------------------------//
 
-reg     [1:0] bht_counter [0:63];//BHT���飬64��2λ������
+reg     [1:0] bht_counter [0:63];//BHT数组，64个2位计数器
 
 wire    [5:0] query_index0;
 wire    [5:0] query_index1;
 wire    [5:0] update_index;
 
-assign        query_index0  = query_pc0[7:2];//BHT����
-assign        query_index1  = query_pc1[7:2];//BHT����
+assign        query_index0  = query_pc0[7:2];//BHT索引
+assign        query_index1  = query_pc1[7:2];//BHT索引
 
 assign        update_index = update_pc_r[7:2];
-//���λ��1������ת
+//最高位是1即可跳转
 assign        query_taken0  = query_valid0 & bht_counter[query_index0][1];
 assign        query_taken1  = query_valid1 & bht_counter[query_index1][1];
 
-//��λѭ��
+//复位循环
 integer       i;
 
 always @(posedge clk) begin
     if (!resetn) begin
         for (i = 0; i < 64; i = i + 1) begin
-            bht_counter[i] <= 2'b01;//��ʼ��Ϊ01
+            bht_counter[i] <= 2'b01;//初始化为01
         end
     end
-    else if (update_valid_r & ~update_cancel) begin//û�и�λ���ұ����ڸ�����Чʱ�޸ļ�����
-        if (update_taken_r) begin//��ʵ��תʱ�ĸ���
+    else if (update_valid_r & ~update_cancel) begin//没有复位并且本周期更新有效时修改计数器
+        if (update_taken_r) begin//真实跳转时的更新
             if (bht_counter[update_index] != 2'b11)
                 bht_counter[update_index]
                     <= bht_counter[update_index] + 2'b01;
         end
         else begin
-            if (bht_counter[update_index] != 2'b00)//��ʵ����תʱ�ĸ���
+            if (bht_counter[update_index] != 2'b00)//真实不跳转时的更新
                 bht_counter[update_index]
                     <= bht_counter[update_index] - 2'b01;
         end
