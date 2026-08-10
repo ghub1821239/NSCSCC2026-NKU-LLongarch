@@ -100,14 +100,14 @@ assign  MEM_WB_valid        = MEM_valid & MEM_ready_go;
 //------------------------{5-stage pipeline control signals assignment}end-------------------------//
 
 //------------------------{regfile}begin-------------------------//
-wire [4:0]  rf_raddr1;
-wire [4:0]  rf_raddr2;
+wire [4:0]  rf_raddr1[ISSUE - 1 : 0];
+wire [4:0]  rf_raddr2[ISSUE - 1 : 0];
 wire [4:0]  rf_waddr;
 
-wire [31:0] rf_rdata1;
-wire [31:0] front_push_rdata1;
-wire [31:0] rf_rdata2;
-wire [31:0] front_push_rdata2;
+wire [31:0] rf_rdata1[ISSUE - 1 : 0];
+wire [31:0] front_push_rdata1[ISSUE - 1 : 0];
+wire [31:0] rf_rdata2[ISSUE - 1 : 0];
+wire [31:0] front_push_rdata2[ISSUE - 1 : 0];
 wire [31:0] rf_wdata;
 
 wire        rf_we;
@@ -912,7 +912,8 @@ fetch #(
 );
 decode #(
     .inbus_width         (IF_ID_bus_width     ),
-    .outbus_width        (ID_EXE1_bus_width   )
+    .outbus_width        (ID_EXE1_bus_width   ),
+    .ISSUE               (ISSUE               )
 )u_decode(
     .clk                 (clk                 ),
     .resetn              (resetn              ),
