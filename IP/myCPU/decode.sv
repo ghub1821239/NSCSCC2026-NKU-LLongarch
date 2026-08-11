@@ -171,7 +171,7 @@ generate
       .is_csr_read          (is_csr_read[gi]            ),     //csrrd/rdcntid/rdcntvl/rdcntdvh
       .is_tlb               (is_tlb[gi]                 ),          //tlbrd/tlbfill/tlbsrch/invtlb/tlbwr
       .rf_dest              (rf_dest[gi]                ),
-      .rf_gr_we             (rf_gr_we[gi]               )
+      .rf_gr_we             (rf_gr_we[gi]               ),
       .update_need          (update_need[gi]            ),       // pred_valid & ~ex_ADEF & ~pred_ok
       .bht_update_need      (bht_update_need[gi]        ),   // is_cond & ~ex_ADEF
       .push_need            (push_need[gi]              ),
