@@ -177,7 +177,7 @@ generate
                                         : 1'b1;
     end
 endgenerate
-assign  MEM_ready_go = &MEM_slot_ready_go;
+assign  MEM_ready_go = MEM_slot_ready_go[0] & MEM_slot_ready_go[1];
 
 always @(posedge clk) begin
     if(!resetn)begin

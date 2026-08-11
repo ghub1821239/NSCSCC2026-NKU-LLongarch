@@ -15,7 +15,7 @@ module pre_IF1 #(
     output wire                          preIF1_ready_go,
     
     output wire [slot0_outbus_width-1:0] preIF1_preIF2_bus_slot0,
-    output wire [outbus_width-1:0]       preIF1_preIF2_bus      [ISSUE - 2 : 1],
+    output wire [outbus_width-1:0]       preIF1_preIF2_bus      [ISSUE - 2 : 0],
     //br
     input  wire [31:0]                   br_target,
     input  wire                          br_taken,

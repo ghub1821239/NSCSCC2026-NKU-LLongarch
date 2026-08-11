@@ -651,7 +651,7 @@ localparam                                     EXE2_MEM_bus_width            = 1
 localparam                                     MEM_WB_bus_width              = 222;
 
 wire       [preIF1_preIF2_slot0_bus_width-1:0] preIF1_preIF2_bus_slot0;
-wire       [preIF1_preIF2_bus_width-1:0]       preIF1_preIF2_bus            [ISSUE-2:1];
+wire       [preIF1_preIF2_bus_width-1:0]       preIF1_preIF2_bus            [ISSUE-2:0];
 wire       [preIF2_IF_bus_width-1:0]           preIF2_IF_bus                [ISSUE-1:0];
 wire       [IF_ID_bus_width-1:0]               IF_ID_bus                    [ISSUE-1:0];
 wire       [ID_EXE1_bus_width-1:0]             ID_EXE1_bus                  [ISSUE-1:0];
