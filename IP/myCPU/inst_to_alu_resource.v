@@ -1,52 +1,51 @@
 module inst_to_alu_resource #(
-    parameter outbus_width = 243
+    parameter  outbus_width = 243
 )(
-    input  wire [31:0] pc,
-    input  wire [31:0] inst,
-    input  wire        slot_valid,
-    input  wire        ex_ADEF,
-    input  wire        ex_tlb_reload0,
-    input  wire        ex_tlb_preif_unvalid,
-    input  wire        ex_tlb_plv0,
-    input  wire        btb_query_hit,
-    input  wire [31:0] btb_query_target,
-    input  wire        ras_query_hit,
-    input  wire [31:0] ras_query_target,
-    input  wire [1:0]  query_type,
-    input  wire        query_taken,
-    input  wire [31:0] rf_rdata1,
-    input  wire [31:0] rf_rdata2,
-    input  wire [1:0]  csr_CRMD_PLV,
-    input  wire        has_int,          // 建议仅 lane0 接真 has_int，lane1=0
-    input  wire        id_fire,          // ID_valid & ID_ready_go & ~cancel & allow
-    output wire [4:0]  rf_raddr1,
-    output wire [4:0]  rf_raddr2,
+    input  wire [31:0]             pc,
+    input  wire [31:0]             inst,
+    input  wire                    slot_valid,
+    input  wire                    ex_ADEF,
+    input  wire                    ex_tlb_reload0,
+    input  wire                    ex_tlb_preif_unvalid,
+    input  wire                    ex_tlb_plv0,
+    input  wire                    btb_query_hit,
+    input  wire [31:0]             btb_query_target,
+    input  wire                    ras_query_hit,
+    input  wire [31:0]             ras_query_target,
+    input  wire [1:0]              query_type,
+    input  wire                    query_taken,
+    input  wire [31:0]             rf_rdata1,
+    input  wire [31:0]             rf_rdata2,
+    input  wire [1:0]              csr_CRMD_PLV,
+    input  wire                    has_int,          // 建议仅 lane0 接真 has_int，lane1=0
+    output wire [4:0]              rf_raddr1,
+    output wire [4:0]              rf_raddr2,
     output wire [outbus_width-1:0] exe_payload, // 与现 ID_EXE1_bus 同序
-    output wire        real_taken,
-    output wire [31:0] real_target,
-    output wire        pred_taken,
-    output wire        pred_valid,
-    output wire        pred_ok,
-    output wire        redirect_lane,    // 本槽预测错误需冲刷
-    output wire        is_cond,
-    output wire        is_call,
-    output wire        is_ret,
-    output wire        is_jump,
-    output wire        is_br,            // cond|jump|call|ret
-    output wire        is_mem,           // ld/st/ll/sc
-    output wire        is_system_break,  //system/break/ertn/idle/ibar/dbar/cacop
-    output wire        is_csr_write,    //csrwr/csrxchg
-    output wire        is_csr_read,     //csrrd/rdcntid/rdcntvl/rdcntdvh
-    output wire        is_tlb,          //tlbrd/tlbfill/tlbsrch/invtlb/tlbwr
-    output wire [4:0]  rf_dest,
-    output wire        rf_gr_we,
-    output wire        upd_need,       // pred_valid & ~ex_ADEF & ~pred_ok
-    output wire        bht_upd_need,   // is_cond & ~ex_ADEF
-    output wire        push_need,
-    output wire        pop_need,
-    output wire [1:0]  br_type,      // COND/JUMP/CALL/RET
-    output wire        ex_INE,
-    output wire        ex_IPE
+    output wire                    real_taken,
+    output wire [31:0]             real_target,
+    output wire                    pred_taken,
+    output wire                    pred_valid,
+    output wire                    pred_ok,
+    output wire                    redirect,    // 本槽预测错误需冲刷
+    output wire                    is_cond,
+    output wire                    is_call,
+    output wire                    is_ret,
+    output wire                    is_jump,
+    output wire                    is_br,            // cond|jump|call|ret
+    output wire                    is_mem,           // ld/st/ll/sc
+    output wire                    is_system_break,  //system/break/ertn/idle/ibar/dbar/cacop
+    output wire                    is_csr_write,    //csrwr/csrxchg
+    output wire                    is_csr_read,     //csrrd/rdcntid/rdcntvl/rdcntdvh
+    output wire                    is_tlb,          //tlbrd/tlbfill/tlbsrch/invtlb/tlbwr
+    output wire [4:0]              rf_dest,
+    output wire                    rf_gr_we,
+    output wire                    update_need,       // pred_valid & ~ex_ADEF & ~pred_ok
+    output wire                    bht_update_need,   // is_cond & ~ex_ADEF
+    output wire                    push_need,
+    output wire                    pop_need,
+    output wire [1:0]              br_type,      // COND/JUMP/CALL/RET
+    output wire                    ex_INE,
+    output wire                    ex_IPE
 );
 
 wire [18:0] alu_op;
@@ -70,7 +69,7 @@ wire [ 3:0] op_25_22;
 wire [ 1:0] op_21_20;
 wire [ 4:0] op_19_15;
 wire [ 1:0] op_25_24;
-wire [ 4:0]  op_14_10;
+wire [ 4:0] op_14_10;
 
 wire [ 4:0] rd;
 wire [ 4:0] rj;
@@ -296,7 +295,7 @@ assign  inst_idle        = op_31_26_d[6'h01] & op_25_22_d[4'h9] & op_21_20_d[2'h
 assign  inst_preld       = op_31_26_d[6'h0a] & op_25_22_d[4'hb];
 
 
-assign  alu_op[ 0]       = inst_add_w | inst_addi_w | inst_ld_w        | inst_st_w | 
+assign  alu_op[ 0]       = inst_add_w | inst_addi_w | inst_ld_w        | inst_st_w |
                            inst_jirl  | inst_bl     | inst_pcaddu12i_w | inst_ld_b | 
                            inst_ld_h  | inst_ld_bu  | inst_ld_hu       | inst_st_b | 
                            inst_st_h  | inst_cacop  | inst_cpucfg      | inst_ll_w | 
@@ -469,7 +468,6 @@ localparam        TYPE_RET      = 2'b11;//2'b11  RET    jirl 且 rd==0
 //wire       [31:0] real_target;
 //wire              pred_taken;
 wire       [31:0] pred_target;
-wire              redirect;
 wire       [31:0] direct_target;
 
     //---------------{跳转分类}begin---------------//
@@ -488,7 +486,7 @@ wire       [31:0] direct_target;
     //output
     assign  is_br            = is_cond | is_jump | is_call | is_ret;
     assign  is_mem           = inst_ld_b | inst_ld_bu | inst_ld_h | inst_ld_hu | inst_ld_w |
-                               inst_st_b | inst_st_h  | inst_st_w | 
+                               inst_st_b | inst_st_h  | inst_st_w                          | 
                                inst_ll_w | inst_sc_w;
 
     assign  is_system_break  = inst_ertn | inst_syscall | inst_break | inst_idle | inst_ibar | inst_dbar | inst_cacop;
@@ -518,19 +516,17 @@ wire       [31:0] direct_target;
     //---------------{跳转和对比表 有效 & 匹配}end---------------//
 
 
-assign  pred_taken          = (ras_query_hit && (query_type == TYPE_RET)) ||
-                              (btb_query_hit && (query_type == TYPE_CALL || query_type == TYPE_JUMP)) ||
-                              (query_taken && btb_query_hit && (query_type == TYPE_COND));
+assign  pred_taken  = (ras_query_hit && (query_type == TYPE_RET)) ||
+                      (btb_query_hit && (query_type == TYPE_CALL || query_type == TYPE_JUMP)) ||
+                      (query_taken && btb_query_hit && (query_type == TYPE_COND));
                     
-assign  pred_target         = (ras_query_hit && (query_type == TYPE_RET)) ? ras_query_target :
-                              (btb_query_hit && (query_type == TYPE_CALL || query_type == TYPE_JUMP ||
-                              (query_type == TYPE_COND && query_taken))) ? btb_query_target :
-                              (pc + 32'd4);
-assign  redirect            = slot_valid
-                              & ~ex_ADEF & (
-                              (pred_valid & (real_taken != pred_taken)) |
-                              (pred_valid & real_taken & ~target_match) |
-                              (~pred_valid & pred_taken));
+assign  pred_target = (ras_query_hit && (query_type == TYPE_RET)) ? ras_query_target :
+                      (btb_query_hit && (query_type == TYPE_CALL || query_type == TYPE_JUMP ||
+                      (query_type == TYPE_COND && query_taken))) ? btb_query_target :
+                      (pc + 32'd4);
+assign  redirect    = slot_valid   & ~ex_ADEF & ((pred_valid & (real_taken != pred_taken)) |
+                      (pred_valid  & real_taken & ~target_match)                           |
+                      (~pred_valid & pred_taken));
 
 /*                              );
 assign  br_afterpred_taken  = redirect;
@@ -552,33 +548,32 @@ assign  pop_valid           = is_ret & id_fire  & ~ex_ADEF;//真实return 要 po
 */
 //assign real_target = inst_jirl ? rf_rdata1 + jirl_offs : pc + br_offs;
 //写回时只有inst_jirl执行完之后才会使用pc+br_offs
-assign  direct_target       = pc + br_offs;
-assign  real_target         = inst_jirl ? rf_rdata1 + jirl_offs : direct_target;
-assign  real_taken          = slot_valid & (
-                              inst_jirl | inst_b | inst_bl | 
-                              (inst_beq & (rj_value == rkd_value)) | 
-                              (inst_bne & (rj_value != rkd_value)) |
-                              (inst_blt & ($signed(rj_value) <  $signed(rkd_value))) |
-                              (inst_bge & ($signed(rj_value) >= $signed(rkd_value))) |
-                              (inst_bltu & ($unsigned(rj_value) <  $unsigned(rkd_value))) |
-                              (inst_bgeu & ($unsigned(rj_value) >= $unsigned(rkd_value))));
+assign  direct_target   = pc + br_offs;
+assign  real_target     = inst_jirl ? rf_rdata1 + jirl_offs : direct_target;
+assign  real_taken      = slot_valid & (
+                          inst_jirl | inst_b | inst_bl | 
+                          (inst_beq & (rj_value == rkd_value)) | 
+                          (inst_bne & (rj_value != rkd_value)) |
+                          (inst_blt & ($signed(rj_value) <  $signed(rkd_value))) |
+                          (inst_bge & ($signed(rj_value) >= $signed(rkd_value))) |
+                          (inst_bltu & ($unsigned(rj_value) <  $unsigned(rkd_value))) |
+                          (inst_bgeu & ($unsigned(rj_value) >= $unsigned(rkd_value))));
                            //   ) & ID_ready_go & ID_valid;
 //output
-assign  redirect_lane       = redirect;
-assign  upd_need            = pred_valid & ~ex_ADEF & ~pred_ok;
-assign  bht_upd_need        = is_cond & ~ex_ADEF;
-assign  push_need           = is_call & ~ex_ADEF;
-assign  pop_need            = is_ret  & ~ex_ADEF;
-assign  br_type             = is_cond ? 2'b00 : is_ret ? 2'b11 : is_call ? 2'b10 : 2'b01;
+assign  update_need     = pred_valid & ~ex_ADEF & ~pred_ok;//预测失败
+assign  bht_update_need = is_cond & ~ex_ADEF;//条件分支预测失败
+assign  push_need       = is_call & ~ex_ADEF;//真实call 要 push
+assign  pop_need        = is_ret  & ~ex_ADEF;//真实return 要 pop
+assign  br_type         = is_cond ? 2'b00 : is_ret ? 2'b11 : is_call ? 2'b10 : 2'b01;//条件分支/返回/调用/跳转
 //-------------------------{branch prediction updata}end---------------//
 assign  exe_payload = {
-                      pc,
-                      rkd_value,alu_op,alu_src1,alu_src2,need_stall_inst,need_stall_csr,inst_st_b,inst_st_h,inst_st_w,inst_ld_w,//EXE
-                      res_from_mem,mem_we,inst_ld_b,inst_ld_h,inst_ld_bu ,inst_ld_hu,//MEM read and write
-                      inst_csrrd, inst_csrwr,inst_csrxchg,inst_ertn,inst_syscall,inst_break,ex_INE,ex_IPE,ex_ADEF,has_int,inst_rdcntvl_w,inst_rdcntvh_w,inst_rdcntid,csr_num,rj_value,rf_dest,rf_gr_we,//WB destination and write_enable
-                      inst_tlbsrch,inst_tlbrd,inst_tlbwr,inst_tlbfill,inst_invtlb,
-                      ex_tlb_reload0,ex_tlb_preif_unvalid,ex_tlb_plv0,
-                      cache_code,inst_cacop,inst_ibar,inst_dbar,inst_sc_w,inst_ll_w,inst_idle
+                        pc,
+                        rkd_value,alu_op,alu_src1,alu_src2,need_stall_inst,need_stall_csr,inst_st_b,inst_st_h,inst_st_w,inst_ld_w,//EXE
+                        res_from_mem,mem_we,inst_ld_b,inst_ld_h,inst_ld_bu ,inst_ld_hu,//MEM read and write
+                        inst_csrrd, inst_csrwr,inst_csrxchg,inst_ertn,inst_syscall,inst_break,ex_INE,ex_IPE,ex_ADEF,has_int,inst_rdcntvl_w,inst_rdcntvh_w,inst_rdcntid,csr_num,rj_value,rf_dest,rf_gr_we,//WB destination and write_enable
+                        inst_tlbsrch,inst_tlbrd,inst_tlbwr,inst_tlbfill,inst_invtlb,
+                        ex_tlb_reload0,ex_tlb_preif_unvalid,ex_tlb_plv0,
+                        cache_code,inst_cacop,inst_ibar,inst_dbar,inst_sc_w,inst_ll_w,inst_idle
                       };
 
 endmodule
