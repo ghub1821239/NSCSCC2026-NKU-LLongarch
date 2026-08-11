@@ -52,13 +52,13 @@ reg [2:0]               main_state;
 reg                     wb_state;
 
 // 最近最少使用
-reg                     LRU  [`GROUP_NUM-1:0];
+reg                     LRU               [`GROUP_NUM-1:0];
 // 伪随机替换
 // reg [22:0] LFSR;
 
 // 脏位表
-reg                     dirty_way0 [`GROUP_NUM-1:0];
-reg                     dirty_way1 [`GROUP_NUM-1:0];
+reg                     dirty_way0        [`GROUP_NUM-1:0];
+reg                     dirty_way1        [`GROUP_NUM-1:0];
 // 把当前 LOOKUP 的这个index的脏位锁存，用于在 MISS 的时候判断写回
 reg                     dirty_way0_r;
 reg                     dirty_way1_r;
@@ -849,10 +849,10 @@ assign  data_ok  = ((main_state == `MAIN_LOOKUP) && (lookup_read_hit || lookup_w
                    cacop_done;
 
 assign  rdata    = ((main_state == `MAIN_LOOKUP) && (lookup_read_hit || lookup_write_hit)) ? (req_op_r ? merged_hit_word :
-                   hit_word) : 
-                   ((main_state == `MAIN_REFILL) && ret_valid && ret_last) ? ((uncache_valid_r && !uncache_wr_r) ? ret_data : 
-                   refill_final_word) : 
-                   32'b0;
+                    hit_word) : 
+                    ((main_state == `MAIN_REFILL) && ret_valid && ret_last) ? ((uncache_valid_r && !uncache_wr_r) ? ret_data : 
+                    refill_final_word) : 
+                    32'b0;
 
 assign  rd_req   = (main_state == `MAIN_REFILL) && !rd_req_sent_r && !code0 && !code1;
 assign  rd_type  = 3'b010;

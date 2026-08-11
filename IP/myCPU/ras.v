@@ -16,7 +16,7 @@ module ras(
     input          pop_valid
 );
 
-reg    [31:0] ras_stack [15:0];//16个32位的目标地址
+reg    [31:0] ras_stack    [15:0];//16个32位的目标地址
 reg    [4:0]  ras_sp;//指向下一个空位置，16个地址的下标对应的是(1~16),0表示空栈，16表示满
 
 assign        query_hit0    = query_valid0 && (ras_sp != 5'b0) ? 1'b1 :

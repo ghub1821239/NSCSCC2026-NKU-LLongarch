@@ -61,7 +61,7 @@ module wb #(
     output wire                   ertn_valid,
     // BADV
     output wire                   csr_tlb_reload0,
-    output wire                   csr_tlb_plv0   ,//tlb中页特权不合规
+    output wire                   csr_tlb_plv0,//tlb中页特权不合规
     output wire                   csr_tlb_reload1,//tlb重填例外  
     output wire                   csr_tlb_plv1,    //tlb中页特权不合规 
     // ex_tlb --> TLBEHI

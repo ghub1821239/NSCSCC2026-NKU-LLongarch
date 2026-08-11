@@ -15,7 +15,7 @@ module pre_IF1 #(
     output wire                          preIF1_ready_go,
     
     output wire [slot0_outbus_width-1:0] preIF1_preIF2_bus_slot0,
-    output wire [outbus_width-1:0]       preIF1_preIF2_bus[ISSUE - 1 : 1],
+    output wire [outbus_width-1:0]       preIF1_preIF2_bus      [ISSUE - 2 : 1],
     //br
     input  wire [31:0]                   br_target,
     input  wire                          br_taken,
@@ -25,40 +25,40 @@ module pre_IF1 #(
     input  wire                          need_stall,
     input  wire [31:0]                   flush_target,
     // tlb port s0
-    output wire [18:0]                   s0_vppn[ISSUE - 1 : 0],
-    output wire                          s0_va_bit12[ISSUE - 1 : 0],
-    input  wire                          s0_found[ISSUE - 1 : 0],
-    input  wire [$clog2(TLBNUM)-1:0]     s0_index[ISSUE - 1 : 0], // 先向上取整再 log2，这样求出位宽
-    input  wire [19:0]                   s0_ppn[ISSUE - 1 : 0],
-    input  wire [5:0]                    s0_ps[ISSUE - 1 : 0],
-    input  wire [1:0]                    s0_plv[ISSUE - 1 : 0],
-    input  wire [1:0]                    s0_mat[ISSUE - 1 : 0],
-    input  wire                          s0_d[ISSUE - 1 : 0],
-    input  wire                          s0_v[ISSUE - 1 : 0],
+    output wire [18:0]                   s0_vppn                [ISSUE - 1 : 0],
+    output wire                          s0_va_bit12            [ISSUE - 1 : 0],
+    input  wire                          s0_found               [ISSUE - 1 : 0],
+    input  wire [$clog2(TLBNUM)-1:0]     s0_index               [ISSUE - 1 : 0], // 先向上取整再 log2，这样求出位宽
+    input  wire [19:0]                   s0_ppn                 [ISSUE - 1 : 0],
+    input  wire [5:0]                    s0_ps                  [ISSUE - 1 : 0],
+    input  wire [1:0]                    s0_plv                 [ISSUE - 1 : 0],
+    input  wire [1:0]                    s0_mat                 [ISSUE - 1 : 0],
+    input  wire                          s0_d                   [ISSUE - 1 : 0],
+    input  wire                          s0_v                   [ISSUE - 1 : 0],
     //tlb_ex
-    input  wire                          ex_tlb_reload0[ISSUE - 1 : 0],//tlb重填例外
-    input  wire                          ex_tlb_preif_unvalid[ISSUE - 1 : 0],//tlb中取指页无效
-    input  wire                          ex_tlb_plv0[ISSUE - 1 : 0],//tlb中页特权不合规
+    input  wire                          ex_tlb_reload0         [ISSUE - 1 : 0],//tlb重填例外
+    input  wire                          ex_tlb_preif_unvalid   [ISSUE - 1 : 0],//tlb中取指页无效
+    input  wire                          ex_tlb_plv0            [ISSUE - 1 : 0],//tlb中页特权不合规
     output wire                          tlb_inst_req,
     //DMW
-    output wire [2:0]                    dmw_vseg0[ISSUE - 1 : 0],
-    input  wire                          dmw_found0[ISSUE - 1 : 0],
-    input  wire [2:0]                    dmw_pseg0[ISSUE - 1 : 0],
+    output wire [2:0]                    dmw_vseg0              [ISSUE - 1 : 0],
+    input  wire                          dmw_found0             [ISSUE - 1 : 0],
+    input  wire [2:0]                    dmw_pseg0              [ISSUE - 1 : 0],
     //CRMD PG DA
     input  wire                          csr_CRMD_DA,
     input  wire                          csr_CRMD_PG,
     input  wire [1:0]                    csr_CRMD_DATF,
-    input  wire [1:0]                    dmw_mat0[ISSUE - 1 : 0],
+    input  wire [1:0]                    dmw_mat0               [ISSUE - 1 : 0],
     //branch prediction
     //查询端口：preIF取指时来查BTB
-    output wire                          query_valid[ISSUE-1:0],
-    output wire [31:0]                   query_pc   [ISSUE-1:0],
-    input  wire                          btb_query_hit[ISSUE - 1 : 0],//valid且tag匹配
-    input  wire [31:0]                   btb_query_target[ISSUE - 1 : 0],
-    input  wire                          ras_query_hit[ISSUE - 1 : 0],//valid且tag匹配
-    input  wire [31:0]                   ras_query_target[ISSUE - 1 : 0],
-    input  wire [ 1:0]                   query_type[ISSUE - 1 : 0],
-    input  wire                          query_taken[ISSUE - 1 : 0],//预测是否跳转
+    output wire                          query_valid            [ISSUE-1:0],
+    output wire [31:0]                   query_pc               [ISSUE-1:0],
+    input  wire                          btb_query_hit          [ISSUE - 1 : 0],//valid且tag匹配
+    input  wire [31:0]                   btb_query_target       [ISSUE - 1 : 0],
+    input  wire                          ras_query_hit          [ISSUE - 1 : 0],//valid且tag匹配
+    input  wire [31:0]                   ras_query_target       [ISSUE - 1 : 0],
+    input  wire [ 1:0]                   query_type             [ISSUE - 1 : 0],
+    input  wire                          query_taken            [ISSUE - 1 : 0],//预测是否跳转
     input  wire                          preIF1_IDLE_stall
 );
 localparam  TYPE_COND = 2'b00;//2'b00  COND   条件分支 beq/bne/blt/bge/bltu/bgeu
@@ -67,7 +67,7 @@ localparam  TYPE_CALL = 2'b10;//2'b10  CALL   bl，或 jirl 且 rd!=0
 localparam  TYPE_RET  = 2'b11;//2'b11  RET    jirl 且 rd==0
 //------------------------{PC}begin-------------------------//
 reg    [31:0]          pc;
-wire   [31:0]          slot_pc[ISSUE - 1 : 0];
+wire   [31:0]          slot_pc   [ISSUE - 1 : 0];
 wire   [ISSUE - 1 : 0] slot_valid;
 wire   [31:0]          seq_PC     = slot_valid == 2'b11 ? pc + 8 :
                                     slot_valid == 2'b01 ? pc + 4 :
@@ -83,8 +83,8 @@ endgenerate
 */
 assign  slot_pc[0]     = pc;
 assign  slot_pc[1]     = pred_redirect0 ? pred_target0 : pc + 4;
-assign  slot_valid     = !preIF1_valid | br_taken  | preIF1_need_cancel? {ISSUE{1'b0}} :
-                         preIF1_ex    |  ~same_cacheline | uncache_fetch ? {1'b0,{ISSUE-1{1'b1}}} :
+assign  slot_valid     = !preIF1_valid | br_taken        | preIF1_need_cancel? {ISSUE{1'b0}} :     
+                         preIF1_ex     | ~same_cacheline | uncache_fetch ? {1'b0,{ISSUE-1{1'b1}}} :
                          {ISSUE{1'b1}};
 wire    same_cacheline = (slot_pc[0][31:ICACHE_OFFSET_W] == slot_pc[1][31:ICACHE_OFFSET_W]);//两条指令在同一个cacheline
 assign  next_PC        = br_taken ? br_target :
@@ -172,7 +172,7 @@ generate
         assign  s0_va_bit12[i] = slot_pc[i][12];
     end
 endgenerate
-wire   [31:0] tlb_paddr[ISSUE - 1 : 0];
+wire   [31:0] tlb_paddr   [ISSUE - 1 : 0];
 assign        tlb_inst_req = preIF1_valid && !preIF1_need_cancel && !csr_CRMD_DA &&  csr_CRMD_PG && !dmw_found0[0];
 generate
     for (i = 0;i < ISSUE;i = i + 1) begin : gen_tlb_paddr
@@ -198,30 +198,30 @@ end
 
 // slot0: 144bit，字段顺序必须与 Pre_IF2 解包一致（含 inst_mat）
 assign  preIF1_preIF2_bus_slot0 = {
-                                  slot_valid[0],
-                                  slot_pc[0],
-                                  ex_ADEF[0],
-                                  ex_tlb_reload0[0], ex_tlb_preif_unvalid[0], ex_tlb_plv0[0],
-                                  dmw_found0[0], dmw_pseg0[0],
-                                  inst_mat,                 // 必须是本模块算的 inst_mat，不是 s0_mat
-                                  tlb_paddr[0],
-                                  btb_query_hit[0], btb_query_target[0],
-                                  ras_query_hit[0], ras_query_target[0],
-                                  query_type[0], query_taken[0]
+                                   slot_valid[0]    ,
+                                   slot_pc[0]       ,
+                                   ex_ADEF[0]       ,
+                                   ex_tlb_reload0[0], ex_tlb_preif_unvalid[0], ex_tlb_plv0[0],
+                                   dmw_found0[0]    , dmw_pseg0[0]           ,
+                                   inst_mat         ,// 必须是本模块算的 inst_mat，不是 s0_mat
+                                   tlb_paddr[0]     ,
+                                   btb_query_hit[0] , btb_query_target[0]    ,
+                                   ras_query_hit[0] , ras_query_target[0]    ,
+                                   query_type[0]    , query_taken[0]
                                   };
 // slot1..: 142bit，无 inst_mat
 generate
   for (i = 1; i < ISSUE; i = i + 1) begin : gen_bus1
     assign  preIF1_preIF2_bus[i] = {
-                                   slot_valid[i],
-                                   slot_pc[i],
-                                   ex_ADEF[i],
-                                   ex_tlb_reload0[i], ex_tlb_preif_unvalid[i], ex_tlb_plv0[i],
-                                   dmw_found0[i], dmw_pseg0[i],
-                                   tlb_paddr[i],          // 注意：这里后面不要拼 s0_mat
-                                   btb_query_hit[i], btb_query_target[i],
-                                   ras_query_hit[i], ras_query_target[i],
-                                   query_type[i], query_taken[i]
+                                    slot_valid[i]    ,
+                                    slot_pc[i]       ,
+                                    ex_ADEF[i]       ,
+                                    ex_tlb_reload0[i], ex_tlb_preif_unvalid[i], ex_tlb_plv0[i],
+                                    dmw_found0[i]    , dmw_pseg0[i]           ,
+                                    tlb_paddr[i]     ,// 注意：这里后面不要拼 s0_mat
+                                    btb_query_hit[i] , btb_query_target[i]    ,
+                                    ras_query_hit[i] , ras_query_target[i]    ,
+                                    query_type[i]    , query_taken[i]
                                    };
   end
 endgenerate

@@ -271,7 +271,7 @@ assign  inst_ertn        = op_31_26_d[6'h01] & op_25_22_d[4'h9] & op_21_20_d[2'h
 assign  inst_syscall     = op_31_26_d[6'h00] & op_25_22_d[4'h0] & op_21_20_d[2'h2] & op_19_15_d[5'h16];
 assign  inst_break       = op_31_26_d[6'h00] & op_25_22_d[4'h0] & op_21_20_d[2'h2] & op_19_15_d[5'h14];
 assign  inst_csr         = inst_csrrd | inst_csrwr | inst_csrxchg;
-assign  inst_rdcntvl_w   = op_31_26_d[6'h00] & op_25_22_d[4'h0] & op_21_20_d[2'h0] & op_19_15_d[5'h0] & rk == 5'b11000 & rj == 5'b00000 & rd != 5'b00000;//notice:我新加的!=的condition，操作手册上没写，但加上更完善，因为0号寄存器和不写一样，可以排除
+assign  inst_rdcntvl_w   = op_31_26_d[6'h00] & op_25_22_d[4'h0] & op_21_20_d[2'h0] & op_19_15_d[5'h0] & rk == 5'b11000 & rj == 5'b00000;//notice:& rd != 5'b00000 我新加的!=的condition，操作手册上没写，但加上更完善，因为0号寄存器和不写一样，可以排除，但是如果直接排除会被认为 INE
 assign  inst_rdcntvh_w   = op_31_26_d[6'h00] & op_25_22_d[4'h0] & op_21_20_d[2'h0] & op_19_15_d[5'h0] & rk == 5'b11001 & rj == 5'b00000;
 assign  inst_rdcntid     = op_31_26_d[6'h00] & op_25_22_d[4'h0] & op_21_20_d[2'h0] & op_19_15_d[5'h0] & rk == 5'b11000 & rj != 5'b00000 & rd == 5'b00000;
 //chapter 9 exp18:new add
@@ -296,10 +296,10 @@ assign  inst_preld       = op_31_26_d[6'h0a] & op_25_22_d[4'hb];
 
 
 assign  alu_op[ 0]       = inst_add_w | inst_addi_w | inst_ld_w        | inst_st_w |
-                           inst_jirl  | inst_bl     | inst_pcaddu12i_w | inst_ld_b | 
-                           inst_ld_h  | inst_ld_bu  | inst_ld_hu       | inst_st_b | 
-                           inst_st_h  | inst_cacop  | inst_cpucfg      | inst_ll_w | 
-                           inst_sc_w  | inst_preld;
+                           inst_jirl  | inst_bl     | inst_pcaddu12i_w | inst_ld_b |
+                           inst_ld_h  | inst_ld_bu  | inst_ld_hu       | inst_st_b |
+                           inst_st_h  | inst_cacop  | inst_cpucfg      | inst_ll_w |
+                           inst_sc_w  | inst_preld ;
 assign  alu_op[ 1]       = inst_sub_w;
 assign  alu_op[ 2]       = inst_slt   | inst_slti;
 assign  alu_op[ 3]       = inst_sltu  | inst_sltui;
@@ -328,9 +328,9 @@ assign  rf_gr_we         = ~inst_st_w    & ~inst_beq   & ~inst_bne   & ~inst_b  
 
 assign  need_ui5         = inst_slli_w | inst_srli_w | inst_srai_w;
 assign  need_ui12        = inst_andi   | inst_ori    | inst_xori;
-assign  need_si12        = inst_addi_w | inst_ld_w   | inst_st_w  | inst_slti  | inst_sltui |
-                           inst_ld_b   | inst_ld_h   | inst_ld_bu | inst_ld_hu | inst_st_b  | 
-                           inst_st_h   | inst_cacop  | inst_preld; 
+assign  need_si12        = inst_addi_w | inst_ld_w  | inst_st_w  | inst_slti  | inst_sltui |
+                           inst_ld_b   | inst_ld_h  | inst_ld_bu | inst_ld_hu | inst_st_b  |
+                           inst_st_h   | inst_cacop | inst_preld;
 assign  need_si14        = inst_ll_w | inst_sc_w;
 assign  need_si16        = inst_jirl | inst_beq | inst_bne
                                      | inst_blt | inst_bge | inst_bltu | inst_bgeu;
@@ -350,7 +350,7 @@ assign  br_offs          = need_si26 ? {{ 4{i26[25]}}, i26[25:0], 2'b0} :
 
 assign  jirl_offs        = {{14{i16[15]}}, i16[15:0], 2'b0};
 
-assign  src_reg_is_rd    = inst_beq  | inst_bne  | inst_st_w  | inst_blt     | inst_bge | inst_bltu | inst_bgeu |
+assign  src_reg_is_rd    = inst_beq  | inst_bne  | inst_st_w  | inst_blt     | inst_bge  | inst_bltu | inst_bgeu |
                            inst_st_b | inst_st_h | inst_csrwr | inst_csrxchg | inst_sc_w;
 
 assign  src1_is_pc       = inst_jirl | inst_bl | inst_pcaddu12i_w;
@@ -426,34 +426,34 @@ assign  need_stall_csr  = inst_csrrd | inst_csrwr | inst_csrxchg | inst_rdcntid 
 
 //------------------------{ex_INE}begin-------------------------//
 wire    ex_tlbinv_op;
-assign  ex_tlbinv_op  = ~((rf_dest == 5'd0) | (rf_dest == 5'd1) | (rf_dest == 5'd2) |
-                        (rf_dest == 5'd3) | (rf_dest == 5'd4) | (rf_dest == 5'd5) |
+assign  ex_tlbinv_op  =  ~((rf_dest == 5'd0) | (rf_dest == 5'd1) | (rf_dest == 5'd2) |
+                        (rf_dest == 5'd3)    | (rf_dest == 5'd4) | (rf_dest == 5'd5) |
                         (rf_dest == 5'd6));
 
 //[TODO 新增指令未完成]
 //wire    ex_INE;
-assign  ex_INE        = ~(inst_add_w        | inst_sub_w        | inst_slt          | inst_sltu                   |
-                        inst_nor            | inst_and          | inst_or           | inst_xor                    |
-                        inst_slli_w         | inst_srli_w       | inst_srai_w       | inst_addi_w                 |
-                        inst_ld_w           | inst_st_w         | inst_jirl         | inst_b                      |
-                        inst_bl             | inst_beq          | inst_bne          | inst_lu12i_w                |
-                        inst_slti           | inst_sltui        | inst_andi         | inst_ori                    |
-                        inst_xori           | inst_sll_w        | inst_srl_w        | inst_sra_w                  |
-                        inst_pcaddu12i_w    | inst_mul_w        | inst_mulh_w       | inst_mulh_wu                |
-                        inst_div            | inst_divu         | inst_mod          | inst_modu                   |
-                        inst_ld_b           | inst_ld_h         | inst_ld_bu        | inst_ld_hu                  |
-                        inst_st_b           | inst_st_h         | inst_blt          | inst_bge                    |
-                        inst_bltu           | inst_bgeu         | inst_csrrd        | inst_csrwr                  |
-                        inst_csrxchg        | inst_ertn         | inst_syscall      | inst_break                  |
-                        inst_rdcntid        | inst_rdcntvl_w    | inst_rdcntvh_w    | inst_tlbsrch                |
-                        inst_tlbrd          | inst_tlbwr        | inst_tlbfill      | inst_invtlb & ~ex_tlbinv_op |
-                        inst_cacop          | inst_cpucfg       | inst_dbar         | inst_ibar                   |
-                        inst_ll_w           | inst_sc_w         | inst_idle         | inst_preld);
+assign  ex_INE        = ~(inst_add_w     | inst_sub_w     | inst_slt       | inst_sltu                   |
+                        inst_nor         | inst_and       | inst_or        | inst_xor                    |
+                        inst_slli_w      | inst_srli_w    | inst_srai_w    | inst_addi_w                 |
+                        inst_ld_w        | inst_st_w      | inst_jirl      | inst_b                      |
+                        inst_bl          | inst_beq       | inst_bne       | inst_lu12i_w                |
+                        inst_slti        | inst_sltui     | inst_andi      | inst_ori                    |
+                        inst_xori        | inst_sll_w     | inst_srl_w     | inst_sra_w                  |
+                        inst_pcaddu12i_w | inst_mul_w     | inst_mulh_w    | inst_mulh_wu                |
+                        inst_div         | inst_divu      | inst_mod       | inst_modu                   |
+                        inst_ld_b        | inst_ld_h      | inst_ld_bu     | inst_ld_hu                  |
+                        inst_st_b        | inst_st_h      | inst_blt       | inst_bge                    |
+                        inst_bltu        | inst_bgeu      | inst_csrrd     | inst_csrwr                  |
+                        inst_csrxchg     | inst_ertn      | inst_syscall   | inst_break                  |
+                        inst_rdcntid     | inst_rdcntvl_w | inst_rdcntvh_w | inst_tlbsrch                |
+                        inst_tlbrd       | inst_tlbwr     | inst_tlbfill   | inst_invtlb & ~ex_tlbinv_op |
+                        inst_cacop       | inst_cpucfg    | inst_dbar      | inst_ibar                   |
+                        inst_ll_w        | inst_sc_w      | inst_idle      | inst_preld                 );
 
 //wire    ex_IPE;
-wire    IPE_inst_plv0 = (inst_csrrd   | inst_csrwr | inst_csrxchg | inst_idle  |
-                        inst_tlbfill  | inst_tlbrd | inst_tlbsrch | inst_tlbwr |
-                        inst_invtlb   | inst_ertn) & (csr_CRMD_PLV != 2'b00);
+wire    IPE_inst_plv0 = (inst_csrrd   | inst_csrwr                          | inst_csrxchg | inst_idle  |
+                          inst_tlbfill | inst_tlbrd                          | inst_tlbsrch | inst_tlbwr |
+                          inst_invtlb  | inst_ertn) & (csr_CRMD_PLV != 2'b00);
 wire    cacop_ipe     = inst_cacop & (cache_code [4:3] == 2'b00 | cache_code [4:3] == 2'b01) & (csr_CRMD_PLV != 2'b00);
 assign  ex_IPE        = IPE_inst_plv0 | cacop_ipe;
 //------------------------{ex_INE}end-------------------------//
@@ -486,8 +486,8 @@ wire       [31:0] direct_target;
     //output
     assign  is_br            = is_cond | is_jump | is_call | is_ret;
     assign  is_mem           = inst_ld_b | inst_ld_bu | inst_ld_h | inst_ld_hu | inst_ld_w |
-                               inst_st_b | inst_st_h  | inst_st_w                          | 
-                               inst_ll_w | inst_sc_w;
+                               inst_st_b | inst_st_h  | inst_st_w |
+                               inst_ll_w | inst_sc_w ;
 
     assign  is_system_break  = inst_ertn | inst_syscall | inst_break | inst_idle | inst_ibar | inst_dbar | inst_cacop;
     assign  is_csr_write     = inst_csrwr | inst_csrxchg;
@@ -551,11 +551,11 @@ assign  pop_valid           = is_ret & id_fire  & ~ex_ADEF;//真实return 要 po
 assign  direct_target   = pc + br_offs;
 assign  real_target     = inst_jirl ? rf_rdata1 + jirl_offs : direct_target;
 assign  real_taken      = slot_valid & (
-                          inst_jirl | inst_b | inst_bl | 
-                          (inst_beq & (rj_value == rkd_value)) | 
-                          (inst_bne & (rj_value != rkd_value)) |
-                          (inst_blt & ($signed(rj_value) <  $signed(rkd_value))) |
-                          (inst_bge & ($signed(rj_value) >= $signed(rkd_value))) |
+                           inst_jirl                                                  | inst_b | inst_bl |
+                          (inst_beq & (rj_value == rkd_value))                        |
+                          (inst_bne & (rj_value != rkd_value))                        |
+                          (inst_blt & ($signed(rj_value) <  $signed(rkd_value)))      |
+                          (inst_bge & ($signed(rj_value) >= $signed(rkd_value)))      |
                           (inst_bltu & ($unsigned(rj_value) <  $unsigned(rkd_value))) |
                           (inst_bgeu & ($unsigned(rj_value) >= $unsigned(rkd_value))));
                            //   ) & ID_ready_go & ID_valid;
@@ -567,13 +567,13 @@ assign  pop_need        = is_ret  & ~ex_ADEF;//真实return 要 pop
 assign  br_type         = is_cond ? 2'b00 : is_ret ? 2'b11 : is_call ? 2'b10 : 2'b01;//条件分支/返回/调用/跳转
 //-------------------------{branch prediction updata}end---------------//
 assign  exe_payload = {
-                        pc,
-                        rkd_value,alu_op,alu_src1,alu_src2,need_stall_inst,need_stall_csr,inst_st_b,inst_st_h,inst_st_w,inst_ld_w,//EXE
-                        res_from_mem,mem_we,inst_ld_b,inst_ld_h,inst_ld_bu ,inst_ld_hu,//MEM read and write
-                        inst_csrrd, inst_csrwr,inst_csrxchg,inst_ertn,inst_syscall,inst_break,ex_INE,ex_IPE,ex_ADEF,has_int,inst_rdcntvl_w,inst_rdcntvh_w,inst_rdcntid,csr_num,rj_value,rf_dest,rf_gr_we,//WB destination and write_enable
-                        inst_tlbsrch,inst_tlbrd,inst_tlbwr,inst_tlbfill,inst_invtlb,
-                        ex_tlb_reload0,ex_tlb_preif_unvalid,ex_tlb_plv0,
-                        cache_code,inst_cacop,inst_ibar,inst_dbar,inst_sc_w,inst_ll_w,inst_idle
+                       pc            ,
+                       rkd_value     , alu_op              , alu_src1    , alu_src2    , need_stall_inst, need_stall_csr, inst_st_b, inst_st_h, inst_st_w, inst_ld_w,//EXE
+                       res_from_mem  , mem_we              , inst_ld_b   , inst_ld_h   , inst_ld_bu     , inst_ld_hu    ,//MEM read and write
+                       inst_csrrd    , inst_csrwr          , inst_csrxchg, inst_ertn   , inst_syscall   , inst_break    , ex_INE   , ex_IPE   , ex_ADEF  , has_int  , inst_rdcntvl_w, inst_rdcntvh_w, inst_rdcntid, csr_num, rj_value, rf_dest, rf_gr_we,//WB destination and write_enable
+                       inst_tlbsrch  , inst_tlbrd          , inst_tlbwr  , inst_tlbfill, inst_invtlb    ,
+                       ex_tlb_reload0, ex_tlb_preif_unvalid, ex_tlb_plv0 ,
+                       cache_code    , inst_cacop          , inst_ibar   , inst_dbar   , inst_sc_w      , inst_ll_w     , inst_idle
                       };
 
 endmodule

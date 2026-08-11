@@ -44,10 +44,10 @@ end
 
 //------------------------{reg 锁存提升主频}end-------------------------//
 
-reg            btb_valid  [0:63];//64个1位有效位
-reg     [23:0] btb_tag    [0:63];//64个24位tag
-reg     [31:0] btb_target [0:63];//64个32位跳转目标地址
-reg     [ 1:0] btb_type   [0:63];//64个2位分支类型
+reg            btb_valid    [0:63];//64个1位有效位
+reg     [23:0] btb_tag      [0:63];//64个24位tag
+reg     [31:0] btb_target   [0:63];//64个32位跳转目标地址
+reg     [ 1:0] btb_type     [0:63];//64个2位分支类型
 
 wire    [ 5:0] query_index0;
 wire    [ 5:0] query_index1;

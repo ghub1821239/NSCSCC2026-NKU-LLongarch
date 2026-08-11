@@ -14,8 +14,8 @@ module pre_IF2 #(
     output wire                         preIF2_ready_go,
     
     input  wire [slot0_inbus_width-1:0] preIF1_preIF2_bus_slot0,
-    input  wire [inbus_width-1:0]       preIF1_preIF2_bus [ISSUE-1:1],
-    output wire [outbus_width-1:0]      preIF2_IF_bus [ISSUE-1:0],//bus
+    input  wire [inbus_width-1:0]       preIF1_preIF2_bus           [ISSUE-1:1],
+    output wire [outbus_width-1:0]      preIF2_IF_bus               [ISSUE-1:0],//bus
     //br_taken
     input  wire                         br_taken,
     //cancel
@@ -44,28 +44,28 @@ module pre_IF2 #(
     output wire                         inst_wr
 );
 //------------------------{bus}begin-------------------------//
-wire                           slot_valid [ISSUE-1:0];
-wire   [31:0]                  pc [ISSUE-1:0];
-wire                           ex_ADEF [ISSUE-1:0];
-wire                           ex_tlb_reload0 [ISSUE-1:0];//tlb重填例外
-wire                           ex_tlb_preif_unvalid [ISSUE-1:0];//tlb中取指页无效
-wire                           ex_tlb_plv0 [ISSUE-1:0];//tlb中页特权不合规
-wire                           dmw_found0 [ISSUE-1:0];
-wire   [2:0]                   dmw_pseg0 [ISSUE-1:0];
-wire   [31:0]                  tlb_paddr [ISSUE-1:0];
-wire                           btb_query_hit [ISSUE-1:0];//valid且tag
-wire   [31:0]                  btb_query_target [ISSUE-1:0];        
-wire                           ras_query_hit [ISSUE-1:0];//valid且tag
-wire   [31:0]                  ras_query_target [ISSUE-1:0];        
-wire   [ 1:0]                  query_type [ISSUE-1:0];              
-wire                           query_taken [ISSUE-1:0];//预测是否跳转  
+wire                           slot_valid          [ISSUE-1:0];
+wire   [31:0]                  pc                  [ISSUE-1:0];
+wire                           ex_ADEF             [ISSUE-1:0];
+wire                           ex_tlb_reload0      [ISSUE-1:0];//tlb重填例外
+wire                           ex_tlb_preif_unvalid[ISSUE-1:0];//tlb中取指页无效
+wire                           ex_tlb_plv0         [ISSUE-1:0];//tlb中页特权不合规
+wire                           dmw_found0          [ISSUE-1:0];
+wire   [2:0]                   dmw_pseg0           [ISSUE-1:0];
+wire   [31:0]                  tlb_paddr           [ISSUE-1:0];
+wire                           btb_query_hit       [ISSUE-1:0];//valid且tag
+wire   [31:0]                  btb_query_target    [ISSUE-1:0];        
+wire                           ras_query_hit       [ISSUE-1:0];//valid且tag
+wire   [31:0]                  ras_query_target    [ISSUE-1:0];        
+wire   [ 1:0]                  query_type          [ISSUE-1:0];              
+wire                           query_taken         [ISSUE-1:0];//预测是否跳转  
 
 reg                            req_without_dataok;   
 
 wire                           inst_req_accept      = inst_sram_req && inst_sram_addr_ok;
         
 reg    [slot0_inbus_width-1:0] bus_slot0;
-reg    [inbus_width-1:0]       bus [ISSUE-1:1];
+reg    [inbus_width-1:0]       bus                 [ISSUE-1:1];
 
 genvar                         i;
 always @(posedge clk) begin
@@ -77,9 +77,9 @@ always @(posedge clk) begin
     end
 end
 
-assign {slot_valid[0],pc[0],ex_ADEF[0],ex_tlb_reload0[0],ex_tlb_preif_unvalid[0],ex_tlb_plv0[0],
-        dmw_found0[0],dmw_pseg0[0],inst_mat,tlb_paddr[0],
-        btb_query_hit[0],btb_query_target[0],ras_query_hit[0],ras_query_target[0],query_type[0],query_taken[0]}=bus_slot0;
+assign {slot_valid[0]   , pc[0]              , ex_ADEF[0]      , ex_tlb_reload0[0]  , ex_tlb_preif_unvalid[0], ex_tlb_plv0[0],
+        dmw_found0[0]   , dmw_pseg0[0]       , inst_mat        , tlb_paddr[0]       ,
+        btb_query_hit[0], btb_query_target[0], ras_query_hit[0], ras_query_target[0], query_type[0]          , query_taken[0]}=bus_slot0;
 
 generate 
     for(i=1;i<ISSUE;i=i+1)begin:gen_bus
@@ -91,9 +91,9 @@ generate
                 bus[i] <= preIF1_preIF2_bus[i];
             end
         end
-        assign {slot_valid[i],pc[i],ex_ADEF[i],ex_tlb_reload0[i],ex_tlb_preif_unvalid[i],ex_tlb_plv0[i],
-                dmw_found0[i],dmw_pseg0[i],tlb_paddr[i],
-                btb_query_hit[i],btb_query_target[i],ras_query_hit[i],ras_query_target[i],query_type[i],query_taken[i]}=bus[i];
+        assign {slot_valid[i]   , pc[i]              , ex_ADEF[i]      , ex_tlb_reload0[i]  , ex_tlb_preif_unvalid[i], ex_tlb_plv0[i],
+                dmw_found0[i]   , dmw_pseg0[i]       , tlb_paddr[i]    ,
+                btb_query_hit[i], btb_query_target[i], ras_query_hit[i], ras_query_target[i], query_type[i]          , query_taken[i]}=bus[i];
     end
 endgenerate
 //------------------------{bus}end-------------------------//
@@ -158,7 +158,7 @@ assign  inst_wr        = 1'b0;
 
 //------------------------{ready_go}begin-------------------------//
 wire    slot0_has_ex    = ex_ADEF[0]              | ex_tlb_reload0[0] |
-                          ex_tlb_preif_unvalid[0] | ex_tlb_plv0[0];
+                          ex_tlb_preif_unvalid[0] | ex_tlb_plv0[0]   ;
 
 assign  preIF2_ready_go = need_stall ? 1'b0 :
                           !slot_valid[0] ? 1'b1 :
@@ -180,8 +180,8 @@ end
 genvar  i2;
 generate 
     for(i2=0;i2<ISSUE;i2=i2+1)begin:gen_preIF2_IF_bus
-        assign  preIF2_IF_bus[i2] = {slot_valid[i2],pc[i2],ex_ADEF[i2],ex_tlb_reload0[i2],ex_tlb_preif_unvalid[i2],ex_tlb_plv0[i2],
-                                    btb_query_hit[i2],btb_query_target[i2],ras_query_hit[i2],ras_query_target[i2],query_type[i2],query_taken[i2]};
+        assign  preIF2_IF_bus[i2] = {slot_valid[i2]   , pc[i2]              , ex_ADEF[i2]      , ex_tlb_reload0[i2]  , ex_tlb_preif_unvalid[i2], ex_tlb_plv0[i2],
+                                     btb_query_hit[i2], btb_query_target[i2], ras_query_hit[i2], ras_query_target[i2], query_type[i2]          , query_taken[i2]};
     end
 endgenerate
 

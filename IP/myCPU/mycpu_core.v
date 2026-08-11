@@ -94,7 +94,7 @@ assign  preIF1_preIF2_valid = preIF1_valid & preIF1_ready_go;
 assign  preIF2_IF_valid     = preIF2_valid & preIF2_ready_go;
 assign  IF_ID_valid         = IF_valid & IF_ready_go;
 assign  ID_EXE1_valid       = ID_valid & ID_ready_go;
-assign  EXE1_EXE2_valid     = EXE1_valid & EXE1_ready_go;
+assign  EXE1_EXE2_valid     = EXE1_valid & EXE1_ready_go & ~EXE1_need_cancel;
 assign  EXE2_MEM_valid      = EXE2_valid & EXE2_ready_go;
 assign  MEM_WB_valid        = MEM_valid & MEM_ready_go;
 //------------------------{5-stage pipeline control signals assignment}end-------------------------//
@@ -105,9 +105,7 @@ wire [4:0]  rf_raddr2[ISSUE - 1 : 0];
 wire [4:0]  rf_waddr;
 
 wire [31:0] rf_rdata1[ISSUE - 1 : 0];
-wire [31:0] front_push_rdata1[ISSUE - 1 : 0];
 wire [31:0] rf_rdata2[ISSUE - 1 : 0];
-wire [31:0] front_push_rdata2[ISSUE - 1 : 0];
 wire [31:0] rf_wdata;
 
 wire        rf_we;
@@ -140,11 +138,11 @@ end
 
 //------------------------{DMW define}begin-------------------------//
 wire [2:0] dmw_vseg0 [ISSUE-1:0];
-wire       dmw_found0 [ISSUE-1:0];
+wire       dmw_found0[ISSUE-1:0];
 wire [2:0] dmw_pseg0 [ISSUE-1:0];
-wire [2:0] dmw_vseg1[ISSUE-1:0];
+wire [2:0] dmw_vseg1 [ISSUE-1:0];
 wire       dmw_found1[ISSUE-1:0];
-wire [2:0] dmw_pseg1[ISSUE-1:0];
+wire [2:0] dmw_pseg1 [ISSUE-1:0];
 //------------------------{DMW define}end-------------------------//
 
 //------------------------{TLB}begin-------------------------//
@@ -164,36 +162,36 @@ always @(posedge clk) begin
         tlbfill_random <= 4'b0001; // 初始值不为 0
     else if (tlbfill_we)
         tlbfill_random <= {tlbfill_random[2:0],
-                          tlbfill_random[3] ^ tlbfill_random[2]};
+                           tlbfill_random[3] ^ tlbfill_random[2]};
 end
 
 // search port 0 (for fetch the inst)
-wire   [18:0]               s0_vppn[ISSUE-1:0];
-wire                        s0_va_bit12[ISSUE-1:0];
+wire   [18:0]               s0_vppn               [ISSUE-1:0];
+wire                        s0_va_bit12           [ISSUE-1:0];
 wire   [9:0]                s0_asid;
-wire                        s0_found[ISSUE-1:0];
-wire   [$clog2(TLBNUM)-1:0] s0_index[ISSUE-1:0]; // 实际使用的index位宽为log2(TLBNUM)
-wire   [19:0]               s0_ppn[ISSUE-1:0];
-wire   [5:0]                s0_ps[ISSUE-1:0];
-wire   [1:0]                s0_plv[ISSUE-1:0];
-wire   [1:0]                s0_mat[ISSUE-1:0];
-wire                        s0_d[ISSUE-1:0];
-wire                        s0_v[ISSUE-1:0];
+wire                        s0_found              [ISSUE-1:0];
+wire   [$clog2(TLBNUM)-1:0] s0_index              [ISSUE-1:0]; // 实际使用的index位宽为log2(TLBNUM)
+wire   [19:0]               s0_ppn                [ISSUE-1:0];
+wire   [5:0]                s0_ps                 [ISSUE-1:0];
+wire   [1:0]                s0_plv                [ISSUE-1:0];
+wire   [1:0]                s0_mat                [ISSUE-1:0];
+wire                        s0_d                  [ISSUE-1:0];
+wire                        s0_v                  [ISSUE-1:0];
 
 // search port 1 (for load/store the data)
-wire   [18:0]               s1_vppn[ISSUE-1:0];
-wire                        s1_va_bit12[ISSUE-1:0];
-wire   [9:0]                s1_asid[ISSUE-1:0];
+wire   [18:0]               s1_vppn               [ISSUE-1:0];
+wire                        s1_va_bit12           [ISSUE-1:0];
+wire   [9:0]                s1_asid               [ISSUE-1:0];
 wire   [9:0]                tlbinv_asid; // 标量，来自 EXE1 选出的 invtlb 槽
 wire   [9:0]                s1_asid_without_invtlb;
-wire                        s1_found[ISSUE-1:0];
-wire   [$clog2(TLBNUM)-1:0] s1_index[ISSUE-1:0];
-wire   [19:0]               s1_ppn[ISSUE-1:0];
-wire   [5:0]                s1_ps[ISSUE-1:0];
-wire   [1:0]                s1_plv[ISSUE-1:0];
-wire   [1:0]                s1_mat[ISSUE-1:0];
-wire                        s1_d[ISSUE-1:0];
-wire                        s1_v[ISSUE-1:0];
+wire                        s1_found              [ISSUE-1:0];
+wire   [$clog2(TLBNUM)-1:0] s1_index              [ISSUE-1:0];
+wire   [19:0]               s1_ppn                [ISSUE-1:0];
+wire   [5:0]                s1_ps                 [ISSUE-1:0];
+wire   [1:0]                s1_plv                [ISSUE-1:0];
+wire   [1:0]                s1_mat                [ISSUE-1:0];
+wire                        s1_d                  [ISSUE-1:0];
+wire                        s1_v                  [ISSUE-1:0];
 
 // invtlb opcode（标量）
 wire                        invtlb_valid;
@@ -250,19 +248,19 @@ wire                        r_d1;
 wire                        r_v1;
 
 //tlb_ex
-wire                        ex_tlb_reload0 [ISSUE-1:0];//tlb重填异常
-wire                        ex_tlb_reload1[ISSUE-1:0];//tlb重填异常
-wire                        ex_tlb_ld_unvalid[ISSUE-1:0];//tlb的load页无效
-wire                        ex_tlb_st_unvalid[ISSUE-1:0];//tlb的store页无效
-wire                        ex_tlb_preif_unvalid [ISSUE-1:0];//tlb取指页无效
-wire                        ex_tlb_plv0 [ISSUE-1:0];//tlb的页权限上访
-wire                        ex_tlb_plv1[ISSUE-1:0];//tlb的页权限上访
-wire                        ex_tlb_page_modify[ISSUE-1:0];//tlb页修改
+wire                        ex_tlb_reload0      [ISSUE-1:0];//tlb重填异常
+wire                        ex_tlb_reload1      [ISSUE-1:0];//tlb重填异常
+wire                        ex_tlb_ld_unvalid   [ISSUE-1:0];//tlb的load页无效
+wire                        ex_tlb_st_unvalid   [ISSUE-1:0];//tlb的store页无效
+wire                        ex_tlb_preif_unvalid[ISSUE-1:0];//tlb取指页无效
+wire                        ex_tlb_plv0         [ISSUE-1:0];//tlb的页权限上访
+wire                        ex_tlb_plv1         [ISSUE-1:0];//tlb的页权限上访
+wire                        ex_tlb_page_modify  [ISSUE-1:0];//tlb页修改
 
 wire                        tlb_inst_req;
-wire                        tlb_data_req[ISSUE-1:0];
-wire                        tlb_load_req[ISSUE-1:0];
-wire                        tlb_store_req[ISSUE-1:0];
+wire                        tlb_data_req        [ISSUE-1:0];
+wire                        tlb_load_req        [ISSUE-1:0];
+wire                        tlb_store_req       [ISSUE-1:0];
 
 tlb #(
     .TLBNUM               (TLBNUM               ),
@@ -361,11 +359,14 @@ tlb #(
 //------------------------{TLB}end-------------------------//
 
 //------------------------{csr_ex_front}begin-------------------------//
+wire    EXE2_ex;
 wire    MEM_ex;
 wire    WB_ex;
 
+wire    older_ex_for_exe1;
 wire    older_ex_for_exe2;
 wire    older_ex_for_mem;
+assign  older_ex_for_exe1 = EXE2_ex | MEM_ex | WB_ex;
 assign  older_ex_for_exe2 = MEM_ex | WB_ex;
 assign  older_ex_for_mem  = WB_ex;
 //------------------------{csr_ex_front}end-------------------------//
@@ -375,63 +376,91 @@ wire          flush;
 wire   [31:0] flush_target;
 wire   [31:0] flush_cacop_cancel_target;//从 WB 传回来的 flush_target & cacop 取消
 
+wire   [31:0] front_push_rdata1        [ISSUE - 1 : 0];
+wire   [31:0] front_push_rdata2        [ISSUE - 1 : 0];
+wire   [31:0] exe2_front_data          [ISSUE - 1 : 0];
+wire   [31:0] mem_front_data           [ISSUE - 1 : 0];
+wire   [31:0] wb_front_data            [ISSUE - 1 : 0];
+wire   [ 4:0] exe2_front_addr          [ISSUE - 1 : 0];
+wire   [ 4:0] mem_front_addr           [ISSUE - 1 : 0];
+wire   [ 4:0] wb_front_addr            [ISSUE - 1 : 0];
+wire          exe2_can_not_front_push  [ISSUE - 1 : 0];
+wire          mem_can_not_front_push   [ISSUE - 1 : 0];
+wire          wb_can_not_front_push    [ISSUE - 1 : 0];
 
-wire   [31:0] exe1_front_data;
-wire   [31:0] exe2_front_data;
-wire   [31:0] mem_front_data;
-wire   [31:0] wb_front_data;
-wire   [ 4:0] exe1_front_addr;
-wire   [ 4:0] exe2_front_addr;
-wire   [ 4:0] mem_front_addr;
-wire   [ 4:0] wb_front_addr;
-wire          exe2_can_not_front_push;
-wire          mem_can_not_front_push;
-wire          wb_can_not_front_push;
-assign        front_push_rdata1         = rf_raddr1 == 5'b0 ? 32'b0 : (exe2_front_addr == rf_raddr1 & EXE2_valid & ~exe2_can_not_front_push) ? exe2_front_data :
-                                          (mem_front_addr == rf_raddr1 & MEM_valid & ~mem_can_not_front_push) ? mem_front_data :
-                                          (wb_front_addr  == rf_raddr1 & WB_valid & !flush & ~ wb_can_not_front_push) ? wb_front_data  :
-                                          rf_rdata1;
-assign        front_push_rdata2         = rf_raddr2 == 5'b0 ? 32'b0 : (exe2_front_addr == rf_raddr2 & EXE2_valid & ~exe2_can_not_front_push) ? exe2_front_data :
-                                          (mem_front_addr == rf_raddr2 & MEM_valid & ~mem_can_not_front_push) ? mem_front_data :
-                                          (wb_front_addr  == rf_raddr2 & WB_valid & !flush & ~ wb_can_not_front_push) ? wb_front_data  :
-                                          rf_rdata2;             
+genvar        i;
+generate
+    for (i = 0; i < ISSUE; i = i + 1) begin : gen_front_push
+        assign  front_push_rdata1[i] =
+                                       (rf_raddr1[i] == 5'b0) ? 32'b0 :
+                                       (EXE2_valid & ~exe2_can_not_front_push[0] & (exe2_front_addr[0] == rf_raddr1[i])) ? exe2_front_data[0] :
+                                       (EXE2_valid & ~exe2_can_not_front_push[1] & (exe2_front_addr[1] == rf_raddr1[i])) ? exe2_front_data[1] :
+                                       (MEM_valid  & ~mem_can_not_front_push[0]  & (mem_front_addr[0]  == rf_raddr1[i])) ? mem_front_data[0]  :
+                                       (MEM_valid  & ~mem_can_not_front_push[1]  & (mem_front_addr[1]  == rf_raddr1[i])) ? mem_front_data[1]  :
+                                       (WB_valid & !flush & ~wb_can_not_front_push[0] & (wb_front_addr[0] == rf_raddr1[i])) ? wb_front_data[0] :
+                                       (WB_valid & !flush & ~wb_can_not_front_push[1] & (wb_front_addr[1] == rf_raddr1[i])) ? wb_front_data[1] :
+                                       rf_rdata1[i];
+        assign  front_push_rdata2[i] =
+                                       (rf_raddr2[i] == 5'b0) ? 32'b0 :
+                                       (EXE2_valid & ~exe2_can_not_front_push[0] & (exe2_front_addr[0] == rf_raddr2[i])) ? exe2_front_data[0] :
+                                       (EXE2_valid & ~exe2_can_not_front_push[1] & (exe2_front_addr[1] == rf_raddr2[i])) ? exe2_front_data[1] :
+                                       (MEM_valid  & ~mem_can_not_front_push[0]  & (mem_front_addr[0]  == rf_raddr2[i])) ? mem_front_data[0]  :
+                                       (MEM_valid  & ~mem_can_not_front_push[1]  & (mem_front_addr[1]  == rf_raddr2[i])) ? mem_front_data[1]  :
+                                       (WB_valid & !flush & ~wb_can_not_front_push[0] & (wb_front_addr[0] == rf_raddr2[i])) ? wb_front_data[0] :
+                                       (WB_valid & !flush & ~wb_can_not_front_push[1] & (wb_front_addr[1] == rf_raddr2[i])) ? wb_front_data[1] :
+                                       rf_rdata2[i];
+    end
+endgenerate 
 //ibar也在EXE2 所以可以直接赋值cacop_pc
-assign        flush_cacop_cancel_target = (cacop_need_cancel | ibar_cancel) ? cacop_pc : flush_target;
+assign  flush_cacop_cancel_target = (cacop_need_cancel | ibar_cancel) ? cacop_pc : flush_target;
 //------------------------{front_push}end-------------------------//
 
 //------------------------{stall}begin-------------------------//
-wire          EXE1_rf_gr_we;
-wire   [ 4:0] EXE1_rf_dest;
-wire   [ 4:0] EXE2_rf_dest;
-wire   [ 4:0] MEM_rf_dest;
-wire   [ 4:0] WB_rf_dest;
-wire          src1_stall;
-wire          src2_stall;
-wire          need_stall;
-wire          exe2_need_stall_inst;
-wire          exe2_need_stall_csr;
-wire          mem_need_stall_inst;
-wire          mem_need_stall_csr;
-wire          wb_need_stall_csr;
-//need to distribute inst for increasing effciency [todo]
-wire          mem_load_wait;
-assign        mem_load_wait        = mem_need_stall_inst & ~data_sram_data_ok;
-assign        src1_stall           = (rf_raddr1 != 5'd0) &&
-                                     ID_valid &&
-                                     (((rf_raddr1 == EXE1_rf_dest) && EXE1_valid && EXE1_rf_gr_we) ||
-                                     ((rf_raddr1 == EXE2_rf_dest) && EXE2_valid && (exe2_need_stall_inst || exe2_need_stall_csr)) ||
-                                     ((rf_raddr1 == MEM_rf_dest) && MEM_valid && (mem_load_wait || mem_need_stall_csr)) ||
-                                     ((rf_raddr1 == WB_rf_dest) && WB_valid && wb_need_stall_csr));
-assign        src2_stall           = (rf_raddr2 != 5'd0) &&
-                                     ID_valid &&
-                                     (((rf_raddr2 == EXE1_rf_dest) && EXE1_valid && EXE1_rf_gr_we) ||
-                                     ((rf_raddr2 == EXE2_rf_dest) && EXE2_valid && (exe2_need_stall_inst || exe2_need_stall_csr)) ||
-                                     ((rf_raddr2 == MEM_rf_dest) && MEM_valid && (mem_load_wait || mem_need_stall_csr)) ||
-                                     ((rf_raddr2 == WB_rf_dest) && WB_valid && wb_need_stall_csr));
-assign        need_stall           = src1_stall | src2_stall;
+wire        EXE1_rf_gr_we       [ISSUE - 1 : 0];
+wire [ 4:0] EXE1_rf_dest        [ISSUE - 1 : 0];
+wire [ 4:0] EXE2_rf_dest        [ISSUE - 1 : 0];
+wire [ 4:0] MEM_rf_dest         [ISSUE - 1 : 0];
+wire [ 4:0] WB_rf_dest          [ISSUE - 1 : 0];
+wire        src1_stall          [ISSUE - 1 : 0];
+wire        src2_stall          [ISSUE - 1 : 0];
+wire        need_stall;
+wire        exe2_need_stall_inst[ISSUE - 1 : 0];
+wire        exe2_need_stall_csr [ISSUE - 1 : 0];
+wire        mem_need_stall_inst [ISSUE - 1 : 0];
+wire        mem_need_stall_csr  [ISSUE - 1 : 0];
+wire        wb_need_stall_csr   [ISSUE - 1 : 0];
+wire        mem_load_wait       [ISSUE - 1 : 0];
 
-wire          IDLE_stall;
-reg           preIF1_IDLE_stall;
+generate
+    for (i = 0; i < ISSUE; i = i + 1) begin : gen_stall
+        assign  mem_load_wait[i] = mem_need_stall_inst[i] & ~data_sram_data_ok;
+        assign  src1_stall[i]    =
+                                   (rf_raddr1[i] != 5'd0) && ID_valid &&
+                                   (((rf_raddr1[i] == EXE1_rf_dest[0]) && EXE1_valid && EXE1_rf_gr_we[0]) ||
+                                   ((rf_raddr1[i] == EXE1_rf_dest[1]) && EXE1_valid && EXE1_rf_gr_we[1]) ||
+                                   ((rf_raddr1[i] == EXE2_rf_dest[0]) && EXE2_valid && (exe2_need_stall_inst[0] || exe2_need_stall_csr[0])) ||
+                                   ((rf_raddr1[i] == EXE2_rf_dest[1]) && EXE2_valid && (exe2_need_stall_inst[1] || exe2_need_stall_csr[1])) ||
+                                   ((rf_raddr1[i] == MEM_rf_dest[0])  && MEM_valid  && (mem_load_wait[0] || mem_need_stall_csr[0])) ||
+                                   ((rf_raddr1[i] == MEM_rf_dest[1])  && MEM_valid  && (mem_load_wait[1] || mem_need_stall_csr[1])) ||
+                                   ((rf_raddr1[i] == WB_rf_dest[0])   && WB_valid   && wb_need_stall_csr[0]) ||
+                                   ((rf_raddr1[i] == WB_rf_dest[1])   && WB_valid   && wb_need_stall_csr[1]));
+        assign  src2_stall[i]    =
+                                   (rf_raddr2[i] != 5'd0) && ID_valid &&
+                                   (((rf_raddr2[i] == EXE1_rf_dest[0]) && EXE1_valid && EXE1_rf_gr_we[0]) ||
+                                   ((rf_raddr2[i] == EXE1_rf_dest[1]) && EXE1_valid && EXE1_rf_gr_we[1]) ||
+                                   ((rf_raddr2[i] == EXE2_rf_dest[0]) && EXE2_valid && (exe2_need_stall_inst[0] || exe2_need_stall_csr[0])) ||
+                                   ((rf_raddr2[i] == EXE2_rf_dest[1]) && EXE2_valid && (exe2_need_stall_inst[1] || exe2_need_stall_csr[1])) ||
+                                   ((rf_raddr2[i] == MEM_rf_dest[0])  && MEM_valid  && (mem_load_wait[0] || mem_need_stall_csr[0])) ||
+                                   ((rf_raddr2[i] == MEM_rf_dest[1])  && MEM_valid  && (mem_load_wait[1] || mem_need_stall_csr[1])) ||
+                                   ((rf_raddr2[i] == WB_rf_dest[0])   && WB_valid   && wb_need_stall_csr[0]) ||
+                                   ((rf_raddr2[i] == WB_rf_dest[1])   && WB_valid   && wb_need_stall_csr[1]));
+    end
+endgenerate
+
+assign  need_stall        = src1_stall[0] | src1_stall[1] | src2_stall[0] | src2_stall[1];
+
+wire    IDLE_stall;
+reg     preIF1_IDLE_stall;
 always @(posedge clk)begin
     if(!resetn)begin
         preIF1_IDLE_stall <= 1'b0;
@@ -455,11 +484,11 @@ wire  inst_resp_discard;
 //------------------------{branch prediction}begin---------------------------//
 //btb
 // query port: preIF lookup
-wire        query_valid[ISSUE-1:0];
-wire [31:0] query_pc   [ISSUE-1:0];
-wire        btb_query_hit[ISSUE-1:0];//valid and tag match
+wire        query_valid     [ISSUE-1:0];
+wire [31:0] query_pc        [ISSUE-1:0];
+wire        btb_query_hit   [ISSUE-1:0];//valid and tag match
 wire [31:0] btb_query_target[ISSUE-1:0];
-wire [ 1:0] query_type[ISSUE-1:0];
+wire [ 1:0] query_type      [ISSUE-1:0];
 // update port: Decode writes back real result
 wire        update_valid;
 wire [31:0] update_pc;
@@ -489,7 +518,7 @@ btb u_btb(
     .update_cancel (flush | cacop_need_cancel )
 );
 
-wire  query_taken[ISSUE-1:0];
+wire  query_taken     [ISSUE-1:0];
 wire  update_taken;
 wire  bht_update_valid;
 //bht
@@ -515,7 +544,7 @@ bht u_bht(
 wire        push_valid;
 wire [31:0] push_target;
 wire        pop_valid;
-wire        ras_query_hit[ISSUE-1:0];
+wire        ras_query_hit   [ISSUE-1:0];
 wire [31:0] ras_query_target[ISSUE-1:0];
 ras u_ras(
     .clk           (clk                 ),
@@ -605,7 +634,7 @@ assign  preIF1_need_cancel = flush | cacop_need_cancel | ibar_cancel;
 assign  preIF2_need_cancel = flush | cacop_need_cancel | ibar_cancel;
 assign  IF_need_cancel     = flush | need_br_cancel    | cacop_need_cancel | ibar_cancel;
 assign  ID_need_cancel     = flush | cacop_need_cancel | ibar_cancel       | need_br_cancel;
-assign  EXE1_need_cancel   = flush | ibar_cancel;
+assign  EXE1_need_cancel   = flush | ibar_cancel       | cacop_need_cancel;
 assign  EXE2_need_cancel   = flush | ibar_cancel;
 assign  MEM_need_cancel    = flush;
 assign  WB_need_cancel     = flush;
@@ -618,17 +647,17 @@ localparam                                     preIF2_IF_bus_width           = 1
 localparam                                     IF_ID_bus_width               = 138;
 localparam                                     ID_EXE1_bus_width             = 244; // +1: slot_valid
 localparam                                     EXE1_EXE2_bus_width           = 279; // +1: EXE1_ex
-localparam                                     EXE2_MEM_bus_width            = 198;
-localparam                                     MEM_WB_bus_width              = 221;
+localparam                                     EXE2_MEM_bus_width            = 199;
+localparam                                     MEM_WB_bus_width              = 222;
 
 wire       [preIF1_preIF2_slot0_bus_width-1:0] preIF1_preIF2_bus_slot0;
-wire       [preIF1_preIF2_bus_width-1:0]       preIF1_preIF2_bus [ISSUE-1:1];
-wire       [preIF2_IF_bus_width-1:0]           preIF2_IF_bus [ISSUE-1:0];
-wire       [IF_ID_bus_width-1:0]               IF_ID_bus [ISSUE-1:0];
-wire       [ID_EXE1_bus_width-1:0]             ID_EXE1_bus [ISSUE-1:0];
-wire       [EXE1_EXE2_bus_width-1:0]           EXE1_EXE2_bus [ISSUE-1:0];
-wire       [EXE2_MEM_bus_width-1:0]            EXE2_MEM_bus [ISSUE-1:0];
-wire       [MEM_WB_bus_width-1:0]              MEM_WB_bus [ISSUE-1:0];
+wire       [preIF1_preIF2_bus_width-1:0]       preIF1_preIF2_bus            [ISSUE-2:1];
+wire       [preIF2_IF_bus_width-1:0]           preIF2_IF_bus                [ISSUE-1:0];
+wire       [IF_ID_bus_width-1:0]               IF_ID_bus                    [ISSUE-1:0];
+wire       [ID_EXE1_bus_width-1:0]             ID_EXE1_bus                  [ISSUE-1:0];
+wire       [EXE1_EXE2_bus_width-1:0]           EXE1_EXE2_bus                [ISSUE-1:0];
+wire       [EXE2_MEM_bus_width-1:0]            EXE2_MEM_bus                 [ISSUE-1:0];
+wire       [MEM_WB_bus_width-1:0]              MEM_WB_bus                   [ISSUE-1:0];
 //------------------------{5-stage pipeline bus + inst ram control}end------------------------//
 
 //------------------------{csr_regfile}begin-------------------------//
@@ -649,24 +678,24 @@ wire          has_int;
 wire          csr_tcfg_init0;
 wire          csr_CRMD_DA;
 wire          csr_CRMD_PG;
-    //tlbreload 重填传入CSR
+//tlbreload 重填传入CSR
 wire          ex_tlb_reload;
 
-    //ERTN 更改 CRMD
+//ERTN 更改 CRMD
 wire          ertn_valid;
-    // 更新BADV
+// 更新BADV
 wire          csr_tlb_reload0;
-wire          csr_tlb_plv0   ;
+wire          csr_tlb_plv0;
 wire          csr_tlb_reload1; 
-wire          csr_tlb_plv1   ;     
+wire          csr_tlb_plv1;     
 // 更新TLBEHI ex_tlb
 wire          ex_tlb;
-    //mat:存储访问类型
+//mat:存储访问类型
 wire   [1:0]  csr_CRMD_DATF;
 wire   [1:0]  csr_CRMD_DATM;
-wire   [1:0]  dmw_mat0 [ISSUE-1:0];
-wire   [1:0]  dmw_mat1 [ISSUE-1:0];
-    //说明s1_mat是已经换算好的？
+wire   [1:0]  dmw_mat0       [ISSUE-1:0];
+wire   [1:0]  dmw_mat1       [ISSUE-1:0];
+//mat
 wire   [1:0]  inst_mat;
 wire   [1:0]  data_mat;
 
@@ -966,7 +995,8 @@ decode #(
 
 exe1 #(
     .inbus_width        (ID_EXE1_bus_width   ),
-    .outbus_width       (EXE1_EXE2_bus_width )
+    .outbus_width       (EXE1_EXE2_bus_width ),
+    .ISSUE              (ISSUE               )
 )u_exe1(
     .clk                (clk                 ),
     .resetn             (resetn              ),
@@ -1020,12 +1050,15 @@ exe1 #(
     .dmw_pseg1          (dmw_pseg1           ),
     //mat:存储访问类型
     .csr_CRMD_DATM      (csr_CRMD_DATM       ),
-    .dmw_mat1           (dmw_mat1            )
+    .dmw_mat1           (dmw_mat1            ),
+    //from exe2 mem wb
+    .older_ex_for_exe1  (older_ex_for_exe1   )
 );
 
 exe2 #(
     .inbus_width             (EXE1_EXE2_bus_width     ),
-    .outbus_width            (EXE2_MEM_bus_width      )
+    .outbus_width            (EXE2_MEM_bus_width      ),
+    .ISSUE                   (ISSUE                   )
 )u_exe2(
     .clk                     (clk                     ),
     .resetn                  (resetn                  ),
@@ -1050,6 +1083,7 @@ exe2 #(
     .EXE2_need_cancel        (EXE2_need_cancel        ),
     //ex
     .older_ex_for_exe2       (older_ex_for_exe2       ),
+    .EXE2_ex                 (EXE2_ex                 ),
     //handshake
     .data_sram_req           (data_sram_req           ),
     .data_sram_wr            (data_sram_wr            ),
@@ -1079,7 +1113,8 @@ exe2 #(
 
 mem #(
     .inbus_width            (EXE2_MEM_bus_width     ),
-    .outbus_width           (MEM_WB_bus_width       )
+    .outbus_width           (MEM_WB_bus_width       ),
+    .ISSUE                  (ISSUE                  )
 )u_mem(
     .clk                    (clk                    ),
     .resetn                 (resetn                 ),
@@ -1111,7 +1146,8 @@ mem #(
 );
 
 wb #(
-    .inbus_width           (MEM_WB_bus_width      )
+    .inbus_width           (MEM_WB_bus_width      ),
+    .ISSUE                 (ISSUE                 )
 )u_wb(
     .clk                   (clk                   ),
     .resetn                (resetn                ),
