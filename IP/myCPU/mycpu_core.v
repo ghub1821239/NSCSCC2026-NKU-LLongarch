@@ -3,43 +3,43 @@ module mycpu_core #(
     parameter  TLBNUM = 16,
     parameter  ISSUE  = 2
 )(
-    input  wire        clk,
-    input  wire        resetn,
+    input  wire         clk,
+    input  wire         resetn,
     // inst sram interface [handshake]
-    output wire        inst_sram_req,
-    output wire        inst_sram_wr, // 1表示write 0表示read
-    output wire [ 3:0] inst_sram_wstrb,// wstrb 对应原始数据的字节写使能
-    output wire [ 1:0] inst_sram_size,
-    output wire [31:0] inst_sram_addr,// 
-    output wire [31:0] inst_sram_wdata,
+    output wire         inst_sram_req,
+    output wire         inst_sram_wr, // 1表示write 0表示read
+    output wire [ 3:0]  inst_sram_wstrb,// wstrb 对应原始数据的字节写使能
+    output wire [ 1:0]  inst_sram_size,
+    output wire [31:0]  inst_sram_addr,// 
+    output wire [31:0]  inst_sram_wdata,
     input  wire [127:0] inst_sram_rdata,
-    input  wire        inst_sram_addr_ok,
-    input  wire        inst_sram_data_ok,
-    output wire        inst_uncache_valid,
-    output wire        inst_uncache_wr,
+    input  wire         inst_sram_addr_ok,
+    input  wire         inst_sram_data_ok,
+    output wire         inst_uncache_valid,
+    output wire         inst_uncache_wr,
     // data sram interface
-    output wire        data_sram_req,
-    output wire        data_sram_wr, // 1表示write 0表示read
-    output wire [ 3:0] data_sram_wstrb,// wstrb 对应原始数据的字节写使能
-    output wire [ 1:0] data_sram_size,//
-    output wire [31:0] data_sram_addr,// 
-    output wire [31:0] data_sram_wdata,
-    input  wire        data_sram_addr_ok,
-    input  wire        data_sram_data_ok,
-    input  wire [31:0] data_sram_rdata,
-    output wire        data_uncache_valid,
-    output wire        data_uncache_wr,
+    output wire         data_sram_req,
+    output wire         data_sram_wr, // 1表示write 0表示read
+    output wire [ 3:0]  data_sram_wstrb,// wstrb 对应原始数据的字节写使能
+    output wire [ 1:0]  data_sram_size,//
+    output wire [31:0]  data_sram_addr,// 
+    output wire [31:0]  data_sram_wdata,
+    input  wire         data_sram_addr_ok,
+    input  wire         data_sram_data_ok,
+    input  wire [31:0]  data_sram_rdata,
+    output wire         data_uncache_valid,
+    output wire         data_uncache_wr,
     //cache_code
-    output wire        cacop_valid,
-    output wire [4:0]  cache_code,
-    input  wire        cacop_done,
+    output wire         cacop_valid,
+    output wire [4:0]   cache_code,
+    input  wire         cacop_done,
     // trace debug interface
-    output wire [31:0] debug_wb_pc,
-    output wire [ 3:0] debug_wb_rf_we,
-    output wire [ 4:0] debug_wb_rf_wnum,
-    output wire [31:0] debug_wb_rf_wdata,
+    output wire [31:0]  debug_wb_pc,
+    output wire [ 3:0]  debug_wb_rf_we,
+    output wire [ 4:0]  debug_wb_rf_wnum,
+    output wire [31:0]  debug_wb_rf_wdata,
     //硬件中断输入
-    input  wire [ 7:0] hw_int_in
+    input  wire [ 7:0]  hw_int_in
 );
 //------------------------{5-stage pipeline control signals define}begin-------------------------//
 wire  valid_in;
@@ -142,9 +142,9 @@ end
 wire [2:0] dmw_vseg0 [ISSUE-1:0];
 wire       dmw_found0 [ISSUE-1:0];
 wire [2:0] dmw_pseg0 [ISSUE-1:0];
-wire [2:0] dmw_vseg1;
-wire       dmw_found1;
-wire [2:0] dmw_pseg1;
+wire [2:0] dmw_vseg1[ISSUE-1:0];
+wire       dmw_found1[ISSUE-1:0];
+wire [2:0] dmw_pseg1[ISSUE-1:0];
 //------------------------{DMW define}end-------------------------//
 
 //------------------------{TLB}begin-------------------------//
@@ -181,25 +181,32 @@ wire                        s0_d[ISSUE-1:0];
 wire                        s0_v[ISSUE-1:0];
 
 // search port 1 (for load/store the data)
-wire   [18:0]               s1_vppn;
-wire                        s1_va_bit12;
-wire   [9:0]                s1_asid;
-wire   [9:0]                tlbinv_asid;
+wire   [18:0]               s1_vppn[ISSUE-1:0];
+wire                        s1_va_bit12[ISSUE-1:0];
+wire   [9:0]                s1_asid[ISSUE-1:0];
+wire   [9:0]                tlbinv_asid; // 标量，来自 EXE1 选出的 invtlb 槽
 wire   [9:0]                s1_asid_without_invtlb;
-wire                        s1_found;
-wire   [$clog2(TLBNUM)-1:0] s1_index;
-wire   [19:0]               s1_ppn;
-wire   [5:0]                s1_ps;
-wire   [1:0]                s1_plv;
-wire   [1:0]                s1_mat;
-wire                        s1_d;
-wire                        s1_v;
+wire                        s1_found[ISSUE-1:0];
+wire   [$clog2(TLBNUM)-1:0] s1_index[ISSUE-1:0];
+wire   [19:0]               s1_ppn[ISSUE-1:0];
+wire   [5:0]                s1_ps[ISSUE-1:0];
+wire   [1:0]                s1_plv[ISSUE-1:0];
+wire   [1:0]                s1_mat[ISSUE-1:0];
+wire                        s1_d[ISSUE-1:0];
+wire                        s1_v[ISSUE-1:0];
 
-// invtlb opcode
+// invtlb opcode（标量）
 wire                        invtlb_valid;
+wire                        invtlb_index;
 wire   [4:0]                invtlb_op;
 
-assign                      s1_asid                = invtlb_valid ? tlbinv_asid : s1_asid_without_invtlb;
+genvar                      s1_asid_i;
+generate
+    for(s1_asid_i = 0; s1_asid_i < ISSUE; s1_asid_i = s1_asid_i + 1) begin : gen_s1_asid
+        // invtlb 当拍各 search 槽共用同一 ASID（同行无 mem）
+        assign  s1_asid[s1_asid_i] = invtlb_valid ? tlbinv_asid : s1_asid_without_invtlb;
+    end
+endgenerate
 
 // write port
 wire                        we;
@@ -221,8 +228,8 @@ wire   [1:0]                w_mat1;
 wire                        w_d1;
 wire                        w_v1;
 
-assign                      we                     = tlbwr_we | tlbfill_we;
-assign                      w_index                = tlbwr_we ? w_index_from_csr : tlbfill_we ? tlbfill_random : 4'h0;
+assign                      we                   = tlbwr_we | tlbfill_we;
+assign                      w_index              = tlbwr_we ? w_index_from_csr : tlbfill_we ? tlbfill_random : 4'h0;
 
 // read port
 wire   [$clog2(TLBNUM)-1:0] r_index;
@@ -244,22 +251,22 @@ wire                        r_v1;
 
 //tlb_ex
 wire                        ex_tlb_reload0 [ISSUE-1:0];//tlb重填异常
-wire                        ex_tlb_reload1;//tlb重填异常
-wire                        ex_tlb_ld_unvalid;//tlb的load页无效
-wire                        ex_tlb_st_unvalid;//tlb的store页无效
+wire                        ex_tlb_reload1[ISSUE-1:0];//tlb重填异常
+wire                        ex_tlb_ld_unvalid[ISSUE-1:0];//tlb的load页无效
+wire                        ex_tlb_st_unvalid[ISSUE-1:0];//tlb的store页无效
 wire                        ex_tlb_preif_unvalid [ISSUE-1:0];//tlb取指页无效
 wire                        ex_tlb_plv0 [ISSUE-1:0];//tlb的页权限上访
-wire                        ex_tlb_plv1;//tlb的页权限上访
-wire                        ex_tlb_page_modify;//tlb页修改
+wire                        ex_tlb_plv1[ISSUE-1:0];//tlb的页权限上访
+wire                        ex_tlb_page_modify[ISSUE-1:0];//tlb页修改
 
 wire                        tlb_inst_req;
-wire                        tlb_data_req;
-wire                        tlb_load_req;
-wire                        tlb_store_req;
+wire                        tlb_data_req[ISSUE-1:0];
+wire                        tlb_load_req[ISSUE-1:0];
+wire                        tlb_store_req[ISSUE-1:0];
 
 tlb #(
-    .TLBNUM (TLBNUM),
-    .ISSUE  (ISSUE)
+    .TLBNUM               (TLBNUM               ),
+    .ISSUE                (ISSUE                )
 ) u_tlb(
     .clk                  (clk                  ),
     .resetn               (resetn               ),
@@ -292,6 +299,7 @@ tlb #(
 
     // invtlb opcode
     .invtlb_valid         (invtlb_valid         ),
+    .invtlb_index         (invtlb_index         ),
     .invtlb_op            (invtlb_op            ),
     
     // write port
@@ -461,17 +469,17 @@ btb u_btb(
     .clk           (clk                       ),
     .resetn        (resetn                    ),
     // query port: preIF lookup
-    .query_valid0   (query_valid[0]               ),
-    .query_pc0      (query_pc[0]                  ),
-    .query_hit0     (btb_query_hit[0]             ),//valid and tag match
-    .query_target0  (btb_query_target[0]          ),
-    .query_type0    (query_type[0]                ),
+    .query_valid0  (query_valid[0]            ),
+    .query_pc0     (query_pc[0]               ),
+    .query_hit0    (btb_query_hit[0]          ),//valid and tag match
+    .query_target0 (btb_query_target[0]       ),
+    .query_type0   (query_type[0]             ),
 
-    .query_valid1   (query_valid[1]               ),
-    .query_pc1      (query_pc[1]                  ),
-    .query_hit1     (btb_query_hit[1]             ),//valid and tag match
-    .query_target1  (btb_query_target[1]          ),
-    .query_type1    (query_type[1]                ),
+    .query_valid1  (query_valid[1]            ),
+    .query_pc1     (query_pc[1]               ),
+    .query_hit1    (btb_query_hit[1]          ),//valid and tag match
+    .query_target1 (btb_query_target[1]       ),
+    .query_type1   (query_type[1]             ),
     // update port: Decode writes back real result
     .update_valid  (update_valid              ),
     .update_pc     (update_pc                 ),
@@ -489,13 +497,13 @@ bht u_bht(
     .clk           (clk                       ),
     .resetn        (resetn                    ),
     // query port
-    .query_valid0   (query_valid[0]               ),
-    .query_pc0      (query_pc[0]                  ),//pc being predicted
-    .query_taken0   (query_taken[0]               ),//predict taken
+    .query_valid0  (query_valid[0]            ),
+    .query_pc0     (query_pc[0]               ),//pc being predicted
+    .query_taken0  (query_taken[0]            ),//predict taken
 
-    .query_valid1   (query_valid[1]               ),
-    .query_pc1      (query_pc[1]                  ),//pc being predicted
-    .query_taken1   (query_taken[1]               ),//predict taken
+    .query_valid1  (query_valid[1]            ),
+    .query_pc1     (query_pc[1]               ),//pc being predicted
+    .query_taken1  (query_taken[1]            ),//predict taken
     // update port
     .update_valid  (bht_update_valid          ),//update BHT
     .update_pc     (update_pc                 ),//branch pc
@@ -510,8 +518,8 @@ wire        pop_valid;
 wire        ras_query_hit[ISSUE-1:0];
 wire [31:0] ras_query_target[ISSUE-1:0];
 ras u_ras(
-    .clk          (clk              ),
-    .resetn       (resetn           ),
+    .clk           (clk                 ),
+    .resetn        (resetn              ),
     // frontend query
     .query_valid0  (query_valid[0]      ),
     .query_hit0    (ras_query_hit[0]    ),
@@ -521,10 +529,10 @@ ras u_ras(
     .query_hit1    (ras_query_hit[1]    ),
     .query_target1 (ras_query_target[1] ),
     // backend real call update
-    .push_valid   (push_valid       ),
-    .push_target  (push_target      ),
+    .push_valid    (push_valid          ),
+    .push_target   (push_target         ),
     // backend real return update
-    .pop_valid    (pop_valid        )
+    .pop_valid     (pop_valid           )
 );
 //------------------------{branch prediction}end---------------------------//
 
@@ -604,23 +612,23 @@ assign  WB_need_cancel     = flush;
 //------------------------{i/dbar need cancel}end-------------------------//
 
 //------------------------{5 pipeline bus + inst ram control}begin-------------------------//
-localparam                               preIF1_preIF2_slot0_bus_width = 144;
-localparam                               preIF1_preIF2_bus_width       = 142;
-localparam                               preIF2_IF_bus_width     = 106;
-localparam                               IF_ID_bus_width         = 138;
-localparam                               ID_EXE1_bus_width       = 243;
-localparam                               EXE1_EXE2_bus_width     = 277;
-localparam                               EXE2_MEM_bus_width      = 198;
-localparam                               MEM_WB_bus_width        = 221;
+localparam                                     preIF1_preIF2_slot0_bus_width = 144;
+localparam                                     preIF1_preIF2_bus_width       = 142;
+localparam                                     preIF2_IF_bus_width           = 106;
+localparam                                     IF_ID_bus_width               = 138;
+localparam                                     ID_EXE1_bus_width             = 244; // +1: slot_valid
+localparam                                     EXE1_EXE2_bus_width           = 279; // +1: EXE1_ex
+localparam                                     EXE2_MEM_bus_width            = 198;
+localparam                                     MEM_WB_bus_width              = 221;
 
 wire       [preIF1_preIF2_slot0_bus_width-1:0] preIF1_preIF2_bus_slot0;
 wire       [preIF1_preIF2_bus_width-1:0]       preIF1_preIF2_bus [ISSUE-1:1];
-wire       [preIF2_IF_bus_width-1:0]     preIF2_IF_bus [ISSUE-1:0];
-wire       [IF_ID_bus_width-1:0]         IF_ID_bus [ISSUE-1:0];
-wire       [ID_EXE1_bus_width-1:0]       ID_EXE1_bus [ISSUE-1:0];
-wire       [EXE1_EXE2_bus_width-1:0]     EXE1_EXE2_bus [ISSUE-1:0];
-wire       [EXE2_MEM_bus_width-1:0]      EXE2_MEM_bus [ISSUE-1:0];
-wire       [MEM_WB_bus_width-1:0]        MEM_WB_bus [ISSUE-1:0];
+wire       [preIF2_IF_bus_width-1:0]           preIF2_IF_bus [ISSUE-1:0];
+wire       [IF_ID_bus_width-1:0]               IF_ID_bus [ISSUE-1:0];
+wire       [ID_EXE1_bus_width-1:0]             ID_EXE1_bus [ISSUE-1:0];
+wire       [EXE1_EXE2_bus_width-1:0]           EXE1_EXE2_bus [ISSUE-1:0];
+wire       [EXE2_MEM_bus_width-1:0]            EXE2_MEM_bus [ISSUE-1:0];
+wire       [MEM_WB_bus_width-1:0]              MEM_WB_bus [ISSUE-1:0];
 //------------------------{5-stage pipeline bus + inst ram control}end------------------------//
 
 //------------------------{csr_regfile}begin-------------------------//
@@ -657,7 +665,7 @@ wire          ex_tlb;
 wire   [1:0]  csr_CRMD_DATF;
 wire   [1:0]  csr_CRMD_DATM;
 wire   [1:0]  dmw_mat0 [ISSUE-1:0];
-wire   [1:0]  dmw_mat1;
+wire   [1:0]  dmw_mat1 [ISSUE-1:0];
     //说明s1_mat是已经换算好的？
 wire   [1:0]  inst_mat;
 wire   [1:0]  data_mat;
@@ -778,110 +786,110 @@ csr_regfile #(
 
 //------------------------{5-stage pipeline instantiation}begin-------------------------//
 pre_IF1 #(
-    .slot0_outbus_width  (preIF1_preIF2_slot0_bus_width),
-    .outbus_width        (preIF1_preIF2_bus_width      ),
-    .ISSUE               (ISSUE                        )
+    .slot0_outbus_width      (preIF1_preIF2_slot0_bus_width ),
+    .outbus_width            (preIF1_preIF2_bus_width       ),
+    .ISSUE                   (ISSUE                         )
 ) u_pre_IF1
 (
-    .clk                  (clk                       ),
-    .resetn               (resetn                    ),
+    .clk                     (clk                           ),
+    .resetn                  (resetn                        ),
     //control signal
-    .valid_in             (valid_in                  ),
-    .preIF1_allow_in      (preIF1_allow_in           ),
-    .preIF1_valid         (preIF1_valid              ),
-    .preIF1_ready_go      (preIF1_ready_go           ),
+    .valid_in                (valid_in                      ),
+    .preIF1_allow_in         (preIF1_allow_in               ),
+    .preIF1_valid            (preIF1_valid                  ),
+    .preIF1_ready_go         (preIF1_ready_go               ),
 
-    .preIF1_preIF2_bus_slot0 (preIF1_preIF2_bus_slot0),
-    .preIF1_preIF2_bus       (preIF1_preIF2_bus      ),
+    .preIF1_preIF2_bus_slot0 (preIF1_preIF2_bus_slot0       ),
+    .preIF1_preIF2_bus       (preIF1_preIF2_bus             ),
     
-    .br_target            (br_target                 ),
-    .br_taken             (br_taken                  ),
+    .br_target               (br_target                     ),
+    .br_taken                (br_taken                      ),
     //cancel
-    .preIF1_need_cancel   (preIF1_need_cancel        ),
+    .preIF1_need_cancel      (preIF1_need_cancel            ),
     //stall
-    .need_stall           (need_stall                ),
-    .flush_target         (flush_cacop_cancel_target ),
+    .need_stall              (need_stall                    ),
+    .flush_target            (flush_cacop_cancel_target     ),
     // search port 0 (for fetch the inst)
-    .s0_vppn              (s0_vppn                   ),
-    .s0_va_bit12          (s0_va_bit12               ),
-    .s0_found             (s0_found                  ),
-    .s0_index             (s0_index                  ), // 实际使用的index位宽为log2(TLBNUM)
-    .s0_ppn               (s0_ppn                    ),
-    .s0_ps                (s0_ps                     ),
-    .s0_plv               (s0_plv                    ),
-    .s0_mat               (s0_mat                    ),
-    .s0_d                 (s0_d                      ),
-    .s0_v                 (s0_v                      ),
+    .s0_vppn                 (s0_vppn                       ),
+    .s0_va_bit12             (s0_va_bit12                   ),
+    .s0_found                (s0_found                      ),
+    .s0_index                (s0_index                      ), // 实际使用的index位宽为log2(TLBNUM)
+    .s0_ppn                  (s0_ppn                        ),
+    .s0_ps                   (s0_ps                         ),
+    .s0_plv                  (s0_plv                        ),
+    .s0_mat                  (s0_mat                        ),
+    .s0_d                    (s0_d                          ),
+    .s0_v                    (s0_v                          ),
     //tlb_ex
-    .ex_tlb_reload0       (ex_tlb_reload0            ),//tlb重填异常
-    .ex_tlb_preif_unvalid (ex_tlb_preif_unvalid      ),//tlb取指页无效
-    .ex_tlb_plv0          (ex_tlb_plv0               ),//tlb的页权限上访
-    .tlb_inst_req         (tlb_inst_req              ),
+    .ex_tlb_reload0          (ex_tlb_reload0                ),//tlb重填异常
+    .ex_tlb_preif_unvalid    (ex_tlb_preif_unvalid          ),//tlb取指页无效
+    .ex_tlb_plv0             (ex_tlb_plv0                   ),//tlb的页权限上访
+    .tlb_inst_req            (tlb_inst_req                  ),
     //DMW
-    .dmw_vseg0            (dmw_vseg0                 ),
-    .dmw_found0           (dmw_found0                ),
-    .dmw_pseg0            (dmw_pseg0                 ),
+    .dmw_vseg0               (dmw_vseg0                     ),
+    .dmw_found0              (dmw_found0                    ),
+    .dmw_pseg0               (dmw_pseg0                     ),
     //CRMD PG DA
-    .csr_CRMD_DA          (csr_CRMD_DA               ),
-    .csr_CRMD_PG          (csr_CRMD_PG               ),
-    .csr_CRMD_DATF        (csr_CRMD_DATF             ),
-    .dmw_mat0             (dmw_mat0                  ),
+    .csr_CRMD_DA             (csr_CRMD_DA                   ),
+    .csr_CRMD_PG             (csr_CRMD_PG                   ),
+    .csr_CRMD_DATF           (csr_CRMD_DATF                 ),
+    .dmw_mat0                (dmw_mat0                      ),
     //branch prediction
     // query port: preIF lookup
-    .query_valid          (query_valid               ),
-    .query_pc             (query_pc                  ),
-    .btb_query_hit        (btb_query_hit             ),//valid and tag match
-    .btb_query_target     (btb_query_target          ),
-    .ras_query_hit        (ras_query_hit             ),//valid and tag match
-    .ras_query_target     (ras_query_target          ),
-    .query_type           (query_type                ),
-    .query_taken          (query_taken               ),//predict taken
+    .query_valid             (query_valid                   ),
+    .query_pc                (query_pc                      ),
+    .btb_query_hit           (btb_query_hit                 ),//valid and tag match
+    .btb_query_target        (btb_query_target              ),
+    .ras_query_hit           (ras_query_hit                 ),//valid and tag match
+    .ras_query_target        (ras_query_target              ),
+    .query_type              (query_type                    ),
+    .query_taken             (query_taken                   ),//predict taken
     //IDLE
-    .preIF1_IDLE_stall    (preIF1_idle_block         )
+    .preIF1_IDLE_stall       (preIF1_idle_block             )
 );
 
 pre_IF2 #(
-    .slot0_inbus_width            (preIF1_preIF2_slot0_bus_width),
-    .inbus_width                  (preIF1_preIF2_bus_width      ),
-    .outbus_width                 (preIF2_IF_bus_width          ),
-    .ISSUE                        (ISSUE                        )
+    .slot0_inbus_width            (preIF1_preIF2_slot0_bus_width ),
+    .inbus_width                  (preIF1_preIF2_bus_width       ),
+    .outbus_width                 (preIF2_IF_bus_width           ),
+    .ISSUE                        (ISSUE                         )
 ) u_pre_IF2
 (
-    .clk                          (clk                          ),
-    .resetn                       (resetn                       ),
+    .clk                          (clk                           ),
+    .resetn                       (resetn                        ),
     //control signal
-    .preIF1_preIF2_valid          (preIF1_preIF2_valid          ),
-    .preIF2_allow_in              (preIF2_allow_in              ),
-    .preIF2_valid                 (preIF2_valid                 ),
-    .preIF2_ready_go              (preIF2_ready_go              ),
+    .preIF1_preIF2_valid          (preIF1_preIF2_valid           ),
+    .preIF2_allow_in              (preIF2_allow_in               ),
+    .preIF2_valid                 (preIF2_valid                  ),
+    .preIF2_ready_go              (preIF2_ready_go               ),
 
-    .preIF1_preIF2_bus_slot0      (preIF1_preIF2_bus_slot0      ),
-    .preIF1_preIF2_bus            (preIF1_preIF2_bus            ),
+    .preIF1_preIF2_bus_slot0      (preIF1_preIF2_bus_slot0       ),
+    .preIF1_preIF2_bus            (preIF1_preIF2_bus             ),
     .preIF2_IF_bus                (preIF2_IF_bus                 ),
 
-    .br_taken                     (br_taken                     ),
+    .br_taken                     (br_taken                      ),
     //cancel
-    .preIF2_need_cancel           (preIF2_need_cancel           ),
+    .preIF2_need_cancel           (preIF2_need_cancel            ),
     //stall
-    .need_stall                   (need_stall                   ),
+    .need_stall                   (need_stall                    ),
     //handshake
-    .inst_sram_req                (inst_sram_req                ),
-    .inst_sram_wr                 (inst_sram_wr                 ), // 1表示write 0表示read
-    .inst_sram_wstrb              (inst_sram_wstrb              ),// wstrb 对应原始数据的字节写使能
-    .inst_sram_size               (inst_sram_size               ),
-    .inst_sram_addr_without_cacop (inst_sram_addr_without_cacop ),
-    .inst_sram_wdata              (inst_sram_wdata              ),
-    .inst_sram_addr_ok            (inst_sram_addr_ok            ),
-    .IF_allow_in                  (IF_allow_in                  ),
-    .inst_sram_data_ok            (inst_sram_data_ok            ),
-    .req_to_dataok_trigger        (req_to_dataok_trigger        ),
-    .inst_resp_discard            (inst_resp_discard            ),
+    .inst_sram_req                (inst_sram_req                 ),
+    .inst_sram_wr                 (inst_sram_wr                  ), // 1表示write 0表示read
+    .inst_sram_wstrb              (inst_sram_wstrb               ),// wstrb 对应原始数据的字节写使能
+    .inst_sram_size               (inst_sram_size                ),
+    .inst_sram_addr_without_cacop (inst_sram_addr_without_cacop  ),
+    .inst_sram_wdata              (inst_sram_wdata               ),
+    .inst_sram_addr_ok            (inst_sram_addr_ok             ),
+    .IF_allow_in                  (IF_allow_in                   ),
+    .inst_sram_data_ok            (inst_sram_data_ok             ),
+    .req_to_dataok_trigger        (req_to_dataok_trigger         ),
+    .inst_resp_discard            (inst_resp_discard             ),
     //CRMD
-    .csr_CRMD_DA                  (csr_CRMD_DA                  ),
-    .csr_CRMD_PG                  (csr_CRMD_PG                  ),
+    .csr_CRMD_DA                  (csr_CRMD_DA                   ),
+    .csr_CRMD_PG                  (csr_CRMD_PG                   ),
     //说明s1_mat是已经换算好的？
-    .inst_mat                     (inst_mat                     ),
-    .inst_wr                      (inst_wr                      )
+    .inst_mat                     (inst_mat                      ),
+    .inst_wr                      (inst_wr                       )
 );
 
 fetch #(
@@ -992,6 +1000,7 @@ exe1 #(
     .csr_TLBEHI         (csr_TLBEHI          ),
     //invtlb
     .invtlb_valid       (invtlb_valid        ),
+    .invtlb_index       (invtlb_index        ),
     .invtlb_op          (invtlb_op           ),
     //CRMD PG DA
     .csr_CRMD_DA        (csr_CRMD_DA         ),

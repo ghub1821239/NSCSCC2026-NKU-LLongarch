@@ -41,13 +41,13 @@ wire    [5:0] query_index0;
 wire    [5:0] query_index1;
 wire    [5:0] update_index;
 
-assign        query_index0  = query_pc0[7:2];//BHT索引
-assign        query_index1  = query_pc1[7:2];//BHT索引
+assign        query_index0 = query_pc0[7:2];//BHT索引
+assign        query_index1 = query_pc1[7:2];//BHT索引
 
 assign        update_index = update_pc_r[7:2];
 //最高位是1即可跳转
-assign        query_taken0  = query_valid0 & bht_counter[query_index0][1];
-assign        query_taken1  = query_valid1 & bht_counter[query_index1][1];
+assign        query_taken0 = query_valid0 & bht_counter[query_index0][1];
+assign        query_taken1 = query_valid1 & bht_counter[query_index1][1];
 
 //复位循环
 integer       i;

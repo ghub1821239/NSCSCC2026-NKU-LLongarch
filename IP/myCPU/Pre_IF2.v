@@ -5,69 +5,69 @@ module pre_IF2 #(
     parameter  ISSUE             = 2
 )
 (
-    input  wire                    clk,
-    input  wire                    resetn,
+    input  wire                         clk,
+    input  wire                         resetn,
     //control signal
-    input  wire                    preIF1_preIF2_valid,
-    input  wire                    preIF2_allow_in,
-    output reg                     preIF2_valid,
-    output wire                    preIF2_ready_go,
+    input  wire                         preIF1_preIF2_valid,
+    input  wire                         preIF2_allow_in,
+    output reg                          preIF2_valid,
+    output wire                         preIF2_ready_go,
     
     input  wire [slot0_inbus_width-1:0] preIF1_preIF2_bus_slot0,
     input  wire [inbus_width-1:0]       preIF1_preIF2_bus [ISSUE-1:1],
     output wire [outbus_width-1:0]      preIF2_IF_bus [ISSUE-1:0],//bus
     //br_taken
-    input  wire                    br_taken,
+    input  wire                         br_taken,
     //cancel
-    input  wire                    preIF2_need_cancel,
+    input  wire                         preIF2_need_cancel,
     //stall
-    input  wire                    need_stall,
+    input  wire                         need_stall,
     //handshake
-    output wire                    inst_sram_req,
-    output wire                    inst_sram_wr, // 1表示需要write 0表示需要read
-    output wire [ 3:0]             inst_sram_wstrb,// wstrb也就是表示需要写的位置 0 1 2 分别对应b h w 
-    output wire [ 1:0]             inst_sram_size,
-    output wire [31:0]             inst_sram_addr_without_cacop,
-    output wire [31:0]             inst_sram_wdata,
-    input  wire                    inst_sram_addr_ok,
-    input  wire                    IF_allow_in,
-    input  wire                    inst_sram_data_ok,
+    output wire                         inst_sram_req,
+    output wire                         inst_sram_wr, // 1表示需要write 0表示需要read
+    output wire [ 3:0]                  inst_sram_wstrb,// wstrb也就是表示需要写的位置 0 1 2 分别对应b h w 
+    output wire [ 1:0]                  inst_sram_size,
+    output wire [31:0]                  inst_sram_addr_without_cacop,
+    output wire [31:0]                  inst_sram_wdata,
+    input  wire                         inst_sram_addr_ok,
+    input  wire                         IF_allow_in,
+    input  wire                         inst_sram_data_ok,
     //req&addr -> 1 dataok->0
-    output wire                    req_to_dataok_trigger,
+    output wire                         req_to_dataok_trigger,
     // 当前返回属于已被跳转/异常取消的取指请求
-    output wire                    inst_resp_discard,
+    output wire                         inst_resp_discard,
     //CRMD PG DA
-    input  wire                    csr_CRMD_DA,
-    input  wire                    csr_CRMD_PG,
+    input  wire                         csr_CRMD_DA,
+    input  wire                         csr_CRMD_PG,
     //还有s0_mat上面已经定义过了    // tlb页表映射
-    output wire [1:0]              inst_mat,
-    output wire                    inst_wr
+    output wire [1:0]                   inst_mat,
+    output wire                         inst_wr
 );
 //------------------------{bus}begin-------------------------//
-wire                   slot_valid [ISSUE-1:0];
-wire [31:0]            pc [ISSUE-1:0];
-wire                   ex_ADEF [ISSUE-1:0];
-wire                   ex_tlb_reload0 [ISSUE-1:0];//tlb重填例外
-wire                   ex_tlb_preif_unvalid [ISSUE-1:0];//tlb中取指页无效
-wire                   ex_tlb_plv0 [ISSUE-1:0];//tlb中页特权不合规
-wire                   dmw_found0 [ISSUE-1:0];
-wire [2:0]             dmw_pseg0 [ISSUE-1:0];
-wire [31:0]            tlb_paddr [ISSUE-1:0];
-wire                   btb_query_hit [ISSUE-1:0];//valid且tag
-wire [31:0]            btb_query_target [ISSUE-1:0];        
-wire                   ras_query_hit [ISSUE-1:0];//valid且tag
-wire [31:0]            ras_query_target [ISSUE-1:0];        
-wire [ 1:0]            query_type [ISSUE-1:0];              
-wire                   query_taken [ISSUE-1:0];//预测是否跳转  
+wire                           slot_valid [ISSUE-1:0];
+wire   [31:0]                  pc [ISSUE-1:0];
+wire                           ex_ADEF [ISSUE-1:0];
+wire                           ex_tlb_reload0 [ISSUE-1:0];//tlb重填例外
+wire                           ex_tlb_preif_unvalid [ISSUE-1:0];//tlb中取指页无效
+wire                           ex_tlb_plv0 [ISSUE-1:0];//tlb中页特权不合规
+wire                           dmw_found0 [ISSUE-1:0];
+wire   [2:0]                   dmw_pseg0 [ISSUE-1:0];
+wire   [31:0]                  tlb_paddr [ISSUE-1:0];
+wire                           btb_query_hit [ISSUE-1:0];//valid且tag
+wire   [31:0]                  btb_query_target [ISSUE-1:0];        
+wire                           ras_query_hit [ISSUE-1:0];//valid且tag
+wire   [31:0]                  ras_query_target [ISSUE-1:0];        
+wire   [ 1:0]                  query_type [ISSUE-1:0];              
+wire                           query_taken [ISSUE-1:0];//预测是否跳转  
 
-reg                    req_without_dataok;   
+reg                            req_without_dataok;   
 
-wire                   inst_req_accept      = inst_sram_req && inst_sram_addr_ok;
+wire                           inst_req_accept      = inst_sram_req && inst_sram_addr_ok;
         
-reg  [slot0_inbus_width-1:0] bus_slot0;
-reg  [inbus_width-1:0]       bus [ISSUE-1:1];
+reg    [slot0_inbus_width-1:0] bus_slot0;
+reg    [inbus_width-1:0]       bus [ISSUE-1:1];
 
-genvar i;
+genvar                         i;
 always @(posedge clk) begin
     if (!resetn) begin
         bus_slot0 <= {slot0_inbus_width{1'b0}};
@@ -157,8 +157,8 @@ assign  inst_wr        = 1'b0;
 //------------------------{instRAM handshake}end-------------------------//
 
 //------------------------{ready_go}begin-------------------------//
-wire slot0_has_ex = ex_ADEF[0] | ex_tlb_reload0[0] |
-                    ex_tlb_preif_unvalid[0] | ex_tlb_plv0[0];
+wire    slot0_has_ex    = ex_ADEF[0]              | ex_tlb_reload0[0] |
+                          ex_tlb_preif_unvalid[0] | ex_tlb_plv0[0];
 
 assign  preIF2_ready_go = need_stall ? 1'b0 :
                           !slot_valid[0] ? 1'b1 :
@@ -177,7 +177,7 @@ always @(posedge clk) begin
     end
 end
 
-genvar i2;
+genvar  i2;
 generate 
     for(i2=0;i2<ISSUE;i2=i2+1)begin:gen_preIF2_IF_bus
         assign  preIF2_IF_bus[i2] = {slot_valid[i2],pc[i2],ex_ADEF[i2],ex_tlb_reload0[i2],ex_tlb_preif_unvalid[i2],ex_tlb_plv0[i2],

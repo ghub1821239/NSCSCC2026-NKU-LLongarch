@@ -1,7 +1,7 @@
 module alu(
   input  wire        clk,
   input  wire        resetn,
-  input  wire        EXE1_valid,
+  input  wire        EXE1_slot_valid,
   input  wire        EXE1_need_cancel,
   input  wire [18:0] alu_op,
   input  wire [31:0] alu_src1,
@@ -32,26 +32,27 @@ wire          op_modu;
 wire          op_divu;
 
 
-// control code decomposition
-assign        op_add                     = alu_op[ 0];
-assign        op_sub                     = alu_op[ 1];
-assign        op_slt                     = alu_op[ 2];
-assign        op_sltu                    = alu_op[ 3];
-assign        op_and                     = alu_op[ 4];
-assign        op_nor                     = alu_op[ 5];
-assign        op_or                      = alu_op[ 6];
-assign        op_xor                     = alu_op[ 7];
-assign        op_sll                     = alu_op[ 8];
-assign        op_srl                     = alu_op[ 9];
-assign        op_sra                     = alu_op[10];
-assign        op_lui                     = alu_op[11];
-assign        op_mul                     = alu_op[12];
-assign        op_mulh                    = alu_op[13];
-assign        op_mulh_wu                 = alu_op[14];
-assign        op_div                     = alu_op[15];
-assign        op_mod                     = alu_op[16];
-assign        op_divu                    = alu_op[17];
-assign        op_modu                    = alu_op[18];
+// control code decomposition — 整槽 valid 门控，泡槽/无效时所有 op（含 mul/div）都不拉起
+wire   [18:0] alu_op_m                   = alu_op & {19{EXE1_slot_valid}};
+assign        op_add                     = alu_op_m[ 0];
+assign        op_sub                     = alu_op_m[ 1];
+assign        op_slt                     = alu_op_m[ 2];
+assign        op_sltu                    = alu_op_m[ 3];
+assign        op_and                     = alu_op_m[ 4];
+assign        op_nor                     = alu_op_m[ 5];
+assign        op_or                      = alu_op_m[ 6];
+assign        op_xor                     = alu_op_m[ 7];
+assign        op_sll                     = alu_op_m[ 8];
+assign        op_srl                     = alu_op_m[ 9];
+assign        op_sra                     = alu_op_m[10];
+assign        op_lui                     = alu_op_m[11];
+assign        op_mul                     = alu_op_m[12];
+assign        op_mulh                    = alu_op_m[13];
+assign        op_mulh_wu                 = alu_op_m[14];
+assign        op_div                     = alu_op_m[15];
+assign        op_mod                     = alu_op_m[16];
+assign        op_divu                    = alu_op_m[17];
+assign        op_modu                    = alu_op_m[18];
 
 wire   [31:0] add_sub_result;
 wire   [31:0] slt_result;
@@ -120,7 +121,7 @@ reg           dividend_tvalid;
 reg           is_dividing;
 wire          div_ready_go;
 wire          divide_begin;
-assign        divide_begin               = (op_div | op_mod) & EXE1_valid;
+assign        divide_begin               = op_div | op_mod; // 已含 EXE1_valid（经 alu_op_m）
 reg           kill;//如果有flush掉的div等指令需要取消错误的返回
 always @(posedge clk) begin
     if (~resetn) begin
@@ -175,7 +176,7 @@ reg     dividend_tvalid_u;
 wire    div_ready_go_u;
 reg     is_dividing_u;
 wire    divide_begin_u;
-assign  divide_begin_u    = (op_divu | op_modu) & EXE1_valid;
+assign  divide_begin_u    = op_divu | op_modu; // 已含 EXE1_valid（经 alu_op_m）
 reg     kill_u;//如果有flush掉的div等指令需要取消错误的返回
 always @(posedge clk) begin
     if (~resetn) begin
@@ -195,9 +196,9 @@ always@(posedge clk)begin
         is_dividing_u     <= 1'b0;
     end
     else if (divide_begin_u & !is_dividing_u)begin
-        divisor_tvalid_u  <= EXE1_valid;
-        dividend_tvalid_u <= EXE1_valid;
-        is_dividing_u     <= EXE1_valid;
+        divisor_tvalid_u  <= EXE1_slot_valid;
+        dividend_tvalid_u <= EXE1_slot_valid;
+        is_dividing_u     <= EXE1_slot_valid;
    end
    else begin
         if( divisor_tvalid_u & divisor_tready_u)begin
