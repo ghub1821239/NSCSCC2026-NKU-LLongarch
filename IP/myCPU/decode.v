@@ -196,6 +196,7 @@ wire       struct_comflict           = slot_valid[0] & slot_valid[1] & (
                                             (is_system_break[0] | is_system_break[1])                  | // system/break/ertn/idle/ibar/dbar/cacop
                                             (is_csr_write[0] | is_tlb[0])                              | // 存在 csr写/tlb写 就单发
                                             (is_csr_write[1] | is_tlb[1])                              | // 存在 csr写/tlb写 就单发
+                                            (is_csr_read[0]  | is_csr_read[1])                         |
                                             ((is_csr_read[0] | is_csr_write[0] | is_tlb[0]) & (is_csr_read[1] | is_csr_write[1] | is_tlb[1])) // tlb & csr / csr & csr / tlb & tlb 单发
                                         );
 //  1. 如果本身不跳 但是 pc 不是 pc+4 就是错的；2.如果本身跳但是跳转错了也要冲刷
@@ -243,6 +244,7 @@ assign  pop_valid           = can_update_pred       & (slot_issue[0] & pop_need[
 //------------------------{bus}begin-------------------------//
 generate
     for (gi = 0; gi < ISSUE; gi = gi + 1) begin : gen_id_exe
+    //最高位对应的就是slot_valid_from_decode
         assign  ID_EXE1_bus[gi] = slot_issue[gi] ? {1'b1, exe_payload[gi]} : {outbus_width{1'b0}};
     end
 endgenerate
