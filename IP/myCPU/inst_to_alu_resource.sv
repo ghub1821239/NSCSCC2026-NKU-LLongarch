@@ -39,8 +39,8 @@ module inst_to_alu_resource #(
     output wire                    is_tlb,          //tlbrd/tlbfill/tlbsrch/invtlb/tlbwr
     output wire [4:0]              rf_dest,
     output wire                    rf_gr_we,
-    output wire                    update_need,       // pred_valid & ~ex_ADEF & ~pred_ok
-    output wire                    bht_update_need,   // is_cond & ~ex_ADEF
+    output wire                    upd_need,       // pred_valid & ~ex_ADEF & ~pred_ok
+    output wire                    bht_upd_need,   // is_cond & ~ex_ADEF
     output wire                    push_need,
     output wire                    pop_need,
     output wire [1:0]              br_type,      // COND/JUMP/CALL/RET
@@ -560,8 +560,8 @@ assign  real_taken      = slot_valid & (
                           (inst_bgeu & ($unsigned(rj_value) >= $unsigned(rkd_value))));
                            //   ) & ID_ready_go & ID_valid;
 //output
-assign  update_need     = pred_valid & ~ex_ADEF & ~pred_ok;//预测失败
-assign  bht_update_need = is_cond & ~ex_ADEF;//条件分支预测失败
+assign  upd_need        = pred_valid & ~ex_ADEF & ~pred_ok;//预测失败
+assign  bht_upd_need    = is_cond & ~ex_ADEF;//条件分支预测失败
 assign  push_need       = is_call & ~ex_ADEF;//真实call 要 push
 assign  pop_need        = is_ret  & ~ex_ADEF;//真实return 要 pop
 assign  br_type         = is_cond ? 2'b00 : is_ret ? 2'b11 : is_call ? 2'b10 : 2'b01;//条件分支/返回/调用/跳转
