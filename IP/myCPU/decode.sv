@@ -82,7 +82,7 @@ wire [31:0] inst[ISSUE - 1 : 0];
 wire        ex_ADEF[ISSUE - 1 : 0];
 wire        ex_tlb_reload0[ISSUE - 1 : 0];//tlb重填异常
 wire        ex_tlb_preif_unvalid[ISSUE - 1 : 0];//tlb的取指页无效
-wire        ex_tlb_plv0[ISSUE - 1 : 0];//tlb的页权限上访
+wire        ex_tlb_plv0[ISSUE - 1 : 0];//tlb的页权限非法
 
 wire        btb_query_hit[ISSUE - 1 : 0];//valid且tag
 wire [31:0] btb_query_target[ISSUE - 1 : 0];        
@@ -107,7 +107,7 @@ wire packed_mode;
 //assign drain_hold  = id_fire & hold_valid;//
 //assign packed_mode = hold_valid & bus_has_inst;
 
-wire create_hold_from_soft = id_fire & ~hold_valid & soft_kill_slot1 & slot_issue[0];//无hold指令，soft kill只发送slot0到后端，slot1住hold
+wire create_hold_from_soft = id_fire & ~hold_valid & soft_kill_slot1 & slot_issue[0];//无hold指令，soft kill只发出slot0到后端，slot1住hold
 wire create_hold_from_tail = id_fire & hold_valid & bus_has_inst & slot_issue[0] & slot_issue[1] & bus1_valid & ~hard_kill_slot1;//重新拼包且双发成功，且原始包的slot1进hold
 wire pack_soft_keep_bus    = id_fire & hold_valid & slot_issue[0] & ~slot_issue[1] & soft_kill_slot1;//hold与下一条指令重新拼包后soft kill,则hold指令下一条指令留在bus
 
@@ -229,7 +229,7 @@ generate
       .rf_rdata2            (rf_rdata2[gi]),
       .csr_CRMD_PLV         (csr_CRMD_PLV),
       .has_int              ((gi == 0) ? has_int : 1'b0),//只在slot0判中断
-      .id_fire              (id_fire & slot_valid[gi]), 
+      //.id_fire              (id_fire & slot_valid[gi]), 
       .rf_raddr1            (rf_raddr1[gi]),
       .rf_raddr2            (rf_raddr2[gi]),
       .exe_payload          (exe_payload[gi]),
@@ -238,7 +238,7 @@ generate
       .pred_taken           (pred_taken[gi]),
       .pred_valid           (pred_valid[gi]),
       .pred_ok              (pred_ok[gi]),
-      .redirect_lane        (redirect_lane[gi]),
+      .redirect             (redirect_lane[gi]),
       .is_cond              (is_cond[gi]),
       .is_call              (is_call[gi]),
       .is_ret               (is_ret[gi]),
@@ -319,7 +319,7 @@ assign push_target  = take_push0 ? (pc[0] + 32'd4) :
                       32'b0;
 assign pop_valid    = id_fire & (slot_issue[0] & pop_need[0] |
                                  slot_issue[1] & pop_need[1] & ~pop_need[0]);
-//------------------------{pred_update}begin--------------------------------------//
+//------------------------{pred_update}end--------------------------------------//
 
 //------------------------{bus}begin-------------------------//
 //try to minimize the bus_size
