@@ -6,10 +6,17 @@ endings are preserved byte-for-byte):
   1. Consecutive wire/reg/integer/genvar declarations, single/multi-line
      assign statements and parameter/localparam lines form one block, grouped
      within banner-comment delimited sections (----/***/=== comments split).
-     Type column, range column and signal-name column are aligned using the
-     longest member; for statements with '=' the operator is aligned too.
+     Type column, packed-range column, signal-name column and unpacked-array
+     column (`[ISSUE-1:0]`) are aligned using the longest member; for
+     statements with '=' the operator is aligned too.
   2. Continuation lines of a multi-line statement are re-indented so they line
-     up with the RHS column (the text after '=').
+     up with the RHS column (the text after '='). If the RHS opens with `{` or
+     `(`, body lines are indented one extra space so they sit inside the wrap;
+     a closer-only line (`};` / `);` / `} = ...`) stays at the `{`/`(` column.
+     Nested `?:` wrapped in `()` use a tab (4 spaces) per paren level instead
+     of flattening to the RHS column.
+     Multi-line `{...}` concatenations (pack or unpack) align comma-separated
+     fields into a table, like the `|` OR tables.
   3. Inside each always block, 'lhs <= rhs;' / 'lhs = rhs;' statements are
      aligned together: LHS padded to the longest name, operator column fixed.
   4. Each module instantiation is aligned as one block: every '.port(...)'
@@ -26,7 +33,7 @@ Usage:
     python3 mytool/align_verilog.py --dry-run
 
     # 自定义范围
-    python3 mytool/align_verilog.py 'IP/myCPU/*.v' 'chip/soc_demo/nscscc-team/*.v'
+    python3 mytool/align_verilog.py 'IP/myCPU/MEM.v' 'chip/soc_demo/nscscc-team/*.v'
 
 Default pattern: IP/myCPU/*.v
 """
@@ -42,6 +49,7 @@ KEY_PORTS = (b'input', b'output', b'inout')
 IDENT_RE = re.compile(rb'[A-Za-z_][A-Za-z0-9_$]*')
 BEGIN_RE = re.compile(rb'\bbegin\b')
 END_RE = re.compile(rb'\bend\b')
+TAB_WIDTH = 4
 EXCLUDED_FIRST = {
     b'if', b'else', b'case', b'casez', b'casex', b'endcase', b'begin', b'end',
     b'for', b'while', b'repeat', b'forever', b'always', b'initial', b'module',
@@ -66,6 +74,22 @@ def split_comment(rest):
     if i < 0:
         return rest, b''
     return rest[:i], rest[i:]
+
+
+def skip_ws(code, pos):
+    while pos < len(code) and code[pos:pos + 1] in b' \t':
+        pos += 1
+    return pos
+
+
+def parse_unpacked(code, pos):
+    """Packed-array `[ISSUE-1:0]` after a signal name; empty if none."""
+    pos = skip_ws(code, pos)
+    if pos < len(code) and code[pos:pos + 1] == b'[':
+        rng, npos = parse_range(code, pos)
+        if rng is not None:
+            return rng, npos
+    return b'', pos
 
 
 def parse_range(code, pos):
@@ -152,6 +176,13 @@ def analyze(body, cr, in_always):
                                   'name': lhs, 'range': b'', 'has_eq': True,
                                   'rhs': code[eq + 1:].lstrip().rstrip(),
                                   'tail': comment, 'multi': True, 'cont': [], 'cr': cr}
+        rest = code[m.end():].lstrip() if m else b''
+        if m and rest.startswith(b'{') and eq < 0:
+            return 'assign', {'kind': 'assign', 'kw': kw, 'indent': indent,
+                              'name': b'', 'range': b'', 'has_eq': False,
+                              'concat_lhs': True,
+                              'rhs': rest.rstrip(),
+                              'tail': comment, 'multi': True, 'cont': [], 'cr': cr}
         return 'other', None
 
     kw = starts_with(code, KEY_PARAMS)
@@ -193,23 +224,27 @@ def analyze(body, cr, in_always):
             if not mm:
                 return 'other', None
             name = mm.group()
-            eq = code.find(b'=', mm.end())
+            unpacked, pos = parse_unpacked(code, mm.end())
+            eq = code.find(b'=', pos)
             if eq >= 0:
                 semi = code.rstrip().rfind(b';')
                 if semi > eq:
                     return 'decl', {'kind': 'decl', 'kw': kw, 'indent': indent,
-                                    'name': name, 'range': range_, 'has_eq': True,
+                                    'name': name, 'range': range_, 'unpacked': unpacked,
+                                    'has_eq': True,
                                     'rhs': code[eq + 1:semi].strip(),
                                     'tail': code[semi:] + comment,
                                     'multi': False, 'cont': [], 'cr': cr}
                 return 'decl', {'kind': 'decl', 'kw': kw, 'indent': indent,
-                                'name': name, 'range': range_, 'has_eq': True,
+                                'name': name, 'range': range_, 'unpacked': unpacked,
+                                'has_eq': True,
                                 'rhs': code[eq + 1:].lstrip().rstrip(),
                                 'tail': comment, 'multi': True, 'cont': [], 'cr': cr}
             if b';' in code:
                 return 'decl', {'kind': 'decl', 'kw': kw, 'indent': indent,
-                                'name': name, 'range': range_, 'has_eq': False,
-                                'rhs': b'', 'tail': code[mm.end():] + comment,
+                                'name': name, 'range': range_, 'unpacked': unpacked,
+                                'has_eq': False,
+                                'rhs': b'', 'tail': code[pos:] + comment,
                                 'multi': False, 'cont': [], 'cr': cr}
         return 'other', None
 
@@ -236,9 +271,11 @@ def analyze(body, cr, in_always):
             mm = IDENT_RE.match(code, pos)
             if not mm:
                 return 'other', None
+            unpacked, pos = parse_unpacked(code, mm.end())
             return 'port', {'kind': 'port', 'indent': indent, 'direction': kw,
                             'type': type_, 'range': range_, 'name': mm.group(),
-                            'tail': code[mm.end():] + comment, 'cr': cr}
+                            'unpacked': unpacked,
+                            'tail': code[pos:] + comment, 'cr': cr}
         return 'other', None
 
     if in_always:
@@ -280,6 +317,96 @@ def analyze(body, cr, in_always):
     return 'other', None
 
 
+def wrap_delta(code):
+    """Net `()` / `{}` depth change, ignoring bit-select `[]`."""
+    delta = 0
+    i = 0
+    while i < len(code):
+        c = code[i:i + 1]
+        if c == b'[':
+            depth = 1
+            i += 1
+            while i < len(code) and depth:
+                if code[i:i + 1] == b'[':
+                    depth += 1
+                elif code[i:i + 1] == b']':
+                    depth -= 1
+                i += 1
+            continue
+        if c == b'(' or c == b'{':
+            delta += 1
+        elif c == b')' or c == b'}':
+            delta -= 1
+        i += 1
+    return delta
+
+
+def is_wrap_opener(rhs):
+    """True when `{` / `(` wraps the rest of the statement, not a same-line group."""
+    s = rhs.lstrip()
+    if s[:1] not in (b'{', b'('):
+        return False
+    if s.strip() in (b'{', b'('):
+        return True
+    return wrap_delta(s) > 0
+
+
+def is_nested_ternary_wrap(rec):
+    """Paren-wrapped nested `?:`, with `)` / `:` / `(` as structural lines."""
+    bodies = [rec.get('rhs', b'')]
+    for _ci, st, _ccr in rec.get('cont', []):
+        bodies.append(split_comment(st)[0])
+    if not any(b'?' in code for code in bodies):
+        return False
+    structural = {b'(', b')', b');', b':', b'};', b'}'}
+    return any(code.strip() in structural for code in bodies)
+
+
+def next_tab_stop(col):
+    return (col // TAB_WIDTH + 1) * TAB_WIDTH
+
+
+def nested_ternary_cont_col(depth_start, depth_after, rest, wrap_base):
+    if not rest:
+        return 0
+    code, _ = split_comment(rest)
+    token = code.strip()
+    if token[:1] in (b')', b'}'):
+        level = max(depth_after, 0)
+    else:
+        level = max(depth_start, 1)
+    return wrap_base + (level - 1) * TAB_WIDTH
+
+
+def wrap_continuation_col(rhs, rest, rhs_col):
+    """Indent inside a `{` / `(` wrap: body +1, closer-only line at opener."""
+    if not is_wrap_opener(rhs) or not rest:
+        return rhs_col
+    code, _ = split_comment(rest)
+    token = code.strip()
+    if token[:1] in (b'}', b')'):
+        return rhs_col
+    return rhs_col + 1
+
+
+def rewrite_continuations(rec, rhs_col, out):
+    nested = is_nested_ternary_wrap(rec)
+    wrap_base = next_tab_stop(rhs_col) if nested else None
+    depth = wrap_delta(rec.get('rhs', b'')) if nested else 0
+    for ci, rest, ccr in rec['cont']:
+        if not rest:
+            out[ci] = rest + ccr
+            continue
+        if nested:
+            code, _ = split_comment(rest)
+            d0 = depth
+            depth += wrap_delta(code)
+            col = nested_ternary_cont_col(d0, depth, rest, wrap_base)
+        else:
+            col = wrap_continuation_col(rec['rhs'], rest, rhs_col)
+        out[ci] = b' ' * col + rest + ccr
+
+
 def rewrite_decl_assign(run, out):
     recs = [rec for _, rec in run]
     type_col = max(len(r['kw']) for r in recs)
@@ -292,24 +419,35 @@ def rewrite_decl_assign(run, out):
             align_multiline_table(rec)
     for idx, rec in run:
         field = rec['kw'].ljust(type_col) + b' ' + rec['range'].ljust(range_col) + b' '
+        unpacked = rec.get('unpacked', b'')
+        if rec.get('concat_lhs'):
+            out[idx] = (rec['indent'] + rec['kw'].ljust(type_col) + b' ' +
+                        rec['rhs'] + rec['tail'] + rec['cr'])
+            opener_col = len(rec['indent']) + type_col + 1
+            if rec['multi']:
+                rewrite_continuations(rec, opener_col, out)
+            continue
         if rec['has_eq']:
             sep = b' = ' if rec['rhs'] else b' ='
-            out[idx] = (rec['indent'] + field + rec['name'].ljust(name_w) + sep +
+            name_part = rec['name'].ljust(name_w) + unpacked
+            out[idx] = (rec['indent'] + field + name_part + sep +
                         rec['rhs'] + rec['tail'] + rec['cr'])
             if rec['multi']:
-                for ci, rest, ccr in rec['cont']:
-                    out[ci] = (b' ' * rhs_col + rest + ccr) if rest else (rest + ccr)
+                rewrite_continuations(rec, rhs_col, out)
+        elif unpacked:
+            out[idx] = (rec['indent'] + field + rec['name'].ljust(name_w) +
+                        unpacked + rec['tail'] + rec['cr'])
         else:
             out[idx] = rec['indent'] + field + rec['name'] + rec['tail'] + rec['cr']
 
 
 def align_multiline_table(rec):
-    """Align a repeated operator column inside a multi-line statement.
+    """Align operators inside a multi-line statement.
 
-    If every body line (RHS of the first line plus all continuation lines)
-    has the same first single-char operator (e.g. '&'), pad the prefix so
-    those operators line up; then re-align a trailing '|' column so the
-    line-end ORs stay aligned as well.
+    Prefer a `|` table (OR-of-many-terms, possibly only on continuation
+    lines after a first line of `&`). Else a `,` table for `{...}`
+    concatenations (pack or unpack). Fall back to lining up a shared
+    first single-char operator (e.g. `&`) plus a trailing `|` column.
     """
     bodies = [(rec['rhs'], rec['tail'])]
     for _ci, st, _ccr in rec['cont']:
@@ -317,6 +455,41 @@ def align_multiline_table(rec):
         bodies.append((code, comment))
     if any(not code.strip() for code, _ in bodies):
         return
+    if is_nested_ternary_wrap(rec):
+        return
+
+    pipe_idxs = [i for i, (code, _) in enumerate(bodies)
+                 if len(find_or_positions(code)) >= 1]
+    if len(pipe_idxs) >= 2:
+        codes = [bodies[i][0] for i in pipe_idxs]
+        aligned_codes = align_pipe_codes(codes)
+        if aligned_codes is not None:
+            for i, new_code in zip(pipe_idxs, aligned_codes):
+                bodies[i] = (new_code, bodies[i][1])
+            rec['rhs'] = bodies[0][0]
+            rec['tail'] = bodies[0][1]
+            rec['cont'] = [
+                (ci, code + comment, ccr)
+                for (ci, _st, ccr), (code, comment) in zip(rec['cont'], bodies[1:])
+            ]
+            return
+
+    if rec.get('concat_lhs') or rec['rhs'].lstrip()[:1] == b'{':
+        field_idxs = [i for i, (code, _) in enumerate(bodies)
+                      if concat_line_kind(code) == 'field']
+        if len(field_idxs) >= 2:
+            codes = [bodies[i][0] for i in field_idxs]
+            aligned_codes = align_comma_codes(codes)
+            if aligned_codes is not None:
+                for i, new_code in zip(field_idxs, aligned_codes):
+                    bodies[i] = (new_code, bodies[i][1])
+                rec['rhs'] = bodies[0][0]
+                rec['tail'] = bodies[0][1]
+                rec['cont'] = [
+                    (ci, code + comment, ccr)
+                    for (ci, _st, ccr), (code, comment) in zip(rec['cont'], bodies[1:])
+                ]
+                return
 
     ops = [first_candidate(code) for code, _ in bodies]
     if any(o is None for o in ops):
@@ -355,6 +528,236 @@ def align_multiline_table(rec):
     ]
 
 
+def find_or_positions(code):
+    """Byte offsets of OR `|` (not `||`) outside `[]`."""
+    pos = []
+    depth = 0
+    i = 0
+    while i < len(code):
+        c = code[i:i + 1]
+        if c == b'[':
+            depth += 1
+        elif c == b']':
+            depth -= 1
+        elif depth == 0 and c == b'|':
+            if code[i + 1:i + 2] == b'|':
+                i += 2
+                continue
+            pos.append(i)
+        i += 1
+    return pos
+
+
+def split_or_fields(code):
+    pipes = find_or_positions(code)
+    trailing = bool(pipes) and code.rstrip().endswith(b'|')
+    if not pipes:
+        return [code], False
+    fields = []
+    start = 0
+    for p in pipes:
+        fields.append(code[start:p])
+        start = p + 1
+    last = code[start:]
+    if trailing:
+        if last.strip():
+            fields.append(last)
+    else:
+        fields.append(last)
+    return fields, trailing
+
+
+def concat_line_kind(code):
+    t = code.strip()
+    if not t:
+        return 'empty'
+    if t in (b'{', b'('):
+        return 'opener'
+    if t[:1] in (b'}', b')'):
+        return 'closer'
+    return 'field'
+
+
+def split_off_concat_closer(s):
+    """Split trailing `} = bus;` / `);` off a concat field line."""
+    brace = bracket = paren = 0
+    i = 0
+    while i < len(s):
+        c = s[i:i + 1]
+        if c == b'{':
+            brace += 1
+        elif c == b'}':
+            if brace == 0 and bracket == 0 and paren == 0:
+                return s[:i].rstrip(), s[i:]
+            brace -= 1
+        elif c == b'[':
+            bracket += 1
+        elif c == b']':
+            bracket -= 1
+        elif c == b'(':
+            paren += 1
+        elif c == b')':
+            if paren == 0 and brace == 0 and bracket == 0:
+                return s[:i].rstrip(), s[i:]
+            paren -= 1
+        i += 1
+    return s, b''
+
+
+def unwrap_concat_line(code):
+    s = code.strip()
+    prefix = b''
+    if s.startswith(b'{'):
+        prefix = b'{'
+        s = s[1:].lstrip()
+    elif s.startswith(b'('):
+        prefix = b'('
+        s = s[1:].lstrip()
+    inner, suffix = split_off_concat_closer(s)
+    return prefix, inner, suffix
+
+
+def find_comma_positions(code):
+    """Byte offsets of `,` outside `{}` / `[]` / `()`."""
+    pos = []
+    brace = bracket = paren = 0
+    i = 0
+    while i < len(code):
+        c = code[i:i + 1]
+        if c == b'{':
+            brace += 1
+        elif c == b'}':
+            brace -= 1
+        elif c == b'[':
+            bracket += 1
+        elif c == b']':
+            bracket -= 1
+        elif c == b'(':
+            paren += 1
+        elif c == b')':
+            paren -= 1
+        elif c == b',' and brace == 0 and bracket == 0 and paren == 0:
+            pos.append(i)
+        i += 1
+    return pos
+
+
+def split_comma_fields(code):
+    commas = find_comma_positions(code)
+    trailing = bool(commas) and code.rstrip().endswith(b',')
+    if not commas:
+        return [code], False
+    fields = []
+    start = 0
+    for p in commas:
+        fields.append(code[start:p])
+        start = p + 1
+    last = code[start:]
+    if trailing:
+        if last.strip():
+            fields.append(last)
+    else:
+        fields.append(last)
+    return fields, trailing
+
+
+def align_comma_codes(codes):
+    """Pad comma-separated concat fields so columns line up across rows.
+
+    Rows may have different field counts; only shared columns are aligned.
+    A wrapping `{` on the first field line is kept as a one-byte prefix.
+    """
+    parsed = []
+    for c in codes:
+        prefix, inner, suffix = unwrap_concat_line(c)
+        fields, trailing = split_comma_fields(inner)
+        fields = [f.strip() for f in fields]
+        if not fields or any(f == b'' for f in fields):
+            return None
+        parsed.append((prefix, fields, trailing, suffix))
+
+    nmax = max(len(f) for _, f, _, _ in parsed)
+    widths = [0] * nmax
+    for _, fields, _, _ in parsed:
+        for i, f in enumerate(fields):
+            widths[i] = max(widths[i], len(f))
+
+    out = []
+    for prefix, fields, trailing, suffix in parsed:
+        cells = []
+        for i, f in enumerate(fields):
+            if i == len(fields) - 1 and not trailing:
+                cells.append(f)
+            else:
+                cells.append(f.ljust(widths[i]))
+        line = prefix + b', '.join(cells)
+        if trailing:
+            line += b','
+        if suffix:
+            line = line.rstrip() + suffix
+        out.append(line)
+    return out
+
+
+def align_pipe_codes(codes):
+    """Pad `|`-separated fields so OR columns line up across rows.
+
+    Rows may have different field counts; only shared columns are aligned.
+    Continuation rows after a wrapping `(` get a leading space so names
+    line up with the first row's identifier (not the parenthesis).
+    """
+    stripped = []
+    for c in codes:
+        fields, trailing = split_or_fields(c)
+        fields = [f.strip() for f in fields]
+        if not fields or any(f == b'' for f in fields):
+            return None
+        stripped.append((fields, trailing))
+    nmax = max(len(f) for f, _ in stripped)
+    if nmax < 2:
+        return None
+
+    any_paren = any(fields[0].startswith(b'(') for fields, _ in stripped)
+    widths = [0] * nmax
+    inners = []
+    prefixes = []
+    suffixes = []
+    for fields, _tr in stripped:
+        row_pref = []
+        row_inner = []
+        row_suf = []
+        for col, f in enumerate(fields):
+            suf = b''
+            if col == len(fields) - 1:
+                tm = re.match(rb'^(.*?)(\)\s*;|;|,)\s*$', f)
+                if tm and tm.group(1).strip():
+                    f, suf = tm.group(1).rstrip(), tm.group(2)
+            if col == 0 and any_paren:
+                if f.startswith(b'('):
+                    pref, inner = b'(', f[1:]
+                else:
+                    pref, inner = b' ', f
+            else:
+                pref, inner = b'', f
+            row_pref.append(pref)
+            row_inner.append(inner)
+            row_suf.append(suf)
+            widths[col] = max(widths[col], len(inner))
+        prefixes.append(row_pref)
+        inners.append(row_inner)
+        suffixes.append(row_suf)
+
+    out = []
+    for (_fields, trailing), pref, inner, suf in zip(stripped, prefixes, inners, suffixes):
+        n = len(inner)
+        cells = [pref[c] + inner[c].ljust(widths[c]) + suf[c] for c in range(n)]
+        line = b' | '.join(cells)
+        if trailing:
+            line += b' |'
+        out.append(line)
+    return out
+
+
 def rewrite_always(run, out):
     recs = [rec for _, rec in run]
     name_w = max(len(r['name']) for r in recs)
@@ -363,8 +766,7 @@ def rewrite_always(run, out):
         sep = b' ' + rec['op'] + (b' ' + rec['rhs'] if rec['rhs'] else b'')
         out[idx] = rec['indent'] + rec['name'].ljust(name_w) + sep + rec['tail'] + rec['cr']
         if rec['multi']:
-            for ci, rest, ccr in rec['cont']:
-                out[ci] = (b' ' * rhs_col + rest + ccr) if rest else (rest + ccr)
+            rewrite_continuations(rec, rhs_col, out)
 
 
 def first_candidate(code):
@@ -399,10 +801,13 @@ def rewrite_ports(run, out):
     max_dir = max(len(r['direction']) for r in recs)
     max_type = max(len(r['type']) for r in recs)
     max_range = max(len(r['range']) for r in recs)
+    name_w = max(len(r['name']) for r in recs)
     for idx, rec in run:
+        unpacked = rec.get('unpacked', b'')
+        name_part = rec['name'].ljust(name_w) + unpacked if unpacked else rec['name']
         out[idx] = (rec['indent'] + rec['direction'].ljust(max_dir) + b' ' +
                     rec['type'].ljust(max_type) + b' ' +
-                    rec['range'].ljust(max_range) + b' ' + rec['name'] +
+                    rec['range'].ljust(max_range) + b' ' + name_part +
                     rec['tail'] + rec['cr'])
 
 

@@ -84,29 +84,29 @@ module csr_regfile#(
     // CRMD重填异常
     input  wire                      ex_tlb_reload,
     // DMW0/1 
-    input  wire [2:0]                dmw_vseg0 [ISSUE-1:0],
-    output wire                      dmw_found0 [ISSUE-1:0],
-    output wire [2:0]                dmw_pseg0 [ISSUE-1:0],
+    input  wire [2:0]                dmw_vseg0             [ISSUE-1:0],
+    output wire                      dmw_found0            [ISSUE-1:0],
+    output wire [2:0]                dmw_pseg0             [ISSUE-1:0],
 
-    input  wire [2:0]                dmw_vseg1[ISSUE-1:0],
-    output wire                      dmw_found1[ISSUE-1:0],
-    output wire [2:0]                dmw_pseg1[ISSUE-1:0],
+    input  wire [2:0]                dmw_vseg1             [ISSUE-1:0],
+    output wire                      dmw_found1            [ISSUE-1:0],
+    output wire [2:0]                dmw_pseg1             [ISSUE-1:0],
 
     //ERTN 例外指令返回更改CRMD
     input  wire                      ertn_valid,
     
     //BADV
     input  wire                      csr_tlb_reload0,
-    input  wire                      csr_tlb_plv0   ,
+    input  wire                      csr_tlb_plv0,
     input  wire                      csr_tlb_reload1,  
-    input  wire                      csr_tlb_plv1   ,
+    input  wire                      csr_tlb_plv1,
     // ex_tlb TLBEHI
     input  wire                      ex_tlb,
     //mat:存储访问类型
     output wire [1:0]                csr_CRMD_DATF,
     output wire [1:0]                csr_CRMD_DATM,
-    output wire [1:0]                dmw_mat0 [ISSUE-1:0],
-    output wire [1:0]                dmw_mat1 [ISSUE-1:0],
+    output wire [1:0]                dmw_mat0              [ISSUE-1:0],
+    output wire [1:0]                dmw_mat1              [ISSUE-1:0],
     // 操作手册6.3复位指出
     input  wire                      LLbit_wb,
     input  wire                      LLbit_wdata,
@@ -787,10 +787,10 @@ assign        csr_tcfg_rvalue        = {TCFG[`CSR_TCFG_INITVAL],TCFG[`CSR_TCFG_P
 assign        csr_tval_rvalue        = timer_cnt[31:0];
 assign        csr_tlbidx_rvalue      = {TLBIDX[`CSR_TLBIDX_NE],{1'b0},TLBIDX[`CSR_TLBIDX_PS],{8'b0},{16-$clog2(TLBNUM){1'b0}},TLBIDX[`CSR_TLBIDX_INDEX]};
 assign        csr_tlbehi_rvalue      = {TLBEHI[`CSR_TLBEHI_VPPN],{13'b0}};
-assign        csr_tlbelo0_rvalue     = {{4'b0},TLBELO0[`CSR_TLBELO0_PPN],{1'b0},TLBELO0[`CSR_TLBELO0_G],TLBELO0[`CSR_TLBELO0_MAT],
-                                       TLBELO0[`CSR_TLBELO0_PLV],TLBELO0[`CSR_TLBELO0_D],TLBELO0[`CSR_TLBELO0_V]};
-assign        csr_tlbelo1_rvalue     = {{4'b0},TLBELO1[`CSR_TLBELO1_PPN],{1'b0},TLBELO1[`CSR_TLBELO1_G],TLBELO1[`CSR_TLBELO1_MAT],
-                                       TLBELO1[`CSR_TLBELO1_PLV],TLBELO1[`CSR_TLBELO1_D],TLBELO1[`CSR_TLBELO1_V]};
+assign        csr_tlbelo0_rvalue     = {{4'b0}                   , TLBELO0[`CSR_TLBELO0_PPN], {1'b0}                 , TLBELO0[`CSR_TLBELO0_G], TLBELO0[`CSR_TLBELO0_MAT],
+                                        TLBELO0[`CSR_TLBELO0_PLV], TLBELO0[`CSR_TLBELO0_D]  , TLBELO0[`CSR_TLBELO0_V]};
+assign        csr_tlbelo1_rvalue     = {{4'b0}                   , TLBELO1[`CSR_TLBELO1_PPN], {1'b0}                 , TLBELO1[`CSR_TLBELO1_G], TLBELO1[`CSR_TLBELO1_MAT],
+                                        TLBELO1[`CSR_TLBELO1_PLV], TLBELO1[`CSR_TLBELO1_D]  , TLBELO1[`CSR_TLBELO1_V]};
 assign        csr_asid_rvalue        = {{8'b0},{8'ha},{6'b0},ASID[`CSR_ASID_ASID]};
 assign        csr_tlbrentry_rvalue   = {TLBRENTRY[`CSR_TLBRENTRY_PA],{6'b0}};
 assign        csr_dmw0_rvalue        = {DMW0[`CSR_DMW0_VSEG],{1{1'b0}},DMW0[`CSR_DMW0_PSEG],{19{1'b0}},DMW0[`CSR_DMW0_MAT],DMW0[`CSR_DMW0_PLV3],{2{1'b0}},DMW0[`CSR_DMW0_PLV0]};

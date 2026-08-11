@@ -291,7 +291,7 @@ assign  wlast  = (dirty_wb_r == data_awlen[1:0]);
 
 //----------------------------- 写响应赋值数据 begin -------------------------------
 assign  write_req_addr_ok = ~wr_wait_b &
-                            (aw_done | (awvalid & awready)) &
+                            (aw_done | (awvalid & awready)) &     
                             (w_done  | (wvalid  & wready & wlast ));
 assign  data_wr_rdy       = write_req_addr_ok;
 assign  bready            = wr_wait_b;

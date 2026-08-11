@@ -12,13 +12,13 @@ module decode #(
     output wire                    ID_ready_go,
     
     //bus
-    input  wire [inbus_width-1:0]  IF_ID_bus[ISSUE - 1 : 0],//bus
-    output wire [outbus_width-1:0] ID_EXE1_bus[ISSUE - 1 : 0],
+    input  wire [inbus_width-1:0]  IF_ID_bus          [ISSUE - 1 : 0],//bus
+    output wire [outbus_width-1:0] ID_EXE1_bus        [ISSUE - 1 : 0],
     //regfile
-    output wire [4:0]              rf_raddr1[ISSUE - 1 : 0],
-    output wire [4:0]              rf_raddr2[ISSUE - 1 : 0],
-    input  wire [31:0]             rf_rdata1[ISSUE - 1 : 0],
-    input  wire [31:0]             rf_rdata2[ISSUE - 1 : 0],
+    output wire [4:0]              rf_raddr1          [ISSUE - 1 : 0],
+    output wire [4:0]              rf_raddr2          [ISSUE - 1 : 0],
+    input  wire [31:0]             rf_rdata1          [ISSUE - 1 : 0],
+    input  wire [31:0]             rf_rdata2          [ISSUE - 1 : 0],
     //cancel control
     input  wire                    ID_need_cancel,
     //prediction
@@ -29,17 +29,17 @@ module decode #(
     input  wire                    has_int,
     //branch prediction
     //更新端口：Decode确定真实跳转后更新BTB
-    output wire                    update_valid ,
+    output wire                    update_valid,
     output wire                    bht_update_valid,
-    output wire [31:0]             update_pc    ,
+    output wire [31:0]             update_pc,
     output wire [31:0]             update_target,//真实目标地址
-    output wire [1:0]              update_type  ,
-    output wire                    update_taken ,//真实是否跳转
+    output wire [1:0]              update_type,
+    output wire                    update_taken,//真实是否跳转
     // 是不是 call 调用
-    output wire                    push_valid   ,
-    output wire [31:0]             push_target  ,
+    output wire                    push_valid,
+    output wire [31:0]             push_target,
     // 是不是 return 返回
-    output wire                    pop_valid    ,
+    output wire                    pop_valid,
     //PLV
     input  wire [1:0]              csr_CRMD_PLV
 );
@@ -58,39 +58,39 @@ always @(posedge clk)begin
         end
     end
 end
-wire          slot_valid[ISSUE - 1 : 0];
-wire   [31:0] pc[ISSUE - 1 : 0];
-wire   [31:0] inst[ISSUE - 1 : 0];
-wire          ex_ADEF[ISSUE - 1 : 0];
-wire          ex_tlb_reload0[ISSUE - 1 : 0];//tlb重填异常
+wire          slot_valid          [ISSUE - 1 : 0];
+wire   [31:0] pc                  [ISSUE - 1 : 0];
+wire   [31:0] inst                [ISSUE - 1 : 0];
+wire          ex_ADEF             [ISSUE - 1 : 0];
+wire          ex_tlb_reload0      [ISSUE - 1 : 0];//tlb重填异常
 wire          ex_tlb_preif_unvalid[ISSUE - 1 : 0];//tlb的取指页无效
-wire          ex_tlb_plv0[ISSUE - 1 : 0];//tlb的页权限上访
+wire          ex_tlb_plv0         [ISSUE - 1 : 0];//tlb的页权限上访
 
-wire          btb_query_hit[ISSUE - 1 : 0];//valid且tag
-wire   [31:0] btb_query_target[ISSUE - 1 : 0];        
-wire          ras_query_hit[ISSUE - 1 : 0];//valid且tag
-wire   [31:0] ras_query_target[ISSUE - 1 : 0];        
-wire   [ 1:0] query_type[ISSUE - 1 : 0];              
-wire          query_taken[ISSUE - 1 : 0];//预测是否跳转 
+wire          btb_query_hit       [ISSUE - 1 : 0];//valid且tag
+wire   [31:0] btb_query_target    [ISSUE - 1 : 0];        
+wire          ras_query_hit       [ISSUE - 1 : 0];//valid且tag
+wire   [31:0] ras_query_target    [ISSUE - 1 : 0];        
+wire   [ 1:0] query_type          [ISSUE - 1 : 0];              
+wire          query_taken         [ISSUE - 1 : 0];//预测是否跳转 
 
 genvar        gi;
 generate
     for (gi = 0; gi < ISSUE; gi = gi + 1) begin : gen_i 
          assign {
-            slot_valid[gi],
-            pc[gi],
-            inst[gi],
-            ex_ADEF[gi],
-            ex_tlb_reload0[gi],
-            ex_tlb_preif_unvalid[gi],
-            ex_tlb_plv0[gi],
-            btb_query_hit[gi],
-            btb_query_target[gi],
-            ras_query_hit[gi],
-            ras_query_target[gi],
-            query_type[gi],
-            query_taken[gi]
-        } = bus[gi];
+                 slot_valid[gi]          ,
+                 pc[gi]                  ,
+                 inst[gi]                ,
+                 ex_ADEF[gi]             ,
+                 ex_tlb_reload0[gi]      ,
+                 ex_tlb_preif_unvalid[gi],
+                 ex_tlb_plv0[gi]         ,
+                 btb_query_hit[gi]       ,
+                 btb_query_target[gi]    ,
+                 ras_query_hit[gi]       ,
+                 ras_query_target[gi]    ,
+                 query_type[gi]          ,
+                 query_taken[gi]
+                } = bus[gi];
     end 
 endgenerate
 
