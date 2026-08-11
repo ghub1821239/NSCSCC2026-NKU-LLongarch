@@ -27,7 +27,7 @@ DST_ENCODINGS = {
     "utf8": ("utf-8",),
 }
 
-DEFAULT_PATTERNS = ["IP/myCPU/*.v", "IP/myCPU/*.vh"]
+DEFAULT_PATTERNS = ["IP/myCPU/*.v", "IP/myCPU/*.sv", "IP/myCPU/*.vh"]
 
 
 def detect_newline(data: bytes) -> bytes:
