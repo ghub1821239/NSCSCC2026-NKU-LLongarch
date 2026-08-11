@@ -268,7 +268,7 @@ endgenerate
 wire RAW_s1_s0 = slot_valid[0] & slot_valid[1] & rf_gr_we[0] & (rf_dest[0] != 5'b0) & 
                  ((rf_raddr1[1] == rf_dest[0]) | (rf_raddr2[1] == rf_dest[0]));//发生写后读事件
 wire WAW_s1_s0 = slot_valid[0] & slot_valid[1] & rf_gr_we[0] & rf_gr_we[1] & (rf_dest[0] != 5'b0) & (rf_dest[0] == rf_dest[1]);//发生写后写事件
- wire struct_comflict = slot_valid[0] & slot_valid[1] & ((is_mem[0] & is_mem[1])                    | 
+wire struct_comflict = slot_valid[0] & slot_valid[1] & ((is_mem[0] & is_mem[1])                    | 
                                         (is_system_break[0] | is_system_break[1])                  |
                                         ((is_csr_write[0] | is_tlb[0]) & slot_valid[1])            |
                                         ((is_csr_write[1] | is_tlb[1]) & slot_valid[0])            |
