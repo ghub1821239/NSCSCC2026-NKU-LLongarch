@@ -1,6 +1,7 @@
 module alu(
   input  wire        clk,
   input  wire        resetn,
+  input  wire        EXE1_ex,
   input  wire        EXE1_slot_valid,
   input  wire        EXE1_need_cancel,
   input  wire [18:0] alu_op,
@@ -121,7 +122,7 @@ reg           dividend_tvalid;
 reg           is_dividing;
 wire          div_ready_go;
 wire          divide_begin;
-assign        divide_begin               = op_div | op_mod; // 已含 EXE1_valid（经 alu_op_m）
+assign        divide_begin               = (op_div | op_mod) & ~EXE1_need_cancel & ~EXE1_ex; // 已含 EXE1_valid（经 alu_op_m）
 reg           kill;//如果有flush掉的div等指令需要取消错误的返回
 always @(posedge clk) begin
     if (~resetn) begin
@@ -130,6 +131,13 @@ always @(posedge clk) begin
     else if (div_ready_go) begin
         kill <= 1'b0;
     end
+    // 这个是有点问题的：
+    /*
+     拍 1 ：divider & has_int 直接 ready_go 但是会发起 req
+     拍 2 : 非 divide/mod 指令，但是收到 cancel，此时 kill 无法置起
+     拍 3 : 是 divide 但是因为 AXI 没有办法获取新的 src 计算，拿到的是拍 1 的值
+     最好的办法就是拍 1 不发起 req
+    */
     else if (EXE1_need_cancel & divide_begin) begin
         kill <= 1'b1;
     end
@@ -176,7 +184,7 @@ reg     dividend_tvalid_u;
 wire    div_ready_go_u;
 reg     is_dividing_u;
 wire    divide_begin_u;
-assign  divide_begin_u    = op_divu | op_modu; // 已含 EXE1_valid（经 alu_op_m）
+assign  divide_begin_u    = (op_divu | op_modu) & ~EXE1_need_cancel & ~EXE1_ex; // 已含 EXE1_valid（经 alu_op_m）
 reg     kill_u;//如果有flush掉的div等指令需要取消错误的返回
 always @(posedge clk) begin
     if (~resetn) begin

@@ -48,7 +48,7 @@ reg     [2:0]               main_state;
 reg                         wb_state;
 
 // 最近最少使用
-reg                         LRU  [`GROUP_NUM-1:0];
+reg                         LRU               [`GROUP_NUM-1:0];
 // 伪随机替换
 // reg [22:0] LFSR;
 
