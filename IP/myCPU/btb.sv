@@ -44,10 +44,10 @@ end
 
 //------------------------{reg 锁存提升主频}end-------------------------//
 
-reg            btb_valid  [0:63];//64个1位有效位
-reg     [23:0] btb_tag    [0:63];//64个24位tag
-reg     [31:0] btb_target [0:63];//64个32位跳转目标地址
-reg     [ 1:0] btb_type   [0:63];//64个2位分支类型
+reg            btb_valid    [0:63];//64个1位有效位
+reg     [23:0] btb_tag      [0:63];//64个24位tag
+reg     [31:0] btb_target   [0:63];//64个32位跳转目标地址
+reg     [ 1:0] btb_type     [0:63];//64个2位分支类型
 
 wire    [ 5:0] query_index0;
 wire    [ 5:0] query_index1;
@@ -63,17 +63,17 @@ assign         query_tag0    = query_pc0[31:8];
 assign         query_index1  = query_pc1[7:2];
 assign         query_tag1    = query_pc1[31:8];
 
-assign         update_index = update_pc_r[7:2];
-assign         update_tag   = update_pc_r[31:8];
+assign         update_index  = update_pc_r[7:2];
+assign         update_tag    = update_pc_r[31:8];
 
 //查表：查询有效&当前项有效&tag匹配
 assign         query_hit0    = query_valid0 & btb_valid[query_index0] &
-                              (btb_tag[query_index0] == query_tag0);
+                               (btb_tag[query_index0] == query_tag0);
 assign         query_target0 = query_hit0 ? btb_target[query_index0] : 32'b0;
 assign         query_type0   = query_hit0 ? btb_type[query_index0] : 2'b0;
 
 assign         query_hit1    = query_valid1 & btb_valid[query_index1] &
-                              (btb_tag[query_index1] == query_tag1);
+                               (btb_tag[query_index1] == query_tag1);
 assign         query_target1 = query_hit1 ? btb_target[query_index1] : 32'b0;
 assign         query_type1   = query_hit1 ? btb_type[query_index1] : 2'b0;
 
