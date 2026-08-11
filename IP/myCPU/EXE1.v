@@ -355,7 +355,7 @@ generate
         assign  EXE1_slot_ready_go[i] = ~EXE1_slot_valid[i] | ex_div_need_notice[i] | ~div_mod[i] | divide_ready_go[i];
     end
 endgenerate
-assign  EXE1_ready_go = &EXE1_slot_ready_go;
+assign  EXE1_ready_go = EXE1_slot_ready_go[0] & EXE1_slot_ready_go[1];
 always @(posedge clk) begin
     if(!resetn)begin
         EXE1_valid <= 1'b0;
