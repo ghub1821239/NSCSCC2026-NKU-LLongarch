@@ -9,7 +9,7 @@ module csr_regfile#(
     input  wire                      csr_we,
     input  wire [31:0]               csr_wmask,
     input  wire [13:0]               csr_num,
-    // 写掩码存在的必要就是因为csrwcfg这个指令会涉及到rj的写掩码问题，这里是放到了csr里进行处理，这样也不会让decode的关键路径变长
+    // 写掩码存在的必要就是因为csrxcfg这个指令会涉及到rj的写掩码问题，这里是放到了csr里进行处理，这样也不会让decode的关键路径变长
     input  wire [31:0]               csr_wvalue,
     // read port
     input  wire                      csr_re,
@@ -84,29 +84,29 @@ module csr_regfile#(
     // CRMD重填异常
     input  wire                      ex_tlb_reload,
     // DMW0/1 
-    input  wire [2:0]                dmw_vseg0 [ISSUE-1:0],
-    output wire                      dmw_found0 [ISSUE-1:0],
-    output wire [2:0]                dmw_pseg0 [ISSUE-1:0],
+    input  wire [2:0]                dmw_vseg0             [ISSUE-1:0],
+    output wire                      dmw_found0            [ISSUE-1:0],
+    output wire [2:0]                dmw_pseg0             [ISSUE-1:0],
 
-    input  wire [2:0]                dmw_vseg1,
-    output wire                      dmw_found1,
-    output wire [2:0]                dmw_pseg1,
+    input  wire [2:0]                dmw_vseg1             [ISSUE-1:0],
+    output wire                      dmw_found1            [ISSUE-1:0],
+    output wire [2:0]                dmw_pseg1             [ISSUE-1:0],
 
     //ERTN 例外指令返回更改CRMD
     input  wire                      ertn_valid,
     
     //BADV
     input  wire                      csr_tlb_reload0,
-    input  wire                      csr_tlb_plv0   ,
+    input  wire                      csr_tlb_plv0,
     input  wire                      csr_tlb_reload1,  
-    input  wire                      csr_tlb_plv1   ,
+    input  wire                      csr_tlb_plv1,
     // ex_tlb TLBEHI
     input  wire                      ex_tlb,
     //mat:存储访问类型
     output wire [1:0]                csr_CRMD_DATF,
     output wire [1:0]                csr_CRMD_DATM,
-    output wire [1:0]                dmw_mat0 [ISSUE-1:0],
-    output wire [1:0]                dmw_mat1,
+    output wire [1:0]                dmw_mat0              [ISSUE-1:0],
+    output wire [1:0]                dmw_mat1              [ISSUE-1:0],
     // 操作手册6.3复位指出
     input  wire                      LLbit_wb,
     input  wire                      LLbit_wdata,
@@ -709,34 +709,35 @@ assign  LLbit = LLBCTL[`CSR_LLBCTL_ROLLB];
 // ---------- DMW0/1 end --------------
 
 // ---------- READ --------------
-wire          dmw0_plv_ok;
-wire          dmw1_plv_ok;
-assign        dmw0_plv_ok            = (DMW0[`CSR_DMW0_PLV0] && csr_CRMD_PLV == 2'b00) ||
-                                       (DMW0[`CSR_DMW0_PLV3] && csr_CRMD_PLV == 2'b11);
-assign        dmw1_plv_ok            = (DMW1[`CSR_DMW1_PLV0] && csr_CRMD_PLV == 2'b00) ||
-                                       (DMW1[`CSR_DMW1_PLV3] && csr_CRMD_PLV == 2'b11);
+wire    dmw0_plv_ok;
+wire    dmw1_plv_ok;
+assign  dmw0_plv_ok = (DMW0[`CSR_DMW0_PLV0] && csr_CRMD_PLV == 2'b00) ||
+                      (DMW0[`CSR_DMW0_PLV3] && csr_CRMD_PLV == 2'b11);
+assign  dmw1_plv_ok = (DMW1[`CSR_DMW1_PLV0] && csr_CRMD_PLV == 2'b00) ||
+                      (DMW1[`CSR_DMW1_PLV3] && csr_CRMD_PLV == 2'b11);
 // ( DMW0/1 preIF2 begin )
-genvar i0;
+genvar  i0;
 generate
     for (i0 = 0; i0 < ISSUE; i0 = i0 + 1) begin : gen_dmw_preIF2
-        wire vseg0_0 = (dmw_vseg0[i0] == DMW0[`CSR_DMW0_VSEG]);
-        wire vseg0_1 = (dmw_vseg0[i0] == DMW1[`CSR_DMW1_VSEG]);
-        wire dmw0_hit = vseg0_0 & dmw0_plv_ok;
-        wire dmw1_hit = vseg0_1 & dmw1_plv_ok;
-        assign dmw_found0[i0] = dmw0_hit | dmw1_hit;
-        assign dmw_mat0[i0]   = dmw0_hit ? DMW0[`CSR_DMW0_MAT]  : DMW1[`CSR_DMW1_MAT];
-        assign dmw_pseg0[i0]  = dmw0_hit ? DMW0[`CSR_DMW0_PSEG] : DMW1[`CSR_DMW1_PSEG];
+        wire    vseg0_0        = (dmw_vseg0[i0] == DMW0[`CSR_DMW0_VSEG]);
+        wire    vseg0_1        = (dmw_vseg0[i0] == DMW1[`CSR_DMW1_VSEG]);
+        wire    dmw0_hit       = vseg0_0 & dmw0_plv_ok;
+        wire    dmw1_hit       = vseg0_1 & dmw1_plv_ok;
+        assign  dmw_found0[i0] = dmw0_hit | dmw1_hit;
+        assign  dmw_mat0[i0]   = dmw0_hit ? DMW0[`CSR_DMW0_MAT]  : DMW1[`CSR_DMW1_MAT];
+        assign  dmw_pseg0[i0]  = dmw0_hit ? DMW0[`CSR_DMW0_PSEG] : DMW1[`CSR_DMW1_PSEG];
+
+        // ( DMW0/1 preIF2 end )
+        wire    vseg1_0;   
+        wire    vseg1_1;   
+        assign  vseg1_0        = (dmw_vseg1[i0] == DMW0[`CSR_DMW0_VSEG]);
+        assign  vseg1_1        = (dmw_vseg1[i0] == DMW1[`CSR_DMW0_VSEG]);
+        assign  dmw_found1[i0] = (vseg1_0 & dmw0_plv_ok) | (vseg1_1 & dmw1_plv_ok);
+        assign  dmw_mat1[i0]   = vseg1_0 ? DMW0[`CSR_DMW0_MAT]  : DMW1[`CSR_DMW1_MAT];
+        assign  dmw_pseg1[i0]  = vseg1_0 ? DMW0[`CSR_DMW0_PSEG] : DMW1[`CSR_DMW0_PSEG];
     end
 endgenerate
-// ( DMW0/1 preIF2 end )
 
-wire          vseg1_0;   
-wire          vseg1_1;   
-assign        vseg1_0                = (dmw_vseg1 == DMW0[`CSR_DMW0_VSEG]);
-assign        vseg1_1                = (dmw_vseg1 == DMW1[`CSR_DMW0_VSEG]);
-assign        dmw_found1             = (vseg1_0 & dmw0_plv_ok) | (vseg1_1 & dmw1_plv_ok);
-assign        dmw_mat1               = vseg1_0 ? DMW0[`CSR_DMW0_MAT]  : DMW1[`CSR_DMW1_MAT];
-assign        dmw_pseg1              = vseg1_0 ? DMW0[`CSR_DMW0_PSEG] : DMW1[`CSR_DMW0_PSEG];
 //TLB读接口,tlb寄存器单独写接口接到TLB
 
 //mat:存储访问类型
@@ -786,10 +787,10 @@ assign        csr_tcfg_rvalue        = {TCFG[`CSR_TCFG_INITVAL],TCFG[`CSR_TCFG_P
 assign        csr_tval_rvalue        = timer_cnt[31:0];
 assign        csr_tlbidx_rvalue      = {TLBIDX[`CSR_TLBIDX_NE],{1'b0},TLBIDX[`CSR_TLBIDX_PS],{8'b0},{16-$clog2(TLBNUM){1'b0}},TLBIDX[`CSR_TLBIDX_INDEX]};
 assign        csr_tlbehi_rvalue      = {TLBEHI[`CSR_TLBEHI_VPPN],{13'b0}};
-assign        csr_tlbelo0_rvalue     = {{4'b0},TLBELO0[`CSR_TLBELO0_PPN],{1'b0},TLBELO0[`CSR_TLBELO0_G],TLBELO0[`CSR_TLBELO0_MAT],
-                                       TLBELO0[`CSR_TLBELO0_PLV],TLBELO0[`CSR_TLBELO0_D],TLBELO0[`CSR_TLBELO0_V]};
-assign        csr_tlbelo1_rvalue     = {{4'b0},TLBELO1[`CSR_TLBELO1_PPN],{1'b0},TLBELO1[`CSR_TLBELO1_G],TLBELO1[`CSR_TLBELO1_MAT],
-                                       TLBELO1[`CSR_TLBELO1_PLV],TLBELO1[`CSR_TLBELO1_D],TLBELO1[`CSR_TLBELO1_V]};
+assign        csr_tlbelo0_rvalue     = {{4'b0}                   , TLBELO0[`CSR_TLBELO0_PPN], {1'b0}                 , TLBELO0[`CSR_TLBELO0_G], TLBELO0[`CSR_TLBELO0_MAT],
+                                        TLBELO0[`CSR_TLBELO0_PLV], TLBELO0[`CSR_TLBELO0_D]  , TLBELO0[`CSR_TLBELO0_V]};
+assign        csr_tlbelo1_rvalue     = {{4'b0}                   , TLBELO1[`CSR_TLBELO1_PPN], {1'b0}                 , TLBELO1[`CSR_TLBELO1_G], TLBELO1[`CSR_TLBELO1_MAT],
+                                        TLBELO1[`CSR_TLBELO1_PLV], TLBELO1[`CSR_TLBELO1_D]  , TLBELO1[`CSR_TLBELO1_V]};
 assign        csr_asid_rvalue        = {{8'b0},{8'ha},{6'b0},ASID[`CSR_ASID_ASID]};
 assign        csr_tlbrentry_rvalue   = {TLBRENTRY[`CSR_TLBRENTRY_PA],{6'b0}};
 assign        csr_dmw0_rvalue        = {DMW0[`CSR_DMW0_VSEG],{1{1'b0}},DMW0[`CSR_DMW0_PSEG],{19{1'b0}},DMW0[`CSR_DMW0_MAT],DMW0[`CSR_DMW0_PLV3],{2{1'b0}},DMW0[`CSR_DMW0_PLV0]};
