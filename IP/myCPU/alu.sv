@@ -33,7 +33,7 @@ wire          op_modu;
 wire          op_divu;
 
 
-// control code decomposition — 整槽 valid 门控，泡槽/无效时所有 op（含 mul/div）都不拉起
+// control code decomposition ― 整槽 valid 门控，泡槽/无效时所有 op（含 mul/div）都不拉起
 wire   [18:0] alu_op_m                   = alu_op & {19{EXE1_slot_valid}};
 assign        op_add                     = alu_op_m[ 0];
 assign        op_sub                     = alu_op_m[ 1];
