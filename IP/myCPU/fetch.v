@@ -1,7 +1,7 @@
 module fetch #(
     parameter  inbus_width  = 106,
     parameter  outbus_width = 138,
-    parameter  ISSUE        =  2
+    parameter  ISSUE        = 2
 )
 (
     input  wire                    clk,
@@ -68,21 +68,21 @@ end
 //------------------------{缓存inst}end-------------------------//
 
 //------------------------{bus}begin-------------------------//
-wire                   slot_valid[ISSUE - 1 : 0];
-wire [31:0]            pc[ISSUE - 1 : 0];
-wire                   ex_ADEF[ISSUE - 1 : 0];
-wire                   ex_tlb_reload0[ISSUE - 1 : 0];//tlb重填例外
-wire                   ex_tlb_preif_unvalid[ISSUE - 1 : 0];//tlb中取指页无效
-wire                   ex_tlb_plv0[ISSUE - 1 : 0];//tlb中页特权不合规
-wire                   btb_query_hit[ISSUE - 1 : 0];//valid且tag
-wire [31:0]            btb_query_target[ISSUE - 1 : 0];        
-wire                   ras_query_hit[ISSUE - 1 : 0];//valid且tag
-wire [31:0]            ras_query_target[ISSUE - 1 : 0];        
-wire [ 1:0]            query_type[ISSUE - 1 : 0];              
-wire                   query_taken[ISSUE - 1 : 0];//预测是否跳转 
+wire                      slot_valid[ISSUE - 1 : 0];
+wire    [31:0]            pc[ISSUE - 1 : 0];
+wire                      ex_ADEF[ISSUE - 1 : 0];
+wire                      ex_tlb_reload0[ISSUE - 1 : 0];//tlb重填例外
+wire                      ex_tlb_preif_unvalid[ISSUE - 1 : 0];//tlb中取指页无效
+wire                      ex_tlb_plv0[ISSUE - 1 : 0];//tlb中页特权不合规
+wire                      btb_query_hit[ISSUE - 1 : 0];//valid且tag
+wire    [31:0]            btb_query_target[ISSUE - 1 : 0];        
+wire                      ras_query_hit[ISSUE - 1 : 0];//valid且tag
+wire    [31:0]            ras_query_target[ISSUE - 1 : 0];        
+wire    [ 1:0]            query_type[ISSUE - 1 : 0];              
+wire                      query_taken[ISSUE - 1 : 0];//预测是否跳转 
         
-reg  [inbus_width-1:0] bus [ISSUE - 1 : 0];
-integer k;
+reg     [inbus_width-1:0] bus [ISSUE - 1 : 0];
+integer                   k;
 always @(posedge clk)begin
     if(!resetn)begin
         for (k = 0; k < ISSUE; k = k + 1) begin
@@ -96,9 +96,9 @@ always @(posedge clk)begin
     end
 end
 
-genvar i;
+genvar  i;
 generate
-    for (i = 0; i < ISSUE; i = i + 1) begin 
+    for (i = 0; i < ISSUE; i = i + 1) begin:gen_bus_unpack
         assign {slot_valid[i], pc[i], ex_ADEF[i], ex_tlb_reload0[i],
             ex_tlb_preif_unvalid[i], ex_tlb_plv0[i],
             btb_query_hit[i], btb_query_target[i],
@@ -111,17 +111,17 @@ endgenerate
 
 //------------------------{ready_go}begin-------------------------//
 wire    inst_resp_valid = inst_sram_data_ok & ~inst_resp_discard;//request 是有效的,discard表示已经发起req但是被取消，那么其返回的data_ok应是无效的,所以用discard取消
-wire    deliver_now = IF_valid & IF_ready_go & ID_allow_in & ~need_stall & ~IF_need_cancel;
-wire    slot0_has_ex = ex_ADEF[0] | ex_tlb_reload0[0] |
-                       ex_tlb_preif_unvalid[0] | ex_tlb_plv0[0];
+wire    deliver_now     = IF_valid & IF_ready_go & ID_allow_in & ~need_stall & ~IF_need_cancel;
+wire    slot0_has_ex    = ex_ADEF[0]              | ex_tlb_reload0[0] |
+                          ex_tlb_preif_unvalid[0] | ex_tlb_plv0[0];
 // 与 Pre_IF2 一致：空槽 / 例外不访存
-wire no_need_mem = (~slot_valid[0]) | slot0_has_ex;
+wire    no_need_mem     = (~slot_valid[0]) | slot0_has_ex;
 // 正常取指：data_ok（本拍）或 line 已锁存
-wire mem_ready = (inst_resp_valid & req_to_dataok_trigger) | inst_line_reg_valid;
+wire    mem_ready       = (inst_resp_valid & req_to_dataok_trigger) | inst_line_reg_valid;
 
-assign  IF_ready_go = (need_stall | IF_need_cancel) ? 1'b0 :
-                      no_need_mem                   ? 1'b1 :
-                      mem_ready;
+assign  IF_ready_go     = (need_stall | IF_need_cancel) ? 1'b0 :
+                          no_need_mem                   ? 1'b1 :
+                          mem_ready;
 //------------------------{ready_go}end-------------------------//
 
 always @(posedge clk) begin
@@ -137,31 +137,31 @@ always @(posedge clk) begin
 end
 //------------------------{ready_go}end-------------------------//
 
-wire [127 : 0] inst_line_use = inst_line_reg_valid ? inst_line_reg : inst_sram_rdata;
-wire [31:0] inst_from_line[ISSUE - 1 : 0];//从line中拿到的inst
-wire [31:0] inst_out      [ISSUE - 1 : 0];//从IF传递到ID的inst
+wire [127 : 0] inst_line_use  = inst_line_reg_valid ? inst_line_reg : inst_sram_rdata;
+wire [31:0]    inst_from_line[ISSUE - 1 : 0];//从line中拿到的inst
+wire [31:0]    inst_out      [ISSUE - 1 : 0];//从IF传递到ID的inst
 generate
-    for (i = 0; i < ISSUE; i = i + 1) begin 
-        assign inst_from_line[i] =  (pc[i][3:2] == 2'b00) ? inst_line_use[31:0]   :
+    for (i = 0; i < ISSUE; i = i + 1) begin :gen_inst_out
+        assign  inst_from_line[i] = (pc[i][3:2] == 2'b00) ? inst_line_use[31:0]   :
                                     (pc[i][3:2] == 2'b01) ? inst_line_use[63:32]  :
                                     (pc[i][3:2] == 2'b10) ? inst_line_use[95:64]  :
                                     inst_line_use[127:96];
-        assign inst_out[i]       =  (no_need_mem | ~slot_valid[i]) ? 32'b0 : inst_from_line[i];
-        assign IF_ID_bus[i]      = slot_valid[i] ? {
-                                slot_valid[i],
-                                pc[i],
-                                inst_out[i],
-                                ex_ADEF[i],
-                                ex_tlb_reload0[i],
-                                ex_tlb_preif_unvalid[i],
-                                ex_tlb_plv0[i],
-                                btb_query_hit[i],
-                                btb_query_target[i],
-                                ras_query_hit[i],
-                                ras_query_target[i],
-                                query_type[i],
-                                query_taken[i]
-                                } : {outbus_width{1'b0}};
+        assign  inst_out[i]       = (no_need_mem | ~slot_valid[i]) ? 32'b0 : inst_from_line[i];
+        assign  IF_ID_bus[i]      = slot_valid[i] ? {
+                                        slot_valid[i],
+                                        pc[i],
+                                        inst_out[i],
+                                        ex_ADEF[i],
+                                        ex_tlb_reload0[i],
+                                        ex_tlb_preif_unvalid[i],
+                                        ex_tlb_plv0[i],
+                                        btb_query_hit[i],
+                                        btb_query_target[i],
+                                        ras_query_hit[i],
+                                        ras_query_target[i],
+                                        query_type[i],
+                                        query_taken[i]
+                                    } : {outbus_width{1'b0}};
     end
 endgenerate
 

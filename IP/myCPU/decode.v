@@ -1,6 +1,6 @@
 module decode #(
     parameter  inbus_width  = 138,
-    parameter  outbus_width = 243,
+    parameter  outbus_width = 244,
     parameter  ISSUE        = 2   
 )(
     input  wire                    clk,
@@ -44,8 +44,8 @@ module decode #(
     input  wire [1:0]              csr_CRMD_PLV
 );
 //------------------------{bus decode}begin-------------------------//
-reg [inbus_width-1:0] bus[ISSUE - 1 : 0];
-integer k;
+reg     [inbus_width-1:0] bus[ISSUE - 1 : 0];
+integer                   k;
 always @(posedge clk)begin
     if(!resetn)begin
         for (k = 0; k < ISSUE; k = k + 1) begin
@@ -58,22 +58,22 @@ always @(posedge clk)begin
         end
     end
 end
-wire        slot_valid[ISSUE - 1 : 0];
-wire [31:0] pc[ISSUE - 1 : 0];
-wire [31:0] inst[ISSUE - 1 : 0];
-wire        ex_ADEF[ISSUE - 1 : 0];
-wire        ex_tlb_reload0[ISSUE - 1 : 0];//tlb重填异常
-wire        ex_tlb_preif_unvalid[ISSUE - 1 : 0];//tlb的取指页无效
-wire        ex_tlb_plv0[ISSUE - 1 : 0];//tlb的页权限上访
+wire          slot_valid[ISSUE - 1 : 0];
+wire   [31:0] pc[ISSUE - 1 : 0];
+wire   [31:0] inst[ISSUE - 1 : 0];
+wire          ex_ADEF[ISSUE - 1 : 0];
+wire          ex_tlb_reload0[ISSUE - 1 : 0];//tlb重填异常
+wire          ex_tlb_preif_unvalid[ISSUE - 1 : 0];//tlb的取指页无效
+wire          ex_tlb_plv0[ISSUE - 1 : 0];//tlb的页权限上访
 
-wire        btb_query_hit[ISSUE - 1 : 0];//valid且tag
-wire [31:0] btb_query_target[ISSUE - 1 : 0];        
-wire        ras_query_hit[ISSUE - 1 : 0];//valid且tag
-wire [31:0] ras_query_target[ISSUE - 1 : 0];        
-wire [ 1:0] query_type[ISSUE - 1 : 0];              
-wire        query_taken[ISSUE - 1 : 0];//预测是否跳转 
+wire          btb_query_hit[ISSUE - 1 : 0];//valid且tag
+wire   [31:0] btb_query_target[ISSUE - 1 : 0];        
+wire          ras_query_hit[ISSUE - 1 : 0];//valid且tag
+wire   [31:0] ras_query_target[ISSUE - 1 : 0];        
+wire   [ 1:0] query_type[ISSUE - 1 : 0];              
+wire          query_taken[ISSUE - 1 : 0];//预测是否跳转 
 
-genvar gi;
+genvar        gi;
 generate
     for (gi = 0; gi < ISSUE; gi = gi + 1) begin : gen_i 
          assign {
@@ -94,152 +94,156 @@ generate
     end 
 endgenerate
 
-wire pred_not_neighbor = slot_valid[0] & slot_valid[1] & (pc[1] != (pc[0] + 32'd4));
-wire pred_is_neighbor  = slot_valid[0] & slot_valid[1] & (pc[1] == (pc[0] + 32'd4));
+wire  pred_not_neighbor = slot_valid[0] & slot_valid[1] & (pc[1] != (pc[0] + 32'd4));
+wire  pred_is_neighbor  = slot_valid[0] & slot_valid[1] & (pc[1] == (pc[0] + 32'd4));
 //------------------------{bus decode}end-------------------------//
 
 //------------------------{module}begin--------------------------//
-wire id_fire = ID_valid & ID_ready_go & ~ID_need_cancel & ID_allow_in;
+wire                    can_update_pred = ID_valid & ID_ready_go & ~ID_need_cancel & ID_allow_in;
 
-wire [outbus_width-1:0] exe_payload   [ISSUE-1:0];
-wire        real_taken     [ISSUE-1:0];
-wire [31:0] real_target    [ISSUE-1:0];
-wire        pred_taken     [ISSUE-1:0];
-wire        pred_valid     [ISSUE-1:0];
-wire        pred_ok        [ISSUE-1:0];
-wire        redirect_lane  [ISSUE-1:0];
-wire        is_cond        [ISSUE-1:0];
-wire        is_call        [ISSUE-1:0];
-wire        is_ret         [ISSUE-1:0];
-wire        is_jump        [ISSUE-1:0];
-wire        is_br          [ISSUE-1:0];
-wire        is_mem         [ISSUE-1:0];
-wire        is_system_break[ISSUE-1:0];
-wire        is_csr_write   [ISSUE-1:0];
-wire        is_csr_read    [ISSUE-1:0];
-wire        is_tlb         [ISSUE-1:0];
-wire [4:0]  rf_dest        [ISSUE-1:0];
-wire        rf_gr_we       [ISSUE-1:0];
-// 若按上面加了可选端口：
-wire        upd_need       [ISSUE-1:0];
-wire        bht_upd_need   [ISSUE-1:0];
-wire        push_need      [ISSUE-1:0];
-wire        pop_need       [ISSUE-1:0];
-wire [1:0]  br_type        [ISSUE-1:0];
-wire        ex_INE         [ISSUE-1:0];
-wire        ex_IPE         [ISSUE-1:0];
+wire [outbus_width-2:0] exe_payload    [ISSUE-1:0]; // 不含 slot_valid；组装 ID_EXE1 时再拼 1'b1
+wire                    real_taken     [ISSUE-1:0];
+wire [31:0]             real_target    [ISSUE-1:0];
+wire                    pred_taken     [ISSUE-1:0];
+wire                    pred_valid     [ISSUE-1:0];
+wire                    pred_ok        [ISSUE-1:0];
+wire                    redirect       [ISSUE-1:0];
+wire                    is_cond        [ISSUE-1:0];
+wire                    is_call        [ISSUE-1:0];
+wire                    is_ret         [ISSUE-1:0];
+wire                    is_jump        [ISSUE-1:0];
+wire                    is_br          [ISSUE-1:0];
+wire                    is_mem         [ISSUE-1:0];
+wire                    is_system_break[ISSUE-1:0];
+wire                    is_csr_write   [ISSUE-1:0];
+wire                    is_csr_read    [ISSUE-1:0];
+wire                    is_tlb         [ISSUE-1:0];
+wire [4:0]              rf_dest        [ISSUE-1:0];
+wire                    rf_gr_we       [ISSUE-1:0];
+wire                    update_need    [ISSUE-1:0];
+wire                    bht_update_need[ISSUE-1:0];
+wire                    push_need      [ISSUE-1:0];
+wire                    pop_need       [ISSUE-1:0];
+wire [1:0]              br_type        [ISSUE-1:0];
+wire                    ex_INE         [ISSUE-1:0];
+wire                    ex_IPE         [ISSUE-1:0];
 
 generate
   for (gi = 0; gi < ISSUE; gi = gi + 1) begin : gen_alu_res
     inst_to_alu_resource #(
-      .outbus_width(outbus_width)
-    ) u_inst_to_alu (
-      .pc                   (pc[gi]),
-      .inst                 (inst[gi]),
-      .slot_valid           (slot_valid[gi]),
-      .ex_ADEF              (ex_ADEF[gi]),
-      .ex_tlb_reload0       (ex_tlb_reload0[gi]),
-      .ex_tlb_preif_unvalid (ex_tlb_preif_unvalid[gi]),
-      .ex_tlb_plv0          (ex_tlb_plv0[gi]),
-      .btb_query_hit        (btb_query_hit[gi]),
-      .btb_query_target     (btb_query_target[gi]),
-      .ras_query_hit        (ras_query_hit[gi]),
-      .ras_query_target     (ras_query_target[gi]),
-      .query_type           (query_type[gi]),
-      .query_taken          (query_taken[gi]),
-      .rf_rdata1            (rf_rdata1[gi]),
-      .rf_rdata2            (rf_rdata2[gi]),
-      .csr_CRMD_PLV         (csr_CRMD_PLV),
-      .has_int              ((gi == 0) ? has_int : 1'b0),//只在slot0判中断
-      .id_fire              (id_fire & slot_valid[gi]), 
-      .rf_raddr1            (rf_raddr1[gi]),
-      .rf_raddr2            (rf_raddr2[gi]),
-      .exe_payload          (exe_payload[gi]),
-      .real_taken           (real_taken[gi]),
-      .real_target          (real_target[gi]),
-      .pred_taken           (pred_taken[gi]),
-      .pred_valid           (pred_valid[gi]),
-      .pred_ok              (pred_ok[gi]),
-      .redirect_lane        (redirect_lane[gi]),
-      .is_cond              (is_cond[gi]),
-      .is_call              (is_call[gi]),
-      .is_ret               (is_ret[gi]),
-      .is_jump              (is_jump[gi]),
-      .is_br                (is_br[gi]),
-      .is_mem               (is_mem[gi]),
-      .is_system_break      (is_system_break[gi]),  //system/break/ertn/idle/ibar/dbar/cacop
-      .is_csr_write         (is_csr_write[gi]),    //csrwr/csrxchg
-      .is_csr_read          (is_csr_read[gi]),     //csrrd/rdcntid/rdcntvl/rdcntdvh
-      .is_tlb               (is_tlb[gi]),          //tlbrd/tlbfill/tlbsrch/invtlb/tlbwr
-      .rf_dest              (rf_dest[gi]),
-      .rf_gr_we             (rf_gr_we[gi])
-      // .upd_need(upd_need[gi]), ...
-      .upd_need             (upd_need[gi]    ),       // pred_valid & ~ex_ADEF & ~pred_ok
-      .bht_upd_need         (bht_upd_need[gi]),   // is_cond & ~ex_ADEF
-      .push_need            (push_need[gi]   ),
-      .pop_need             (pop_need[gi]    ),
-      .br_type              (br_type[gi]     ),         // COND/JUMP/CALL/RET
-      .ex_INE               (ex_INE[gi]),
-      .ex_IPE               (ex_IPE[gi])
+      .outbus_width         (outbus_width - 1           )
+    ) 
+    u_inst_to_alu_resource (
+      .pc                   (pc[gi]                     ),
+      .inst                 (inst[gi]                   ),
+      .slot_valid           (slot_valid[gi]             ),
+      .ex_ADEF              (ex_ADEF[gi]                ),
+      .ex_tlb_reload0       (ex_tlb_reload0[gi]         ),
+      .ex_tlb_preif_unvalid (ex_tlb_preif_unvalid[gi]   ),
+      .ex_tlb_plv0          (ex_tlb_plv0[gi]            ),
+      .btb_query_hit        (btb_query_hit[gi]          ),
+      .btb_query_target     (btb_query_target[gi]       ),
+      .ras_query_hit        (ras_query_hit[gi]          ),
+      .ras_query_target     (ras_query_target[gi]       ),
+      .query_type           (query_type[gi]             ),
+      .query_taken          (query_taken[gi]            ),
+      .rf_rdata1            (rf_rdata1[gi]              ),
+      .rf_rdata2            (rf_rdata2[gi]              ),
+      .csr_CRMD_PLV         (csr_CRMD_PLV               ),
+      .has_int              ((gi == 0) ? has_int : 1'b0 ),//只在slot0判中断
+      .rf_raddr1            (rf_raddr1[gi]              ),
+      .rf_raddr2            (rf_raddr2[gi]              ),
+      .exe_payload          (exe_payload[gi]            ),
+      .real_taken           (real_taken[gi]             ),
+      .real_target          (real_target[gi]            ),
+      .pred_taken           (pred_taken[gi]             ),
+      .pred_valid           (pred_valid[gi]             ),
+      .pred_ok              (pred_ok[gi]                ),
+      .redirect             (redirect[gi]               ),
+      .is_cond              (is_cond[gi]                ),
+      .is_call              (is_call[gi]                ),
+      .is_ret               (is_ret[gi]                 ),
+      .is_jump              (is_jump[gi]                ),
+      .is_br                (is_br[gi]                  ),
+      .is_mem               (is_mem[gi]                 ),
+      .is_system_break      (is_system_break[gi]        ),  //system/break/ertn/idle/ibar/dbar/cacop
+      .is_csr_write         (is_csr_write[gi]           ),    //csrwr/csrxchg
+      .is_csr_read          (is_csr_read[gi]            ),     //csrrd/rdcntid/rdcntvl/rdcntdvh
+      .is_tlb               (is_tlb[gi]                 ),          //tlbrd/tlbfill/tlbsrch/invtlb/tlbwr
+      .rf_dest              (rf_dest[gi]                ),
+      .rf_gr_we             (rf_gr_we[gi]               )
+      .update_need          (update_need[gi]            ),       // pred_valid & ~ex_ADEF & ~pred_ok
+      .bht_update_need      (bht_update_need[gi]        ),   // is_cond & ~ex_ADEF
+      .push_need            (push_need[gi]              ),
+      .pop_need             (pop_need[gi]               ),
+      .br_type              (br_type[gi]                ),         // COND/JUMP/CALL/RET
+      .ex_INE               (ex_INE[gi]                 ),
+      .ex_IPE               (ex_IPE[gi]                 )
     );
   end
 endgenerate
 //------------------------{module}end--------------------------//
 
 //------------------------{issue}begin-----------------------------//
-wire RAW_s1_s0 = slot_valid[0] & slot_valid[1] & rf_gr_we[0] & (rf_dest[0] != 5'b0) & 
-                 ((rf_raddr1[1] == rf_dest[0]) | (rf_raddr2[1] == rf_dest[0]));//发生写后读事件
-wire WAW_s1_s0 = slot_valid[0] & slot_valid[1] & rf_gr_we[0] & rf_gr_we[1] & (rf_dest[0] != 5'b0) & (rf_dest[0] == rf_dest[1]);//发生写后写事件
- wire struct_comflict = slot_valid[0] & slot_valid[1] & ((is_mem[0] & is_mem[1])                    | 
-                                        (is_system_break[0] | is_system_break[1])                  |
-                                        ((is_csr_write[0] | is_tlb[0]) & slot_valid[1])            |
-                                        ((is_csr_write[1] | is_tlb[1]) & slot_valid[0])            |
-                                        (slot_valid[0] & (is_csr_read[0] | is_csr_write[0] | is_tlb[0]) & slot_valid[1] & (is_csr_read[1] | is_csr_write[1] | is_tlb[1])));
+// s1 src1/2 是 s0 的 dest 写需要下一个 clk 才能读到
+wire       RAW_s1_s0                 = slot_valid[0] & slot_valid[1] & rf_gr_we[0] & (rf_dest[0] != 5'b0) &
+                                       ((rf_raddr1[1] == rf_dest[0]) | (rf_raddr2[1] == rf_dest[0]));//发生写后读事件
+// 写后写
+wire       WAW_s1_s0                 = slot_valid[0] & slot_valid[1] & rf_gr_we[0] & rf_gr_we[1] & (rf_dest[0] != 5'b0) & (rf_dest[0] == rf_dest[1]);//发生写后写事件
+//
+wire       struct_comflict           = slot_valid[0] & slot_valid[1] & (
+                                            (is_mem[0] & is_mem[1])                                    | // store / ld
+                                            (is_system_break[0] | is_system_break[1])                  | // system/break/ertn/idle/ibar/dbar/cacop
+                                            (is_csr_write[0] | is_tlb[0])                              | // 存在 csr写/tlb写 就单发
+                                            (is_csr_write[1] | is_tlb[1])                              | // 存在 csr写/tlb写 就单发
+                                            ((is_csr_read[0] | is_csr_write[0] | is_tlb[0]) & (is_csr_read[1] | is_csr_write[1] | is_tlb[1])) // tlb & csr / csr & csr / tlb & tlb 单发
+                                        );
+//  1. 如果本身不跳 但是 pc 不是 pc+4 就是错的；2.如果本身跳但是跳转错了也要冲刷
+wire       pred_not_neighbor_kill_s1 = pred_not_neighbor & (~real_taken[0] | redirect[0]);//不是邻居，并且要么不是真跳转，要么要更新，即第一个跳转是错的
+// 同上
+wire       pred_is_neighbor_kill_s1  = pred_is_neighbor  & (real_taken[0]  | redirect[0]);//是邻居，但是要跳转或者更新
+wire       slot0_fetch_ex            = ex_ADEF[0] | ex_tlb_reload0[0] | ex_tlb_preif_unvalid[0] | ex_tlb_plv0[0] | ex_INE[0] | ex_IPE[0] | has_int;
 
-wire pred_not_neighbor_kill_s1 = pred_not_neighbor & (~real_taken[0] | redirect_lane[0]);//不是邻居，并且要么不是真跳转，要么要更新，即第一个跳转是错的
-wire pred_is_neighbor_kill_s1  = pred_is_neighbor  & (real_taken[0]  | redirect_lane[0]);//是邻居，但是要跳转或者更新
-wire slot0_fetch_ex = ex_ADEF[0] | ex_tlb_reload0[0] | ex_tlb_preif_unvalid[0] | ex_tlb_plv0[0] | ex_INE[0] | ex_IPE[0] | has_int;
-wire kill_slot1 = slot0_fetch_ex | RAW_s1_s0 | WAW_s1_s0 | struct_comflict | pred_not_neighbor_kill_s1 | pred_is_neighbor_kill_s1 | (is_br[0] & is_br[1]);//注意这里不要走双分支
-wire [1:0] slot_issue = {slot_valid[1] & ~kill_slot1, slot_valid[0]};
+wire       kill_slot1                = slot0_fetch_ex | RAW_s1_s0 | WAW_s1_s0 | struct_comflict | pred_not_neighbor_kill_s1 | pred_is_neighbor_kill_s1 | (is_br[0] & is_br[1]);//注意这里不要走双发
+wire [1:0] slot_issue                = {slot_valid[1] & ~kill_slot1, slot_valid[0]};
 //------------------------{issue}end-----------------------------//
 
 //------------------------{pred_update}begin--------------------------------------//
-wire redirect0 = slot_issue[0] & redirect_lane[0];
-wire redirect1 = slot_issue[1] & redirect_lane[1] & ~redirect0;//禁止双分支
+wire    redirect0           = slot_issue[0] & redirect[0];
+wire    redirect1           = slot_issue[1] & redirect[1] & ~redirect0;//禁止双分支，slot0 跳了 slot1就不能跳
 
-assign br_afterpred_taken  = (redirect0 | redirect1) & id_fire;
-assign br_afterpred_target = redirect0 ? (real_taken[0] ? real_target[0] : (pc[0] + 32'd4)) :
-                             redirect1 ? (real_taken[1] ? real_target[1] : (pc[1] + 32'd4)) :
-                             32'b0;
+assign  br_afterpred_taken  = (redirect0 | redirect1) & can_update_pred;
+assign  br_afterpred_target = redirect0 ? (real_taken[0] ? real_target[0] : (pc[0] + 32'd4)) :
+                              redirect1 ? (real_taken[1] ? real_target[1] : (pc[1] + 32'd4)) :
+                              32'b0;
+//预测失败需要更新
+wire    take_update0        = slot_issue[0] & update_need[0];//真正要更新slot0
+wire    take_update1        = slot_issue[1] & update_need[1] & ~take_update0;//slot0 跳了 slot1就不能跳
+// 等到 ready_go 的时候再去更新
+assign  update_valid        = can_update_pred & (take_update0 | take_update1);
+assign  update_pc           = take_update0 ? pc[0]          : pc[1];
+assign  update_target       = take_update0 ? real_target[0] : real_target[1];
+assign  update_taken        = take_update0 ? real_taken[0]  : real_taken[1];
+assign  update_type         = take_update0 ? br_type[0]     : br_type[1];
 
-wire take_update0 = slot_issue[0] & upd_need[0];//真正要更新slot0
-wire take_update1 = slot_issue[1] & upd_need[1] & ~take_update0;//真正要更新slot1
+assign  bht_update_valid    = can_update_pred       & (slot_issue[0] & bht_update_need[0] |
+                              slot_issue[1]         & bht_update_need[1] & ~bht_update_need[0]);
 
-assign update_valid = id_fire & (take_update0 | take_update1);
-assign update_pc    = take_update0 ? pc[0]          : pc[1];
-assign update_target= take_update0 ? real_target[0] : real_target[1];
-assign update_taken = take_update0 ? real_taken[0]  : real_taken[1];
-assign update_type  = take_update0 ? br_type[0]     : br_type[1];
+wire    take_push0          = slot_issue[0] & push_need[0];
+wire    take_push1          = slot_issue[1] & push_need[1] & ~take_push0;
 
-assign bht_update_valid = id_fire & (slot_issue[0] & bht_upd_need[0] |
-                                     slot_issue[1] & bht_upd_need[1] & ~bht_upd_need[0]);
-
-wire take_push0     = slot_issue[0] & push_need[0];
-wire take_push1     = slot_issue[1] & push_need[1] & ~take_push0;
-
-assign push_valid   = id_fire & (take_push0 | take_push1);
-assign push_target  = take_push0 ? (pc[0] + 32'd4) :
-                      take_push1 ? (pc[1] + 32'd4) :
-                      32'b0;
-assign pop_valid    = id_fire & (slot_issue[0] & pop_need[0] |
-                                 slot_issue[1] & pop_need[1] & ~pop_need[0]);
+assign  push_valid          = can_update_pred & (take_push0 | take_push1);
+assign  push_target         = take_push0 ? (pc[0] + 32'd4) :
+                              take_push1 ? (pc[1] + 32'd4) :
+                              32'b0;
+assign  pop_valid           = can_update_pred       & (slot_issue[0] & pop_need[0] |
+                              slot_issue[1]         & pop_need[1] & ~pop_need[0]);
 //------------------------{pred_update}begin--------------------------------------//
 
 //------------------------{bus}begin-------------------------//
-//try to minimize the bus_size
 generate
     for (gi = 0; gi < ISSUE; gi = gi + 1) begin : gen_id_exe
-        assign ID_EXE1_bus[gi] = slot_issue[gi] ? exe_payload[gi] : {outbus_width{1'b0}};
+        assign  ID_EXE1_bus[gi] = slot_issue[gi] ? {1'b1, exe_payload[gi]} : {outbus_width{1'b0}};
     end
 endgenerate
 //------------------------{bus}end-------------------------//
