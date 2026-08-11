@@ -258,7 +258,7 @@ generate
         assign  exe2_front_addr[i]         = rf_dest[i];
         assign  exe2_can_not_front_push[i] = ~rf_gr_we[i]       | EXE2_slot_ex[i]              | older_ex_for_exe2 | ~slot_valid_from_exe1[i] |
                                              need_stall_inst[i] | ((i != 0) & EXE2_slot_ex[0]) | need_stall_csr[i];
-        assign  EXE2_slot_ex[i]                 = EXE2_valid & slot_valid_from_exe1[i] & EXE1_ex[i];
+        assign  EXE2_slot_ex[i]            = EXE2_valid & slot_valid_from_exe1[i] & EXE1_ex[i];
         assign  EXE2_rf_dest[i]            = rf_dest[i];
     end
 endgenerate
@@ -266,7 +266,7 @@ assign  EXE2_ex = EXE2_slot_ex[0] | EXE2_slot_ex[1];
 //------------------------{front_push}end-------------------------//
 
 //------------------------{ready_go}begin-------------------------//
-assign  EXE2_ready_go = (EXE2_slot_ex[0]                               | EXE2_slot_ex[1]                                                      | older_ex_for_exe2) ? 1'b1 :// 如果有异常直接走
+assign  EXE2_ready_go = (EXE2_slot_ex[0]                          | EXE2_slot_ex[1]                                                 | older_ex_for_exe2) ? 1'b1 :// 如果有异常直接走
                         cacop_valid ? cacop_done : // 如果是 cache 操作就要等 done
                         (dram_hit_any & (res_from_mem[dram_index] | (mem_we[dram_index] & ~(inst_sc_w[dram_index] & ~sc_success))))
                         ? (data_sram_addr_ok & data_sram_req) :

@@ -192,13 +192,13 @@ wire       RAW_s1_s0                 = slot_valid[0] & slot_valid[1] & rf_gr_we[
 wire       WAW_s1_s0                 = slot_valid[0] & slot_valid[1] & rf_gr_we[0] & rf_gr_we[1] & (rf_dest[0] != 5'b0) & (rf_dest[0] == rf_dest[1]);//发生写后写事件
 //
 wire       struct_comflict           = slot_valid[0] & slot_valid[1] & (
-                                            (is_mem[0] & is_mem[1])                                    | // store / ld
-                                            (is_system_break[0] | is_system_break[1])                  | // system/break/ertn/idle/ibar/dbar/cacop
-                                            (is_csr_write[0] | is_tlb[0])                              | // 存在 csr写/tlb写 就单发
-                                            (is_csr_write[1] | is_tlb[1])                              | // 存在 csr写/tlb写 就单发
-                                            (is_csr_read[0]  | is_csr_read[1])                         |
-                                            ((is_csr_read[0] | is_csr_write[0] | is_tlb[0]) & (is_csr_read[1] | is_csr_write[1] | is_tlb[1])) // tlb & csr / csr & csr / tlb & tlb 单发
-                                        );
+                                       (is_mem[0] & is_mem[1]) |// store / ld
+                                       (is_system_break[0]     | is_system_break[1]) |// system/break/ertn/idle/ibar/dbar/cacop
+                                       (is_csr_write[0]        | is_tlb[0])          |// 存在 csr写/tlb写 就单发
+                                       (is_csr_write[1]        | is_tlb[1])          |// 存在 csr写/tlb写 就单发
+                                       (is_csr_read[0]         | is_csr_read[1])     |
+                                       ((is_csr_read[0]        | is_csr_write[0]     | is_tlb[0]) & (is_csr_read[1] | is_csr_write[1] | is_tlb[1]))// tlb & csr / csr & csr / tlb & tlb 单发
+                                       );
 //  1. 如果本身不跳 但是 pc 不是 pc+4 就是错的；2.如果本身跳但是跳转错了也要冲刷
 wire       pred_not_neighbor_kill_s1 = pred_not_neighbor & (~real_taken[0] | redirect[0]);//不是邻居，并且要么不是真跳转，要么要更新，即第一个跳转是错的
 // 同上
