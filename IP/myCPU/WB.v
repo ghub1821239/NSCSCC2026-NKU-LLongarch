@@ -11,7 +11,7 @@ module wb #(
     output wire                   WB_ready_go,
     output reg                    WB_valid,
     
-    input  wire [inbus_width-1:0] MEM_WB_bus[ISSUE - 1 : 0],// MEM到WB级总线
+    input  wire [inbus_width-1:0] MEM_WB_bus           [ISSUE - 1 : 0],// MEM到WB级总线
     // 调试接口
     //考虑是否添加更多的debug接口
     output wire [31:0]            debug_wb_pc,
@@ -19,15 +19,15 @@ module wb #(
     output wire [ 4:0]            debug_wb_rf_wnum,
     output wire [31:0]            debug_wb_rf_wdata,
     // 通用寄存器堆写回接口
-    output wire [ 4:0]            rf_waddr[ISSUE - 1 : 0],
-    output wire [31:0]            rf_wdata[ISSUE - 1 : 0],
-    output wire                   rf_we[ISSUE - 1 : 0],
+    output wire [ 4:0]            rf_waddr             [ISSUE - 1 : 0],
+    output wire [31:0]            rf_wdata             [ISSUE - 1 : 0],
+    output wire                   rf_we                [ISSUE - 1 : 0],
     // 数据相关与停顿控制
-    output wire [ 4:0]            WB_rf_dest[ISSUE - 1 : 0],
-    output wire                   need_stall_csr[ISSUE - 1 : 0],
+    output wire [ 4:0]            WB_rf_dest           [ISSUE - 1 : 0],
+    output wire                   need_stall_csr       [ISSUE - 1 : 0],
     // 写回级数据前递
-    output wire [31:0]            wb_front_data[ISSUE - 1 : 0],
-    output wire [ 4:0]            wb_front_addr[ISSUE - 1 : 0],
+    output wire [31:0]            wb_front_data        [ISSUE - 1 : 0],
+    output wire [ 4:0]            wb_front_addr        [ISSUE - 1 : 0],
     // CSR读写接口
     output wire [13:0]            csr_num,
     output wire                   csr_re,
@@ -73,46 +73,46 @@ module wb #(
     input  wire                   csr_tcfg_init0, // TCFG.InitVal==0
     output wire                   IDLE_stall
 );
-wire                   slot_valid[ISSUE - 1 : 0];
-wire [31:0]            pc[ISSUE - 1 : 0];
-wire                   need_stall_csr_b[ISSUE - 1 : 0];
+wire                   slot_valid          [ISSUE - 1 : 0];
+wire [31:0]            pc                  [ISSUE - 1 : 0];
+wire                   need_stall_csr_b    [ISSUE - 1 : 0];
 
-wire                   rf_gr_we_ex[ISSUE - 1 : 0];
-wire [4:0]             rf_dest[ISSUE - 1 : 0];
-wire [31:0]            rf_alu_wdata[ISSUE - 1 : 0];
-wire [31:0]            rkd_value[ISSUE - 1 : 0];
-wire [31:0]            rj_value[ISSUE - 1 : 0];
-wire                   mem_we[ISSUE - 1 : 0];
+wire                   rf_gr_we_ex         [ISSUE - 1 : 0];
+wire [4:0]             rf_dest             [ISSUE - 1 : 0];
+wire [31:0]            rf_alu_wdata        [ISSUE - 1 : 0];
+wire [31:0]            rkd_value           [ISSUE - 1 : 0];
+wire [31:0]            rj_value            [ISSUE - 1 : 0];
+wire                   mem_we              [ISSUE - 1 : 0];
 wire [31:0]            alu_result_with_rdct[ISSUE - 1 : 0];
-reg  [inbus_width-1:0] bus[ISSUE - 1 : 0];
+reg  [inbus_width-1:0] bus                 [ISSUE - 1 : 0];
 
 //-------------CSR-------------
-wire        inst_csrrd[ISSUE - 1 : 0];
-wire        inst_csrwr[ISSUE - 1 : 0];
-wire        inst_csrxchg[ISSUE - 1 : 0];
-wire [13:0] csr_num_wr[ISSUE - 1 : 0];
+wire        inst_csrrd          [ISSUE - 1 : 0];
+wire        inst_csrwr          [ISSUE - 1 : 0];
+wire        inst_csrxchg        [ISSUE - 1 : 0];
+wire [13:0] csr_num_wr          [ISSUE - 1 : 0];
 // 异常类型标志
-wire        inst_syscall[ISSUE - 1 : 0];
-wire        inst_break[ISSUE - 1 : 0];
-wire        ex_INE[ISSUE - 1 : 0];
-wire        ex_IPE[ISSUE - 1 : 0];
-wire        ex_ADEF[ISSUE - 1 : 0];
-wire        ex_ALE[ISSUE - 1 : 0];
+wire        inst_syscall        [ISSUE - 1 : 0];
+wire        inst_break          [ISSUE - 1 : 0];
+wire        ex_INE              [ISSUE - 1 : 0];
+wire        ex_IPE              [ISSUE - 1 : 0];
+wire        ex_ADEF             [ISSUE - 1 : 0];
+wire        ex_ALE              [ISSUE - 1 : 0];
 //tlb_ex
-wire        ex_tlb_reload0[ISSUE - 1 : 0];//tlb重填例外
+wire        ex_tlb_reload0      [ISSUE - 1 : 0];//tlb重填例外
 wire        ex_tlb_preif_unvalid[ISSUE - 1 : 0];//tlb中取指页无效
-wire        ex_tlb_plv0[ISSUE - 1 : 0];//tlb中页特权不合规
-wire        ex_tlb_reload1[ISSUE - 1 : 0];//tlb重填例外        
-wire        ex_tlb_ld_unvalid[ISSUE - 1 : 0];//tlb中load页无效 
-wire        ex_tlb_st_unvalid[ISSUE - 1 : 0];//tlb中store页无效
-wire        ex_tlb_plv1[ISSUE - 1 : 0];//tlb中页特权不合规        
-wire        ex_tlb_page_modify[ISSUE - 1 : 0];//tlb中页修改
-wire        ex_tlb_plv[ISSUE - 1 : 0];     
+wire        ex_tlb_plv0         [ISSUE - 1 : 0];//tlb中页特权不合规
+wire        ex_tlb_reload1      [ISSUE - 1 : 0];//tlb重填例外        
+wire        ex_tlb_ld_unvalid   [ISSUE - 1 : 0];//tlb中load页无效 
+wire        ex_tlb_st_unvalid   [ISSUE - 1 : 0];//tlb中store页无效
+wire        ex_tlb_plv1         [ISSUE - 1 : 0];//tlb中页特权不合规        
+wire        ex_tlb_page_modify  [ISSUE - 1 : 0];//tlb中页修改
+wire        ex_tlb_plv          [ISSUE - 1 : 0];     
 // 计时器读取指令
-wire        inst_idle[ISSUE - 1 : 0];
-wire        inst_ertn[ISSUE - 1 : 0];
+wire        inst_idle           [ISSUE - 1 : 0];
+wire        inst_ertn           [ISSUE - 1 : 0];
 
-wire        has_int[ISSUE - 1 : 0];
+wire        has_int             [ISSUE - 1 : 0];
 
 //**************** tlb begin ****************
 wire        inst_rdcntvl_w[ISSUE - 1 : 0];

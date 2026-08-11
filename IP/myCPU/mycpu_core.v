@@ -102,13 +102,13 @@ assign  MEM_WB_valid        = MEM_valid & MEM_ready_go;
 //------------------------{regfile}begin-------------------------//
 wire [4:0]  rf_raddr1[ISSUE - 1 : 0];
 wire [4:0]  rf_raddr2[ISSUE - 1 : 0];
-wire [4:0]  rf_waddr;
+wire [4:0]  rf_waddr [ISSUE - 1 : 0];
 
 wire [31:0] rf_rdata1[ISSUE - 1 : 0];
 wire [31:0] rf_rdata2[ISSUE - 1 : 0];
-wire [31:0] rf_wdata;
+wire [31:0] rf_wdata [ISSUE - 1 : 0];
 
-wire        rf_we;
+wire        rf_we    [ISSUE - 1 : 0];
 
 //regfile instantiation
 regfile u_regfile(
