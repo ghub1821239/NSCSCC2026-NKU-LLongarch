@@ -576,7 +576,10 @@ end
 
 //【TLBRENTY PA】TLB发生重填例外时，写入这里的物理地址
 always @(posedge clk) begin
-    if (csr_we && csr_num == `CSR_TLBRENTRY) begin
+    if (!resetn) begin
+        TLBRENTRY[`CSR_TLBRENTRY_PA] <= 26'b0;
+    end
+    else if (csr_we && csr_num == `CSR_TLBRENTRY) begin
         TLBRENTRY[`CSR_TLBRENTRY_PA] <= (csr_wmask[`CSR_TLBRENTRY_PA] & csr_wvalue[`CSR_TLBRENTRY_PA]) |
                                         (~csr_wmask[`CSR_TLBRENTRY_PA] & TLBRENTRY[`CSR_TLBRENTRY_PA]);
     end

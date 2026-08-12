@@ -21,7 +21,7 @@ wire         word1_MSG_INT          = 1'b0;//支持外部中断采用消息中�
 wire         word2_FP               = 1'b0;//支持浮点数
 wire         word2_FP_SP            = 1'b0;//支持单精度浮点数
 wire         word2_FP_DP            = 1'b0;//支持双精度浮点数
-wire [5:3]   word2_FP_ver           = 2'b01;//浮点运算版本号
+wire [5:3]   word2_FP_ver           = 3'b01;//浮点运算版本号
 wire         word2_LSX              = 1'b0;//支持128位向量扩展
 wire         word2_LASX             = 1'b0;//支持256位向量扩展
 wire         word2_COMPLEX          = 1'b0;//支持复数向量运算
@@ -107,7 +107,7 @@ wire [30:24] word14_Linesize_log2   = 7'd0;//3级指令Cache的一行字节数�
 assign  cpucfg_value = (rj_value == 32'h0) ? {word0_PRID} :
                        (rj_value == 32'h1) ? {{5'b0},word1_MSG_INT,word1_CRC,word1_HP,word1_RPLV,word1_EP,word1_RI,word1_UAL,word1_VALEN,word1_PALEN,word1_IOCSR,word1_PGMMU,word1_ARCH} :
                        (rj_value == 32'h2) ? {{1'b0},word2_SCQ,word2_LLACQ_SCREL,word2_LAMCAS,word2_LAM_BH,word2_DIV32,word2_FRECIPE,word2_HPTW,word2_LAM,word2_LSPW,word2_LBT_MIPS,word2_LBT_ARM,word2_LBT_X86,word2_LLFTP_ver,word2_LLFTP,word2_LVZ_ver,word2_LVZ,word2_CRYPTO,word2_COMPLEX,word2_LASX,word2_LSX,word2_FP_ver,word2_FP_DP,word2_FP_SP,word2_FP} :
-                       (rj_value == 32'h3) ? {{8'b0},word3_LD_SEQ_SA,{5'b0},word3_DBAR_hints,word3_RVAMAX_1,word3_RVA,word3_SPW_HP_HF,word3_ICHMC,word3_ITLBHMC,word3_LLDBAR,word3_SCDLY,word3_LLEXC,word3_UCACC,word3_SFB,word3_CCDMA} :
+                       (rj_value == 32'h3) ? {{8'b0},word3_LD_SEQ_SA,{5'b0},word3_DBAR_hints,word3_RVAMAX_1,word3_RVA,word3_SPW_HP_HF,word3_SPW_LVL,word3_ICHMC,word3_ITLBHMC,word3_LLDBAR,word3_SCDLY,word3_LLEXC,word3_UCACC,word3_SFB,word3_CCDMA} :
                        (rj_value == 32'h4) ? {word4_CC_FREQ} :
                        (rj_value == 32'h5) ? {word5_CC_DIV,word5_CC_MUL} :
                        (rj_value == 32'h6) ? {{17'b0},word6_UPM,word6_PMBITS,word6_PMNUM,word6_PMVER,word6_PMP} :
