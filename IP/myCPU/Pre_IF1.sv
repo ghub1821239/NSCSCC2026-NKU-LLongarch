@@ -95,8 +95,8 @@ assign  next_PC        = br_taken ? br_target :
 
 always @(posedge clk) begin
     if (!resetn) begin
-        pc <= 32'h1bfffffc; //nextpc=1c000000
-//        pc <= 32'h1c000000;
+//        pc <= 32'h1bfffffc; //nextpc=1c000000
+        pc <= 32'h1c000000;
     end
     else if (preIF1_need_cancel)begin
         pc <= flush_target;
