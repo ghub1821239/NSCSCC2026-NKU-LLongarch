@@ -276,7 +276,7 @@ wire struct_comflict = slot_valid[0] & slot_valid[1] & ((is_mem[0] & is_mem[1]) 
                                         (slot_valid[0] & (is_csr_read[0] | is_csr_write[0] | is_tlb[0]) & slot_valid[1] & (is_csr_read[1] | is_csr_write[1] | is_tlb[1])));
 
 wire pred_not_neighbor_kill_s1 = pred_not_neighbor & (~real_taken[0] | redirect_lane[0]);//不是邻居，并且要么不是真跳转，要么要更新，即第一个跳转是错的
-wire pred_is_neighbor_kill_s1  = pred_is_neighbor  & (real_taken[0]  | redirect_lane[0]);//是邻居，但是要跳转或者更新
+wire pred_is_neighbor_kill_s1  = pred_is_neighbor  & (real_taken[0] & (real_target[0] != pc[0] + 32'd4)  | redirect_lane[0]);//是邻居，但是要跳转或者更新
 wire slot0_fetch_ex = ex_ADEF[0] | ex_tlb_reload0[0] | ex_tlb_preif_unvalid[0] | ex_tlb_plv0[0] | ex_INE[0] | ex_IPE[0] | has_int;
 
 wire slot0_trap      = slot_valid[0] & (ex_ADEF[0] | ex_tlb_reload0[0] | 
