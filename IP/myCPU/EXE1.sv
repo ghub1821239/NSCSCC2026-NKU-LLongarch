@@ -305,7 +305,7 @@ generate
                              (inst_syscall[i]   | inst_ertn[i]         | inst_break[i]           | ex_INE[i]             |
                               ex_tlb_reload0[i] | ex_tlb_reload1[i]    | ex_tlb_preif_unvalid[i] | ex_tlb_plv0[i]        |
                               ex_tlb_plv1[i]    | ex_tlb_ld_unvalid[i] | ex_tlb_st_unvalid[i]    | ex_tlb_page_modify[i] |
-                              has_int[i]        | ex_IPE[i]            | ex_ADEF[i]             );
+                              has_int[i]        | ex_IPE[i]            | ex_ADEF[i]              | ex_ALE[i]);
     end
 endgenerate
 //------------------------{exp_front}end-------------------------//

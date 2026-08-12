@@ -20,7 +20,7 @@ module inst_to_alu_resource #(
     input  wire                    has_int,          // 建议仅 lane0 接真 has_int，lane1=0
     output wire [4:0]              rf_raddr1,
     output wire [4:0]              rf_raddr2,
-    output wire [outbus_width-1:0] exe_payload, // 与现 ID_EXE1_bus 同序
+    output wire [outbus_width-2:0] exe_payload, // 与现 ID_EXE1_bus 同序
     output wire                    real_taken,
     output wire [31:0]             real_target,
     output wire                    pred_taken,

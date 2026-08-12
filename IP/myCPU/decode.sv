@@ -1,6 +1,6 @@
 module decode #(
     parameter  inbus_width  = 138,
-    parameter  outbus_width = 243,
+    parameter  outbus_width = 244,
     parameter  ISSUE        = 2   
 )(
     input  wire                    clk,
@@ -179,7 +179,7 @@ wire pred_is_neighbor  = slot_valid[0] & slot_valid[1] & (pc[1] == (pc[0] + 32'd
 //------------------------{module}begin--------------------------//
 wire id_fire = ID_valid & ID_ready_go & ~ID_need_cancel & ID_allow_in;
 
-wire [outbus_width-1:0] exe_payload   [ISSUE-1:0];
+wire [outbus_width-2:0] exe_payload   [ISSUE-1:0];
 wire        real_taken     [ISSUE-1:0];
 wire [31:0] real_target    [ISSUE-1:0];
 wire        pred_taken     [ISSUE-1:0];
@@ -272,6 +272,7 @@ wire struct_comflict = slot_valid[0] & slot_valid[1] & ((is_mem[0] & is_mem[1]) 
                                         (is_system_break[0] | is_system_break[1])                  |
                                         ((is_csr_write[0] | is_tlb[0]) & slot_valid[1])            |
                                         ((is_csr_write[1] | is_tlb[1]) & slot_valid[0])            |
+                                        (is_csr_read[0]   | is_csr_read[1])                        |
                                         (slot_valid[0] & (is_csr_read[0] | is_csr_write[0] | is_tlb[0]) & slot_valid[1] & (is_csr_read[1] | is_csr_write[1] | is_tlb[1])));
 
 wire pred_not_neighbor_kill_s1 = pred_not_neighbor & (~real_taken[0] | redirect_lane[0]);//不是邻居，并且要么不是真跳转，要么要更新，即第一个跳转是错的
@@ -325,7 +326,7 @@ assign pop_valid    = id_fire & (slot_issue[0] & pop_need[0] |
 //try to minimize the bus_size
 generate
     for (gi = 0; gi < ISSUE; gi = gi + 1) begin : gen_id_exe
-        assign ID_EXE1_bus[gi] = slot_issue[gi] ? exe_payload[gi] : {outbus_width{1'b0}};
+        assign ID_EXE1_bus[gi] = slot_issue[gi] ? {1'b1,exe_payload[gi]} : {outbus_width{1'b0}};
     end
 endgenerate
 //------------------------{bus}end-------------------------//
