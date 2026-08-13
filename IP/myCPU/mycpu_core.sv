@@ -414,7 +414,8 @@ generate
     end
 endgenerate 
 //ibar也在EXE2 所以可以直接赋值cacop_pc
-assign  flush_cacop_cancel_target = (cacop_need_cancel | ibar_cancel) ? cacop_pc : flush_target;
+assign flush_cacop_cancel_target = flush ? flush_target :
+                                   (cacop_need_cancel | ibar_cancel) ? cacop_pc : flush_target;
 //------------------------{front_push}end-------------------------//
 
 //------------------------{stall}begin-------------------------//
@@ -608,6 +609,9 @@ assign        inst_sram_addr               = (cacop_valid && cache_code[2:0] == 
 reg           cacop_need_cancel;
 always @(posedge clk)begin
     if(!resetn)begin
+        cacop_need_cancel <= 1'b0;
+    end
+    else if(flush | older_ex_for_exe2)begin
         cacop_need_cancel <= 1'b0;
     end
     else if(cacop_done)begin
@@ -1087,6 +1091,7 @@ exe2 #(
     .exe2_can_not_front_push (exe2_can_not_front_push ),
     //cancel
     .EXE2_need_cancel        (EXE2_need_cancel        ),
+    .flush(flush),
     //ex
     .older_ex_for_exe2       (older_ex_for_exe2       ),
     .EXE2_ex                 (EXE2_ex                 ),
