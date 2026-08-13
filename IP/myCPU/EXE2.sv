@@ -50,7 +50,6 @@ module exe2 #(
     output wire [31:0]             cacop_pc,
     //system inst_need_cancel
     output wire                    ibar_cancel,
-    output wire [31:0]             ibar_pc,
     output wire                    dbar_cancel,
     output wire [31:0]             idbar_pc,
     //CSR_LLBCTL
@@ -238,7 +237,7 @@ endgenerate
 // 因为已经限定了 i/dbar 只可能由 slot0 触发
 assign  ibar_cancel = inst_ibar[0] & slot_valid_from_exe1[0] & EXE2_valid & ~older_ex_for_exe2 & ~flush;
 assign  dbar_cancel = inst_dbar[0] & slot_valid_from_exe1[0] & EXE2_valid & ~older_ex_for_exe2 & ~flush;
-assign  ibar_pc     = pc[0] + 32'd4;//一定取slot0的pc
+assign  idbar_pc      = pc[0] + 4;//一定取slot0的pc
 //------------------------{i/dbar need cancel}end-------------------------//
 
 //------------------------{dataRAM handshake}begin-------------------------//
@@ -251,7 +250,6 @@ assign  data_sram_wr  = |data_sram_wstrb;
 assign  cacop_valid   = EXE2_valid & inst_cacop[dram_index] & ~EXE2_slot_ex[dram_index] & ~older_ex_for_exe2 & slot_valid_from_exe1[dram_index] &
                         (cache_code[4:3] == 2'b10 | csr_CRMD_PLV == 2'b00) & ~(dram_index & EXE2_slot_ex[0]) & ~EXE2_need_cancel; // 在 slot1 是 cacop slot0 不能异常
 assign  cacop_pc      = pc[dram_index] + 4;
-assign  idbar_pc      = pc[0] + 4;
 //------------------------{dataRAM handshake}end-------------------------//
 
 //------------------------{front_push}begin-------------------------//
