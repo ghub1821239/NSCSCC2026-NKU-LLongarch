@@ -153,6 +153,30 @@ wire           cacop_done;
 
 assign         cacop_done         = inst_cacop_done | data_cacop_done;
 
+//---------------{cache 打拍}begin----------------------
+reg         cpu_inst_data_ok_r;
+reg [127:0] cpu_inst_rdata_r;
+reg         cpu_data_data_ok_r;
+reg  [31:0] cpu_data_rdata_r;
+always @(posedge clk) begin
+    if (!resetn) begin
+        cpu_inst_data_ok_r <= 1'b0;
+        cpu_inst_rdata_r   <= 128'b0;
+        cpu_data_data_ok_r <= 1'b0;
+        cpu_data_rdata_r   <= 32'b0;
+    end
+    else begin
+        cpu_inst_data_ok_r <= cpu_inst_data_ok;
+        cpu_inst_rdata_r   <= cpu_inst_rdata;
+        cpu_data_data_ok_r <= cpu_data_data_ok;
+        cpu_data_rdata_r   <= cpu_data_rdata;
+    end
+end
+//---------------{cache 打拍}end----------------------
+
+
+
+
 mycpu_core u_mycpu_core(
     .clk                (aclk               ),
     .resetn             (aresetn            ),
@@ -164,8 +188,8 @@ mycpu_core u_mycpu_core(
     .inst_sram_addr     (cpu_inst_addr      ),
     .inst_sram_wdata    (cpu_inst_wdata     ),
     .inst_sram_addr_ok  (cpu_inst_addr_ok   ),
-    .inst_sram_data_ok  (cpu_inst_data_ok   ),
-    .inst_sram_rdata    (cpu_inst_rdata     ),
+    .inst_sram_data_ok  (cpu_inst_data_ok_r ),
+    .inst_sram_rdata    (cpu_inst_rdata_r   ),
     .inst_uncache_valid (inst_uncache_valid ),
     .inst_uncache_wr    (inst_uncache_wr    ),
 
@@ -176,8 +200,8 @@ mycpu_core u_mycpu_core(
     .data_sram_addr     (cpu_data_addr      ),
     .data_sram_wdata    (cpu_data_wdata     ),
     .data_sram_addr_ok  (cpu_data_addr_ok   ),
-    .data_sram_data_ok  (cpu_data_data_ok   ),
-    .data_sram_rdata    (cpu_data_rdata     ),
+    .data_sram_data_ok  (cpu_data_data_ok_r ),
+    .data_sram_rdata    (cpu_data_rdata_r   ),
     .data_uncache_valid (data_uncache_valid ),
     .data_uncache_wr    (data_uncache_wr    ),
     
