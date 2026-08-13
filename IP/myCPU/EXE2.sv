@@ -25,6 +25,7 @@ module exe2 #(
     output wire                    exe2_can_not_front_push[ISSUE - 1 : 0],// 写回级数据前递目标不能前推
     //cancel control
     input  wire                    EXE2_need_cancel,
+    input  wire                    flush,
     //ex_cancel 取消write              exe2
     input  wire                    older_ex_for_exe2,
     output wire                    EXE2_ex,
@@ -233,8 +234,8 @@ endgenerate
 
 //------------------------{i/dbar need cancel}begins-------------------------//
 // 因为已经限定了 i/dbar 只可能由 slot0 触发
-assign  ibar_cancel = inst_ibar[0] & slot_valid_from_exe1[0] & EXE2_valid;
-assign  dbar_cancel = inst_dbar[0] & slot_valid_from_exe1[0] & EXE2_valid;
+assign  ibar_cancel = inst_ibar[0] & slot_valid_from_exe1[0] & EXE2_valid & ~older_ex_for_exe2 & ~flush;
+assign  dbar_cancel = inst_dbar[0] & slot_valid_from_exe1[0] & EXE2_valid & ~older_ex_for_exe2 & ~flush;
 //------------------------{i/dbar need cancel}end-------------------------//
 
 //------------------------{dataRAM handshake}begin-------------------------//
@@ -245,7 +246,7 @@ assign  data_sram_req = dram_hit_any & (res_from_mem[dram_index] | mem_we[dram_i
 assign  data_sram_wr  = |data_sram_wstrb & ~older_ex_for_exe2 & ~EXE2_slot_ex[dram_index] & slot_valid_from_exe1[dram_index] & EXE2_valid;
 
 assign  cacop_valid   = EXE2_valid & inst_cacop[dram_index] & ~EXE2_slot_ex[dram_index] & ~older_ex_for_exe2 & slot_valid_from_exe1[dram_index] &
-                        (cache_code[4:3] == 2'b10 | csr_CRMD_PLV == 2'b00) & ~(dram_index & EXE2_slot_ex[0]); // 在 slot1 是 cacop slot0 不能异常
+                        (cache_code[4:3] == 2'b10 | csr_CRMD_PLV == 2'b00) & ~(dram_index & EXE2_slot_ex[0]) & ~EXE2_need_cancel; // 在 slot1 是 cacop slot0 不能异常
 assign  cacop_pc      = pc[dram_index] + 4;
 //------------------------{dataRAM handshake}end-------------------------//
 
