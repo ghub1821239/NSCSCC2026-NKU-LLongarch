@@ -16,8 +16,6 @@ module pre_IF2 #(
     input  wire [slot0_inbus_width-1:0] preIF1_preIF2_bus_slot0,
     input  wire [inbus_width-1:0]       preIF1_preIF2_bus           [ISSUE-1:1],
     output wire [outbus_width-1:0]      preIF2_IF_bus               [ISSUE-1:0],//bus
-    //br_taken
-    input  wire                         br_taken,
     //cancel
     input  wire                         preIF2_need_cancel,
     //stall
@@ -116,7 +114,7 @@ assign  req_to_dataok_trigger = req_without_dataok;
 //------------------------{丢弃已取消取指响应}begin-------------------------//
 reg     discard_resp_pending;
 wire    redirect_now;
-assign  redirect_now         = preIF2_need_cancel | br_taken;
+assign  redirect_now         = preIF2_need_cancel;
 always @(posedge clk) begin
     if(!resetn)begin
         discard_resp_pending <= 1'b0;
@@ -149,7 +147,7 @@ assign  inst_sram_wdata              = 32'b0;
 wire    can_issue_inst = !req_without_dataok || inst_sram_data_ok;
 assign  inst_sram_req  = preIF2_valid & slot_valid[0]
                                       & ~slot0_has_ex
-                                      & IF_allow_in & ~br_taken
+                                      & IF_allow_in
                                       & ~preIF2_need_cancel & ~need_stall
                                       & can_issue_inst;
 assign  inst_sram_size = 2'b10;
@@ -169,7 +167,7 @@ always @(posedge clk) begin
     if(!resetn)begin
         preIF2_valid <= 1'b0;
     end
-    else if (preIF2_need_cancel || br_taken)begin
+    else if (preIF2_need_cancel)begin
         preIF2_valid <= 1'b0;
     end
     else if(preIF2_allow_in)begin

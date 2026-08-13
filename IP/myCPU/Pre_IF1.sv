@@ -16,14 +16,11 @@ module pre_IF1 #(
     
     output wire [slot0_outbus_width-1:0] preIF1_preIF2_bus_slot0,
     output wire [outbus_width-1:0]       preIF1_preIF2_bus      [ISSUE - 1 : 1],
-    //br
-    input  wire [31:0]                   br_target,
-    input  wire                          br_taken,
     //cancel
     input  wire                          preIF1_need_cancel,
+    input  wire [31:0]                   cancel_target,
     //stall
     input  wire                          need_stall,
-    input  wire [31:0]                   flush_target,
     // tlb port s0
     output wire [18:0]                   s0_vppn                [ISSUE - 1 : 0],
     output wire                          s0_va_bit12            [ISSUE - 1 : 0],
@@ -83,15 +80,13 @@ endgenerate
 */
 assign  slot_pc[0]     = pc;
 assign  slot_pc[1]     = pred_redirect0 ? pred_target0 : pc + 4;
-assign  slot_valid     = !preIF1_valid | br_taken        | preIF1_need_cancel? {ISSUE{1'b0}} :     
+assign  slot_valid     = !preIF1_valid | preIF1_need_cancel? {ISSUE{1'b0}} :     
                          preIF1_ex     | ~same_cacheline | uncache_fetch ? {1'b0,{ISSUE-1{1'b1}}} :
                          {ISSUE{1'b1}};
 wire    same_cacheline = (slot_pc[0][31:ICACHE_OFFSET_W] == slot_pc[1][31:ICACHE_OFFSET_W]);//两条指令在同一个cacheline
-assign  next_PC        = br_taken ? br_target :
-                         pred_redirect0 ? (slot_valid == 2'b11 ? pred_target0 + 4 : pred_target0) :
+assign  next_PC        =  pred_redirect0 ? (slot_valid == 2'b11 ? pred_target0 + 4 : pred_target0) :
                          (slot_valid == 2'b11 && pred_redirect1) ? pred_target1 :
                          seq_PC;
-//assign next_PC = br_taken ? br_target : seq_PC;//根据是否跳转更改seqPC THE UPDATE OF PC SHOULD CONSTRAIN MORE!
 
 always @(posedge clk) begin
     if (!resetn) begin
@@ -99,10 +94,9 @@ always @(posedge clk) begin
         pc <= 32'h1c000000;
     end
     else if (preIF1_need_cancel)begin
-        pc <= flush_target;
+        pc <= cancel_target;
     end
-    // 直接br_taken在当前clk更改pc，就可以把preIF的错指令给覆盖掉
-    else if(preIF1_allow_in | br_taken) begin
+    else if(preIF1_allow_in) begin
         pc <= next_PC;
     end
 end
@@ -136,9 +130,9 @@ wire       uncache_fetch = (inst_mat == 2'b00);//uncache只发一个
 //------------------------{uncache}end-------------------------//
 
 //------------------------{branch prediction}begin------------------//
-assign  query_valid[0] = preIF1_valid & ~br_taken & ~preIF1_need_cancel;//preIF1_valid表示指令有效
+assign  query_valid[0] = preIF1_valid & ~preIF1_need_cancel;//preIF1_valid表示指令有效
 assign  query_pc[0]    = slot_pc[0];          //拿pc
-assign  query_valid[1] = preIF1_valid & ~br_taken & ~preIF1_need_cancel & same_cacheline & ~uncache_fetch & ~preIF1_ex;//preIF1_valid表示指令有效
+assign  query_valid[1] = preIF1_valid & ~preIF1_need_cancel & same_cacheline & ~uncache_fetch & ~preIF1_ex;//preIF1_valid表示指令有效
 assign  query_pc[1]    = slot_pc[1];          //拿pc
 //------------------------{branch prediction}end------------------//
 
@@ -189,9 +183,6 @@ always @(posedge clk) begin
         preIF1_valid <= 1'b0;
     end
     else if(preIF1_allow_in)begin
-        preIF1_valid <= valid_in;
-    end
-    else if (br_taken) begin
         preIF1_valid <= valid_in;
     end
 end

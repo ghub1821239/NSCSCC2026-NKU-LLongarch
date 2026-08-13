@@ -222,7 +222,7 @@ generate
                                             alu_result_with_rdct[i];// is ld_w?
         assign  mem_front_addr[i]         = rf_dest[i];
         // ((i != 0) & MEM_slot_ex[0]) 如果 slot0 对应异常，直接不前递，如果是 slot1 且 slot0 异常也不前递
-        assign  mem_can_not_front_push[i] = ~rf_gr_we[i] | MEM_slot_ex[i] | older_ex_for_mem | ~slot_valid_from_exe2[i] | need_stall_csr[i] | ((i != 0) & MEM_slot_ex[0]);
+        assign  mem_can_not_front_push[i] = ~rf_gr_we[i] | ~slot_valid_from_exe2[i] | need_stall_csr[i];
     end
 endgenerate
 //------------------------{front_push}end-------------------------//
