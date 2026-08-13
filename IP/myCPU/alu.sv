@@ -2,6 +2,7 @@ module alu(
   input  wire        clk,
   input  wire        resetn,
   input  wire        EXE1_ex,
+  input  wire        older_ex_for_exe1,
   input  wire        EXE1_slot_valid,
   input  wire        EXE1_need_cancel,
   input  wire [18:0] alu_op,
@@ -122,46 +123,59 @@ reg           dividend_tvalid;
 reg           is_dividing;
 wire          div_ready_go;
 wire          divide_begin;
-assign        divide_begin               = (op_div | op_mod) & ~EXE1_need_cancel & ~EXE1_ex; // 已含 EXE1_valid（经 alu_op_m）
+assign        divide_begin               = (op_div | op_mod) & ~EXE1_need_cancel & ~EXE1_ex & ~older_ex_for_exe1 & ~is_dividing; // 已含 EXE1_valid（经 alu_op_m）
+wire          div_calculating_cancel = (EXE1_need_cancel | older_ex_for_exe1) & is_dividing;
+wire          div_without_handshake  = dividend_tvalid & divisor_tvalid & ~dividend_tready & ~divisor_tready;
 reg           kill;//如果有flush掉的div等指令需要取消错误的返回
+reg  [31:0]   dividend_tdata_r;
+reg  [31:0]   divisor_tdata_r;
+
 always @(posedge clk) begin
-    if (~resetn) begin
-        kill <= 1'b0;
+    if (!resetn) begin
+        dividend_tvalid  <= 1'b0;
+        divisor_tvalid   <= 1'b0;
+        is_dividing      <= 1'b0;
+        kill            <= 1'b0;
+        dividend_tdata_r <= 32'b0;
+        divisor_tdata_r  <= 32'b0;
     end
-    else if (div_ready_go) begin
-        kill <= 1'b0;
+    else if (divide_begin) begin
+        dividend_tvalid  <= 1'b1;
+        divisor_tvalid   <= 1'b1;
+        is_dividing      <= 1'b1;
+        kill            <= 1'b0;
+        dividend_tdata_r <= alu_src1;
+        divisor_tdata_r  <= alu_src2;
     end
-    // 这个是有点问题的：
-    /*
-     拍 1 ：divider & has_int 直接 ready_go 但是会发起 req
-     拍 2 : 非 divide/mod 指令，但是收到 cancel，此时 kill 无法置起
-     拍 3 : 是 divide 但是因为 AXI 没有办法获取新的 src 计算，拿到的是拍 1 的值
-     最好的办法就是拍 1 不发起 req
-    */
-    else if (EXE1_need_cancel & divide_begin) begin
-        kill <= 1'b1;
-    end
-end
-always@(posedge clk)begin
-    if(!resetn)begin
-        divisor_tvalid  <= 1'b0;
-        dividend_tvalid <= 1'b0;
-        is_dividing     <= 1'b0;
-    end
-    else if (divide_begin & !is_dividing)begin
-        divisor_tvalid  <= 1'b1;
-        dividend_tvalid <= 1'b1;
-        is_dividing     <= 1'b1;
-   end
-   else begin
-        if( divisor_tvalid&divisor_tready)begin
-            divisor_tvalid  <= 1'b0;
-        end
-        if( dividend_tvalid&dividend_tready)begin
+    else if (div_calculating_cancel & ~kill) begin
+        // 本拍完成握手的通道照常清掉
+        if (dividend_tvalid & dividend_tready) 
             dividend_tvalid <= 1'b0;
+        if (divisor_tvalid  & divisor_tready ) 
+            divisor_tvalid  <= 1'b0;
+        if (div_ready_go) begin
+            // cancel 和 response 同拍：直接丢弃并清 busy
+            is_dividing <= 1'b0;
         end
-        if(div_ready_go)begin
+        else if (div_without_handshake) begin
+            // 还没任何通道被接受：整笔撤销
+            dividend_tvalid <= 1'b0;
+            divisor_tvalid  <= 1'b0;
             is_dividing     <= 1'b0;
+        end
+        else begin
+            // 已部分/全部握手：标 stale，继续驱动剩余 tvalid 直到 response drain
+            kill <= 1'b1;
+        end
+    end
+    else begin
+        if (divisor_tvalid & divisor_tready)   
+            divisor_tvalid  <= 1'b0;
+        if (dividend_tvalid & dividend_tready) 
+            dividend_tvalid <= 1'b0;
+        if (div_ready_go) begin
+            is_dividing <= 1'b0;
+            kill       <= 1'b0;
         end
     end
 end
@@ -169,69 +183,91 @@ divider u_divider(
     .aclk                   (clk             ),
     .s_axis_divisor_tvalid  (divisor_tvalid  ),    // input wire s_axis_divisor_tvalid
     .s_axis_divisor_tready  (divisor_tready  ),    // output wire s_axis_divisor_tready
-    .s_axis_divisor_tdata   (alu_src2        ),      // input wire [31 : 0] s_axis_divisor_tdata
+    .s_axis_divisor_tdata   (divisor_tdata_r        ),      // input wire [31 : 0] s_axis_divisor_tdata
     .s_axis_dividend_tvalid (dividend_tvalid ),  // input wire s_axis_dividend_tvalid
     .s_axis_dividend_tready (dividend_tready ),  // output wire s_axis_dividend_tready
-    .s_axis_dividend_tdata  (alu_src1        ),    // input wire [31 : 0] s_axis_dividend_tdata
+    .s_axis_dividend_tdata  (dividend_tdata_r        ),    // input wire [31 : 0] s_axis_dividend_tdata
     .m_axis_dout_tvalid     (div_ready_go    ),          // output wire m_axis_dout_tvalid
     .m_axis_dout_tdata      (div_result      )            // output wire [63 : 0] m_axis_dout_tdata
 );
 //unsigned divider 
-wire    dividend_tready_u;
-wire    divisor_tready_u;
-reg     divisor_tvalid_u;
-reg     dividend_tvalid_u;
-wire    div_ready_go_u;
-reg     is_dividing_u;
-wire    divide_begin_u;
-assign  divide_begin_u    = (op_divu | op_modu) & ~EXE1_need_cancel & ~EXE1_ex; // 已含 EXE1_valid（经 alu_op_m）
-reg     kill_u;//如果有flush掉的div等指令需要取消错误的返回
+//unsigned divider
+wire          dividend_tready_u;
+wire          divisor_tready_u;
+reg           divisor_tvalid_u;
+reg           dividend_tvalid_u;
+reg           is_dividing_u;
+wire          div_ready_go_u;
+wire          divide_begin_u;
+assign        divide_begin_u           = (op_divu | op_modu) & ~EXE1_need_cancel & ~EXE1_ex & ~older_ex_for_exe1 & ~is_dividing_u; // 已含 EXE1_valid（经 alu_op_m）
+wire          div_calculating_cancel_u = (EXE1_need_cancel | older_ex_for_exe1) & is_dividing_u;
+wire          div_without_handshake_u  = dividend_tvalid_u & divisor_tvalid_u & ~dividend_tready_u & ~divisor_tready_u;
+reg           kill_u;
+reg  [31:0]   dividend_tdata_u_r;
+reg  [31:0]   divisor_tdata_u_r;
+
 always @(posedge clk) begin
-    if (~resetn) begin
-        kill_u <= 1'b0;
+    if (!resetn) begin
+        dividend_tvalid_u  <= 1'b0;
+        divisor_tvalid_u   <= 1'b0;
+        is_dividing_u      <= 1'b0;
+        kill_u             <= 1'b0;
+        dividend_tdata_u_r <= 32'b0;
+        divisor_tdata_u_r  <= 32'b0;
     end
-    else if (div_ready_go_u) begin
-        kill_u <= 1'b0;
+    else if (divide_begin_u) begin
+        dividend_tvalid_u  <= 1'b1;
+        divisor_tvalid_u   <= 1'b1;
+        is_dividing_u      <= 1'b1;
+        kill_u             <= 1'b0;
+        dividend_tdata_u_r <= alu_src1;
+        divisor_tdata_u_r  <= alu_src2;
     end
-    else if (EXE1_need_cancel & divide_begin_u) begin
-        kill_u <= 1'b1;
-    end
-end
-always@(posedge clk)begin
-    if(!resetn)begin
-        divisor_tvalid_u  <= 1'b0;
-        dividend_tvalid_u <= 1'b0;
-        is_dividing_u     <= 1'b0;
-    end
-    else if (divide_begin_u & !is_dividing_u)begin
-        divisor_tvalid_u  <= EXE1_slot_valid;
-        dividend_tvalid_u <= EXE1_slot_valid;
-        is_dividing_u     <= EXE1_slot_valid;
-   end
-   else begin
-        if( divisor_tvalid_u & divisor_tready_u)begin
-            divisor_tvalid_u  <= 1'b0;
+    else if (div_calculating_cancel_u & ~kill_u) begin
+        // 本拍完成握手的通道照常清掉
+        if (dividend_tvalid_u & dividend_tready_u) dividend_tvalid_u <= 1'b0;
+        if (divisor_tvalid_u  & divisor_tready_u ) divisor_tvalid_u  <= 1'b0;
+        if (div_ready_go_u) begin
+            // cancel 和 response 同拍：直接丢弃并清 busy
+            is_dividing_u <= 1'b0;
         end
-        if( dividend_tvalid_u & dividend_tready_u)begin
+        else if (div_without_handshake_u) begin
+            // 还没任何通道被接受：整笔撤销
             dividend_tvalid_u <= 1'b0;
-        end
-        if(div_ready_go_u)begin
+            divisor_tvalid_u  <= 1'b0;
             is_dividing_u     <= 1'b0;
         end
+        else begin
+            // 已部分/全部握手：标 stale，继续驱动剩余 tvalid 直到 response drain
+            kill_u <= 1'b1;
+        end
+    end
+    else begin
+        if (divisor_tvalid_u & divisor_tready_u)   divisor_tvalid_u  <= 1'b0;
+        if (dividend_tvalid_u & dividend_tready_u) dividend_tvalid_u <= 1'b0;
+        if (div_ready_go_u) begin
+            is_dividing_u <= 1'b0;
+            kill_u        <= 1'b0;
+        end
     end
 end
+
 divider_unsigned u_divideru(
   .aclk                   (clk               ),                                      // input wire aclk
   .s_axis_divisor_tvalid  (divisor_tvalid_u  ),    // input wire s_axis_divisor_tvalid
   .s_axis_divisor_tready  (divisor_tready_u  ),    // output wire s_axis_divisor_tready
-  .s_axis_divisor_tdata   (alu_src2          ),      // input wire [31 : 0] s_axis_divisor_tdata
+  .s_axis_divisor_tdata   (divisor_tdata_u_r          ),      // input wire [31 : 0] s_axis_divisor_tdata
   .s_axis_dividend_tvalid (dividend_tvalid_u ),  // input wire s_axis_dividend_tvalid
   .s_axis_dividend_tready (dividend_tready_u ),  // output wire s_axis_dividend_tready
-  .s_axis_dividend_tdata  (alu_src1          ),    // input wire [31 : 0] s_axis_dividend_tdata
+  .s_axis_dividend_tdata  (dividend_tdata_u_r          ),    // input wire [31 : 0] s_axis_dividend_tdata
   .m_axis_dout_tvalid     (div_ready_go_u    ),          // output wire m_axis_dout_tvalid
   .m_axis_dout_tdata      (div_result_u      )            // output wire [63 : 0] m_axis_dout_tdata
 );
-assign  divide_ready_go = (div_ready_go & ~kill) | (div_ready_go_u & ~kill_u);
+
+
+
+assign divide_ready_go = (div_ready_go & ~kill & ~div_calculating_cancel) |
+                         (div_ready_go_u & ~kill_u & ~div_calculating_cancel_u);
 // final result mux
 assign  alu_result      = ({32{op_add|op_sub}} & add_sub_result)
                                      | ({32{op_slt       }} & slt_result)

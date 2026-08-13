@@ -170,6 +170,7 @@ generate
             .clk              (clk                ),
             .resetn           (resetn             ),
             .EXE1_ex          (EXE1_ex[i]         ),
+            .older_ex_for_exe1(older_ex_for_exe1  ),
             .EXE1_slot_valid  (EXE1_slot_valid[i] ),
             .EXE1_need_cancel (EXE1_need_cancel   ),
             .alu_op           (alu_op[i]          ),
