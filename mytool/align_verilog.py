@@ -397,6 +397,9 @@ def rewrite_continuations(rec, rhs_col, out):
         if not rest:
             out[ci] = rest + ccr
             continue
+        if rec.get('ternary_chain'):
+            out[ci] = b' ' * rhs_col + rest + ccr
+            continue
         if nested:
             code, _ = split_comment(rest)
             d0 = depth
@@ -457,6 +460,9 @@ def align_multiline_table(rec):
         return
     if is_nested_ternary_wrap(rec):
         return
+    if is_ternary_chain(rec):
+        if align_ternary_chain(rec):
+            return
 
     pipe_idxs = [i for i, (code, _) in enumerate(bodies)
                  if len(find_or_positions(code)) >= 1]
@@ -546,6 +552,169 @@ def find_or_positions(code):
             pos.append(i)
         i += 1
     return pos
+
+
+def depth0_operator(code, op):
+    """Byte offset of a single-char operator at paren/brace depth 0.
+
+    Bit-select `[]` is skipped so a range `:` or select never matches.
+    String literals are skipped too.
+    """
+    brace = bracket = paren = 0
+    i = 0
+    while i < len(code):
+        c = code[i:i + 1]
+        if c == b'"':
+            i += 1
+            while i < len(code) and code[i:i + 1] != b'"':
+                i += 1
+            i += 1
+            continue
+        if c == b'{':
+            brace += 1
+        elif c == b'}':
+            brace -= 1
+        elif c == b'[':
+            bracket += 1
+        elif c == b']':
+            bracket -= 1
+        elif c == b'(':
+            paren += 1
+        elif c == b')':
+            paren -= 1
+        elif brace == 0 and bracket == 0 and paren == 0 and c == op:
+            return i
+        i += 1
+    return None
+
+
+def last_depth0_colon(code, start):
+    """Byte offset of the last `:` at paren/brace depth 0 after `start`."""
+    brace = bracket = paren = 0
+    pos = None
+    i = start
+    while i < len(code):
+        c = code[i:i + 1]
+        if c == b'"':
+            i += 1
+            while i < len(code) and code[i:i + 1] != b'"':
+                i += 1
+            i += 1
+            continue
+        if c == b'{':
+            brace += 1
+        elif c == b'}':
+            brace -= 1
+        elif c == b'[':
+            bracket += 1
+        elif c == b']':
+            bracket -= 1
+        elif c == b'(':
+            paren += 1
+        elif c == b')':
+            paren -= 1
+        elif brace == 0 and bracket == 0 and paren == 0 and c == b':':
+            pos = i
+        i += 1
+    return pos
+
+
+def is_ternary_chain(rec):
+    """True for a multi-line `cond ? val :` chain (not a paren-wrapped one)."""
+    if is_nested_ternary_wrap(rec):
+        return False
+    bodies = [rec.get('rhs', b'')]
+    for _ci, st, _ccr in rec.get('cont', []):
+        bodies.append(split_comment(st)[0])
+    return any(depth0_operator(code, b'?') is not None for code in bodies)
+
+
+def align_ternary_chain(rec):
+    """Align `?` / `:` columns of a multi-line ternary chain.
+
+    Each line is one of:
+      - `cond ? val :`  (a complete ternary segment),
+      - a wrapped condition line followed by a `?`-only line,
+      - a final `val;` line, indented to the value column.
+    Returns False (and leaves the record untouched) when the shape is not a
+    clean chain; the caller then falls back to the table/operator rules.
+    """
+    bodies = [(rec['rhs'], rec['tail'])]
+    for _ci, st, _ccr in rec['cont']:
+        code, comment = split_comment(st)
+        bodies.append((code, comment))
+    if any(not code.strip() for code, _ in bodies):
+        return False
+
+    items = []
+    last = len(bodies) - 1
+    for idx, (code, comment) in enumerate(bodies):
+        q = depth0_operator(code, b'?')
+        if q is not None:
+            colon = last_depth0_colon(code, q + 1)
+            if colon is None:
+                return False
+            items.append({'kind': 'tern',
+                          'cond': code[:q].rstrip(),
+                          'value': code[q + 1:colon].strip(),
+                          'tail': code[colon + 1:],
+                          'comment': comment})
+        elif idx == last:
+            items.append({'kind': 'else',
+                          'value': code.strip(),
+                          'comment': comment})
+        else:
+            items.append({'kind': 'plain', 'code': code, 'comment': comment})
+
+    tern_count = sum(1 for it in items if it['kind'] == 'tern')
+    if tern_count < 1:
+        return False
+    for k, it in enumerate(items):
+        if it['kind'] == 'plain':
+            nxt = items[k + 1] if k + 1 < len(items) else None
+            if nxt is None or nxt['kind'] != 'tern' or nxt['cond']:
+                return False
+        elif it['kind'] == 'tern' and not it['cond']:
+            prev = items[k - 1] if k > 0 else None
+            if prev is None or prev['kind'] != 'plain':
+                return False
+        elif it['kind'] == 'else' and k != len(items) - 1:
+            return False
+
+    cond_lens = [len(it['cond']) for it in items
+                 if it['kind'] == 'tern' and it['cond']]
+    cond_lens += [len(it['code']) for it in items if it['kind'] == 'plain']
+    values = [it['value'] for it in items if it['kind'] == 'tern']
+    if not cond_lens or not values or any(v == b'' for v in values):
+        return False
+    max_cond = max(cond_lens)
+    max_val = max(len(v) for v in values)
+
+    rebuilt = []
+    for it in items:
+        if it['kind'] == 'tern':
+            if it['cond']:
+                line = (it['cond'].ljust(max_cond) + b' ? ' +
+                        it['value'].ljust(max_val) + b' :' + it['tail'])
+            else:
+                line = (b' ' * (max_cond + 1) + b'? ' +
+                        it['value'].ljust(max_val) + b' :' + it['tail'])
+        elif it['kind'] == 'plain':
+            line = it['code']
+        else:
+            line = b' ' * (max_cond + 3) + it['value']
+        if it['comment']:
+            line = line.rstrip() + b' ' + it['comment']
+        rebuilt.append(line)
+
+    rec['rhs'] = rebuilt[0]
+    rec['tail'] = b''
+    rec['cont'] = [
+        (ci, code, ccr)
+        for (ci, _st, ccr), code in zip(rec['cont'], rebuilt[1:])
+    ]
+    rec['ternary_chain'] = True
+    return True
 
 
 def split_or_fields(code):
