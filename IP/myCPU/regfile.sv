@@ -45,14 +45,17 @@ generate
         wire    hit_w1_r2  = (ISSUE >= 2) & we[1] & (waddr[1] != 5'b0) & (waddr[1] == raddr2[gi]);//同时写入和读addr2,直接读addr1的wdata[1]
         wire    hit_w0_r2  = we[0] & (waddr[0] != 5'b0) & (waddr[0] == raddr2[gi]);//写后读同一个addr2,直接读addr2的wdata[0]
 
-        assign  rdata1[gi] = (raddr1[gi] == 5'b0) ? 32'b0     :
-                             hit_w1_r1             ? wdata[1]  :
-                             hit_w0_r1             ? wdata[0]  :
-                             rf[raddr1[gi]];
-        assign  rdata2[gi] = (raddr2[gi] == 5'b0) ? 32'b0     :
-                             hit_w1_r2            ? wdata[1]  :
-                             hit_w0_r2            ? wdata[0]  :
-                             rf[raddr2[gi]];
+        // assign  rdata1[gi] = (raddr1[gi] == 5'b0) ? 32'b0     :
+        //                      hit_w1_r1             ? wdata[1]  :
+        //                      hit_w0_r1             ? wdata[0]  :
+        //                      rf[raddr1[gi]];
+        // assign  rdata2[gi] = (raddr2[gi] == 5'b0) ? 32'b0     :
+        //                      hit_w1_r2            ? wdata[1]  :
+        //                      hit_w0_r2            ? wdata[0]  :
+        //                      rf[raddr2[gi]];
+
+        assign rdata1[gi] = (raddr1[gi] == 5'b0) ? 32'b0 : rf[raddr1[gi]];
+        assign rdata2[gi] = (raddr2[gi] == 5'b0) ? 32'b0 : rf[raddr2[gi]];
     end 
 endgenerate
 
