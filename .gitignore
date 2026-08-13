@@ -1,0 +1,5 @@
+.cursor/
+.codex_verify/
+.AGENTS.md/
+
+/fpga/nscscc-team/run_vivado/result/for_timing_report

@@ -1,0 +1,17 @@
+# Verilog/SVӲ������ͳһ�ֿ�LF����
+*.v     text eol=lf
+*.sv    text eol=lf
+*.svh   text eol=lf
+
+# C/ͷ�ļ�
+*.c     text eol=lf
+*.h     text eol=lf
+
+# �ű���tclԼ���ļ�
+*.tcl   text eol=lf
+*.sh    text eol=lf
+
+# �������ļ���ת������
+*.bit   binary
+*.wdb   binary
+*.zip   binary
