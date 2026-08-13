@@ -158,8 +158,8 @@ reg         cpu_inst_data_ok_r;
 reg [127:0] cpu_inst_rdata_r;
 reg         cpu_data_data_ok_r;
 reg  [31:0] cpu_data_rdata_r;
-always @(posedge clk) begin
-    if (!resetn) begin
+always @(posedge aclk) begin
+    if (!aresetn) begin
         cpu_inst_data_ok_r <= 1'b0;
         cpu_inst_rdata_r   <= 128'b0;
         cpu_data_data_ok_r <= 1'b0;
