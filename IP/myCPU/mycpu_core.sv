@@ -376,7 +376,7 @@ assign  older_ex_for_mem  = WB_ex;
 //------------------------{front_push}begin-------------------------//
 wire          flush;
 wire   [31:0] flush_target;
-wire   [31:0] flush_cacop_cancel_target;//从 WB 传回来的 flush_target & cacop 取消
+wire   [31:0] cancel_target;//cacop flush br 融合 target
 
 wire   [31:0] front_push_rdata1        [ISSUE - 1 : 0];
 wire   [31:0] front_push_rdata2        [ISSUE - 1 : 0];
@@ -414,8 +414,9 @@ generate
     end
 endgenerate 
 //ibar也在EXE2 所以可以直接赋值cacop_pc
-assign flush_cacop_cancel_target = flush ? flush_target :
-                                   (cacop_need_cancel | ibar_cancel) ? cacop_pc : flush_target;
+assign cancel_target = flush ? flush_target :
+                       (cacop_need_cancel | ibar_cancel) ? cacop_pc : 
+                       br_taken ? br_target : flush_target;
 //------------------------{front_push}end-------------------------//
 
 //------------------------{stall}begin-------------------------//
@@ -605,7 +606,8 @@ assign  need_br_cancel = br_afterpred_taken_r;
 //------------------------{cacop}begin-------------------------//
 wire   [31:0] inst_sram_addr_without_cacop;
 assign        inst_sram_addr               = (cacop_valid && cache_code[2:0] == 3'b0) ? data_sram_addr : inst_sram_addr_without_cacop;
-
+// cacop_need_cancel当出现了要清除 icache 的时候说明从 preIF1->EXE1 拿到的指令都是不可信的，需要重取
+// 和 ibar 这种纯血 cancel 不同，他不应该取消 exe2
 reg           cacop_need_cancel;
 always @(posedge clk)begin
     if(!resetn)begin
@@ -627,20 +629,16 @@ end
 wire    ibar_cancel;
 wire    dbar_cancel;
 
-wire    preIF1_need_cancel;
-wire    preIF2_need_cancel;
-wire    IF_need_cancel;
-wire    ID_need_cancel;
+wire    preIF_IF_ID_need_cancel;
 wire    EXE1_need_cancel;
 wire    EXE2_need_cancel;
 wire    MEM_need_cancel;
 wire    WB_need_cancel;
 
-assign  preIF1_need_cancel = flush | cacop_need_cancel | ibar_cancel;
-assign  preIF2_need_cancel = flush | cacop_need_cancel | ibar_cancel;
-assign  IF_need_cancel     = flush | need_br_cancel    | cacop_need_cancel | ibar_cancel;
-assign  ID_need_cancel     = flush | cacop_need_cancel | ibar_cancel       | need_br_cancel;
+assign  preIF_IF_ID_need_cancel = flush | need_br_cancel    | cacop_need_cancel | ibar_cancel;
 assign  EXE1_need_cancel   = flush | ibar_cancel       | cacop_need_cancel;
+// cacop_need_cancel当出现了要清除 icache 的时候说明从 preIF1->EXE1 拿到的指令都是不可信的，需要重取
+// 和 ibar 这种纯血 cancel 不同，他不应该取消 exe2
 assign  EXE2_need_cancel   = flush | ibar_cancel;
 assign  MEM_need_cancel    = flush;
 assign  WB_need_cancel     = flush;
@@ -836,14 +834,11 @@ pre_IF1 #(
 
     .preIF1_preIF2_bus_slot0 (preIF1_preIF2_bus_slot0       ),
     .preIF1_preIF2_bus       (preIF1_preIF2_bus             ),
-    
-    .br_target               (br_target                     ),
-    .br_taken                (br_taken                      ),
     //cancel
-    .preIF1_need_cancel      (preIF1_need_cancel            ),
+    .preIF1_need_cancel      (preIF_IF_ID_need_cancel            ),
     //stall
     .need_stall              (need_stall                    ),
-    .flush_target            (flush_cacop_cancel_target     ),
+    .cancel_target            (cancel_target     ),
     // search port 0 (for fetch the inst)
     .s0_vppn                 (s0_vppn                       ),
     .s0_va_bit12             (s0_va_bit12                   ),
@@ -901,10 +896,8 @@ pre_IF2 #(
     .preIF1_preIF2_bus_slot0      (preIF1_preIF2_bus_slot0       ),
     .preIF1_preIF2_bus            (preIF1_preIF2_bus             ),
     .preIF2_IF_bus                (preIF2_IF_bus                 ),
-
-    .br_taken                     (br_taken                      ),
     //cancel
-    .preIF2_need_cancel           (preIF2_need_cancel            ),
+    .preIF2_need_cancel           (preIF_IF_ID_need_cancel            ),
     //stall
     .need_stall                   (need_stall                    ),
     //handshake
@@ -943,7 +936,7 @@ fetch #(
     .preIF2_IF_bus         (preIF2_IF_bus         ),
     .IF_ID_bus             (IF_ID_bus             ),
     //cancel
-    .IF_need_cancel        (IF_need_cancel        ),
+    .IF_need_cancel        (preIF_IF_ID_need_cancel        ),
     //stall
     .need_stall            (need_stall            ),
     //handshake
@@ -979,7 +972,7 @@ decode #(
     .rf_rdata1           (front_push_rdata1   ),
     .rf_rdata2           (front_push_rdata2   ),//have been front_push 
     //cancel
-    .ID_need_cancel      (ID_need_cancel      ),
+    .ID_need_cancel      (preIF_IF_ID_need_cancel      ),
     //stall
     .need_stall          (need_stall          ),
     //中断
