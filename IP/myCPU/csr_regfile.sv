@@ -113,7 +113,12 @@ module csr_regfile#(
     output wire                      LLbit,
 
     // IDLE：TCFG.InitVal==0 时参考模型会在写 TCFG 后立刻抢占，ERA=IDLE 本身
-    output wire                      csr_tcfg_init0
+    output wire                      csr_tcfg_init0,
+
+    //用来切割csr的接口路径
+    output wire [31:0]               csr_eentry_rvalue,
+    output wire [31:0]               csr_era_rvalue,
+    output wire [31:0]               csr_tlbrentry_rvalue
 );
 
 // ----------DEFINE--------------
@@ -747,8 +752,8 @@ endgenerate
 wire   [31:0] csr_crmd_rvalue;
 wire   [31:0] csr_prmd_rvalue;
 wire   [31:0] csr_estat_rvalue;
-wire   [31:0] csr_era_rvalue;
-wire   [31:0] csr_eentry_rvalue;
+//wire   [31:0] csr_era_rvalue;
+//wire   [31:0] csr_eentry_rvalue;
 wire   [31:0] csr_save0_rvalue;
 wire   [31:0] csr_save1_rvalue;
 wire   [31:0] csr_save2_rvalue;
@@ -764,7 +769,7 @@ wire   [31:0] csr_tlbehi_rvalue;
 wire   [31:0] csr_tlbelo0_rvalue;
 wire   [31:0] csr_tlbelo1_rvalue;
 wire   [31:0] csr_asid_rvalue;
-wire   [31:0] csr_tlbrentry_rvalue;
+//wire   [31:0] csr_tlbrentry_rvalue;
 wire   [31:0] csr_dmw0_rvalue;
 wire   [31:0] csr_dmw1_rvalue;
 wire   [31:0] csr_llbctl_rvalue;

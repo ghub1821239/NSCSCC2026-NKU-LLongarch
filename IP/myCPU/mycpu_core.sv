@@ -414,9 +414,10 @@ generate
     end
 endgenerate 
 //ibar也在EXE2 所以可以直接赋值cacop_pc
-assign cancel_target = flush ? flush_target :
-                       (cacop_need_cancel | ibar_cancel) ? cacop_pc : 
-                       br_taken ? br_target : flush_target;
+assign cancel_target = flush               ? flush_target :
+                       ibar_cancel         ? ibar_pc      :
+                       cacop_need_cancel   ? cacop_pc     : 
+                       br_taken            ? br_target    : flush_target;
 //------------------------{front_push}end-------------------------//
 
 //------------------------{stall}begin-------------------------//
@@ -628,6 +629,7 @@ end
 //------------------------{i/dbar need cancel}begins-------------------------//
 wire    ibar_cancel;
 wire    dbar_cancel;
+wire [31:0] ibar_pc;
 
 wire    preIF_IF_ID_need_cancel;
 wire    EXE1_need_cancel;
@@ -694,6 +696,12 @@ wire          csr_tlb_reload1;
 wire          csr_tlb_plv1;     
 // 更新TLBEHI ex_tlb
 wire          ex_tlb;
+
+//切割csr端口的路径
+wire   [31:0] csr_eentry_rvalue;
+wire   [31:0] csr_era_rvalue;
+wire   [31:0] csr_tlbrentry_rvalue;
+
 //mat:存储访问类型
 wire   [1:0]  csr_CRMD_DATF;
 wire   [1:0]  csr_CRMD_DATM;
@@ -813,7 +821,11 @@ csr_regfile #(
     //LLbit
     .LLbit_wb               (LLbit_wb               ),
     .LLbit_wdata            (LLbit_wdata            ),
-    .LLbit                  (LLbit                  )
+    .LLbit                  (LLbit                  ),
+    //切割csr端口的路径
+    .csr_eentry_rvalue      (csr_eentry_rvalue      ),
+    .csr_era_rvalue         (csr_era_rvalue         ),
+    .csr_tlbrentry_rvalue   (csr_tlbrentry_rvalue   )
 );
 //------------------------{csr_regfile}end-------------------------//
 
@@ -1110,6 +1122,7 @@ exe2 #(
     //system inst_need_cancel
     .ibar_cancel             (ibar_cancel             ),
     .dbar_cancel             (dbar_cancel             ),
+    .ibar_pc                 (ibar_pc                 ),
     .LLbit_wb                (LLbit_wb                ),
     .LLbit_wdata             (LLbit_wdata             ),
     .LLbit                   (LLbit                   )
@@ -1216,7 +1229,11 @@ wb #(
     //IDLE
     .csr_has_int           (has_int               ),
     .csr_tcfg_init0        (csr_tcfg_init0        ),
-    .IDLE_stall            (IDLE_stall            )
+    .IDLE_stall            (IDLE_stall            ),
+    //切割csr端口的路径
+    .csr_eentry_rvalue     (csr_eentry_rvalue     ),
+    .csr_era_rvalue        (csr_era_rvalue        ),
+    .csr_tlbrentry_rvalue  (csr_tlbrentry_rvalue  )
 );
 //------------------------{5-stage pipeline instantiation}end-------------------------//
 

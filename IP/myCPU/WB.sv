@@ -71,7 +71,11 @@ module wb #(
     //IDLE
     input  wire                   csr_has_int,
     input  wire                   csr_tcfg_init0, // TCFG.InitVal==0
-    output wire                   IDLE_stall
+    output wire                   IDLE_stall,
+    //切割csr端口的路径
+    input  wire [31:0]            csr_eentry_rvalue,
+    input  wire [31:0]            csr_era_rvalue,
+    input  wire [31:0]            csr_tlbrentry_rvalue
 );
 wire                   slot_valid          [ISSUE - 1 : 0];
 wire [31:0]            pc                  [ISSUE - 1 : 0];
@@ -321,9 +325,33 @@ wire        csr_rd_WB_each;
 assign csr_WB_rd  = s_slot_ok & ~wb_ex & (s_csrrd | s_csrwr | s_csrxchg | s_rdcntid);//要把csr写入rd的
 assign csr_rd_WB_each = s_slot_ok & s_no_ex & ~wb_ex & (s_csrwr | s_csrxchg);//要把rd写入csr的
 
+reg         csr_rd_hold;//csr写入rd的寄存器hold
+reg  [31:0] csr_rvalue_r;//用来存住csr_rvalue
+wire        csr_rd_op = WB_valid & csr_WB_rd;//csr_WB_rd有效
+
+always @(posedge clk) begin
+    if (!resetn) begin
+        csr_rd_hold  <= 1'b0;
+        csr_rvalue_r <= 32'b0;
+    end
+    else if (WB_need_cancel & !(csr_rd_op & !csr_rd_hold)) begin
+        //例外等非csr写rd的指令，仍然走flush路线，不能进hold
+        csr_rd_hold  <= 1'b0;
+    end
+    else if (csr_rd_op & !csr_rd_hold) begin
+        //来了一条csr写rd指令，不是异常（上面已经排除），hold没有正在写的指令
+        csr_rvalue_r <= csr_rvalue;
+        csr_rd_hold  <= 1'b1;
+    end
+    else if (csr_rd_hold & WB_allow_in) begin
+        //下一次来指令时，若hold上一次有指令要清零
+        csr_rd_hold  <= 1'b0;
+    end
+end
+
 assign csr_wmask  = (s_csrwr | s_tlbsrch) ? 32'hffffffff : s_rj;
 assign csr_wdata  = s_tlbsrch ? {s_TLBIDX_new_tlbsrch[10],csr_TLBIDX[30:10],s_TLBIDX_new_tlbsrch[9:0]} : s_rkd;
-assign csr_we     = (s_tlbsrch | csr_rd_WB_each) & s_slot_ok & ~wb_ex & s_no_ex & WB_valid;
+assign csr_we     = (s_tlbsrch | csr_rd_WB_each) & s_slot_ok & ~wb_ex & s_no_ex & WB_valid & ~csr_rd_hold;
 
 assign csr_re     = ((csr_WB_rd | flush) & WB_valid) | idle_wake_ex;
 
@@ -350,14 +378,6 @@ assign csr_num    = idle_ex                            ? `CSR_EENTRY      :
                     (s_tlbsrch & s_slot_ok & ~wb_ex)   ? `CSR_TLBIDX      : 
                                                          s_csr_num_wr;
 
-assign flush        = (((s_ertn | s_csrwr | s_csrxchg | s_tlbfill | s_tlbwr | s_tlbrd | s_tlbsrch | s_idle) & s_slot_ok & ~wb_ex) |
-                      wb_ex) & WB_valid |
-                      idle_wake_ex;
-assign flush_target = wb_ex ? csr_rvalue :
-                      (s_csrwr | s_csrxchg | s_tlbfill |
-                       s_tlbwr | s_tlbrd | s_tlbsrch | s_idle)
-                      ? (s_pc + 32'd4)
-                      : csr_rvalue;
 //tlb output
 assign tlbrd_we   = s_tlbrd   & WB_valid & ~wb_ex & s_slot_ok & s_no_ex;
 assign tlbwr_we   = s_tlbwr   & WB_valid & ~wb_ex & s_slot_ok & s_no_ex;
@@ -412,14 +432,30 @@ assign csr_tlb_reload1 = x_ex_tlb_reload1 & WB_valid;
 assign csr_tlb_plv1    = x_ex_tlb_plv1    & WB_valid;
 //------------------------------{csr端口}end--------------------------------//
 
+//--------------------------------{flush}begin-----------------------------------//
+//csr_vector用来代替csr_rvalue给通向异常入口的指令使用
+wire [31:0] csr_vector = (csr_num == `CSR_TLBRENTRY) ? csr_tlbrentry_rvalue :
+                         (csr_num == `CSR_ERA      ) ? csr_era_rvalue       :
+                                                       csr_eentry_rvalue;
+
+assign flush        = (((s_ertn | s_csrwr | s_csrxchg | s_tlbfill | s_tlbwr | s_tlbrd | s_tlbsrch | s_idle) & s_slot_ok & ~wb_ex) |
+                      wb_ex) & WB_valid |
+                      idle_wake_ex;
+assign flush_target = wb_ex ? csr_vector :
+                      (s_csrwr | s_csrxchg | s_tlbfill |
+                       s_tlbwr | s_tlbrd | s_tlbsrch | s_idle)
+                      ? (s_pc + 32'd4)
+                      : csr_vector;
+//--------------------------------{flush}end-----------------------------------//
+
 //-------------------------------{rf双写}begin------------------------------//
 generate
     for (gi = 0; gi < ISSUE; gi = gi + 1) begin : gen_rf
         wire if_csr_write_in_rd = (inst_csrrd[gi] | inst_csrwr[gi] | inst_csrxchg[gi] | inst_rdcntid[gi]) &
                                   slot_fire[gi] & ~ex_slot[gi] & ~idle_ex;//命中该slot时，csr是否要写入rd
-        wire if_use_csr_rdata   = if_csr_write_in_rd & ((gi == 0 & ~csr_select_slot) | (gi == 1 & csr_select_slot)) & csr_WB_rd;//是否使用csr_rdata
+        wire if_use_csr_rdata   = if_csr_write_in_rd & ((gi == 0 & ~csr_select_slot) | (gi == 1 & csr_select_slot)) & csr_WB_rd & csr_rd_hold;//是否使用csr_rdata
 
-        assign rf_wdata[gi]     = if_use_csr_rdata ? csr_rvalue : rf_alu_wdata[gi];
+        assign rf_wdata[gi]     = if_use_csr_rdata ? csr_rvalue_r : rf_alu_wdata[gi];
         assign rf_waddr[gi]     = rf_dest[gi];
         assign rf_we[gi]        = rf_gr_we_ex[gi] & slot_fire[gi] & ~ex_slot[gi] & ~idle_ex &
                                   (~if_csr_write_in_rd | if_use_csr_rdata);//最后一个括号是防止年轻指令异常抢占年老csr指令写入rd
@@ -434,7 +470,7 @@ generate
             assign need_stall_csr[gi]        = need_stall_csr_b[gi] & slot_fire[gi];
             assign wb_front_addr[gi]         = slot_fire[gi] ? rf_dest[gi] : 5'b0;
             assign wb_front_data[gi]         = slot_fire[gi] ? rf_wdata[gi]: 32'b0;
-            assign wb_can_not_front_push[gi] = ~rf_gr_we_ex[gi] | ~slot_fire[gi] | ex_slot[gi] | ~rf_we[gi];
+            assign wb_can_not_front_push[gi] = ~rf_gr_we_ex[gi] | ~slot_fire[gi] | ex_slot[gi];
         end
 endgenerate
 //--------------------------------{前推}end-------------------------------//
@@ -448,12 +484,12 @@ assign wb_pc      = idle_preempt ? pc[0] :
 assign wb_ex      = take_ex0 | take_ex1 | idle_ex;
 assign wb_vaddr   = x_vaddr;
 
-assign WB_ready_go     = 1'b1;
+assign WB_ready_go     = (csr_rd_op & !csr_rd_hold) ? 1'b0 : 1'b1;//如果有指令还没写入rd，则还不能ready_go
 always @(posedge clk) begin
     if(!resetn)begin
         WB_valid <= 1'b0;
     end
-    else if(WB_need_cancel)begin
+    else if(WB_need_cancel & !(csr_rd_op & !csr_rd_hold))begin
         WB_valid <= 1'b0;
     end
     else if(WB_allow_in)begin

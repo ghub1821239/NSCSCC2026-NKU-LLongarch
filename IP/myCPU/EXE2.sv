@@ -50,6 +50,7 @@ module exe2 #(
     output wire [31:0]             cacop_pc,
     //system inst_need_cancel
     output wire                    ibar_cancel,
+    output wire [31:0]             ibar_pc,
     output wire                    dbar_cancel,
     //CSR_LLBCTL
     output wire                    LLbit_wb,
@@ -236,6 +237,7 @@ endgenerate
 // 因为已经限定了 i/dbar 只可能由 slot0 触发
 assign  ibar_cancel = inst_ibar[0] & slot_valid_from_exe1[0] & EXE2_valid & ~older_ex_for_exe2 & ~flush;
 assign  dbar_cancel = inst_dbar[0] & slot_valid_from_exe1[0] & EXE2_valid & ~older_ex_for_exe2 & ~flush;
+assign  ibar_pc     = pc[0] + 32'd4;//一定取slot0的pc
 //------------------------{i/dbar need cancel}end-------------------------//
 
 //------------------------{dataRAM handshake}begin-------------------------//
