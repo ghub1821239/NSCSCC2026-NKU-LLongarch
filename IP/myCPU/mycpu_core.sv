@@ -629,6 +629,7 @@ end
 //------------------------{i/dbar need cancel}begins-------------------------//
 wire    ibar_cancel;
 wire    dbar_cancel;
+wire [31:0] idbar_pc;
 
 wire    preIF_IF_ID_need_cancel;
 wire    EXE1_need_cancel;
@@ -1111,6 +1112,7 @@ exe2 #(
     //system inst_need_cancel
     .ibar_cancel             (ibar_cancel             ),
     .dbar_cancel             (dbar_cancel             ),
+    .idbar_pc                (idbar_pc                ),
     .LLbit_wb                (LLbit_wb                ),
     .LLbit_wdata             (LLbit_wdata             ),
     .LLbit                   (LLbit                   )
