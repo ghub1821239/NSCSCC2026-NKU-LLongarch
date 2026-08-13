@@ -17,7 +17,7 @@ from __future__ import annotations
 import argparse
 import csv
 import re
-from collections import Counter, defaultdict
+from collections import Counter
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -331,23 +331,6 @@ def write_markdown(paths: list[TimingPath], info: dict[str, float | int],
             "",
         ]
 
-    lines += ["## 按起点流水级排名", "",
-              "| 优先级 | 流水级 | 最差 Slack (ns) | 数据延迟 (ns) | 逻辑/布线 (ns) | 布线占比 | Levels | 最大扇出 | 路径数 | 判断 |",
-              "| ---: | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |"]
-    grouped: dict[str, list[TimingPath]] = defaultdict(list)
-    for path in paths:
-        grouped[path.source_stage].append(path)
-    worst_by_stage = []
-    for stage, items in grouped.items():
-        worst = min(items, key=lambda p: p.slack)
-        worst_by_stage.append((stage, worst, len(items)))
-    worst_by_stage.sort(key=lambda entry: entry[1].slack)
-    for rank, (stage, worst, count) in enumerate(worst_by_stage, 1):
-        lines.append(
-            f"| {rank} | {stage} | {worst.slack:.3f} | {worst.data_delay:.3f} | "
-            f"{worst.logic_delay:.3f}/{worst.route_delay:.3f} | {worst.route_percent:.1f}% | "
-            f"{worst.levels} | {worst.fanout} | {count} | {diagnosis(worst)} |")
-
     lines += ["", "## 全局最差路径", "",
               "| 排名 | 起点级 | Slack (ns) | Delay (ns) | Route% | Levels | 扇出 | Source → Destination |",
               "| ---: | --- | ---: | ---: | ---: | ---: | ---: | --- |"]
@@ -358,18 +341,6 @@ def write_markdown(paths: list[TimingPath], info: dict[str, float | int],
             f"| {rank} | {path.source_stage} | {path.slack:.3f} | {path.data_delay:.3f} | "
             f"{path.route_percent:.1f}% | {path.levels} | {path.fanout} | "
             f"`{src}` → `{dst}` |")
-
-    lines += ["", "## 跨模块路径（源级 → 终级）", "",
-              "| 源级 | 终级 | 路径数 | 最差 Slack (ns) |",
-              "| --- | --- | ---: | ---: |"]
-    cross: dict[tuple[str, str], list[TimingPath]] = defaultdict(list)
-    for path in paths:
-        if path.source_stage != path.dest_stage:
-            cross[(path.source_stage, path.dest_stage)].append(path)
-    for (src, dst), items in sorted(cross.items(),
-                                    key=lambda kv: min(p.slack for p in kv[1])):
-        lines.append(f"| {src} | {dst} | {len(items)} | "
-                     f"{min(p.slack for p in items):.3f} |")
 
     nets: dict[str, int] = {}
     for path in paths:
