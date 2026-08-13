@@ -194,7 +194,7 @@ assign        ll_finish  = EXE2_valid & dram_hit_any && inst_ll_w[dram_index] &&
 
 assign        sc_finish  = EXE2_valid && dram_hit_any && inst_sc_w[dram_index] &&
                            EXE2_ready_go && MEM_allow_in &&//SC 完成（改 LLbit）必须发生在指令真正离开 EXE2 的那一拍
-                            && ~older_ex_for_exe2 &&
+                           ~older_ex_for_exe2 &&
                            ~EXE2_need_cancel && ~(dram_index & EXE2_slot_ex[0]);//第一个 为 sc 的时候不能为 ex ；第二个为 sc 访问的时候也不能为 ex
 
 always @(posedge clk) begin
