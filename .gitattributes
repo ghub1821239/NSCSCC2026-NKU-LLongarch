@@ -1,17 +1,17 @@
-# Verilog/SV硬件代码统一仓库LF换行
+# Verilog/SV硬锟斤拷锟斤拷锟斤拷统一锟街匡拷LF锟斤拷锟斤拷
 *.v     text eol=lf
 *.sv    text eol=lf
 *.svh   text eol=lf
 
-# C/头文件
+# C/头锟侥硷拷
 *.c     text eol=lf
 *.h     text eol=lf
 
-# 脚本、tcl约束文件
+# 锟脚憋拷锟斤拷tcl约锟斤拷锟侥硷拷
 *.tcl   text eol=lf
 *.sh    text eol=lf
 
-# 二进制文件不转换换行
+# 锟斤拷锟斤拷锟斤拷锟侥硷拷锟斤拷转锟斤拷锟斤拷锟斤拷
 *.bit   binary
 *.wdb   binary
 *.zip   binary

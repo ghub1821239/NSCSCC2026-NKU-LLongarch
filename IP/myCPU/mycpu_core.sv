@@ -414,10 +414,10 @@ generate
     end
 endgenerate 
 //ibar也在EXE2 所以可以直接赋值cacop_pc
-assign cancel_target = flush               ? flush_target :
-                       ibar_cancel         ? ibar_pc      :
-                       cacop_need_cancel   ? cacop_pc     : 
-                       br_taken            ? br_target    : flush_target;
+assign cancel_target = flush ? flush_target :
+                       ibar_cancel ? idbar_pc :
+                       cacop_need_cancel ? cacop_pc : 
+                       br_taken ? br_target : flush_target;
 //------------------------{front_push}end-------------------------//
 
 //------------------------{stall}begin-------------------------//
@@ -629,7 +629,7 @@ end
 //------------------------{i/dbar need cancel}begins-------------------------//
 wire    ibar_cancel;
 wire    dbar_cancel;
-wire [31:0] ibar_pc;
+wire [31:0] idbar_pc;
 
 wire    preIF_IF_ID_need_cancel;
 wire    EXE1_need_cancel;
@@ -1122,7 +1122,7 @@ exe2 #(
     //system inst_need_cancel
     .ibar_cancel             (ibar_cancel             ),
     .dbar_cancel             (dbar_cancel             ),
-    .ibar_pc                 (ibar_pc                 ),
+    .idbar_pc                (idbar_pc                ),
     .LLbit_wb                (LLbit_wb                ),
     .LLbit_wdata             (LLbit_wdata             ),
     .LLbit                   (LLbit                   )
