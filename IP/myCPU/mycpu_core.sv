@@ -399,8 +399,8 @@ generate
                                        (EXE2_valid & ~exe2_can_not_front_push[1] & (exe2_front_addr[1] == rf_raddr1[i])) ? exe2_front_data[1] :
                                        (MEM_valid  & ~mem_can_not_front_push[0]  & (mem_front_addr[0]  == rf_raddr1[i])) ? mem_front_data[0]  :
                                        (MEM_valid  & ~mem_can_not_front_push[1]  & (mem_front_addr[1]  == rf_raddr1[i])) ? mem_front_data[1]  :
-                                       (WB_valid & !flush & ~wb_can_not_front_push[0] & (wb_front_addr[0] == rf_raddr1[i])) ? wb_front_data[0] :
-                                       (WB_valid & !flush & ~wb_can_not_front_push[1] & (wb_front_addr[1] == rf_raddr1[i])) ? wb_front_data[1] :
+                                    //   (WB_valid & !flush & ~wb_can_not_front_push[0] & (wb_front_addr[0] == rf_raddr1[i])) ? wb_front_data[0] :
+                                    //   (WB_valid & !flush & ~wb_can_not_front_push[1] & (wb_front_addr[1] == rf_raddr1[i])) ? wb_front_data[1] :
                                        rf_rdata1[i];
         assign  front_push_rdata2[i] =
                                        (rf_raddr2[i] == 5'b0) ? 32'b0 :
@@ -408,8 +408,8 @@ generate
                                        (EXE2_valid & ~exe2_can_not_front_push[1] & (exe2_front_addr[1] == rf_raddr2[i])) ? exe2_front_data[1] :
                                        (MEM_valid  & ~mem_can_not_front_push[0]  & (mem_front_addr[0]  == rf_raddr2[i])) ? mem_front_data[0]  :
                                        (MEM_valid  & ~mem_can_not_front_push[1]  & (mem_front_addr[1]  == rf_raddr2[i])) ? mem_front_data[1]  :
-                                       (WB_valid & !flush & ~wb_can_not_front_push[0] & (wb_front_addr[0] == rf_raddr2[i])) ? wb_front_data[0] :
-                                       (WB_valid & !flush & ~wb_can_not_front_push[1] & (wb_front_addr[1] == rf_raddr2[i])) ? wb_front_data[1] :
+                                    //   (WB_valid & !flush & ~wb_can_not_front_push[0] & (wb_front_addr[0] == rf_raddr2[i])) ? wb_front_data[0] :
+                                    //  (WB_valid & !flush & ~wb_can_not_front_push[1] & (wb_front_addr[1] == rf_raddr2[i])) ? wb_front_data[1] :
                                        rf_rdata2[i];
     end
 endgenerate 
@@ -444,8 +444,8 @@ generate
                                    ((rf_raddr1[i] == EXE2_rf_dest[1]) && EXE2_valid && (exe2_need_stall_inst[1] || exe2_need_stall_csr[1])) ||
                                    ((rf_raddr1[i] == MEM_rf_dest[0])  && MEM_valid  && (mem_load_wait[0] || mem_need_stall_csr[0])) ||
                                    ((rf_raddr1[i] == MEM_rf_dest[1])  && MEM_valid  && (mem_load_wait[1] || mem_need_stall_csr[1])) ||
-                                   ((rf_raddr1[i] == WB_rf_dest[0])   && WB_valid   && wb_need_stall_csr[0]) ||
-                                   ((rf_raddr1[i] == WB_rf_dest[1])   && WB_valid   && wb_need_stall_csr[1]));
+                                   ((rf_raddr1[i] == WB_rf_dest[0])   && WB_valid   && !flush & ~wb_can_not_front_push[0]) ||
+                                   ((rf_raddr1[i] == WB_rf_dest[1])   && WB_valid   && !flush & ~wb_can_not_front_push[1]));
         assign  src2_stall[i]    =
                                    (rf_raddr2[i] != 5'd0) && ID_valid &&
                                    (((rf_raddr2[i] == EXE1_rf_dest[0]) && EXE1_valid && EXE1_rf_gr_we[0]) ||
@@ -454,8 +454,8 @@ generate
                                    ((rf_raddr2[i] == EXE2_rf_dest[1]) && EXE2_valid && (exe2_need_stall_inst[1] || exe2_need_stall_csr[1])) ||
                                    ((rf_raddr2[i] == MEM_rf_dest[0])  && MEM_valid  && (mem_load_wait[0] || mem_need_stall_csr[0])) ||
                                    ((rf_raddr2[i] == MEM_rf_dest[1])  && MEM_valid  && (mem_load_wait[1] || mem_need_stall_csr[1])) ||
-                                   ((rf_raddr2[i] == WB_rf_dest[0])   && WB_valid   && wb_need_stall_csr[0]) ||
-                                   ((rf_raddr2[i] == WB_rf_dest[1])   && WB_valid   && wb_need_stall_csr[1]));
+                                   ((rf_raddr2[i] == WB_rf_dest[0])   && WB_valid   && !flush & ~wb_can_not_front_push[0]) ||
+                                   ((rf_raddr2[i] == WB_rf_dest[1])   && WB_valid   && !flush & ~wb_can_not_front_push[1]));
     end
 endgenerate
 
