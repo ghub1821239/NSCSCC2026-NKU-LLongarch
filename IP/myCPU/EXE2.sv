@@ -51,6 +51,7 @@ module exe2 #(
     //system inst_need_cancel
     output wire                    ibar_cancel,
     output wire                    dbar_cancel,
+    output wire [31:0]             idbar_pc,
     //CSR_LLBCTL
     output wire                    LLbit_wb,
     output wire                    LLbit_wdata,
@@ -248,6 +249,7 @@ assign  data_sram_wr  = |data_sram_wstrb;
 assign  cacop_valid   = EXE2_valid & inst_cacop[dram_index] & ~EXE2_slot_ex[dram_index] & ~older_ex_for_exe2 & slot_valid_from_exe1[dram_index] &
                         (cache_code[4:3] == 2'b10 | csr_CRMD_PLV == 2'b00) & ~(dram_index & EXE2_slot_ex[0]) & ~EXE2_need_cancel; // 在 slot1 是 cacop slot0 不能异常
 assign  cacop_pc      = pc[dram_index] + 4;
+assign  idbar_pc      = pc[0];
 //------------------------{dataRAM handshake}end-------------------------//
 
 //------------------------{front_push}begin-------------------------//

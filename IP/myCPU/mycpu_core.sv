@@ -415,7 +415,8 @@ generate
 endgenerate 
 //ibar也在EXE2 所以可以直接赋值cacop_pc
 assign cancel_target = flush ? flush_target :
-                       (cacop_need_cancel | ibar_cancel) ? cacop_pc : 
+                       ibar_cancel ? idbar_pc :
+                       cacop_need_cancel ? cacop_pc : 
                        br_taken ? br_target : flush_target;
 //------------------------{front_push}end-------------------------//
 
