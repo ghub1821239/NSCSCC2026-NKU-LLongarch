@@ -60,7 +60,15 @@ module core_top(
     output wire [31:0] debug0_wb_pc,
     output wire [ 3:0] debug0_wb_rf_wen,
     output wire [ 4:0] debug0_wb_rf_wnum,
-    output wire [31:0] debug0_wb_rf_wdata
+    output wire [31:0] debug0_wb_rf_wdata,
+    output wire [ 1:0] debug_commit_valid,
+    output wire [ 1:0] debug_commit_exception,
+    output wire [ 5:0] debug_commit_ecode,
+    output wire [ 8:0] debug_commit_esubcode,
+    output wire [63:0] debug_commit_pc,
+    output wire [ 7:0] debug_commit_rf_wen,
+    output wire [ 9:0] debug_commit_rf_wnum,
+    output wire [63:0] debug_commit_rf_wdata
 );
 
 // cpu inst sram
@@ -190,6 +198,14 @@ mycpu_core u_mycpu_core(
     .debug_wb_rf_we     (debug0_wb_rf_wen   ),
     .debug_wb_rf_wnum   (debug0_wb_rf_wnum  ),
     .debug_wb_rf_wdata  (debug0_wb_rf_wdata ),
+    .debug_commit_valid (debug_commit_valid  ),
+    .debug_commit_exception(debug_commit_exception),
+    .debug_commit_ecode(debug_commit_ecode),
+    .debug_commit_esubcode(debug_commit_esubcode),
+    .debug_commit_pc    (debug_commit_pc     ),
+    .debug_commit_rf_wen(debug_commit_rf_wen ),
+    .debug_commit_rf_wnum(debug_commit_rf_wnum),
+    .debug_commit_rf_wdata(debug_commit_rf_wdata),
 
     .hw_int_in          (intrpt             )
 );
