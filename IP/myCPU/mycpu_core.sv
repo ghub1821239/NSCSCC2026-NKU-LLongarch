@@ -38,6 +38,14 @@ module mycpu_core #(
     output wire [ 3:0]  debug_wb_rf_we,
     output wire [ 4:0]  debug_wb_rf_wnum,
     output wire [31:0]  debug_wb_rf_wdata,
+    output wire [ISSUE-1:0]    debug_commit_valid,
+    output wire [ISSUE-1:0]    debug_commit_exception,
+    output wire [5:0]          debug_commit_ecode,
+    output wire [8:0]          debug_commit_esubcode,
+    output wire [ISSUE*32-1:0] debug_commit_pc,
+    output wire [ISSUE*4-1:0]  debug_commit_rf_wen,
+    output wire [ISSUE*5-1:0]  debug_commit_rf_wnum,
+    output wire [ISSUE*32-1:0] debug_commit_rf_wdata,
     //硬件中断输入
     input  wire [ 7:0]  hw_int_in
 );
@@ -678,6 +686,8 @@ wire   [31:0] wb_pc;
 wire   [31:0] wb_vaddr;
 wire   [5:0]  wb_ecode;
 wire   [8:0]  wb_esubcode;
+assign debug_commit_ecode = wb_ecode;
+assign debug_commit_esubcode = wb_esubcode;
 wire          has_int;
 wire          csr_tcfg_init0;
 wire          csr_CRMD_DA;
@@ -1166,6 +1176,12 @@ wb #(
     .debug_wb_rf_wdata     (debug_wb_rf_wdata     ),
     .debug_wb_rf_we        (debug_wb_rf_we        ),
     .debug_wb_rf_wnum      (debug_wb_rf_wnum      ),
+    .debug_commit_valid    (debug_commit_valid    ),
+    .debug_commit_exception(debug_commit_exception),
+    .debug_commit_pc       (debug_commit_pc       ),
+    .debug_commit_rf_wen   (debug_commit_rf_wen   ),
+    .debug_commit_rf_wnum  (debug_commit_rf_wnum  ),
+    .debug_commit_rf_wdata (debug_commit_rf_wdata ),
     .rf_waddr              (rf_waddr              ),
     .rf_wdata              (rf_wdata              ),
     .rf_we                 (rf_we                 ),

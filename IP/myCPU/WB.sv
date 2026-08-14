@@ -18,6 +18,12 @@ module wb #(
     output wire [ 3:0]            debug_wb_rf_we,
     output wire [ 4:0]            debug_wb_rf_wnum,
     output wire [31:0]            debug_wb_rf_wdata,
+    output wire [ISSUE-1:0]       debug_commit_valid,
+    output wire [ISSUE-1:0]       debug_commit_exception,
+    output wire [ISSUE*32-1:0]    debug_commit_pc,
+    output wire [ISSUE*4-1:0]     debug_commit_rf_wen,
+    output wire [ISSUE*5-1:0]     debug_commit_rf_wnum,
+    output wire [ISSUE*32-1:0]    debug_commit_rf_wdata,
     // 通用寄存器堆写回接口
     output wire [ 4:0]            rf_waddr             [ISSUE - 1 : 0],
     output wire [31:0]            rf_wdata             [ISSUE - 1 : 0],
@@ -478,6 +484,17 @@ assign debug_wb_pc       = debug_s0 ? pc[0]       : (debug_s1 ? pc[1]       : pc
 assign debug_wb_rf_wdata = debug_s0 ? rf_wdata[0] : (debug_s1 ? rf_wdata[1] : 32'b0);
 assign debug_wb_rf_we    = {4{debug_s0 | debug_s1}};
 assign debug_wb_rf_wnum  = debug_s0 ? rf_waddr[0] : (debug_s1 ? rf_waddr[1] : 5'b0);
+
+generate
+    for (gi = 0; gi < ISSUE; gi = gi + 1) begin : gen_debug_commit
+        assign debug_commit_valid[gi] = slot_fire[gi] & ~idle_ex;
+        assign debug_commit_exception[gi] = slot_fire[gi] & ex_slot[gi];
+        assign debug_commit_pc[gi*32 +: 32] = pc[gi];
+        assign debug_commit_rf_wen[gi*4 +: 4] = {4{rf_we[gi]}};
+        assign debug_commit_rf_wnum[gi*5 +: 5] = rf_waddr[gi];
+        assign debug_commit_rf_wdata[gi*32 +: 32] = rf_wdata[gi];
+    end
+endgenerate
 //----------------------{debug}end------------------------------//
 
 endmodule
