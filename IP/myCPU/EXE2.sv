@@ -256,11 +256,11 @@ assign  idbar_pc      = pc[0] + 4;
 generate
     for(i = 0; i < ISSUE; i = i + 1) begin : gen_EXE2_ex
         assign  exe2_front_data[i]         = inst_sc_w[i] ? {31'b0, sc_success} :
-                                             mem_we[i]    ? rkd_value[i] :
-                                             alu_result_with_rdct[i];
+                                             mem_we[i]    ? rkd_value[i]        :
+                                                            alu_result_with_rdct[i];
         assign  exe2_front_addr[i]         = rf_dest[i];
         assign  exe2_can_not_front_push[i] = ~rf_gr_we[i]       | ~slot_valid_from_exe1[i] |
-                                             need_stall_inst[i] |  need_stall_csr[i];
+                                             need_stall_inst[i] | need_stall_csr[i]       ;
         assign  EXE2_slot_ex[i]            = EXE2_valid & slot_valid_from_exe1[i] & EXE1_ex[i];
         assign  EXE2_rf_dest[i]            = rf_dest[i];
     end
@@ -269,11 +269,11 @@ assign  EXE2_ex = EXE2_slot_ex[0] | EXE2_slot_ex[1];
 //------------------------{front_push}end-------------------------//
 
 //------------------------{ready_go}begin-------------------------//
-assign  EXE2_ready_go = (EXE2_ex      | older_ex_for_exe2) ? 1'b1 : // 如果有异常直接走
-                        cacop_valid   ? cacop_done                : // 如果是 cache 操作就要等 done
+assign  EXE2_ready_go = (EXE2_ex      | older_ex_for_exe2)                                                                          ? 1'b1                                : // 如果有异常直接走
+                        cacop_valid                                                                                                 ? cacop_done                          : // 如果是 cache 操作就要等 done
                         (dram_hit_any & (res_from_mem[dram_index] | (mem_we[dram_index] & ~(inst_sc_w[dram_index] & ~sc_success))))
-                        ? (data_sram_addr_ok & data_sram_req)     :
-                        1'b1;// 如果是访存 mem 就要等 addr_ok 和 req 都满足
+                                                                                                                                    ? (data_sram_addr_ok & data_sram_req) :
+                                                                                                                                      1'b1; // 如果是访存 mem 就要等 addr_ok 和 req 都满足
 
 always @(posedge clk) begin
     if(!resetn)begin

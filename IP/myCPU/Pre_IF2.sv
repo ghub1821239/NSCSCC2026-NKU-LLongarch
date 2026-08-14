@@ -134,10 +134,10 @@ assign  inst_resp_discard = discard_resp_pending |
 //------------------------{instRAM handshake}begin-------------------------//
 assign  inst_sram_wstrb              = 4'b0;
 assign  inst_sram_wr                 = |inst_sram_wstrb;
-assign  inst_sram_addr_without_cacop = (csr_CRMD_DA == 1 & csr_CRMD_PG == 0) ? pc[0] :
+assign  inst_sram_addr_without_cacop = (csr_CRMD_DA == 1 & csr_CRMD_PG == 0)                  ? pc[0]                      :
                                        (csr_CRMD_DA == 0 & csr_CRMD_PG == 1) & dmw_found0[0]  ? {dmw_pseg0[0],pc[0][28:0]} :
-                                       (csr_CRMD_DA == 0 & csr_CRMD_PG == 1) & ~dmw_found0[0] ? tlb_paddr[0] :
-                                       32'b0;
+                                       (csr_CRMD_DA == 0 & csr_CRMD_PG == 1) & ~dmw_found0[0] ? tlb_paddr[0]               :
+                                                                                                32'b0;
 assign  inst_sram_wdata              = 32'b0;
 //1. 跳转之后的preIF的指令直接让他的req为0，那么当前clk就一定不会ready_go
 //2. 为了防止preIF ready go IF不allow_in 就只在allow_in的时候发起req

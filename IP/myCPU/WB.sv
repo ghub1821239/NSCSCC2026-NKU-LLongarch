@@ -11,7 +11,7 @@ module wb #(
     output wire                   WB_ready_go,
     output reg                    WB_valid,
     
-    input  wire [inbus_width-1:0] MEM_WB_bus           [ISSUE - 1 : 0],// MEM到WB的总线
+    input  wire [inbus_width-1:0] MEM_WB_bus            [ISSUE - 1 : 0],// MEM到WB的总线
     // 调试接口
     //考虑是否需要添加更多debug接口
     output wire [31:0]            debug_wb_pc,
@@ -25,15 +25,15 @@ module wb #(
     output wire [ISSUE*5-1:0]     debug_commit_rf_wnum,
     output wire [ISSUE*32-1:0]    debug_commit_rf_wdata,
     // 通用寄存器堆写回接口
-    output wire [ 4:0]            rf_waddr             [ISSUE - 1 : 0],
-    output wire [31:0]            rf_wdata             [ISSUE - 1 : 0],
-    output wire                   rf_we                [ISSUE - 1 : 0],
+    output wire [ 4:0]            rf_waddr              [ISSUE - 1 : 0],
+    output wire [31:0]            rf_wdata              [ISSUE - 1 : 0],
+    output wire                   rf_we                 [ISSUE - 1 : 0],
     // 数据冒险停顿相关控制
-    output wire [ 4:0]            WB_rf_dest           [ISSUE - 1 : 0],
-    output wire                   need_stall_csr       [ISSUE - 1 : 0],
+    output wire [ 4:0]            WB_rf_dest            [ISSUE - 1 : 0],
+    output wire                   need_stall_csr        [ISSUE - 1 : 0],
     // 写回级数据前推
-    output wire [31:0]            wb_front_data        [ISSUE - 1 : 0],
-    output wire [ 4:0]            wb_front_addr        [ISSUE - 1 : 0],
+    output wire [31:0]            wb_front_data         [ISSUE - 1 : 0],
+    output wire [ 4:0]            wb_front_addr         [ISSUE - 1 : 0],
     // CSR读写接口
     output wire [13:0]            csr_num,
     output wire                   csr_re,
@@ -73,7 +73,7 @@ module wb #(
     // ex_tlb --> TLBEHI
     output wire                   ex_tlb,
     //can_not_front_push
-    output wire                   wb_can_not_front_push[ISSUE - 1 : 0],
+    output wire                   wb_can_not_front_push [ISSUE - 1 : 0],
     //IDLE
     input  wire                   csr_has_int,
     input  wire                   csr_tcfg_init0, // TCFG.InitVal==0
@@ -439,7 +439,8 @@ generate
             assign WB_rf_dest[gi]            = slot_fire[gi] ? rf_dest[gi] : 5'b0;
             assign need_stall_csr[gi]        = need_stall_csr_b[gi] & slot_fire[gi];
             assign wb_front_addr[gi]         = slot_fire[gi] ? rf_dest[gi] : 5'b0;
-            assign wb_front_data[gi]         = slot_fire[gi] ? rf_wdata[gi]: 32'b0;
+            //【优化】本身csr就stall了到了wb又因为写后读保证了csr_rvalue写入之后decode可以拿到，所以就不需要纳入前递，因此这里没有使用rf_wdata
+            assign wb_front_data[gi]         = slot_fire[gi] ? rf_alu_wdata[gi]: 32'b0;
             assign wb_can_not_front_push[gi] = ~rf_gr_we_ex[gi] | ~slot_fire[gi] | ex_slot[gi] | ~rf_we[gi];
         end
 endgenerate

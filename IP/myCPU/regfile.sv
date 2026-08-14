@@ -54,8 +54,8 @@ generate
         //                      hit_w0_r2            ? wdata[0]  :
         //                      rf[raddr2[gi]];
 
-        assign rdata1[gi] = (raddr1[gi] == 5'b0) ? 32'b0 : rf[raddr1[gi]];
-        assign rdata2[gi] = (raddr2[gi] == 5'b0) ? 32'b0 : rf[raddr2[gi]];
+        assign  rdata1[gi] = (raddr1[gi] == 5'b0) ? 32'b0 : rf[raddr1[gi]];
+        assign  rdata2[gi] = (raddr2[gi] == 5'b0) ? 32'b0 : rf[raddr2[gi]];
     end 
 endgenerate
 

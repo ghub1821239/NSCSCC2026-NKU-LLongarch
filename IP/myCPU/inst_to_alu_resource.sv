@@ -18,11 +18,20 @@ module inst_to_alu_resource #(
     input  wire [31:0]             rf_rdata2,
     input  wire [1:0]              csr_CRMD_PLV,
     input  wire                    has_int,          // 建议仅 lane0 接真 has_int，lane1=0
+
     output wire [4:0]              rf_raddr1,
     output wire [4:0]              rf_raddr2,
+    // br相关前递之后的数据（没有ld)
+    input  wire [31:0]             br_rdata1,
+    input  wire [31:0]             br_rdata2,
+    // 如果br&mem刚好ld就需要传出去stall
+    output wire                    br_use_rj,  
+    output wire                    br_use_rk,  
+
     output wire [outbus_width-2:0] exe_payload, // 与现 ID_EXE1_bus 同序
     output wire                    real_taken,
     output wire [31:0]             real_target,
+    output wire                    target_not_seq, // real_target != pc+4，jirl 不走 rj+offs 加法链
     output wire                    pred_taken,
     output wire                    pred_valid,
     output wire                    pred_ok,
@@ -59,6 +68,9 @@ wire        src_reg_is_rd;
 //wire [4: 0] rf_dest;
 wire [31:0] rj_value;
 wire [31:0] rkd_value;
+wire [31:0] br_rj_value;
+wire [31:0] br_rkd_value;
+
 wire [31:0] cpucfg_value;
 wire [31:0] imm;
 wire [31:0] br_offs;
@@ -339,14 +351,14 @@ assign  need_si26        = inst_b | inst_bl;
 assign  src2_is_4        = inst_jirl | inst_bl;
 
 
-assign  imm              = src2_is_4 ? 32'h4                         :
-                           need_si20 ? {i20[19:0], 12'b0}            :
-                           need_ui12 ? {{20{1'b0}},i12[11:0]}        :
-                           need_si14 ? {{16{i14[13]}},i14[13:0],2'b0}:
-                           /*need_ui5 || need_si12*/{{20{i12[11]}}, i12[11:0]} ;
+assign  imm              = src2_is_4 ? 32'h4                          :
+                           need_si20 ? {i20[19:0], 12'b0}             :
+                           need_ui12 ? {{20{1'b0}},i12[11:0]}         :
+                           need_si14 ? {{16{i14[13]}},i14[13:0],2'b0} :
+                                       /*need_ui5 || need_si12*/{{20{i12[11]}}, i12[11:0]} ;
 
 assign  br_offs          = need_si26 ? {{ 4{i26[25]}}, i26[25:0], 2'b0} :
-                           {{14{i16[15]}}, i16[15:0], 2'b0} ;
+                                       {{14{i16[15]}}, i16[15:0], 2'b0} ;
 
 assign  jirl_offs        = {{14{i16[15]}}, i16[15:0], 2'b0};
 
@@ -394,10 +406,14 @@ wire    src2_unused  = (src2_is_imm && !mem_we) | inst_b;
 
 assign  rf_raddr1    = src1_unused ? 5'b0 : rj;
 assign  rf_raddr2    = src2_unused   ? 5'b0 :
-                       src_reg_is_rd ? rd :rk;
+                       src_reg_is_rd ? rd   :rk;
 
 assign  rj_value     = rf_rdata1;
 assign  rkd_value    = rf_rdata2;
+assign  br_rj_value  = br_rdata1;
+assign  br_rkd_value = br_rdata2;
+assign  br_use_rj    = slot_valid & (is_cond | inst_jirl);
+assign  br_use_rk    = slot_valid & is_cond;
 
 assign  cache_code   = rd;
 
@@ -414,7 +430,7 @@ cpucfg u_cpucfg(
 
 assign  alu_src1 = inst_csr | inst_cpucfg ? 32'b0 : (src1_is_pc  ? pc[31:0] : rj_value);
 assign  alu_src2 = inst_cpucfg ? cpucfg_value :
-                   src2_is_imm ? imm : rkd_value;
+                   src2_is_imm ? imm          : rkd_value;
 //------------------------{summary}end-------------------------//
 
 //------------------------{stall}begin-------------------------//
@@ -510,7 +526,7 @@ wire       [31:0] direct_target;
     wire   [31:0] jirl_pred_rj;
     wire          target_match;
     assign        jirl_pred_rj = pred_target - jirl_offs;
-    assign        target_match = inst_jirl ? (rj_value == jirl_pred_rj) : (direct_target == pred_target);
+    assign        target_match = inst_jirl ? (br_rj_value == jirl_pred_rj) : (direct_target == pred_target);
     assign        pred_valid   = is_cond | is_jump | is_call | is_ret;//只需要这几种的br
     assign        pred_ok      = pred_valid & (real_taken == pred_taken) & (!real_taken || target_match);//预测一致
     //---------------{跳转和对比表 有效 & 匹配}end---------------//
@@ -548,23 +564,28 @@ assign  pop_valid           = is_ret & id_fire  & ~ex_ADEF;//真实return 要 po
 */
 //assign real_target = inst_jirl ? rf_rdata1 + jirl_offs : pc + br_offs;
 //写回时只有inst_jirl执行完之后才会使用pc+br_offs
-assign  direct_target   = pc + br_offs;
-assign  real_target     = inst_jirl ? rf_rdata1 + jirl_offs : direct_target;
-assign  real_taken      = slot_valid & (
-                           inst_jirl                                                  | inst_b | inst_bl |
-                          (inst_beq & (rj_value == rkd_value))                        |
-                          (inst_bne & (rj_value != rkd_value))                        |
-                          (inst_blt & ($signed(rj_value) <  $signed(rkd_value)))      |
-                          (inst_bge & ($signed(rj_value) >= $signed(rkd_value)))      |
-                          (inst_bltu & ($unsigned(rj_value) <  $unsigned(rkd_value))) |
-                          (inst_bgeu & ($unsigned(rj_value) >= $unsigned(rkd_value))));
+assign        direct_target  = pc + br_offs;
+assign        real_target    = inst_jirl ? br_rj_value + jirl_offs : direct_target;
+// neighbor-kill 用：rj+offs!=pc+4 在 32bit 模运算下等价于 rj!=(pc+4-offs)
+// 减法只依赖 PC/立即数，不把 MEM 前递的 rj 送进 real_target 加法进位链
+wire   [31:0] jirl_seq_rj    = (pc + 32'd4) - jirl_offs;
+assign        target_not_seq = inst_jirl ? (br_rj_value != jirl_seq_rj)
+                               : (br_offs != 32'd4);
+assign        real_taken     = slot_valid & (
+                                inst_jirl                                                        | inst_b | inst_bl |
+                               (inst_beq & (br_rj_value == br_rkd_value))                        |
+                               (inst_bne & (br_rj_value != br_rkd_value))                        |
+                               (inst_blt & ($signed(br_rj_value) <  $signed(br_rkd_value)))      |
+                               (inst_bge & ($signed(br_rj_value) >= $signed(br_rkd_value)))      |
+                               (inst_bltu & ($unsigned(br_rj_value) <  $unsigned(br_rkd_value))) |
+                               (inst_bgeu & ($unsigned(br_rj_value) >= $unsigned(br_rkd_value))));
                            //   ) & ID_ready_go & ID_valid;
 //output
-assign  upd_need        = pred_valid & ~ex_ADEF & ~pred_ok;//预测失败
-assign  bht_upd_need    = is_cond & ~ex_ADEF;//条件分支预测失败
-assign  push_need       = is_call & ~ex_ADEF;//真实call 要 push
-assign  pop_need        = is_ret  & ~ex_ADEF;//真实return 要 pop
-assign  br_type         = is_cond ? 2'b00 : is_ret ? 2'b11 : is_call ? 2'b10 : 2'b01;//条件分支/返回/调用/跳转
+assign        upd_need       = pred_valid & ~ex_ADEF & ~pred_ok;//预测失败
+assign        bht_upd_need   = is_cond & ~ex_ADEF;//条件分支预测失败
+assign        push_need      = is_call & ~ex_ADEF;//真实call 要 push
+assign        pop_need       = is_ret  & ~ex_ADEF;//真实return 要 pop
+assign        br_type        = is_cond ? 2'b00 : is_ret ? 2'b11 : is_call ? 2'b10 : 2'b01;//条件分支/返回/调用/跳转
 //-------------------------{branch prediction updata}end---------------//
 assign  exe_payload = {
                        pc            ,

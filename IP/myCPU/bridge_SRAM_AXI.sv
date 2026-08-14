@@ -281,10 +281,10 @@ assign  awvalid = data_write_req & ~wr_wait_b & ~aw_done;
 //----------------------------- 写数据赋值数据 begin -------------------------------
 assign  wvalid = data_write_req & ~wr_wait_b & ~w_done;
 assign  wid    = AXI_ID_DATA;
-assign  wdata  = (dirty_wb_r == 2'd0) ? data_wr_wdata[31:0]   :
-                 (dirty_wb_r == 2'd1) ? data_wr_wdata[63:32]  :
-                 (dirty_wb_r == 2'd2) ? data_wr_wdata[95:64]  :
-                 data_wr_wdata[127:96];
+assign  wdata  = (dirty_wb_r == 2'd0) ? data_wr_wdata[31:0]  :
+                 (dirty_wb_r == 2'd1) ? data_wr_wdata[63:32] :
+                 (dirty_wb_r == 2'd2) ? data_wr_wdata[95:64] :
+                                        data_wr_wdata[127:96];
 assign  wstrb  = data_wr_wstrb;
 assign  wlast  = (dirty_wb_r == data_awlen[1:0]);
 //----------------------------- 写数据赋值数据 end -------------------------------
