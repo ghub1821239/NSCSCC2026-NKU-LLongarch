@@ -285,8 +285,8 @@ assign  inst_cacop       = op_31_26_d[6'h01] & op_25_22_d[4'h8];
 //cpucfg
 assign  inst_cpucfg      = op_31_26_d[6'h00] & op_25_22_d[4'h0] & op_21_20_d[2'h0] & op_19_15_d[5'h0] & rk == 5'b11011;
 //system inst
-assign  inst_ibar        = op_31_26_d[6'h0e] & op_25_22_d[4'h1] & op_21_20_d[2'h3] & op_19_15_d[5'h4];
-assign  inst_dbar        = op_31_26_d[6'h0e] & op_25_22_d[4'h1] & op_21_20_d[2'h3] & op_19_15_d[5'h5];
+assign  inst_ibar        = op_31_26_d[6'h0e] & op_25_22_d[4'h1] & op_21_20_d[2'h3] & op_19_15_d[5'h5];
+assign  inst_dbar        = op_31_26_d[6'h0e] & op_25_22_d[4'h1] & op_21_20_d[2'h3] & op_19_15_d[5'h4];
 assign  inst_ll_w        = op_31_26_d[6'h08] & op_25_24_d[2'h0];
 assign  inst_sc_w        = op_31_26_d[6'h08] & op_25_24_d[2'h1];
 // IDLE
