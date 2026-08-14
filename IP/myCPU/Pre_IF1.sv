@@ -84,9 +84,9 @@ assign  slot_valid     = !preIF1_valid | preIF1_need_cancel? {ISSUE{1'b0}} :
                          preIF1_ex     | ~same_cacheline | uncache_fetch ? {1'b0,{ISSUE-1{1'b1}}} :
                          {ISSUE{1'b1}};
 wire    same_cacheline = (slot_pc[0][31:ICACHE_OFFSET_W] == slot_pc[1][31:ICACHE_OFFSET_W]);//两条指令在同一个cacheline
-assign  next_PC        =  pred_redirect0 ? (slot_valid == 2'b11 ? pred_target0 + 4 : pred_target0) :
-                         (slot_valid == 2'b11 && pred_redirect1) ? pred_target1 :
-                         seq_PC;
+assign next_PC         = (slot_valid == 2'b11 && pred_redirect1) ? pred_target1 :
+                        pred_redirect0 ? (slot_valid == 2'b11 ? pred_target0 + 4 : pred_target0) :
+                        seq_PC;
 
 always @(posedge clk) begin
     if (!resetn) begin
