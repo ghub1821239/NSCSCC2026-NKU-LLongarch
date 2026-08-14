@@ -4,15 +4,15 @@ module regfile#(
     input  wire        clk,
     input  wire        resetn,
     // READ PORT 1
-    input  wire [ 4:0] raddr1[ISSUE - 1 : 0],
-    output wire [31:0] rdata1[ISSUE - 1 : 0],
+    input  wire [ 4:0] raddr1[1:0],
+    output wire [31:0] rdata1[1:0],
     // READ PORT 2
-    input  wire [ 4:0] raddr2[ISSUE - 1 : 0],
-    output wire [31:0] rdata2[ISSUE - 1 : 0],
+    input  wire [ 4:0] raddr2[1:0],
+    output wire [31:0] rdata2[1:0],
     // WRITE PORT
-    input  wire        we    [ISSUE - 1 : 0],       //write enable, HIGH valid
-    input  wire [ 4:0] waddr [ISSUE - 1 : 0],
-    input  wire [31:0] wdata [ISSUE - 1 : 0]
+    input  wire        we    [1:0],       //write enable, HIGH valid
+    input  wire [ 4:0] waddr [1:0],
+    input  wire [31:0] wdata [1:0]
 );
 reg     [31:0] rf[31:0];
 

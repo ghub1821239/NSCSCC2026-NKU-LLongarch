@@ -10,10 +10,10 @@ module fetch #(
     input  wire                    IF_allow_in,
     output reg                     IF_valid,
     output wire                    IF_ready_go,
-    input  wire [inbus_width-1:0]  preIF2_IF_bus        [ISSUE - 1 : 0],
+    input  wire [inbus_width-1:0]  preIF2_IF_bus        [1:0],
     input  wire                    preIF2_IF_valid,
     
-    output wire [outbus_width-1:0] IF_ID_bus            [ISSUE - 1 : 0],
+    output wire [outbus_width-1:0] IF_ID_bus            [1:0],
     //cancel
     input  wire                    IF_need_cancel,
     //stall
@@ -69,20 +69,20 @@ end
 //------------------------{缓存inst}end-------------------------//
 
 //------------------------{bus}begin-------------------------//
-wire                      slot_valid          [ISSUE - 1 : 0];
-wire    [31:0]            pc                  [ISSUE - 1 : 0];
-wire                      ex_ADEF             [ISSUE - 1 : 0];
-wire                      ex_tlb_reload0      [ISSUE - 1 : 0];//tlb重填例外
-wire                      ex_tlb_preif_unvalid[ISSUE - 1 : 0];//tlb中取指页无效
-wire                      ex_tlb_plv0         [ISSUE - 1 : 0];//tlb中页特权不合规
-wire                      btb_query_hit       [ISSUE - 1 : 0];//valid且tag
-wire    [31:0]            btb_query_target    [ISSUE - 1 : 0];        
-wire                      ras_query_hit       [ISSUE - 1 : 0];//valid且tag
-wire    [31:0]            ras_query_target    [ISSUE - 1 : 0];        
-wire    [ 1:0]            query_type          [ISSUE - 1 : 0];              
-wire                      query_taken         [ISSUE - 1 : 0];//预测是否跳转 
+wire                      slot_valid          [1:0];
+wire    [31:0]            pc                  [1:0];
+wire                      ex_ADEF             [1:0];
+wire                      ex_tlb_reload0      [1:0];//tlb重填例外
+wire                      ex_tlb_preif_unvalid[1:0];//tlb中取指页无效
+wire                      ex_tlb_plv0         [1:0];//tlb中页特权不合规
+wire                      btb_query_hit       [1:0];//valid且tag
+wire    [31:0]            btb_query_target    [1:0];        
+wire                      ras_query_hit       [1:0];//valid且tag
+wire    [31:0]            ras_query_target    [1:0];        
+wire    [ 1:0]            query_type          [1:0];              
+wire                      query_taken         [1:0];//预测是否跳转 
         
-reg     [inbus_width-1:0] bus                 [ISSUE - 1 : 0];
+reg     [inbus_width-1:0] bus                 [1:0];
 integer                   k;
 always @(posedge clk)begin
     if(!resetn)begin
@@ -139,8 +139,8 @@ end
 //------------------------{ready_go}end-------------------------//
 
 wire [127 : 0] inst_line_use  = inst_line_reg_valid ? inst_line_reg : inst_sram_rdata;
-wire [31:0]    inst_from_line[ISSUE - 1 : 0];//从line中拿到的inst
-wire [31:0]    inst_out      [ISSUE - 1 : 0];//从IF传递到ID的inst
+wire [31:0]    inst_from_line[1:0];//从line中拿到的inst
+wire [31:0]    inst_out      [1:0];//从IF传递到ID的inst
 generate
     for (i = 0; i < ISSUE; i = i + 1) begin :gen_inst_out
         assign  inst_from_line[i] = (pc[i][3:2] == 2'b00) ? inst_line_use[31:0]   :

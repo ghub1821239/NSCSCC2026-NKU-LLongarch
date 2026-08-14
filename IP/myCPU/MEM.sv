@@ -10,15 +10,15 @@ module mem #(
   input  wire                    MEM_allow_in,
   output reg                     MEM_valid,
   output wire                    MEM_ready_go,
-  input  wire [inbus_width-1:0]  EXE2_MEM_bus          [ISSUE - 1 : 0],//bus
-  output wire [outbus_width-1:0] MEM_WB_bus            [ISSUE - 1 : 0],
+  input  wire [inbus_width-1:0]  EXE2_MEM_bus          [1:0],//bus
+  output wire [outbus_width-1:0] MEM_WB_bus            [1:0],
   //stall
-  output wire [ 4:0]             MEM_rf_dest           [ISSUE - 1 : 0],
-  output wire                    need_stall_inst       [ISSUE - 1 : 0],
-  output wire                    need_stall_csr        [ISSUE - 1 : 0],
+  output wire [ 4:0]             MEM_rf_dest           [1:0],
+  output wire                    need_stall_inst       [1:0],
+  output wire                    need_stall_csr        [1:0],
   //front_push
-  output wire [31:0]             mem_front_data        [ISSUE - 1 : 0],
-  output wire [ 4:0]             mem_front_addr        [ISSUE - 1 : 0],
+  output wire [31:0]             mem_front_data        [1:0],
+  output wire [ 4:0]             mem_front_addr        [1:0],
   //cancel control
   input  wire                    MEM_need_cancel,
   //exception front
@@ -30,79 +30,79 @@ module mem #(
   input  wire [31:0]             data_sram_rdata,
   input  wire                    WB_allow_in,
   //can_not_front_push
-  output wire                    mem_can_not_front_push[ISSUE - 1 : 0]
+  output wire                    mem_can_not_front_push[1:0]
 );
 
 //------------------------{bus}begin-------------------------//
-wire                     slot_valid_from_exe2[ISSUE - 1 : 0];
-wire   [31:0]            pc                  [ISSUE - 1 : 0];
-wire                     res_from_mem        [ISSUE - 1 : 0];
-wire                     mem_we              [ISSUE - 1 : 0];
-wire                     need_stall_csr_b    [ISSUE - 1 : 0]; // 与 output need_stall_csr 区分
-wire   [31:0]            alu_result_with_rdct[ISSUE - 1 : 0];
+wire                     slot_valid_from_exe2[1:0];
+wire   [31:0]            pc                  [1:0];
+wire                     res_from_mem        [1:0];
+wire                     mem_we              [1:0];
+wire                     need_stall_csr_b    [1:0]; // 与 output need_stall_csr 区分
+wire   [31:0]            alu_result_with_rdct[1:0];
 
-wire                     inst_ld_b           [ISSUE - 1 : 0];
-wire                     inst_ld_h           [ISSUE - 1 : 0];
-wire                     inst_ld_bu          [ISSUE - 1 : 0];
-wire                     inst_ld_hu          [ISSUE - 1 : 0];
+wire                     inst_ld_b           [1:0];
+wire                     inst_ld_h           [1:0];
+wire                     inst_ld_bu          [1:0];
+wire                     inst_ld_hu          [1:0];
 
-wire   [31:0]            rf_wdata            [ISSUE - 1 : 0];
-wire   [4:0]             rf_dest             [ISSUE - 1 : 0];
-wire                     rf_gr_we            [ISSUE - 1 : 0];
-wire                     rf_gr_we_ex         [ISSUE - 1 : 0];
+wire   [31:0]            rf_wdata            [1:0];
+wire   [4:0]             rf_dest             [1:0];
+wire                     rf_gr_we            [1:0];
+wire                     rf_gr_we_ex         [1:0];
 // ex enum
-wire                     inst_ertn           [ISSUE - 1 : 0];
-wire                     inst_syscall        [ISSUE - 1 : 0];
-wire                     inst_break          [ISSUE - 1 : 0];
-wire                     ex_INE              [ISSUE - 1 : 0];
-wire                     ex_IPE              [ISSUE - 1 : 0];
-wire                     ex_ADEF             [ISSUE - 1 : 0];
-wire                     ex_ALE              [ISSUE - 1 : 0];
-wire                     has_int             [ISSUE - 1 : 0];
+wire                     inst_ertn           [1:0];
+wire                     inst_syscall        [1:0];
+wire                     inst_break          [1:0];
+wire                     ex_INE              [1:0];
+wire                     ex_IPE              [1:0];
+wire                     ex_ADEF             [1:0];
+wire                     ex_ALE              [1:0];
+wire                     has_int             [1:0];
 
-wire   [31:0]            rj_value            [ISSUE - 1 : 0];
+wire   [31:0]            rj_value            [1:0];
 //chapter 7 exp 12:new_add
-wire                     inst_csrrd          [ISSUE - 1 : 0];
-wire                     inst_csrwr          [ISSUE - 1 : 0];
-wire                     inst_csrxchg        [ISSUE - 1 : 0];
-wire   [13:0]            csr_num             [ISSUE - 1 : 0];
+wire                     inst_csrrd          [1:0];
+wire                     inst_csrwr          [1:0];
+wire                     inst_csrxchg        [1:0];
+wire   [13:0]            csr_num             [1:0];
 
 // timer_inst
-wire                     inst_rdcntvl_w      [ISSUE - 1 : 0];
-wire                     inst_rdcntvh_w      [ISSUE - 1 : 0];
-wire                     inst_rdcntid        [ISSUE - 1 : 0];
+wire                     inst_rdcntvl_w      [1:0];
+wire                     inst_rdcntvh_w      [1:0];
+wire                     inst_rdcntid        [1:0];
 
 //tlb
-wire                     inst_tlbrd          [ISSUE - 1 : 0];
-wire                     inst_tlbsrch        [ISSUE - 1 : 0];
-wire   [10:0]            TLBIDX_new_tlbsrch  [ISSUE - 1 : 0];
-wire                     inst_tlbwr          [ISSUE - 1 : 0];
-wire                     inst_tlbfill        [ISSUE - 1 : 0];
-wire                     inst_invtlb         [ISSUE - 1 : 0];
+wire                     inst_tlbrd          [1:0];
+wire                     inst_tlbsrch        [1:0];
+wire   [10:0]            TLBIDX_new_tlbsrch  [1:0];
+wire                     inst_tlbwr          [1:0];
+wire                     inst_tlbfill        [1:0];
+wire                     inst_invtlb         [1:0];
 
 //tlb_ex
-wire                     inst_sc_w           [ISSUE - 1 : 0];
-wire                     sc_success          [ISSUE - 1 : 0];
+wire                     inst_sc_w           [1:0];
+wire                     sc_success          [1:0];
 
 //[todo 异常记得与上]
-wire                     inst_idle           [ISSUE - 1 : 0];
+wire                     inst_idle           [1:0];
 
-wire   [31:0]            rkd_value           [ISSUE - 1 : 0];
-reg    [inbus_width-1:0] bus                 [ISSUE - 1 : 0];
+wire   [31:0]            rkd_value           [1:0];
+reg    [inbus_width-1:0] bus                 [1:0];
 
 wire   [31:0]            ld_data;
 wire   [7:0]             ld_data_byte;
 wire   [15:0]            ld_data_half;
-wire   [1:0]             data_sram_addr_l    [ISSUE - 1 : 0];
+wire   [1:0]             data_sram_addr_l    [1:0];
 
-wire                     ex_tlb_reload0      [ISSUE - 1 : 0];//tlb重填例外
-wire                     ex_tlb_preif_unvalid[ISSUE - 1 : 0];//tlb中取指页无效
-wire                     ex_tlb_plv0         [ISSUE - 1 : 0];//tlb中页特权不合规
-wire                     ex_tlb_reload1      [ISSUE - 1 : 0];//tlb重填例外
-wire                     ex_tlb_ld_unvalid   [ISSUE - 1 : 0];//tlb中load页无效
-wire                     ex_tlb_st_unvalid   [ISSUE - 1 : 0];//tlb中store页无效
-wire                     ex_tlb_plv1         [ISSUE - 1 : 0];//tlb中页特权不合规
-wire                     ex_tlb_page_modify  [ISSUE - 1 : 0];//tlb中页修改
+wire                     ex_tlb_reload0      [1:0];//tlb重填例外
+wire                     ex_tlb_preif_unvalid[1:0];//tlb中取指页无效
+wire                     ex_tlb_plv0         [1:0];//tlb中页特权不合规
+wire                     ex_tlb_reload1      [1:0];//tlb重填例外
+wire                     ex_tlb_ld_unvalid   [1:0];//tlb中load页无效
+wire                     ex_tlb_st_unvalid   [1:0];//tlb中store页无效
+wire                     ex_tlb_plv1         [1:0];//tlb中页特权不合规
+wire                     ex_tlb_page_modify  [1:0];//tlb中页修改
 
 genvar                   i;
 generate
@@ -128,7 +128,7 @@ endgenerate
 
 //------------------------{ld_data}begin-------------------------//
 wire  ld_index;
-wire  ld_inst_valid[ISSUE - 1 : 0];
+wire  ld_inst_valid[1:0];
 generate
     for(i = 0; i < ISSUE; i = i + 1) begin : gen_ld_inst_valid
         assign  ld_inst_valid[i] = slot_valid_from_exe2[i] & res_from_mem[i];
@@ -168,7 +168,7 @@ endgenerate
 //------------------------{ready_go}end-------------------------//
 
 //------------------------{exp_front}begin-------------------------//
-wire  MEM_slot_ready_go[ISSUE - 1 : 0];
+wire  MEM_slot_ready_go[1:0];
 generate
     for(i = 0; i < ISSUE; i = i + 1) begin : gen_MEM_slot_ready_go
         assign  MEM_slot_ready_go[i] = ((res_from_mem[i] | (mem_we[i] & ~(inst_sc_w[i] & ~sc_success[i])))
@@ -193,7 +193,7 @@ end
 //------------------------{exp_front}end-------------------------//
 
 //------------------------{front_push}begin-------------------------//
-wire  MEM_slot_ex[ISSUE - 1 : 0];
+wire  MEM_slot_ex[1:0];
 generate
     for(i = 0; i < ISSUE; i = i + 1) begin : gen_MEM_slot_ex
         assign  MEM_slot_ex[i]     = MEM_valid & slot_valid_from_exe2[i] &

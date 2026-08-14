@@ -13,16 +13,16 @@ module exe2 #(
     input  wire                    EXE1_EXE2_valid,
     input  wire                    EXE2_allow_in,
     // bus
-    input  wire [inbus_width-1:0]  EXE1_EXE2_bus          [ISSUE - 1 : 0],
-    output wire [outbus_width-1:0] EXE2_MEM_bus           [ISSUE - 1 : 0],
+    input  wire [inbus_width-1:0]  EXE1_EXE2_bus          [1:0],
+    output wire [outbus_width-1:0] EXE2_MEM_bus           [1:0],
     //stall
-    output wire [ 4:0]             EXE2_rf_dest           [ISSUE - 1 : 0],
-    output wire                    need_stall_inst        [ISSUE - 1 : 0], //bus传递
-    output wire                    need_stall_csr         [ISSUE - 1 : 0],  //bus传递
+    output wire [ 4:0]             EXE2_rf_dest           [1:0],
+    output wire                    need_stall_inst        [1:0], //bus传递
+    output wire                    need_stall_csr         [1:0],  //bus传递
     //front_push
-    output wire [31:0]             exe2_front_data        [ISSUE - 1 : 0],
-    output wire [ 4:0]             exe2_front_addr        [ISSUE - 1 : 0],
-    output wire                    exe2_can_not_front_push[ISSUE - 1 : 0],// 写回级数据前递目标不能前推
+    output wire [31:0]             exe2_front_data        [1:0],
+    output wire [ 4:0]             exe2_front_addr        [1:0],
+    output wire                    exe2_can_not_front_push[1:0],// 写回级数据前递目标不能前推
     //cancel control
     input  wire                    EXE2_need_cancel,
     input  wire                    flush,
@@ -59,84 +59,84 @@ module exe2 #(
 );
 
 //------------------------{bus解析&传递}begin-------------------------//
-wire                     slot_valid_from_exe1[ISSUE - 1 : 0];
-wire   [31:0]            pc                  [ISSUE - 1 : 0];
-wire                     res_from_mem        [ISSUE - 1 : 0];
-wire                     mem_we              [ISSUE - 1 : 0];
-wire   [31:0]            alu_result_with_rdct[ISSUE - 1 : 0];
+wire                     slot_valid_from_exe1[1:0];
+wire   [31:0]            pc                  [1:0];
+wire                     res_from_mem        [1:0];
+wire                     mem_we              [1:0];
+wire   [31:0]            alu_result_with_rdct[1:0];
 
-wire                     inst_ld_b           [ISSUE - 1 : 0];
-wire                     inst_ld_h           [ISSUE - 1 : 0];
-wire                     inst_ld_bu          [ISSUE - 1 : 0];
-wire                     inst_ld_hu          [ISSUE - 1 : 0];
+wire                     inst_ld_b           [1:0];
+wire                     inst_ld_h           [1:0];
+wire                     inst_ld_bu          [1:0];
+wire                     inst_ld_hu          [1:0];
 
-wire   [4:0]             rf_dest             [ISSUE - 1 : 0];
-wire                     rf_gr_we            [ISSUE - 1 : 0];
+wire   [4:0]             rf_dest             [1:0];
+wire                     rf_gr_we            [1:0];
 
 // ex enum
-wire                     inst_ertn           [ISSUE - 1 : 0];
-wire                     inst_syscall        [ISSUE - 1 : 0];
-wire                     inst_break          [ISSUE - 1 : 0];
-wire                     ex_INE              [ISSUE - 1 : 0];
-wire                     ex_IPE              [ISSUE - 1 : 0];
-wire                     ex_ADEF             [ISSUE - 1 : 0];
-wire                     ex_ALE              [ISSUE - 1 : 0];
-wire                     has_int             [ISSUE - 1 : 0];
+wire                     inst_ertn           [1:0];
+wire                     inst_syscall        [1:0];
+wire                     inst_break          [1:0];
+wire                     ex_INE              [1:0];
+wire                     ex_IPE              [1:0];
+wire                     ex_ADEF             [1:0];
+wire                     ex_ALE              [1:0];
+wire                     has_int             [1:0];
 
-wire   [31:0]            rj_value            [ISSUE - 1 : 0];
+wire   [31:0]            rj_value            [1:0];
 //chapter 7 exp 12:new_add
-wire                     need_stall_csr_b    [ISSUE - 1 : 0];//bus 暂存
-wire                     inst_csrrd          [ISSUE - 1 : 0];
-wire                     inst_csrwr          [ISSUE - 1 : 0];
-wire                     inst_csrxchg        [ISSUE - 1 : 0];
-wire   [13:0]            csr_num             [ISSUE - 1 : 0];
+wire                     need_stall_csr_b    [1:0];//bus 暂存
+wire                     inst_csrrd          [1:0];
+wire                     inst_csrwr          [1:0];
+wire                     inst_csrxchg        [1:0];
+wire   [13:0]            csr_num             [1:0];
 
 // timer_inst
-wire                     inst_rdcntvl_w      [ISSUE - 1 : 0];
-wire                     inst_rdcntvh_w      [ISSUE - 1 : 0];
-wire                     inst_rdcntid        [ISSUE - 1 : 0];
+wire                     inst_rdcntvl_w      [1:0];
+wire                     inst_rdcntvh_w      [1:0];
+wire                     inst_rdcntid        [1:0];
 
 //tlb
-wire                     inst_tlbrd          [ISSUE - 1 : 0];
-wire                     inst_tlbsrch        [ISSUE - 1 : 0];
-wire   [10:0]            TLBIDX_new_tlbsrch  [ISSUE - 1 : 0];
-wire                     inst_tlbwr          [ISSUE - 1 : 0];
-wire                     inst_tlbfill        [ISSUE - 1 : 0];
-wire                     inst_invtlb         [ISSUE - 1 : 0];
+wire                     inst_tlbrd          [1:0];
+wire                     inst_tlbsrch        [1:0];
+wire   [10:0]            TLBIDX_new_tlbsrch  [1:0];
+wire                     inst_tlbwr          [1:0];
+wire                     inst_tlbfill        [1:0];
+wire                     inst_invtlb         [1:0];
 
-wire   [31:0]            rkd_value           [ISSUE - 1 : 0];
-reg    [inbus_width-1:0] bus                 [ISSUE - 1 : 0];
+wire   [31:0]            rkd_value           [1:0];
+reg    [inbus_width-1:0] bus                 [1:0];
 
 //tlb_ex
-wire                     ex_tlb_reload0      [ISSUE - 1 : 0];//tlb重填异常
-wire                     ex_tlb_preif_unvalid[ISSUE - 1 : 0];//tlb的取指页无效
-wire                     ex_tlb_plv0         [ISSUE - 1 : 0];//tlb的页权限上访
-wire                     ex_tlb_reload1      [ISSUE - 1 : 0];//tlb重填异常
-wire                     ex_tlb_ld_unvalid   [ISSUE - 1 : 0];//tlb的load页无效
-wire                     ex_tlb_st_unvalid   [ISSUE - 1 : 0];//tlb的store页无效
-wire                     ex_tlb_plv1         [ISSUE - 1 : 0];//tlb的页权限上访
-wire                     ex_tlb_page_modify  [ISSUE - 1 : 0];//tlb的页修改
-wire                     EXE1_ex             [ISSUE - 1 : 0]; // EXE1 已汇总的异常，经流水线寄存器打一拍
+wire                     ex_tlb_reload0      [1:0];//tlb重填异常
+wire                     ex_tlb_preif_unvalid[1:0];//tlb的取指页无效
+wire                     ex_tlb_plv0         [1:0];//tlb的页权限上访
+wire                     ex_tlb_reload1      [1:0];//tlb重填异常
+wire                     ex_tlb_ld_unvalid   [1:0];//tlb的load页无效
+wire                     ex_tlb_st_unvalid   [1:0];//tlb的store页无效
+wire                     ex_tlb_plv1         [1:0];//tlb的页权限上访
+wire                     ex_tlb_page_modify  [1:0];//tlb的页修改
+wire                     EXE1_ex             [1:0]; // EXE1 已汇总的异常，经流水线寄存器打一拍
 
 // 总线侧按槽暂存，后级 mux 到 data_sram_* / data_mat / data_wr / cache_code
-wire   [31:0]            data_sram_addr_b    [ISSUE - 1 : 0];
-wire   [31:0]            data_sram_wdata_b   [ISSUE - 1 : 0];
-wire   [1:0]             data_sram_size_b    [ISSUE - 1 : 0];
-wire   [3:0]             data_sram_wstrb_b   [ISSUE - 1 : 0];
-wire   [1:0]             data_mat_b          [ISSUE - 1 : 0];
-wire                     data_wr_b           [ISSUE - 1 : 0];
-wire   [4:0]             cache_code_b        [ISSUE - 1 : 0];
+wire   [31:0]            data_sram_addr_b    [1:0];
+wire   [31:0]            data_sram_wdata_b   [1:0];
+wire   [1:0]             data_sram_size_b    [1:0];
+wire   [3:0]             data_sram_wstrb_b   [1:0];
+wire   [1:0]             data_mat_b          [1:0];
+wire                     data_wr_b           [1:0];
+wire   [4:0]             cache_code_b        [1:0];
 
-wire                     inst_cacop          [ISSUE - 1 : 0];
+wire                     inst_cacop          [1:0];
 
 //system inst
-wire                     inst_ibar           [ISSUE - 1 : 0];
-wire                     inst_dbar           [ISSUE - 1 : 0];
-wire                     inst_sc_w           [ISSUE - 1 : 0];
-wire                     inst_ll_w           [ISSUE - 1 : 0];
+wire                     inst_ibar           [1:0];
+wire                     inst_dbar           [1:0];
+wire                     inst_sc_w           [1:0];
+wire                     inst_ll_w           [1:0];
 
 //IDLE
-wire                     inst_idle           [ISSUE - 1 : 0];
+wire                     inst_idle           [1:0];
 
 genvar                   i;
 generate
@@ -163,7 +163,7 @@ endgenerate
 //------------------------{bus解析&传递}end-------------------------//
 
 //------------------------{mux 选择 dram signal}begin-------------------------//
-wire  dram_hit[ISSUE - 1 : 0];
+wire  dram_hit[1:0];
 generate
     for(i = 0; i < ISSUE; i = i + 1) begin : gen_dram_index
         assign  dram_hit[i] = slot_valid_from_exe1[i] & (res_from_mem[i] | mem_we[i] | inst_cacop[i]);
@@ -237,10 +237,11 @@ endgenerate
 // 因为已经限定了 i/dbar 只可能由 slot0 触发
 assign  ibar_cancel = inst_ibar[0] & slot_valid_from_exe1[0] & EXE2_valid & ~older_ex_for_exe2 & ~flush;
 assign  dbar_cancel = inst_dbar[0] & slot_valid_from_exe1[0] & EXE2_valid & ~older_ex_for_exe2 & ~flush;
+assign  idbar_pc      = pc[0] + 4;//一定取slot0的pc
 //------------------------{i/dbar need cancel}end-------------------------//
 
 //------------------------{dataRAM handshake}begin-------------------------//
-wire    EXE2_slot_ex [ISSUE - 1 : 0];
+wire    EXE2_slot_ex [1:0];
 assign  data_sram_req = dram_hit_any & (res_from_mem[dram_index] | mem_we[dram_index])
                                      & ~req_without_dataok & MEM_allow_in & ~(inst_sc_w[dram_index] & ~sc_success)
                                      & ~EXE2_slot_ex[dram_index] & ~(dram_index & EXE2_slot_ex[0]) & ~older_ex_for_exe2 & ~EXE2_need_cancel & EXE2_valid;
@@ -249,7 +250,6 @@ assign  data_sram_wr  = |data_sram_wstrb;
 assign  cacop_valid   = EXE2_valid & inst_cacop[dram_index] & ~EXE2_slot_ex[dram_index] & ~older_ex_for_exe2 & slot_valid_from_exe1[dram_index] &
                         (cache_code[4:3] == 2'b10 | csr_CRMD_PLV == 2'b00) & ~(dram_index & EXE2_slot_ex[0]) & ~EXE2_need_cancel; // 在 slot1 是 cacop slot0 不能异常
 assign  cacop_pc      = pc[dram_index] + 4;
-assign  idbar_pc      = pc[0] + 4;
 //------------------------{dataRAM handshake}end-------------------------//
 
 //------------------------{front_push}begin-------------------------//

@@ -84,13 +84,13 @@ module csr_regfile#(
     // CRMD重填异常
     input  wire                      ex_tlb_reload,
     // DMW0/1 
-    input  wire [2:0]                dmw_vseg0             [ISSUE-1:0],
-    output wire                      dmw_found0            [ISSUE-1:0],
-    output wire [2:0]                dmw_pseg0             [ISSUE-1:0],
+    input  wire [2:0]                dmw_vseg0             [1:0],
+    output wire                      dmw_found0            [1:0],
+    output wire [2:0]                dmw_pseg0             [1:0],
 
-    input  wire [2:0]                dmw_vseg1             [ISSUE-1:0],
-    output wire                      dmw_found1            [ISSUE-1:0],
-    output wire [2:0]                dmw_pseg1             [ISSUE-1:0],
+    input  wire [2:0]                dmw_vseg1             [1:0],
+    output wire                      dmw_found1            [1:0],
+    output wire [2:0]                dmw_pseg1             [1:0],
 
     //ERTN 例外指令返回更改CRMD
     input  wire                      ertn_valid,
@@ -105,15 +105,20 @@ module csr_regfile#(
     //mat:存储访问类型
     output wire [1:0]                csr_CRMD_DATF,
     output wire [1:0]                csr_CRMD_DATM,
-    output wire [1:0]                dmw_mat0              [ISSUE-1:0],
-    output wire [1:0]                dmw_mat1              [ISSUE-1:0],
+    output wire [1:0]                dmw_mat0              [1:0],
+    output wire [1:0]                dmw_mat1              [1:0],
     // 操作手册6.3复位指出
     input  wire                      LLbit_wb,
     input  wire                      LLbit_wdata,
     output wire                      LLbit,
 
     // IDLE：TCFG.InitVal==0 时参考模型会在写 TCFG 后立刻抢占，ERA=IDLE 本身
-    output wire                      csr_tcfg_init0
+    output wire                      csr_tcfg_init0,
+
+    //用来切割csr的接口路径
+    output wire [31:0]               csr_eentry_rvalue,
+    output wire [31:0]               csr_era_rvalue,
+    output wire [31:0]               csr_tlbrentry_rvalue
 );
 
 // ----------DEFINE--------------
@@ -747,8 +752,8 @@ endgenerate
 wire   [31:0] csr_crmd_rvalue;
 wire   [31:0] csr_prmd_rvalue;
 wire   [31:0] csr_estat_rvalue;
-wire   [31:0] csr_era_rvalue;
-wire   [31:0] csr_eentry_rvalue;
+//wire   [31:0] csr_era_rvalue;
+//wire   [31:0] csr_eentry_rvalue;
 wire   [31:0] csr_save0_rvalue;
 wire   [31:0] csr_save1_rvalue;
 wire   [31:0] csr_save2_rvalue;
@@ -764,7 +769,7 @@ wire   [31:0] csr_tlbehi_rvalue;
 wire   [31:0] csr_tlbelo0_rvalue;
 wire   [31:0] csr_tlbelo1_rvalue;
 wire   [31:0] csr_asid_rvalue;
-wire   [31:0] csr_tlbrentry_rvalue;
+//wire   [31:0] csr_tlbrentry_rvalue;
 wire   [31:0] csr_dmw0_rvalue;
 wire   [31:0] csr_dmw1_rvalue;
 wire   [31:0] csr_llbctl_rvalue;

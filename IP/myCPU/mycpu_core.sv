@@ -102,15 +102,15 @@ assign  MEM_WB_valid        = MEM_valid & MEM_ready_go;
 //------------------------{5-stage pipeline control signals assignment}end-------------------------//
 
 //------------------------{regfile}begin-------------------------//
-wire [4:0]  rf_raddr1[ISSUE - 1 : 0];
-wire [4:0]  rf_raddr2[ISSUE - 1 : 0];
-wire [4:0]  rf_waddr [ISSUE - 1 : 0];
+wire [4:0]  rf_raddr1[1:0];
+wire [4:0]  rf_raddr2[1:0];
+wire [4:0]  rf_waddr [1:0];
 
-wire [31:0] rf_rdata1[ISSUE - 1 : 0];
-wire [31:0] rf_rdata2[ISSUE - 1 : 0];
-wire [31:0] rf_wdata [ISSUE - 1 : 0];
+wire [31:0] rf_rdata1[1:0];
+wire [31:0] rf_rdata2[1:0];
+wire [31:0] rf_wdata [1:0];
 
-wire        rf_we    [ISSUE - 1 : 0];
+wire        rf_we    [1:0];
 
 //regfile instantiation
 regfile u_regfile(
@@ -139,12 +139,12 @@ end
 //------------------------{Stable counter}end-------------------------//
 
 //------------------------{DMW define}begin-------------------------//
-wire [2:0] dmw_vseg0 [ISSUE-1:0];
-wire       dmw_found0[ISSUE-1:0];
-wire [2:0] dmw_pseg0 [ISSUE-1:0];
-wire [2:0] dmw_vseg1 [ISSUE-1:0];
-wire       dmw_found1[ISSUE-1:0];
-wire [2:0] dmw_pseg1 [ISSUE-1:0];
+wire [2:0] dmw_vseg0 [1:0];
+wire       dmw_found0[1:0];
+wire [2:0] dmw_pseg0 [1:0];
+wire [2:0] dmw_vseg1 [1:0];
+wire       dmw_found1[1:0];
+wire [2:0] dmw_pseg1 [1:0];
 //------------------------{DMW define}end-------------------------//
 
 //------------------------{TLB}begin-------------------------//
@@ -168,32 +168,32 @@ always @(posedge clk) begin
 end
 
 // search port 0 (for fetch the inst)
-wire   [18:0]               s0_vppn               [ISSUE-1:0];
-wire                        s0_va_bit12           [ISSUE-1:0];
+wire   [18:0]               s0_vppn               [1:0];
+wire                        s0_va_bit12           [1:0];
 wire   [9:0]                s0_asid;
-wire                        s0_found              [ISSUE-1:0];
-wire   [$clog2(TLBNUM)-1:0] s0_index              [ISSUE-1:0]; // 实际使用的index位宽为log2(TLBNUM)
-wire   [19:0]               s0_ppn                [ISSUE-1:0];
-wire   [5:0]                s0_ps                 [ISSUE-1:0];
-wire   [1:0]                s0_plv                [ISSUE-1:0];
-wire   [1:0]                s0_mat                [ISSUE-1:0];
-wire                        s0_d                  [ISSUE-1:0];
-wire                        s0_v                  [ISSUE-1:0];
+wire                        s0_found              [1:0];
+wire   [$clog2(TLBNUM)-1:0] s0_index              [1:0]; // 实际使用的index位宽为log2(TLBNUM)
+wire   [19:0]               s0_ppn                [1:0];
+wire   [5:0]                s0_ps                 [1:0];
+wire   [1:0]                s0_plv                [1:0];
+wire   [1:0]                s0_mat                [1:0];
+wire                        s0_d                  [1:0];
+wire                        s0_v                  [1:0];
 
 // search port 1 (for load/store the data)
-wire   [18:0]               s1_vppn               [ISSUE-1:0];
-wire                        s1_va_bit12           [ISSUE-1:0];
-wire   [9:0]                s1_asid               [ISSUE-1:0];
+wire   [18:0]               s1_vppn               [1:0];
+wire                        s1_va_bit12           [1:0];
+wire   [9:0]                s1_asid               [1:0];
 wire   [9:0]                tlbinv_asid; // 标量，来自 EXE1 选出的 invtlb 槽
 wire   [9:0]                s1_asid_without_invtlb;
-wire                        s1_found              [ISSUE-1:0];
-wire   [$clog2(TLBNUM)-1:0] s1_index              [ISSUE-1:0];
-wire   [19:0]               s1_ppn                [ISSUE-1:0];
-wire   [5:0]                s1_ps                 [ISSUE-1:0];
-wire   [1:0]                s1_plv                [ISSUE-1:0];
-wire   [1:0]                s1_mat                [ISSUE-1:0];
-wire                        s1_d                  [ISSUE-1:0];
-wire                        s1_v                  [ISSUE-1:0];
+wire                        s1_found              [1:0];
+wire   [$clog2(TLBNUM)-1:0] s1_index              [1:0];
+wire   [19:0]               s1_ppn                [1:0];
+wire   [5:0]                s1_ps                 [1:0];
+wire   [1:0]                s1_plv                [1:0];
+wire   [1:0]                s1_mat                [1:0];
+wire                        s1_d                  [1:0];
+wire                        s1_v                  [1:0];
 
 // invtlb opcode（标量）
 wire                        invtlb_valid;
@@ -250,19 +250,19 @@ wire                        r_d1;
 wire                        r_v1;
 
 //tlb_ex
-wire                        ex_tlb_reload0      [ISSUE-1:0];//tlb重填异常
-wire                        ex_tlb_reload1      [ISSUE-1:0];//tlb重填异常
-wire                        ex_tlb_ld_unvalid   [ISSUE-1:0];//tlb的load页无效
-wire                        ex_tlb_st_unvalid   [ISSUE-1:0];//tlb的store页无效
-wire                        ex_tlb_preif_unvalid[ISSUE-1:0];//tlb取指页无效
-wire                        ex_tlb_plv0         [ISSUE-1:0];//tlb的页权限上访
-wire                        ex_tlb_plv1         [ISSUE-1:0];//tlb的页权限上访
-wire                        ex_tlb_page_modify  [ISSUE-1:0];//tlb页修改
+wire                        ex_tlb_reload0      [1:0];//tlb重填异常
+wire                        ex_tlb_reload1      [1:0];//tlb重填异常
+wire                        ex_tlb_ld_unvalid   [1:0];//tlb的load页无效
+wire                        ex_tlb_st_unvalid   [1:0];//tlb的store页无效
+wire                        ex_tlb_preif_unvalid[1:0];//tlb取指页无效
+wire                        ex_tlb_plv0         [1:0];//tlb的页权限上访
+wire                        ex_tlb_plv1         [1:0];//tlb的页权限上访
+wire                        ex_tlb_page_modify  [1:0];//tlb页修改
 
 wire                        tlb_inst_req;
-wire                        tlb_data_req        [ISSUE-1:0];
-wire                        tlb_load_req        [ISSUE-1:0];
-wire                        tlb_store_req       [ISSUE-1:0];
+wire                        tlb_data_req        [1:0];
+wire                        tlb_load_req        [1:0];
+wire                        tlb_store_req       [1:0];
 
 tlb #(
     .TLBNUM               (TLBNUM               ),
@@ -378,17 +378,17 @@ wire          flush;
 wire   [31:0] flush_target;
 wire   [31:0] cancel_target;//cacop flush br 融合 target
 
-wire   [31:0] front_push_rdata1        [ISSUE - 1 : 0];
-wire   [31:0] front_push_rdata2        [ISSUE - 1 : 0];
-wire   [31:0] exe2_front_data          [ISSUE - 1 : 0];
-wire   [31:0] mem_front_data           [ISSUE - 1 : 0];
-wire   [31:0] wb_front_data            [ISSUE - 1 : 0];
-wire   [ 4:0] exe2_front_addr          [ISSUE - 1 : 0];
-wire   [ 4:0] mem_front_addr           [ISSUE - 1 : 0];
-wire   [ 4:0] wb_front_addr            [ISSUE - 1 : 0];
-wire          exe2_can_not_front_push  [ISSUE - 1 : 0];
-wire          mem_can_not_front_push   [ISSUE - 1 : 0];
-wire          wb_can_not_front_push    [ISSUE - 1 : 0];
+wire   [31:0] front_push_rdata1        [1:0];
+wire   [31:0] front_push_rdata2        [1:0];
+wire   [31:0] exe2_front_data          [1:0];
+wire   [31:0] mem_front_data           [1:0];
+wire   [31:0] wb_front_data            [1:0];
+wire   [ 4:0] exe2_front_addr          [1:0];
+wire   [ 4:0] mem_front_addr           [1:0];
+wire   [ 4:0] wb_front_addr            [1:0];
+wire          exe2_can_not_front_push  [1:0];
+wire          mem_can_not_front_push   [1:0];
+wire          wb_can_not_front_push    [1:0];
 
 genvar        i;
 generate
@@ -421,20 +421,20 @@ assign cancel_target = flush ? flush_target :
 //------------------------{front_push}end-------------------------//
 
 //------------------------{stall}begin-------------------------//
-wire        EXE1_rf_gr_we       [ISSUE - 1 : 0];
-wire [ 4:0] EXE1_rf_dest        [ISSUE - 1 : 0];
-wire [ 4:0] EXE2_rf_dest        [ISSUE - 1 : 0];
-wire [ 4:0] MEM_rf_dest         [ISSUE - 1 : 0];
-wire [ 4:0] WB_rf_dest          [ISSUE - 1 : 0];
-wire        src1_stall          [ISSUE - 1 : 0];
-wire        src2_stall          [ISSUE - 1 : 0];
+wire        EXE1_rf_gr_we       [1:0];
+wire [ 4:0] EXE1_rf_dest        [1:0];
+wire [ 4:0] EXE2_rf_dest        [1:0];
+wire [ 4:0] MEM_rf_dest         [1:0];
+wire [ 4:0] WB_rf_dest          [1:0];
+wire        src1_stall          [1:0];
+wire        src2_stall          [1:0];
 wire        need_stall;
-wire        exe2_need_stall_inst[ISSUE - 1 : 0];
-wire        exe2_need_stall_csr [ISSUE - 1 : 0];
-wire        mem_need_stall_inst [ISSUE - 1 : 0];
-wire        mem_need_stall_csr  [ISSUE - 1 : 0];
-wire        wb_need_stall_csr   [ISSUE - 1 : 0];
-wire        mem_load_wait       [ISSUE - 1 : 0];
+wire        exe2_need_stall_inst[1:0];
+wire        exe2_need_stall_csr [1:0];
+wire        mem_need_stall_inst [1:0];
+wire        mem_need_stall_csr  [1:0];
+wire        wb_need_stall_csr   [1:0];
+wire        mem_load_wait       [1:0];
 
 generate
     for (i = 0; i < ISSUE; i = i + 1) begin : gen_stall
@@ -489,11 +489,11 @@ wire  inst_resp_discard;
 //------------------------{branch prediction}begin---------------------------//
 //btb
 // query port: preIF lookup
-wire        query_valid     [ISSUE-1:0];
-wire [31:0] query_pc        [ISSUE-1:0];
-wire        btb_query_hit   [ISSUE-1:0];//valid and tag match
-wire [31:0] btb_query_target[ISSUE-1:0];
-wire [ 1:0] query_type      [ISSUE-1:0];
+wire        query_valid     [1:0];
+wire [31:0] query_pc        [1:0];
+wire        btb_query_hit   [1:0];//valid and tag match
+wire [31:0] btb_query_target[1:0];
+wire [ 1:0] query_type      [1:0];
 // update port: Decode writes back real result
 wire        update_valid;
 wire [31:0] update_pc;
@@ -523,7 +523,7 @@ btb u_btb(
     .update_cancel (flush | cacop_need_cancel )
 );
 
-wire  query_taken     [ISSUE-1:0];
+wire  query_taken     [1:0];
 wire  update_taken;
 wire  bht_update_valid;
 //bht
@@ -549,8 +549,8 @@ bht u_bht(
 wire        push_valid;
 wire [31:0] push_target;
 wire        pop_valid;
-wire        ras_query_hit   [ISSUE-1:0];
-wire [31:0] ras_query_target[ISSUE-1:0];
+wire        ras_query_hit   [1:0];
+wire [31:0] ras_query_target[1:0];
 ras u_ras(
     .clk           (clk                 ),
     .resetn        (resetn              ),
@@ -657,13 +657,13 @@ localparam                                     EXE2_MEM_bus_width            = 1
 localparam                                     MEM_WB_bus_width              = 222;
 
 wire       [preIF1_preIF2_slot0_bus_width-1:0] preIF1_preIF2_bus_slot0;
-wire       [preIF1_preIF2_bus_width-1:0]       preIF1_preIF2_bus            [ISSUE-1:1];
-wire       [preIF2_IF_bus_width-1:0]           preIF2_IF_bus                [ISSUE-1:0];
-wire       [IF_ID_bus_width-1:0]               IF_ID_bus                    [ISSUE-1:0];
-wire       [ID_EXE1_bus_width-1:0]             ID_EXE1_bus                  [ISSUE-1:0];
-wire       [EXE1_EXE2_bus_width-1:0]           EXE1_EXE2_bus                [ISSUE-1:0];
-wire       [EXE2_MEM_bus_width-1:0]            EXE2_MEM_bus                 [ISSUE-1:0];
-wire       [MEM_WB_bus_width-1:0]              MEM_WB_bus                   [ISSUE-1:0];
+wire       [preIF1_preIF2_bus_width-1:0]       preIF1_preIF2_bus            [1:1];
+wire       [preIF2_IF_bus_width-1:0]           preIF2_IF_bus                [1:0];
+wire       [IF_ID_bus_width-1:0]               IF_ID_bus                    [1:0];
+wire       [ID_EXE1_bus_width-1:0]             ID_EXE1_bus                  [1:0];
+wire       [EXE1_EXE2_bus_width-1:0]           EXE1_EXE2_bus                [1:0];
+wire       [EXE2_MEM_bus_width-1:0]            EXE2_MEM_bus                 [1:0];
+wire       [MEM_WB_bus_width-1:0]              MEM_WB_bus                   [1:0];
 //------------------------{5-stage pipeline bus + inst ram control}end------------------------//
 
 //------------------------{csr_regfile}begin-------------------------//
@@ -696,11 +696,17 @@ wire          csr_tlb_reload1;
 wire          csr_tlb_plv1;     
 // 更新TLBEHI ex_tlb
 wire          ex_tlb;
+
+//切割csr端口的路径
+wire   [31:0] csr_eentry_rvalue;
+wire   [31:0] csr_era_rvalue;
+wire   [31:0] csr_tlbrentry_rvalue;
+
 //mat:存储访问类型
 wire   [1:0]  csr_CRMD_DATF;
 wire   [1:0]  csr_CRMD_DATM;
-wire   [1:0]  dmw_mat0       [ISSUE-1:0];
-wire   [1:0]  dmw_mat1       [ISSUE-1:0];
+wire   [1:0]  dmw_mat0       [1:0];
+wire   [1:0]  dmw_mat1       [1:0];
 //mat
 wire   [1:0]  inst_mat;
 wire   [1:0]  data_mat;
@@ -815,7 +821,11 @@ csr_regfile #(
     //LLbit
     .LLbit_wb               (LLbit_wb               ),
     .LLbit_wdata            (LLbit_wdata            ),
-    .LLbit                  (LLbit                  )
+    .LLbit                  (LLbit                  ),
+    //切割csr端口的路径
+    .csr_eentry_rvalue      (csr_eentry_rvalue      ),
+    .csr_era_rvalue         (csr_era_rvalue         ),
+    .csr_tlbrentry_rvalue   (csr_tlbrentry_rvalue   )
 );
 //------------------------{csr_regfile}end-------------------------//
 
@@ -1219,7 +1229,11 @@ wb #(
     //IDLE
     .csr_has_int           (has_int               ),
     .csr_tcfg_init0        (csr_tcfg_init0        ),
-    .IDLE_stall            (IDLE_stall            )
+    .IDLE_stall            (IDLE_stall            ),
+    //切割csr端口的路径
+    .csr_eentry_rvalue     (csr_eentry_rvalue     ),
+    .csr_era_rvalue        (csr_era_rvalue        ),
+    .csr_tlbrentry_rvalue  (csr_tlbrentry_rvalue  )
 );
 //------------------------{5-stage pipeline instantiation}end-------------------------//
 

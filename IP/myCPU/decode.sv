@@ -12,13 +12,13 @@ module decode #(
     output wire                    ID_ready_go,
     
     //bus
-    input  wire [inbus_width-1:0]  IF_ID_bus[ISSUE - 1 : 0],//bus
-    output wire [outbus_width-1:0] ID_EXE1_bus[ISSUE - 1 : 0],
+    input  wire [inbus_width-1:0]  IF_ID_bus[1:0],//bus
+    output wire [outbus_width-1:0] ID_EXE1_bus[1:0],
     //regfile
-    output wire [4:0]              rf_raddr1[ISSUE - 1 : 0],
-    output wire [4:0]              rf_raddr2[ISSUE - 1 : 0],
-    input  wire [31:0]             rf_rdata1[ISSUE - 1 : 0],
-    input  wire [31:0]             rf_rdata2[ISSUE - 1 : 0],
+    output wire [4:0]              rf_raddr1[1:0],
+    output wire [4:0]              rf_raddr2[1:0],
+    input  wire [31:0]             rf_rdata1[1:0],
+    input  wire [31:0]             rf_rdata2[1:0],
     //cancel control
     input  wire                    ID_need_cancel,
     //prediction
@@ -46,7 +46,7 @@ module decode #(
     output wire                    ID_can_accept_IF
 );
 //------------------------{bus decode}begin-------------------------//
-reg [inbus_width-1:0] bus[ISSUE - 1 : 0];
+reg [inbus_width-1:0] bus[1:0];
 reg                   bus_has_inst;//bus中有未完成的IF的指令
 
 integer k;
@@ -76,20 +76,20 @@ always @(posedge clk)begin
         bus_has_inst <= 1'b0;
     end
 end
-wire        slot_valid[ISSUE - 1 : 0];
-wire [31:0] pc[ISSUE - 1 : 0];
-wire [31:0] inst[ISSUE - 1 : 0];
-wire        ex_ADEF[ISSUE - 1 : 0];
-wire        ex_tlb_reload0[ISSUE - 1 : 0];//tlb重填异常
-wire        ex_tlb_preif_unvalid[ISSUE - 1 : 0];//tlb的取指页无效
-wire        ex_tlb_plv0[ISSUE - 1 : 0];//tlb的页权限非法
+wire        slot_valid[1:0];
+wire [31:0] pc[1:0];
+wire [31:0] inst[1:0];
+wire        ex_ADEF[1:0];
+wire        ex_tlb_reload0[1:0];//tlb重填异常
+wire        ex_tlb_preif_unvalid[1:0];//tlb的取指页无效
+wire        ex_tlb_plv0[1:0];//tlb的页权限非法
 
-wire        btb_query_hit[ISSUE - 1 : 0];//valid且tag
-wire [31:0] btb_query_target[ISSUE - 1 : 0];        
-wire        ras_query_hit[ISSUE - 1 : 0];//valid且tag
-wire [31:0] ras_query_target[ISSUE - 1 : 0];        
-wire [ 1:0] query_type[ISSUE - 1 : 0];              
-wire        query_taken[ISSUE - 1 : 0];//预测是否跳转 
+wire        btb_query_hit[1:0];//valid且tag
+wire [31:0] btb_query_target[1:0];        
+wire        ras_query_hit[1:0];//valid且tag
+wire [31:0] ras_query_target[1:0];        
+wire [ 1:0] query_type[1:0];              
+wire        query_taken[1:0];//预测是否跳转 
 
 wire bus0_valid = bus[0][inbus_width-1];
 wire bus1_valid = bus[1][inbus_width-1];
@@ -97,7 +97,7 @@ wire bus1_valid = bus[1][inbus_width-1];
 //-------------------------{hold}begin---------------------------------------------//
 reg                     hold_valid;
 reg  [inbus_width-1:0]   hold_bus;
-wire [inbus_width-1 : 0] bus_eff [ISSUE - 1 : 0];//有效包，经过hold筛选后的bus
+wire [inbus_width-1 : 0] bus_eff [1:0];//有效包，经过hold筛选后的bus
 wire create_hold;//hold开始信号
 wire update_hold;//hold更新信号
 wire clear_hold;//hold清空信号
@@ -179,33 +179,33 @@ wire pred_is_neighbor  = slot_valid[0] & slot_valid[1] & (pc[1] == (pc[0] + 32'd
 //------------------------{module}begin--------------------------//
 wire id_fire = ID_valid & ID_ready_go & ~ID_need_cancel & ID_allow_in;
 
-wire [outbus_width-2:0] exe_payload   [ISSUE-1:0];
-wire        real_taken     [ISSUE-1:0];
-wire [31:0] real_target    [ISSUE-1:0];
-wire        pred_taken     [ISSUE-1:0];
-wire        pred_valid     [ISSUE-1:0];
-wire        pred_ok        [ISSUE-1:0];
-wire        redirect_lane  [ISSUE-1:0];
-wire        is_cond        [ISSUE-1:0];
-wire        is_call        [ISSUE-1:0];
-wire        is_ret         [ISSUE-1:0];
-wire        is_jump        [ISSUE-1:0];
-wire        is_br          [ISSUE-1:0];
-wire        is_mem         [ISSUE-1:0];
-wire        is_system_break[ISSUE-1:0];
-wire        is_csr_write   [ISSUE-1:0];
-wire        is_csr_read    [ISSUE-1:0];
-wire        is_tlb         [ISSUE-1:0];
-wire [4:0]  rf_dest        [ISSUE-1:0];
-wire        rf_gr_we       [ISSUE-1:0];
+wire [outbus_width-2:0] exe_payload   [1:0];
+wire        real_taken     [1:0];
+wire [31:0] real_target    [1:0];
+wire        pred_taken     [1:0];
+wire        pred_valid     [1:0];
+wire        pred_ok        [1:0];
+wire        redirect_lane  [1:0];
+wire        is_cond        [1:0];
+wire        is_call        [1:0];
+wire        is_ret         [1:0];
+wire        is_jump        [1:0];
+wire        is_br          [1:0];
+wire        is_mem         [1:0];
+wire        is_system_break[1:0];
+wire        is_csr_write   [1:0];
+wire        is_csr_read    [1:0];
+wire        is_tlb         [1:0];
+wire [4:0]  rf_dest        [1:0];
+wire        rf_gr_we       [1:0];
 // 若按上面加了可选端口：
-wire        upd_need       [ISSUE-1:0];
-wire        bht_upd_need   [ISSUE-1:0];
-wire        push_need      [ISSUE-1:0];
-wire        pop_need       [ISSUE-1:0];
-wire [1:0]  br_type        [ISSUE-1:0];
-wire        ex_INE         [ISSUE-1:0];
-wire        ex_IPE         [ISSUE-1:0];
+wire        upd_need       [1:0];
+wire        bht_upd_need   [1:0];
+wire        push_need      [1:0];
+wire        pop_need       [1:0];
+wire [1:0]  br_type        [1:0];
+wire        ex_INE         [1:0];
+wire        ex_IPE         [1:0];
 
 generate
   for (gi = 0; gi < ISSUE; gi = gi + 1) begin : gen_alu_res

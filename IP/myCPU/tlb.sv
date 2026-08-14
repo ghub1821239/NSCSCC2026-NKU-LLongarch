@@ -11,30 +11,30 @@ module tlb
     input  wire                      resetn,
 
     // search port 0 (for fetch the inst) 【preIF】
-    input  wire [18:0]               s0_vppn             [ISSUE-1:0],
-    input  wire                      s0_va_bit12         [ISSUE-1:0],
+    input  wire [18:0]               s0_vppn             [1:0],
+    input  wire                      s0_va_bit12         [1:0],
     input  wire [9:0]                s0_asid,
-    output wire                      s0_found            [ISSUE-1:0],
-    output wire [$clog2(TLBNUM)-1:0] s0_index            [ISSUE-1:0], // 先向上取整再 log2（），这样来求出来位宽
-    output wire [19:0]               s0_ppn              [ISSUE-1:0],
-    output wire [5:0]                s0_ps               [ISSUE-1:0],
-    output wire [1:0]                s0_plv              [ISSUE-1:0],
-    output wire [1:0]                s0_mat              [ISSUE-1:0],
-    output wire                      s0_d                [ISSUE-1:0],
-    output wire                      s0_v                [ISSUE-1:0],
+    output wire                      s0_found            [1:0],
+    output wire [$clog2(TLBNUM)-1:0] s0_index            [1:0], // 先向上取整再 log2（），这样来求出来位宽
+    output wire [19:0]               s0_ppn              [1:0],
+    output wire [5:0]                s0_ps               [1:0],
+    output wire [1:0]                s0_plv              [1:0],
+    output wire [1:0]                s0_mat              [1:0],
+    output wire                      s0_d                [1:0],
+    output wire                      s0_v                [1:0],
 
     // search port 1 (for load/store the data) 【EXE】
-    input  wire [18:0]               s1_vppn             [ISSUE-1:0],//也用于 tlbinv 中的 op clear 判定
-    input  wire                      s1_va_bit12         [ISSUE-1:0],
-    input  wire [9:0]                s1_asid             [ISSUE-1:0],//也用于 tlbinv 中的 op clear 判定
-    output wire                      s1_found            [ISSUE-1:0],
-    output wire [$clog2(TLBNUM)-1:0] s1_index            [ISSUE-1:0],
-    output wire [19:0]               s1_ppn              [ISSUE-1:0],
-    output wire [5:0]                s1_ps               [ISSUE-1:0],
-    output wire [1:0]                s1_plv              [ISSUE-1:0],
-    output wire [1:0]                s1_mat              [ISSUE-1:0],
-    output wire                      s1_d                [ISSUE-1:0],
-    output wire                      s1_v                [ISSUE-1:0],
+    input  wire [18:0]               s1_vppn             [1:0],//也用于 tlbinv 中的 op clear 判定
+    input  wire                      s1_va_bit12         [1:0],
+    input  wire [9:0]                s1_asid             [1:0],//也用于 tlbinv 中的 op clear 判定
+    output wire                      s1_found            [1:0],
+    output wire [$clog2(TLBNUM)-1:0] s1_index            [1:0],
+    output wire [19:0]               s1_ppn              [1:0],
+    output wire [5:0]                s1_ps               [1:0],
+    output wire [1:0]                s1_plv              [1:0],
+    output wire [1:0]                s1_mat              [1:0],
+    output wire                      s1_d                [1:0],
+    output wire                      s1_v                [1:0],
 
     // write port 【CSR】
     input  wire                      we,
@@ -80,23 +80,23 @@ module tlb
     input  wire [4:0]                invtlb_op,
 
     //tlb_ex
-    output wire                      ex_tlb_reload0      [ISSUE-1:0],//tlb重填例外_s0
-    output wire                      ex_tlb_reload1      [ISSUE-1:0],//tlb重填例外_s1
-    output wire                      ex_tlb_ld_unvalid   [ISSUE-1:0],//tlb中load页无效
-    output wire                      ex_tlb_st_unvalid   [ISSUE-1:0],//tlb中store页无效
-    output wire                      ex_tlb_preif_unvalid[ISSUE-1:0],//tlb中取指页无效
-    output wire                      ex_tlb_plv0         [ISSUE-1:0],//tlb中页特权不合规_s0
-    output wire                      ex_tlb_plv1         [ISSUE-1:0],//tlb中页特权不合规_s1
-    output wire                      ex_tlb_page_modify  [ISSUE-1:0],//tlb中页修改
+    output wire                      ex_tlb_reload0      [1:0],//tlb重填例外_s0
+    output wire                      ex_tlb_reload1      [1:0],//tlb重填例外_s1
+    output wire                      ex_tlb_ld_unvalid   [1:0],//tlb中load页无效
+    output wire                      ex_tlb_st_unvalid   [1:0],//tlb中store页无效
+    output wire                      ex_tlb_preif_unvalid[1:0],//tlb中取指页无效
+    output wire                      ex_tlb_plv0         [1:0],//tlb中页特权不合规_s0
+    output wire                      ex_tlb_plv1         [1:0],//tlb中页特权不合规_s1
+    output wire                      ex_tlb_page_modify  [1:0],//tlb中页修改
     
     input  wire                      tlb_inst_req,
-    input  wire                      tlb_data_req        [ISSUE-1:0],
-    input  wire                      tlb_load_req        [ISSUE-1:0],
-    input  wire                      tlb_store_req       [ISSUE-1:0],
+    input  wire                      tlb_data_req        [1:0],
+    input  wire                      tlb_load_req        [1:0],
+    input  wire                      tlb_store_req       [1:0],
 
     //DMW
-    input  wire                      dmw_found0          [ISSUE-1:0],
-    input  wire                      dmw_found1          [ISSUE-1:0]
+    input  wire                      dmw_found0          [1:0],
+    input  wire                      dmw_found1          [1:0]
 );
 //----------------------------- regfile begin --------------------------
     reg [TLBNUM-1:0] tlb_e;
@@ -117,33 +117,33 @@ module tlb
 //----------------------------- regfile end --------------------------
 
 //----------------------------- query begin --------------------------
-    wire   [TLBNUM-1:0] match0      [ISSUE-1:0];
-    wire                s0_ps4MB_sel[ISSUE-1:0];
-    wire                s0_odd_page [ISSUE-1:0];
-    wire   [19:0]       s0_ppn0_sel [ISSUE-1:0];
-    wire   [19:0]       s0_ppn1_sel [ISSUE-1:0];
-    wire   [1:0]        s0_plv0_sel [ISSUE-1:0];
-    wire   [1:0]        s0_plv1_sel [ISSUE-1:0];
-    wire   [1:0]        s0_mat0_sel [ISSUE-1:0];
-    wire   [1:0]        s0_mat1_sel [ISSUE-1:0];
-    wire                s0_d0_sel   [ISSUE-1:0];
-    wire                s0_d1_sel   [ISSUE-1:0];
-    wire                s0_v0_sel   [ISSUE-1:0];
-    wire                s0_v1_sel   [ISSUE-1:0];
+    wire   [TLBNUM-1:0] match0      [1:0];
+    wire                s0_ps4MB_sel[1:0];
+    wire                s0_odd_page [1:0];
+    wire   [19:0]       s0_ppn0_sel [1:0];
+    wire   [19:0]       s0_ppn1_sel [1:0];
+    wire   [1:0]        s0_plv0_sel [1:0];
+    wire   [1:0]        s0_plv1_sel [1:0];
+    wire   [1:0]        s0_mat0_sel [1:0];
+    wire   [1:0]        s0_mat1_sel [1:0];
+    wire                s0_d0_sel   [1:0];
+    wire                s0_d1_sel   [1:0];
+    wire                s0_v0_sel   [1:0];
+    wire                s0_v1_sel   [1:0];
 
-    wire   [TLBNUM-1:0] match1      [ISSUE-1:0];
-    wire                s1_ps4MB_sel[ISSUE-1:0];
-    wire                s1_odd_page [ISSUE-1:0];
-    wire   [19:0]       s1_ppn0_sel [ISSUE-1:0];
-    wire   [19:0]       s1_ppn1_sel [ISSUE-1:0];
-    wire   [1:0]        s1_plv0_sel [ISSUE-1:0];
-    wire   [1:0]        s1_plv1_sel [ISSUE-1:0];
-    wire   [1:0]        s1_mat0_sel [ISSUE-1:0];
-    wire   [1:0]        s1_mat1_sel [ISSUE-1:0];
-    wire                s1_d0_sel   [ISSUE-1:0];
-    wire                s1_d1_sel   [ISSUE-1:0];
-    wire                s1_v0_sel   [ISSUE-1:0];
-    wire                s1_v1_sel   [ISSUE-1:0];
+    wire   [TLBNUM-1:0] match1      [1:0];
+    wire                s1_ps4MB_sel[1:0];
+    wire                s1_odd_page [1:0];
+    wire   [19:0]       s1_ppn0_sel [1:0];
+    wire   [19:0]       s1_ppn1_sel [1:0];
+    wire   [1:0]        s1_plv0_sel [1:0];
+    wire   [1:0]        s1_plv1_sel [1:0];
+    wire   [1:0]        s1_mat0_sel [1:0];
+    wire   [1:0]        s1_mat1_sel [1:0];
+    wire                s1_d0_sel   [1:0];
+    wire                s1_d1_sel   [1:0];
+    wire                s1_v0_sel   [1:0];
+    wire                s1_v1_sel   [1:0];
 
     reg    [TLBNUM-1:0] invtlb_clear;
     

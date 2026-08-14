@@ -11,7 +11,7 @@ module wb #(
     output wire                   WB_ready_go,
     output reg                    WB_valid,
     
-    input  wire [inbus_width-1:0] MEM_WB_bus           [ISSUE - 1 : 0],// MEM到WB的总线
+    input  wire [inbus_width-1:0] MEM_WB_bus           [1:0],// MEM到WB的总线
     // 调试接口
     //考虑是否需要添加更多debug接口
     output wire [31:0]            debug_wb_pc,
@@ -19,15 +19,15 @@ module wb #(
     output wire [ 4:0]            debug_wb_rf_wnum,
     output wire [31:0]            debug_wb_rf_wdata,
     // 通用寄存器堆写回接口
-    output wire [ 4:0]            rf_waddr             [ISSUE - 1 : 0],
-    output wire [31:0]            rf_wdata             [ISSUE - 1 : 0],
-    output wire                   rf_we                [ISSUE - 1 : 0],
+    output wire [ 4:0]            rf_waddr             [1:0],
+    output wire [31:0]            rf_wdata             [1:0],
+    output wire                   rf_we                [1:0],
     // 数据冒险停顿相关控制
-    output wire [ 4:0]            WB_rf_dest           [ISSUE - 1 : 0],
-    output wire                   need_stall_csr       [ISSUE - 1 : 0],
+    output wire [ 4:0]            WB_rf_dest           [1:0],
+    output wire                   need_stall_csr       [1:0],
     // 写回级数据前推
-    output wire [31:0]            wb_front_data        [ISSUE - 1 : 0],
-    output wire [ 4:0]            wb_front_addr        [ISSUE - 1 : 0],
+    output wire [31:0]            wb_front_data        [1:0],
+    output wire [ 4:0]            wb_front_addr        [1:0],
     // CSR读写接口
     output wire [13:0]            csr_num,
     output wire                   csr_re,
@@ -67,65 +67,69 @@ module wb #(
     // ex_tlb --> TLBEHI
     output wire                   ex_tlb,
     //can_not_front_push
-    output wire                   wb_can_not_front_push[ISSUE - 1 : 0],
+    output wire                   wb_can_not_front_push[1:0],
     //IDLE
     input  wire                   csr_has_int,
     input  wire                   csr_tcfg_init0, // TCFG.InitVal==0
-    output wire                   IDLE_stall
+    output wire                   IDLE_stall,
+    //切割csr端口的路径
+    input  wire [31:0]            csr_eentry_rvalue,
+    input  wire [31:0]            csr_era_rvalue,
+    input  wire [31:0]            csr_tlbrentry_rvalue
 );
-wire                   slot_valid          [ISSUE - 1 : 0];
-wire [31:0]            pc                  [ISSUE - 1 : 0];
-wire                   need_stall_csr_b    [ISSUE - 1 : 0];
+wire                   slot_valid          [1:0];
+wire [31:0]            pc                  [1:0];
+wire                   need_stall_csr_b    [1:0];
 
-wire                   rf_gr_we_ex         [ISSUE - 1 : 0];
-wire [4:0]             rf_dest             [ISSUE - 1 : 0];
-wire [31:0]            rf_alu_wdata        [ISSUE - 1 : 0];
-wire [31:0]            rkd_value           [ISSUE - 1 : 0];
-wire [31:0]            rj_value            [ISSUE - 1 : 0];
-wire                   mem_we              [ISSUE - 1 : 0];
-wire [31:0]            alu_result_with_rdct[ISSUE - 1 : 0];
-reg  [inbus_width-1:0] bus                 [ISSUE - 1 : 0];
+wire                   rf_gr_we_ex         [1:0];
+wire [4:0]             rf_dest             [1:0];
+wire [31:0]            rf_alu_wdata        [1:0];
+wire [31:0]            rkd_value           [1:0];
+wire [31:0]            rj_value            [1:0];
+wire                   mem_we              [1:0];
+wire [31:0]            alu_result_with_rdct[1:0];
+reg  [inbus_width-1:0] bus                 [1:0];
 
 //-------------CSR-------------
-wire        inst_csrrd          [ISSUE - 1 : 0];
-wire        inst_csrwr          [ISSUE - 1 : 0];
-wire        inst_csrxchg        [ISSUE - 1 : 0];
-wire [13:0] csr_num_wr          [ISSUE - 1 : 0];
+wire        inst_csrrd          [1:0];
+wire        inst_csrwr          [1:0];
+wire        inst_csrxchg        [1:0];
+wire [13:0] csr_num_wr          [1:0];
 // 异常相关标志
-wire        inst_syscall        [ISSUE - 1 : 0];
-wire        inst_break          [ISSUE - 1 : 0];
-wire        ex_INE              [ISSUE - 1 : 0];
-wire        ex_IPE              [ISSUE - 1 : 0];
-wire        ex_ADEF             [ISSUE - 1 : 0];
-wire        ex_ALE              [ISSUE - 1 : 0];
+wire        inst_syscall        [1:0];
+wire        inst_break          [1:0];
+wire        ex_INE              [1:0];
+wire        ex_IPE              [1:0];
+wire        ex_ADEF             [1:0];
+wire        ex_ALE              [1:0];
 //tlb_ex
-wire        ex_tlb_reload0      [ISSUE - 1 : 0];//tlb重填例外
-wire        ex_tlb_preif_unvalid[ISSUE - 1 : 0];//tlb中取指页无效
-wire        ex_tlb_plv0         [ISSUE - 1 : 0];//tlb中页特权不合规
-wire        ex_tlb_reload1      [ISSUE - 1 : 0];//tlb重填例外        
-wire        ex_tlb_ld_unvalid   [ISSUE - 1 : 0];//tlb中load页无效 
-wire        ex_tlb_st_unvalid   [ISSUE - 1 : 0];//tlb中store页无效
-wire        ex_tlb_plv1         [ISSUE - 1 : 0];//tlb中页特权不合规        
-wire        ex_tlb_page_modify  [ISSUE - 1 : 0];//tlb中页修改
-wire        ex_tlb_plv          [ISSUE - 1 : 0];     
+wire        ex_tlb_reload0      [1:0];//tlb重填例外
+wire        ex_tlb_preif_unvalid[1:0];//tlb中取指页无效
+wire        ex_tlb_plv0         [1:0];//tlb中页特权不合规
+wire        ex_tlb_reload1      [1:0];//tlb重填例外        
+wire        ex_tlb_ld_unvalid   [1:0];//tlb中load页无效 
+wire        ex_tlb_st_unvalid   [1:0];//tlb中store页无效
+wire        ex_tlb_plv1         [1:0];//tlb中页特权不合规        
+wire        ex_tlb_page_modify  [1:0];//tlb中页修改
+wire        ex_tlb_plv          [1:0];     
 // 空闲等待取指令
-wire        inst_idle           [ISSUE - 1 : 0];
-wire        inst_ertn           [ISSUE - 1 : 0];
+wire        inst_idle           [1:0];
+wire        inst_ertn           [1:0];
 
-wire        has_int             [ISSUE - 1 : 0];
+wire        has_int             [1:0];
 
 //**************** tlb begin ****************
-wire        inst_rdcntvl_w[ISSUE - 1 : 0];
-wire        inst_rdcntvh_w[ISSUE - 1 : 0];
-wire        inst_rdcntid[ISSUE - 1 : 0];
+wire        inst_rdcntvl_w[1:0];
+wire        inst_rdcntvh_w[1:0];
+wire        inst_rdcntid[1:0];
 
 
-wire        inst_tlbsrch[ISSUE - 1 : 0];
-wire        inst_tlbrd[ISSUE - 1 : 0];
-wire [10:0] TLBIDX_new_tlbsrch[ISSUE - 1 : 0];
-wire        inst_tlbwr[ISSUE - 1 : 0];
-wire        inst_tlbfill[ISSUE - 1 : 0];
-wire        inst_invtlb[ISSUE - 1 : 0];
+wire        inst_tlbsrch[1:0];
+wire        inst_tlbrd[1:0];
+wire [10:0] TLBIDX_new_tlbsrch[1:0];
+wire        inst_tlbwr[1:0];
+wire        inst_tlbfill[1:0];
+wire        inst_invtlb[1:0];
 //**************** tlb end ****************
 
 integer k;
@@ -166,8 +170,8 @@ endgenerate
 // tlb 异常
 
 //---------------------------{slot_ex}begin---------------------------------//
-wire ex_slot     [ISSUE - 1 : 0];//slot中是否有异常（含tlb）
-wire ex_slot_tlb [ISSUE - 1 : 0];//slot中是否有tlb异常（后面没有单独用到）
+wire ex_slot     [1:0];//slot中是否有异常（含tlb）
+wire ex_slot_tlb [1:0];//slot中是否有tlb异常（后面没有单独用到）
 generate
     for (gi = 0; gi < ISSUE; gi = gi + 1) begin
         assign ex_slot_tlb[gi]  = ex_tlb_reload0[gi] | ex_tlb_preif_unvalid[gi] | ex_tlb_plv0[gi] |
@@ -234,7 +238,7 @@ wire slot0_system_break = slot0_present & (inst_ertn[0] | inst_csrwr[0] | inst_c
                                            inst_tlbsrch[0] | inst_tlbrd[0] | inst_tlbwr[0] |
                                            inst_tlbfill[0] | inst_idle[0]);
 
-wire slot_fire[ISSUE - 1 : 0];
+wire slot_fire[1:0];
 assign slot_fire[0]     = slot0_present;//发射slot0
 assign slot_fire[1]     = slot1_present & ~slot0_trap & ~slot0_system_break;//发射slot1
 
@@ -268,7 +272,7 @@ wire [31:0] x_vaddr        = take_ex0 ? alu_result_with_rdct[0] :
 //-------------------------------------{异常选择slot0优先}end-------------------------------------//
 
 //------------------------------{csr端口}begin--------------------------------//
-wire   csr_port[ISSUE - 1 : 0];//要修改csr的指令和异常
+wire   csr_port[1:0];//要修改csr的指令和异常
 generate
     for (gi = 0; gi < ISSUE; gi = gi + 1) begin : gen_csr_need
         assign csr_port[gi] = slot_fire[gi] & (inst_csrrd[gi] | inst_csrwr[gi] | inst_csrxchg[gi] | inst_rdcntid[gi] |
@@ -321,9 +325,33 @@ wire        csr_rd_WB_each;
 assign csr_WB_rd  = s_slot_ok & ~wb_ex & (s_csrrd | s_csrwr | s_csrxchg | s_rdcntid);//要把csr写入rd的
 assign csr_rd_WB_each = s_slot_ok & s_no_ex & ~wb_ex & (s_csrwr | s_csrxchg);//要把rd写入csr的
 
+reg         csr_rd_hold;//csr写入rd的寄存器hold
+reg  [31:0] csr_rvalue_r;//用来存住csr_rvalue
+wire        csr_rd_op = WB_valid & csr_WB_rd;//csr_WB_rd有效
+
+always @(posedge clk) begin
+    if (!resetn) begin
+        csr_rd_hold  <= 1'b0;
+        csr_rvalue_r <= 32'b0;
+    end
+    else if (WB_need_cancel & !(csr_rd_op & !csr_rd_hold)) begin
+        //例外等非csr写rd的指令，仍然走flush路线，不能进hold
+        csr_rd_hold  <= 1'b0;
+    end
+    else if (csr_rd_op & !csr_rd_hold) begin
+        //来了一条csr写rd指令，不是异常（上面已经排除），hold没有正在写的指令
+        csr_rvalue_r <= csr_rvalue;
+        csr_rd_hold  <= 1'b1;
+    end
+    else if (csr_rd_hold & WB_allow_in) begin
+        //下一次来指令时，若hold上一次有指令要清零
+        csr_rd_hold  <= 1'b0;
+    end
+end
+
 assign csr_wmask  = (s_csrwr | s_tlbsrch) ? 32'hffffffff : s_rj;
 assign csr_wdata  = s_tlbsrch ? {s_TLBIDX_new_tlbsrch[10],csr_TLBIDX[30:10],s_TLBIDX_new_tlbsrch[9:0]} : s_rkd;
-assign csr_we     = (s_tlbsrch | csr_rd_WB_each) & s_slot_ok & ~wb_ex & s_no_ex & WB_valid;
+assign csr_we     = (s_tlbsrch | csr_rd_WB_each) & s_slot_ok & ~wb_ex & s_no_ex & WB_valid & ~csr_rd_hold;
 
 assign csr_re     = ((csr_WB_rd | flush) & WB_valid) | idle_wake_ex;
 
@@ -350,14 +378,6 @@ assign csr_num    = idle_ex                            ? `CSR_EENTRY      :
                     (s_tlbsrch & s_slot_ok & ~wb_ex)   ? `CSR_TLBIDX      : 
                                                          s_csr_num_wr;
 
-assign flush        = (((s_ertn | s_csrwr | s_csrxchg | s_tlbfill | s_tlbwr | s_tlbrd | s_tlbsrch | s_idle) & s_slot_ok & ~wb_ex) |
-                      wb_ex) & WB_valid |
-                      idle_wake_ex;
-assign flush_target = wb_ex ? csr_rvalue :
-                      (s_csrwr | s_csrxchg | s_tlbfill |
-                       s_tlbwr | s_tlbrd | s_tlbsrch | s_idle)
-                      ? (s_pc + 32'd4)
-                      : csr_rvalue;
 //tlb output
 assign tlbrd_we   = s_tlbrd   & WB_valid & ~wb_ex & s_slot_ok & s_no_ex;
 assign tlbwr_we   = s_tlbwr   & WB_valid & ~wb_ex & s_slot_ok & s_no_ex;
@@ -412,14 +432,30 @@ assign csr_tlb_reload1 = x_ex_tlb_reload1 & WB_valid;
 assign csr_tlb_plv1    = x_ex_tlb_plv1    & WB_valid;
 //------------------------------{csr端口}end--------------------------------//
 
+//--------------------------------{flush}begin-----------------------------------//
+//csr_vector用来代替csr_rvalue给通向异常入口的指令使用
+wire [31:0] csr_vector = (csr_num == `CSR_TLBRENTRY) ? csr_tlbrentry_rvalue :
+                         (csr_num == `CSR_ERA      ) ? csr_era_rvalue       :
+                                                       csr_eentry_rvalue;
+
+assign flush        = (((s_ertn | s_csrwr | s_csrxchg | s_tlbfill | s_tlbwr | s_tlbrd | s_tlbsrch | s_idle) & s_slot_ok & ~wb_ex) |
+                      wb_ex) & WB_valid |
+                      idle_wake_ex;
+assign flush_target = wb_ex ? csr_vector :
+                      (s_csrwr | s_csrxchg | s_tlbfill |
+                       s_tlbwr | s_tlbrd | s_tlbsrch | s_idle)
+                      ? (s_pc + 32'd4)
+                      : csr_vector;
+//--------------------------------{flush}end-----------------------------------//
+
 //-------------------------------{rf双写}begin------------------------------//
 generate
     for (gi = 0; gi < ISSUE; gi = gi + 1) begin : gen_rf
         wire if_csr_write_in_rd = (inst_csrrd[gi] | inst_csrwr[gi] | inst_csrxchg[gi] | inst_rdcntid[gi]) &
                                   slot_fire[gi] & ~ex_slot[gi] & ~idle_ex;//命中该slot时，csr是否要写入rd
-        wire if_use_csr_rdata   = if_csr_write_in_rd & ((gi == 0 & ~csr_select_slot) | (gi == 1 & csr_select_slot)) & csr_WB_rd;//是否使用csr_rdata
+        wire if_use_csr_rdata   = if_csr_write_in_rd & ((gi == 0 & ~csr_select_slot) | (gi == 1 & csr_select_slot)) & csr_WB_rd & csr_rd_hold;//是否使用csr_rdata
 
-        assign rf_wdata[gi]     = if_use_csr_rdata ? csr_rvalue : rf_alu_wdata[gi];
+        assign rf_wdata[gi]     = if_use_csr_rdata ? csr_rvalue_r : rf_alu_wdata[gi];
         assign rf_waddr[gi]     = rf_dest[gi];
         assign rf_we[gi]        = rf_gr_we_ex[gi] & slot_fire[gi] & ~ex_slot[gi] & ~idle_ex &
                                   (~if_csr_write_in_rd | if_use_csr_rdata);//最后一个括号是防止年轻指令异常抢占年老csr指令写入rd
@@ -434,7 +470,7 @@ generate
             assign need_stall_csr[gi]        = need_stall_csr_b[gi] & slot_fire[gi];
             assign wb_front_addr[gi]         = slot_fire[gi] ? rf_dest[gi] : 5'b0;
             assign wb_front_data[gi]         = slot_fire[gi] ? rf_wdata[gi]: 32'b0;
-            assign wb_can_not_front_push[gi] = ~rf_gr_we_ex[gi] | ~slot_fire[gi] | ex_slot[gi] | ~rf_we[gi];
+            assign wb_can_not_front_push[gi] = ~rf_gr_we_ex[gi] | ~slot_fire[gi] | ex_slot[gi];
         end
 endgenerate
 //--------------------------------{前推}end-------------------------------//
@@ -448,12 +484,12 @@ assign wb_pc      = idle_preempt ? pc[0] :
 assign wb_ex      = take_ex0 | take_ex1 | idle_ex;
 assign wb_vaddr   = x_vaddr;
 
-assign WB_ready_go     = 1'b1;
+assign WB_ready_go     = (csr_rd_op & !csr_rd_hold) ? 1'b0 : 1'b1;//如果有指令还没写入rd，则还不能ready_go
 always @(posedge clk) begin
     if(!resetn)begin
         WB_valid <= 1'b0;
     end
-    else if(WB_need_cancel)begin
+    else if(WB_need_cancel & !(csr_rd_op & !csr_rd_hold))begin
         WB_valid <= 1'b0;
     end
     else if(WB_allow_in)begin
