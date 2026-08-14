@@ -17,6 +17,7 @@ module mem #(
   output wire                    need_stall_inst       [ISSUE - 1 : 0],
   output wire                    need_stall_csr        [ISSUE - 1 : 0],
   //front_push
+  output wire [31:0]             mem_front_data_nonld  [ISSUE - 1 : 0],
   output wire [31:0]             mem_front_data        [ISSUE - 1 : 0],
   output wire [ 4:0]             mem_front_addr        [ISSUE - 1 : 0],
   //cancel control
@@ -136,16 +137,16 @@ generate
     assign  ld_index = ld_inst_valid[0] ? 0 : 1;
 endgenerate
 
-assign  ld_data_byte = data_sram_addr_l[ld_index] == 2'b00 ? data_sram_rdata [7:0] :
-                       data_sram_addr_l[ld_index] == 2'b01 ? data_sram_rdata [15:8] :
+assign  ld_data_byte = data_sram_addr_l[ld_index] == 2'b00 ? data_sram_rdata [7:0]   :
+                       data_sram_addr_l[ld_index] == 2'b01 ? data_sram_rdata [15:8]  :
                        data_sram_addr_l[ld_index] == 2'b10 ? data_sram_rdata [23:16] :
-                       data_sram_rdata [31:24];
+                                                             data_sram_rdata [31:24];
 assign  ld_data_half = data_sram_addr_l[ld_index] == 2'b00 ? data_sram_rdata [15:0] : data_sram_rdata[31:16];
-assign  ld_data      = inst_ld_b[ld_index]  ? {{24{ld_data_byte[7]}},ld_data_byte} :
-                       inst_ld_bu[ld_index] ? {{24{1'b0}},ld_data_byte} :
+assign  ld_data      = inst_ld_b[ld_index]  ? {{24{ld_data_byte[7]}},ld_data_byte}  :
+                       inst_ld_bu[ld_index] ? {{24{1'b0}},ld_data_byte}             :
                        inst_ld_h[ld_index]  ? {{16{ld_data_half[15]}},ld_data_half} :
-                       inst_ld_hu[ld_index] ? {{16{1'b0}},ld_data_half} :
-                       data_sram_rdata;
+                       inst_ld_hu[ld_index] ? {{16{1'b0}},ld_data_half}             :
+                                              data_sram_rdata;
 //------------------------{ld_data}end-------------------------//
 
 //------------------------{ready_go}begin-------------------------//
@@ -213,13 +214,15 @@ assign  MEM_ex = MEM_slot_ex[0]| MEM_slot_ex[1];
 //------------------------{front_push}begin-------------------------//
 generate
     for(i = 0; i < ISSUE; i = i + 1) begin : gen_mem_front_data
-        assign  rf_wdata[i]               = res_from_mem[i] ? ld_data :// 或 ld_data[i]，非 load 槽可 0
+        assign  rf_wdata[i]               = res_from_mem[i] ? ld_data                : // 或 ld_data[i]，非 load 槽可 0
                                             inst_sc_w[i]    ? {31'b0, sc_success[i]} :
-                                            alu_result_with_rdct[i];
+                                                              alu_result_with_rdct[i];
+        //【优化】 单独把load给拿出来，防止dcache（load)->decode(b/jirl)->preIF(pc CE)
+        assign  mem_front_data_nonld[i]   = inst_sc_w[i] ? {31'b0, sc_success[i]} :
+                                            mem_we[i]    ? rkd_value[i]           :
+                                                           alu_result_with_rdct[i]; // is ld_w?
         assign  mem_front_data[i]         = res_from_mem[i] ? ld_data :
-                                            inst_sc_w[i]    ? {31'b0, sc_success[i]} :
-                                            mem_we[i]       ? rkd_value[i] :
-                                            alu_result_with_rdct[i];// is ld_w?
+                                                              mem_front_data_nonld[i];
         assign  mem_front_addr[i]         = rf_dest[i];
         // ((i != 0) & MEM_slot_ex[0]) 如果 slot0 对应异常，直接不前递，如果是 slot1 且 slot0 异常也不前递
         assign  mem_can_not_front_push[i] = ~rf_gr_we[i] | ~slot_valid_from_exe2[i] | need_stall_csr[i];

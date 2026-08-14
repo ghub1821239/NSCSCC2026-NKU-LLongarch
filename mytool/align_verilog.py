@@ -26,19 +26,21 @@ endings are preserved byte-for-byte):
   5. Module port lists are aligned as one block (direction/type/range/name).
 
 Usage:
-    # 默认格式化 IP/myCPU/*.v
-    python3 mytool/align_verilog.py
+    # 默认格式化 IP/myCPU/*.sv（从仓库根或 mytool/ 跑都可以）
+    python mytool/align_verilog.py
+    python align_verilog.py
 
     # 先看会改多少行，不写入
-    python3 mytool/align_verilog.py --dry-run
+    python mytool/align_verilog.py --dry-run
 
-    # 自定义范围
-    python3 mytool/align_verilog.py 'IP/myCPU/MEM.v' 'chip/soc_demo/nscscc-team/*.v'
+    # 自定义范围（相对仓库根，或绝对路径）
+    python mytool/align_verilog.py IP/myCPU/MEM.sv IP/myCPU/decode.sv
 
-Default pattern: IP/myCPU/*.v
+Default pattern: IP/myCPU/*.sv
 """
 
 import glob
+import os
 import re
 import sys
 
@@ -1184,13 +1186,32 @@ def process(data):
     return b'\n'.join(out)
 
 
+def repo_root():
+    return os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+
+def expand_pattern(pat, root):
+    """Resolve globs against the repo root, then cwd. Keep absolute paths as-is."""
+    if os.path.isabs(pat):
+        return glob.glob(pat)
+    found = glob.glob(os.path.join(root, pat))
+    if found:
+        return found
+    return glob.glob(pat)
+
+
 def main():
     args = [a for a in sys.argv[1:] if not a.startswith('--')]
     dry_run = '--dry-run' in sys.argv[1:]
-    patterns = args or ['IP/myCPU/*.v']
-    files = sorted({fn for pat in patterns for fn in glob.glob(pat)})
+    root = repo_root()
+    patterns = args or [os.path.join('IP', 'myCPU', '*.sv')]
+    files = sorted({os.path.normpath(fn)
+                    for pat in patterns
+                    for fn in expand_pattern(pat, root)})
     if not files:
         print('no files matched:', patterns)
+        print('cwd:', os.getcwd())
+        print('repo root:', root)
         return 1
 
     total = 0

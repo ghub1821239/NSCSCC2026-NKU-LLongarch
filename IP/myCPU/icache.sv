@@ -203,14 +203,14 @@ assign  tagv_way0_addr  = tagv_way0_code2 ? wb_index_r : tagv_way0_wea ? miss_in
 assign  tagv_way1_addr  = tagv_way1_code2 ? wb_index_r : tagv_way1_wea ? miss_index_r : index;
 // 写数据
 // TagV entry layout (21b BRAM): {2'b0, tag[17:0], V}
-assign  tagv_way0_dina  = (tagv_way0_wea & code0) ? 21'b0 :
-                          (tagv_way0_wea & code1) ? 21'b0 :
+assign  tagv_way0_dina  = (tagv_way0_wea & code0)   ? 21'b0 :
+                          (tagv_way0_wea & code1)   ? 21'b0 :
                           (tagv_way0_code2 & code2) ? 21'b0 :
-                          {2'b0, miss_tag_r, 1'b1};
-assign  tagv_way1_dina  = (tagv_way1_wea & code0) ? 21'b0 :
-                          (tagv_way1_wea & code1) ? 21'b0 :
+                                                      {2'b0, miss_tag_r, 1'b1};
+assign  tagv_way1_dina  = (tagv_way1_wea & code0)   ? 21'b0 :
+                          (tagv_way1_wea & code1)   ? 21'b0 :
                           (tagv_way1_code2 & code2) ? 21'b0 :
-                          {2'b0, miss_tag_r, 1'b1};
+                                                      {2'b0, miss_tag_r, 1'b1};
 // TagV RAM：每路一张 1024x21 表，位[18:1]为标签，位[0]为有效位
 tagv_ram tagv_way0 (
     .clka  (clk                             ),
@@ -357,10 +357,10 @@ assign  refill_final_bank1  = refill_final_line[63:32];
 assign  refill_final_bank2  = refill_final_line[95:64];
 assign  refill_final_bank3  = refill_final_line[127:96];
 
-assign  uncache_return_line = (miss_offset_r[3:2] == 2'b00) ? {96'b0, ret_data} :
+assign  uncache_return_line = (miss_offset_r[3:2] == 2'b00) ? {96'b0, ret_data}        :
                               (miss_offset_r[3:2] == 2'b01) ? {64'b0, ret_data, 32'b0} :
                               (miss_offset_r[3:2] == 2'b10) ? {32'b0, ret_data, 64'b0} :
-                              {ret_data, 96'b0};
+                                                              {ret_data, 96'b0};
 
 //只有主状态机空闲、Write Buffer 也空闲时，才接收新的缓存请求。
 //assign can_accept_req   = (main_state == `MAIN_IDLE) && (wb_state == `WB_IDLE) && !wb_valid_r;
@@ -579,10 +579,10 @@ assign  data_ok    = ((main_state == `MAIN_LOOKUP) && lookup_read_hit && !cacop_
                      cacop_done;
 
 assign  rdata_line = ((main_state == `MAIN_LOOKUP) && lookup_read_hit && !cacop_this_cache_r)
-                     ? hit_line :
+                                                                                              ? hit_line                                                    :
                      ((main_state == `MAIN_REFILL) && ret_valid && ret_last)
-                     ? (uncache_valid_r ? uncache_return_line : refill_final_line) :
-                     128'b0;
+                                                                                              ? (uncache_valid_r ? uncache_return_line : refill_final_line) :
+                                                                                                128'b0;
 
 assign  rd_req     = (main_state == `MAIN_REFILL) && !rd_req_sent_r && !code0 && !code1;
 assign  rd_type    = 3'b010;

@@ -167,18 +167,18 @@ generate
         assign  EXE1_slot_valid[i] = EXE1_valid & slot_valid_from_decode[i];
         assign  div_mod[i]         = EXE1_slot_valid[i] & (alu_op[i][15] | alu_op[i][16] | alu_op[i][17] | alu_op[i][18]);
         alu u_alu(
-            .clk              (clk                ),
-            .resetn           (resetn             ),
-            .EXE1_ex          (EXE1_ex[i]         ),
-            .older_ex_for_exe1(older_ex_for_exe1  ),
-            .EXE1_slot_valid  (EXE1_slot_valid[i] ),
-            .EXE1_need_cancel (EXE1_need_cancel   ),
-            .alu_op           (alu_op[i]          ),
-            .alu_src1         (alu_src1[i]        ),
-            .alu_src2         (alu_src2[i]        ),
-            .alu_result       (alu_result[i]      ),
-            .add_result       (mem_vaddr[i]       ),
-            .divide_ready_go  (divide_ready_go[i] )
+            .clk               (clk                ),
+            .resetn            (resetn             ),
+            .EXE1_ex           (EXE1_ex[i]         ),
+            .older_ex_for_exe1 (older_ex_for_exe1  ),
+            .EXE1_slot_valid   (EXE1_slot_valid[i] ),
+            .EXE1_need_cancel  (EXE1_need_cancel   ),
+            .alu_op            (alu_op[i]          ),
+            .alu_src1          (alu_src1[i]        ),
+            .alu_src2          (alu_src2[i]        ),
+            .alu_result        (alu_result[i]      ),
+            .add_result        (mem_vaddr[i]       ),
+            .divide_ready_go   (divide_ready_go[i] )
         );
     end
 endgenerate
@@ -228,9 +228,9 @@ wire        data_wr        [ISSUE - 1 : 0];
 wire [31:0] st_data        [ISSUE - 1 : 0];
 generate
     for(i = 0; i < ISSUE; i = i + 1) begin : gen_st_data
-        assign  st_data[i]         = inst_st_b[i] ? {4{rkd_value[i][7:0]}} :
+        assign  st_data[i]         = inst_st_b[i] ? {4{rkd_value[i][7:0]}}  :
                                      inst_st_h[i] ? {2{rkd_value[i][15:0]}} :
-                                     rkd_value[i];
+                                                    rkd_value[i];
         assign  data_sram_wstrb[i] = (
                                         mem_we[i] ? (
                                             inst_st_b[i] ? (
@@ -253,16 +253,16 @@ generate
                                     );
         assign  data_sram_size[i]  = inst_st_b[i] ? 2'b00 :
                                      inst_st_h[i] ? 2'b01 :
-                                     2'b10;
-        assign  data_sram_addr[i]  = (csr_CRMD_DA == 1 & csr_CRMD_PG == 0)  | (inst_cacop[i] & cache_code[i][4:3] == 2'b00                                                          | inst_cacop[i] & cache_code[i][4:3] == 2'b01) ? mem_vaddr[i] :
-                                     ((csr_CRMD_DA == 0 & csr_CRMD_PG == 1) | (inst_cacop[i] & cache_code[i][4:3] == 2'b10)) & dmw_found1[i]  ? {dmw_pseg1[i],mem_vaddr[i][28:0]} :
-                                     ((csr_CRMD_DA == 0 & csr_CRMD_PG == 1) | (inst_cacop[i] & cache_code[i][4:3] == 2'b10)) & ~dmw_found1[i] ? tlb_paddr[i] :                     
-                                     32'b0;
+                                                    2'b10;
+        assign  data_sram_addr[i]  = (csr_CRMD_DA == 1 & csr_CRMD_PG == 0)  | (inst_cacop[i] & cache_code[i][4:3] == 2'b00                                                          | inst_cacop[i] & cache_code[i][4:3] == 2'b01) ? mem_vaddr[i]                      :
+                                     ((csr_CRMD_DA == 0 & csr_CRMD_PG == 1) | (inst_cacop[i] & cache_code[i][4:3] == 2'b10)) & dmw_found1[i]                                                                                       ? {dmw_pseg1[i],mem_vaddr[i][28:0]} :
+                                     ((csr_CRMD_DA == 0 & csr_CRMD_PG == 1) | (inst_cacop[i] & cache_code[i][4:3] == 2'b10)) & ~dmw_found1[i]                                                                                      ? tlb_paddr[i]                      :                     
+                                                                                                                                                                                                                                     32'b0;
         assign  data_sram_wdata[i] = st_data[i];
-        assign  data_mat[i]        = (csr_CRMD_DA == 1 & csr_CRMD_PG == 0) ? csr_CRMD_DATM :
-                                     (csr_CRMD_DA == 0 & csr_CRMD_PG == 1) &  dmw_found1[i]  ? dmw_mat1[i] :
-                                     (csr_CRMD_DA == 0 & csr_CRMD_PG == 1) & ~dmw_found1[i]  ?  s1_mat[i]:
-                                     2'b0;
+        assign  data_mat[i]        = (csr_CRMD_DA == 1 & csr_CRMD_PG == 0)                  ? csr_CRMD_DATM :
+                                     (csr_CRMD_DA == 0 & csr_CRMD_PG == 1) &  dmw_found1[i] ? dmw_mat1[i]   :
+                                     (csr_CRMD_DA == 0 & csr_CRMD_PG == 1) & ~dmw_found1[i] ? s1_mat[i]     :
+                                                                                              2'b0;
         assign  data_wr[i]         = mem_we[i];// ld:0 st:1
     end
 endgenerate
@@ -280,9 +280,9 @@ endgenerate
 wire [31:0] alu_result_with_rdct[ISSUE-1:0];
 generate 
     for(i = 0; i < ISSUE; i = i + 1) begin : gen_alu_result_with_rdct
-        assign  alu_result_with_rdct[i] = inst_rdcntvl_w[i] ? stable_counter[31:0] :
+        assign  alu_result_with_rdct[i] = inst_rdcntvl_w[i] ? stable_counter[31:0]  :
                                           inst_rdcntvh_w[i] ? stable_counter[63:32] : 
-                                          alu_result[i];
+                                                              alu_result[i];
     end
 endgenerate
 //------------------------{front_push}end-------------------------//
@@ -306,7 +306,7 @@ generate
                              (inst_syscall[i]   | inst_ertn[i]         | inst_break[i]           | ex_INE[i]             |
                               ex_tlb_reload0[i] | ex_tlb_reload1[i]    | ex_tlb_preif_unvalid[i] | ex_tlb_plv0[i]        |
                               ex_tlb_plv1[i]    | ex_tlb_ld_unvalid[i] | ex_tlb_st_unvalid[i]    | ex_tlb_page_modify[i] |
-                              has_int[i]        | ex_IPE[i]            | ex_ADEF[i]              | ex_ALE[i]);
+                              has_int[i]        | ex_IPE[i]            | ex_ADEF[i]              | ex_ALE[i]            );
     end
 endgenerate
 //------------------------{exp_front}end-------------------------//

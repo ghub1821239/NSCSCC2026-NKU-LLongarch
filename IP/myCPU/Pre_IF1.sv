@@ -68,7 +68,7 @@ wire   [31:0]          slot_pc   [ISSUE - 1 : 0];
 wire   [ISSUE - 1 : 0] slot_valid;
 wire   [31:0]          seq_PC     = slot_valid == 2'b11 ? pc + 8 :
                                     slot_valid == 2'b01 ? pc + 4 :
-                                    pc;
+                                                          pc;
 wire   [31:0]          next_PC;
 genvar                 i;
 /*
@@ -80,13 +80,13 @@ endgenerate
 */
 assign  slot_pc[0]     = pc;
 assign  slot_pc[1]     = pred_redirect0 ? pred_target0 : pc + 4;
-assign  slot_valid     = !preIF1_valid | preIF1_need_cancel? {ISSUE{1'b0}} :     
+assign  slot_valid     = !preIF1_valid | preIF1_need_cancel              ? {ISSUE{1'b0}}          :
                          preIF1_ex     | ~same_cacheline | uncache_fetch ? {1'b0,{ISSUE-1{1'b1}}} :
-                         {ISSUE{1'b1}};
+                                                                           {ISSUE{1'b1}};
 wire    same_cacheline = (slot_pc[0][31:ICACHE_OFFSET_W] == slot_pc[1][31:ICACHE_OFFSET_W]);//两条指令在同一个cacheline
-assign next_PC         = (slot_valid == 2'b11 && pred_redirect1) ? pred_target1 :
-                        pred_redirect0 ? (slot_valid == 2'b11 ? pred_target0 + 4 : pred_target0) :
-                        seq_PC;
+assign  next_PC        = (slot_valid == 2'b11 && pred_redirect1) ? pred_target1                                            :
+                         pred_redirect0                          ? (slot_valid == 2'b11 ? pred_target0 + 4 : pred_target0) :
+                                                                   seq_PC;
 
 always @(posedge clk) begin
     if (!resetn) begin
@@ -107,25 +107,25 @@ end
 wire        pred_redirect0 = (ras_query_hit[0] && (query_type[0] == TYPE_RET)) ||
                              (btb_query_hit[0] && (query_type[0] == TYPE_CALL || query_type[0] == TYPE_JUMP)) || 
                              (query_taken[0] && btb_query_hit[0] && (query_type[0] == TYPE_COND));
-wire [31:0] pred_target0   = (ras_query_hit[0] && (query_type[0] == TYPE_RET)) ? ras_query_target[0] :
+wire [31:0] pred_target0   = (ras_query_hit[0] && (query_type[0] == TYPE_RET))                                ? ras_query_target[0] :
                              (btb_query_hit[0] && (query_type[0] == TYPE_CALL || query_type[0] == TYPE_JUMP)) ? btb_query_target[0] :
-                             (query_taken[0] && btb_query_hit[0] && (query_type[0] == TYPE_COND)) ? btb_query_target[0] :
-                             32'b0; // 不会被用到
+                             (query_taken[0] && btb_query_hit[0] && (query_type[0] == TYPE_COND))             ? btb_query_target[0] :
+                                                                                                                32'b0; // 不会被用到
 
 wire        pred_redirect1 = (ras_query_hit[1] && (query_type[1] == TYPE_RET)) ||
                              (btb_query_hit[1] && (query_type[1] == TYPE_CALL || query_type[1] == TYPE_JUMP)) || 
                              (query_taken[1] && btb_query_hit[1] && (query_type[1] == TYPE_COND));
-wire [31:0] pred_target1   = (ras_query_hit[1] && (query_type[1] == TYPE_RET)) ? ras_query_target[1] :
+wire [31:0] pred_target1   = (ras_query_hit[1] && (query_type[1] == TYPE_RET))                                ? ras_query_target[1] :
                              (btb_query_hit[1] && (query_type[1] == TYPE_CALL || query_type[1] == TYPE_JUMP)) ? btb_query_target[1] :
-                             (query_taken[1] && btb_query_hit[1] && (query_type[1] == TYPE_COND)) ? btb_query_target[1] :
-                             32'b0; // 不会被用到
+                             (query_taken[1] && btb_query_hit[1] && (query_type[1] == TYPE_COND))             ? btb_query_target[1] :
+                                                                                                                32'b0; // 不会被用到
 //----------------------pred{end}-------------------------------------------------
 
 //------------------------{uncache}begin-------------------------//
-wire [1:0] inst_mat      = (csr_CRMD_DA  && !csr_CRMD_PG) ? csr_CRMD_DATF :
-                           (!csr_CRMD_DA &&  csr_CRMD_PG &&  dmw_found0[0]) ? dmw_mat0[0] :
-                           (!csr_CRMD_DA &&  csr_CRMD_PG && !dmw_found0[0]) ? s0_mat[0] :
-                           2'b0;
+wire [1:0] inst_mat      = (csr_CRMD_DA  && !csr_CRMD_PG)                   ? csr_CRMD_DATF :
+                           (!csr_CRMD_DA &&  csr_CRMD_PG &&  dmw_found0[0]) ? dmw_mat0[0]   :
+                           (!csr_CRMD_DA &&  csr_CRMD_PG && !dmw_found0[0]) ? s0_mat[0]     :
+                                                                              2'b0;
 wire       uncache_fetch = (inst_mat == 2'b00);//uncache只发一个
 //------------------------{uncache}end-------------------------//
 
