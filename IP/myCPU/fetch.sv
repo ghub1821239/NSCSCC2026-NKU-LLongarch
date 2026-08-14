@@ -122,7 +122,7 @@ wire    mem_ready       = (inst_resp_valid & req_to_dataok_trigger) | inst_line_
 
 assign  IF_ready_go     = (need_stall | IF_need_cancel) ? 1'b0 :
                           no_need_mem                   ? 1'b1 :
-                          mem_ready;
+                                                          mem_ready;
 //------------------------{ready_go}end-------------------------//
 
 always @(posedge clk) begin
@@ -143,10 +143,10 @@ wire [31:0]    inst_from_line[ISSUE - 1 : 0];//从line中拿到的inst
 wire [31:0]    inst_out      [ISSUE - 1 : 0];//从IF传递到ID的inst
 generate
     for (i = 0; i < ISSUE; i = i + 1) begin :gen_inst_out
-        assign  inst_from_line[i] = (pc[i][3:2] == 2'b00) ? inst_line_use[31:0]   :
-                                    (pc[i][3:2] == 2'b01) ? inst_line_use[63:32]  :
-                                    (pc[i][3:2] == 2'b10) ? inst_line_use[95:64]  :
-                                    inst_line_use[127:96];
+        assign  inst_from_line[i] = (pc[i][3:2] == 2'b00) ? inst_line_use[31:0]  :
+                                    (pc[i][3:2] == 2'b01) ? inst_line_use[63:32] :
+                                    (pc[i][3:2] == 2'b10) ? inst_line_use[95:64] :
+                                                            inst_line_use[127:96];
         assign  inst_out[i]       = (no_need_mem | ~slot_valid[i]) ? 32'b0 : inst_from_line[i];
         assign  IF_ID_bus[i]      = slot_valid[i] ? {
                                     slot_valid[i],

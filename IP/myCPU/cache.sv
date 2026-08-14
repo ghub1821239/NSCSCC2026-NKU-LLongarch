@@ -247,14 +247,14 @@ assign  tagv_way0_addr  = tagv_way0_code2 ? wb_index_r : tagv_way0_wea ? miss_in
 assign  tagv_way1_addr  = tagv_way1_code2 ? wb_index_r : tagv_way1_wea ? miss_index_r : index;
 // 写数据
 // TagV entry layout (21b BRAM): {2'b0, tag[17:0], V}
-assign  tagv_way0_dina  = (tagv_way0_wea & code0) ? 21'b0 :
-                          (tagv_way0_wea & code1) ? {2'b0, replace_tag_r, 1'b0} :
-                          (tagv_way0_code2 & code2) ? 21'b0 :
-                          {2'b0, miss_tag_r, 1'b1};
-assign  tagv_way1_dina  = (tagv_way1_wea & code0) ? 21'b0 :
-                          (tagv_way1_wea & code1) ? {2'b0, replace_tag_r, 1'b0} :
-                          (tagv_way1_code2 & code2) ? 21'b0 :
-                          {2'b0, miss_tag_r, 1'b1};
+assign  tagv_way0_dina  = (tagv_way0_wea & code0)   ? 21'b0                       :
+                          (tagv_way0_wea & code1)   ? {2'b0, replace_tag_r, 1'b0} :
+                          (tagv_way0_code2 & code2) ? 21'b0                       :
+                                                      {2'b0, miss_tag_r, 1'b1};
+assign  tagv_way1_dina  = (tagv_way1_wea & code0)   ? 21'b0                       :
+                          (tagv_way1_wea & code1)   ? {2'b0, replace_tag_r, 1'b0} :
+                          (tagv_way1_code2 & code2) ? 21'b0                       :
+                                                      {2'b0, miss_tag_r, 1'b1};
 // TagV RAM：每路一张 1024x21 表，位[18:1]为标签，位[0]为有效位
 tagv_ram tagv_way0 (
     .clka  (clk                             ),
@@ -279,21 +279,21 @@ tagv_ram tagv_way1 (
 
 //(refill_write && !replace_way_r):从 inst/data RAM 读回替换
 //(wb_write && !wb_way_r && (wb_bank_r == 2'b00) cache 命中下的st
-assign  data_way0_bank0_wea  = (refill_write && !cacop_this_cache_r && !replace_way_r)                ? 4'b1111 :
+assign  data_way0_bank0_wea  = (refill_write && !cacop_this_cache_r && !replace_way_r)                ? 4'b1111    :
                                (wb_write && !wb_way_r && (wb_bank_r == 2'b00) && !cacop_this_cache_r) ? wb_wstrb_r : 4'b0000;
-assign  data_way0_bank1_wea  = (refill_write && !cacop_this_cache_r && !replace_way_r)                ? 4'b1111 :
+assign  data_way0_bank1_wea  = (refill_write && !cacop_this_cache_r && !replace_way_r)                ? 4'b1111    :
                                (wb_write && !wb_way_r && (wb_bank_r == 2'b01) && !cacop_this_cache_r) ? wb_wstrb_r : 4'b0000;
-assign  data_way0_bank2_wea  = (refill_write && !cacop_this_cache_r && !replace_way_r)                ? 4'b1111 :
+assign  data_way0_bank2_wea  = (refill_write && !cacop_this_cache_r && !replace_way_r)                ? 4'b1111    :
                                (wb_write && !wb_way_r && (wb_bank_r == 2'b10) && !cacop_this_cache_r) ? wb_wstrb_r : 4'b0000;
-assign  data_way0_bank3_wea  = (refill_write && !cacop_this_cache_r && !replace_way_r)                ? 4'b1111 :
+assign  data_way0_bank3_wea  = (refill_write && !cacop_this_cache_r && !replace_way_r)                ? 4'b1111    :
                                (wb_write && !wb_way_r && (wb_bank_r == 2'b11) && !cacop_this_cache_r) ? wb_wstrb_r : 4'b0000;
-assign  data_way1_bank0_wea  = (refill_write && !cacop_this_cache_r &&  replace_way_r)                ? 4'b1111 :
+assign  data_way1_bank0_wea  = (refill_write && !cacop_this_cache_r &&  replace_way_r)                ? 4'b1111    :
                                (wb_write &&  wb_way_r && (wb_bank_r == 2'b00) && !cacop_this_cache_r) ? wb_wstrb_r : 4'b0000;
-assign  data_way1_bank1_wea  = (refill_write && !cacop_this_cache_r &&  replace_way_r)                ? 4'b1111 :
+assign  data_way1_bank1_wea  = (refill_write && !cacop_this_cache_r &&  replace_way_r)                ? 4'b1111    :
                                (wb_write &&  wb_way_r && (wb_bank_r == 2'b01) && !cacop_this_cache_r) ? wb_wstrb_r : 4'b0000;
-assign  data_way1_bank2_wea  = (refill_write && !cacop_this_cache_r &&  replace_way_r)                ? 4'b1111 :
+assign  data_way1_bank2_wea  = (refill_write && !cacop_this_cache_r &&  replace_way_r)                ? 4'b1111    :
                                (wb_write &&  wb_way_r && (wb_bank_r == 2'b10) && !cacop_this_cache_r) ? wb_wstrb_r : 4'b0000;
-assign  data_way1_bank3_wea  = (refill_write && !cacop_this_cache_r &&  replace_way_r)                ? 4'b1111 :
+assign  data_way1_bank3_wea  = (refill_write && !cacop_this_cache_r &&  replace_way_r)                ? 4'b1111    :
                                (wb_write &&  wb_way_r && (wb_bank_r == 2'b11) && !cacop_this_cache_r) ? wb_wstrb_r : 4'b0000;
 
 assign  data_way0_bank0_addr = (|data_way0_bank0_wea) ? ((refill_write && !replace_way_r) ? miss_index_r : wb_index_r) : index;
@@ -391,11 +391,11 @@ assign  way1_d                 = dirty_way1_r;
 assign  way0_word              = (req_offset_r[3:2] == 2'b00) ? data_way0_bank0_r :
                                  (req_offset_r[3:2] == 2'b01) ? data_way0_bank1_r :
                                  (req_offset_r[3:2] == 2'b10) ? data_way0_bank2_r :
-                                 data_way0_bank3_r;
+                                                                data_way0_bank3_r;
 assign  way1_word              = (req_offset_r[3:2] == 2'b00) ? data_way1_bank0_r :
                                  (req_offset_r[3:2] == 2'b01) ? data_way1_bank1_r :
                                  (req_offset_r[3:2] == 2'b10) ? data_way1_bank2_r :
-                                 data_way1_bank3_r;
+                                                                data_way1_bank3_r;
 
 assign  way0_hit               = req_valid_r && way0_v && (way0_tag == req_tag_r);
 assign  way1_hit               = req_valid_r && way1_v && (way1_tag == req_tag_r);
@@ -427,10 +427,10 @@ assign  refill_line_next       = ret_valid ? {(refill_cnt_r == 2'b11) ? ret_data
                                  (refill_cnt_r == 2'b01) ? ret_data : refill_buf_r[63:32],
                                  (refill_cnt_r == 2'b00) ? ret_data : refill_buf_r[31:0]}
                                  : refill_buf_r;
-assign  refill_word            = (miss_offset_r[3:2] == 2'b00) ? refill_line_next[31:0]   :
-                                 (miss_offset_r[3:2] == 2'b01) ? refill_line_next[63:32]  :
-                                 (miss_offset_r[3:2] == 2'b10) ? refill_line_next[95:64]  :
-                                 refill_line_next[127:96];
+assign  refill_word            = (miss_offset_r[3:2] == 2'b00) ? refill_line_next[31:0]  :
+                                 (miss_offset_r[3:2] == 2'b01) ? refill_line_next[63:32] :
+                                 (miss_offset_r[3:2] == 2'b10) ? refill_line_next[95:64] :
+                                                                 refill_line_next[127:96];
 assign  refill_merged_word     = (refill_word  & ~{{8{miss_wstrb_r[3]}}, {8{miss_wstrb_r[2]}}, {8{miss_wstrb_r[1]}}, {8{miss_wstrb_r[0]}}})
                                  | (miss_wdata_r &  {{8{miss_wstrb_r[3]}}, {8{miss_wstrb_r[2]}}, {8{miss_wstrb_r[1]}}, {8{miss_wstrb_r[0]}}});
 
