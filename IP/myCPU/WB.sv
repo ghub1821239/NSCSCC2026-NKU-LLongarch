@@ -32,7 +32,7 @@ module wb #(
     output wire [ 4:0]            WB_rf_dest            [ISSUE - 1 : 0],
     output wire                   need_stall_csr        [ISSUE - 1 : 0],
     // 写回级全注册 bypass tuple
-    output wire                   wb_front_valid          [ISSUE - 1 : 0],
+    output wire                   wb_front_valid        [ISSUE - 1 : 0],
     output wire [31:0]            wb_front_data         [ISSUE - 1 : 0],
     output wire [ 4:0]            wb_front_addr         [ISSUE - 1 : 0],
     // CSR读写接口

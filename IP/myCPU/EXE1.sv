@@ -36,6 +36,7 @@ module exe1 #(
   input  wire                      s1_v              [ISSUE - 1 : 0],
   input  wire [31:0]               csr_TLBEHI,
   //invtlb 
+  output wire                      invtlb_None_ex,//原来直接EXE1_need_cancel判定延迟比较大，这里直接写一个新的专门判定invtlb是否非异常
   output wire                      invtlb_valid,
   output wire [4:0]                invtlb_op,
   output wire                      invtlb_index,
@@ -169,19 +170,19 @@ generate
         assign  EXE1_slot_valid[i] = EXE1_valid & slot_valid_from_decode[i];
         assign  div_mod[i]         = EXE1_slot_valid[i] & (alu_op[i][15] | alu_op[i][16] | alu_op[i][17] | alu_op[i][18]);
         alu u_alu(
-            .clk               (clk                ),
-            .resetn            (resetn             ),
-            .EXE1_ex           (EXE1_ex[i]         ),
-            .ex_div_need_notice(ex_div_need_notice[i]),
-            .older_ex_for_exe1 (older_ex_for_exe1  ),
-            .EXE1_slot_valid   (EXE1_slot_valid[i] ),
-            .EXE1_need_cancel  (EXE1_need_cancel   ),
-            .alu_op            (alu_op[i]          ),
-            .alu_src1          (alu_src1[i]        ),
-            .alu_src2          (alu_src2[i]        ),
-            .alu_result        (alu_result[i]      ),
-            .add_result        (mem_vaddr[i]       ),
-            .divide_ready_go   (divide_ready_go[i] )
+            .clk                (clk                   ),
+            .resetn             (resetn                ),
+            .EXE1_ex            (EXE1_ex[i]            ),
+            .ex_div_need_notice (ex_div_need_notice[i] ),
+            .older_ex_for_exe1  (older_ex_for_exe1     ),
+            .EXE1_slot_valid    (EXE1_slot_valid[i]    ),
+            .EXE1_need_cancel   (EXE1_need_cancel      ),
+            .alu_op             (alu_op[i]             ),
+            .alu_src1           (alu_src1[i]           ),
+            .alu_src2           (alu_src2[i]           ),
+            .alu_result         (alu_result[i]         ),
+            .add_result         (mem_vaddr[i]          ),
+            .divide_ready_go    (divide_ready_go[i]    )
         );
     end
 endgenerate
@@ -194,8 +195,9 @@ wire   [10:0] TLBIDX_new_tlbsrch[ISSUE - 1 : 0];
 
 // [多发记得改]
 assign        invtlb_index       = (inst_invtlb[0] & ~ex_INE[0] & ~ex_IPE[0] & EXE1_slot_valid[0]) ? 1'b0 : 1'b1;
-assign        invtlb_valid       = ((inst_invtlb[0] & ~ex_INE[0] & ~ex_IPE[0] & EXE1_slot_valid[0]) |
-                                    (inst_invtlb[1]  & ~ex_INE[1] & ~ex_IPE[1] & EXE1_slot_valid[1])) & EXE1_valid & ~EXE1_need_cancel & ~older_ex_for_exe1;
+assign        invtlb_None_ex     = (inst_invtlb[0] & ~ex_INE[0] & ~ex_IPE[0] & EXE1_slot_valid[0]) |
+                                   (inst_invtlb[1] & ~ex_INE[1] & ~ex_IPE[1] & EXE1_slot_valid[1]);
+assign        invtlb_valid       = invtlb_None_ex & EXE1_valid & ~EXE1_need_cancel & ~older_ex_for_exe1;
 assign        invtlb_op          = invtlb_index == 1'b0 ? rf_dest[0] : rf_dest[1];
 assign        tlbinv_asid        = invtlb_index == 1'b0 ? alu_src1[0][9:0] : alu_src1[1][9:0];
 

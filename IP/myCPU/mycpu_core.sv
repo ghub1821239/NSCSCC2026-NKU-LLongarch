@@ -205,6 +205,7 @@ wire                        s1_v                  [ISSUE-1:0];
 
 // invtlb opcode（标量）
 wire                        invtlb_valid;
+wire                        invtlb_None_ex;
 wire                        invtlb_index;
 wire   [4:0]                invtlb_op;
 
@@ -212,7 +213,7 @@ genvar                      s1_asid_i;
 generate
     for(s1_asid_i = 0; s1_asid_i < ISSUE; s1_asid_i = s1_asid_i + 1) begin : gen_s1_asid
         // invtlb 当拍各 search 槽共用同一 ASID（同行无 mem）
-        assign  s1_asid[s1_asid_i] = invtlb_valid ? tlbinv_asid : s1_asid_without_invtlb;
+        assign  s1_asid[s1_asid_i] = invtlb_None_ex ? tlbinv_asid : s1_asid_without_invtlb;
     end
 endgenerate
 
@@ -417,7 +418,7 @@ wire   [31:0] front_push_br_rdata2   [ISSUE - 1 : 0];
 wire   [31:0] exe2_front_data        [ISSUE - 1 : 0];
 wire   [31:0] mem_front_data         [ISSUE - 1 : 0];
 wire   [31:0] mem_front_data_nonld   [ISSUE - 1 : 0];
-wire          wb_front_valid           [ISSUE - 1 : 0];
+wire          wb_front_valid         [ISSUE - 1 : 0];
 wire   [31:0] wb_front_data          [ISSUE - 1 : 0];
 wire   [ 4:0] exe2_front_addr        [ISSUE - 1 : 0];
 wire   [ 4:0] mem_front_addr         [ISSUE - 1 : 0];
@@ -439,8 +440,8 @@ generate
                                           & (mem_front_addr[0] == rf_raddr1[i])) ? mem_front_data_nonld[0] :
                                           (MEM_valid  & ~mem_can_not_front_push[1] & ~mem_need_stall_inst[1]
                                           & (mem_front_addr[1] == rf_raddr1[i])) ? mem_front_data_nonld[1] :
-                                      (WB_valid & wb_front_valid[0] & (wb_front_addr[0] == rf_raddr1[i])) ? wb_front_data[0] :
-                                      (WB_valid & wb_front_valid[1] & (wb_front_addr[1] == rf_raddr1[i])) ? wb_front_data[1] :
+                                          (WB_valid & wb_front_valid[0] & (wb_front_addr[0] == rf_raddr1[i])) ? wb_front_data[0] :
+                                          (WB_valid & wb_front_valid[1] & (wb_front_addr[1] == rf_raddr1[i])) ? wb_front_data[1] :
                                           rf_rdata1[i];
         assign  front_push_br_rdata2[i] =
                                           (rf_raddr2[i] == 5'b0) ? 32'b0 :
@@ -450,8 +451,8 @@ generate
                                           & (mem_front_addr[0] == rf_raddr2[i])) ? mem_front_data_nonld[0] :
                                           (MEM_valid  & ~mem_can_not_front_push[1] & ~mem_need_stall_inst[1]
                                           & (mem_front_addr[1] == rf_raddr2[i])) ? mem_front_data_nonld[1] :
-                                      (WB_valid & wb_front_valid[0] & (wb_front_addr[0] == rf_raddr2[i])) ? wb_front_data[0] :
-                                      (WB_valid & wb_front_valid[1] & (wb_front_addr[1] == rf_raddr2[i])) ? wb_front_data[1] :
+                                          (WB_valid & wb_front_valid[0] & (wb_front_addr[0] == rf_raddr2[i])) ? wb_front_data[0] :
+                                          (WB_valid & wb_front_valid[1] & (wb_front_addr[1] == rf_raddr2[i])) ? wb_front_data[1] :
                                           rf_rdata2[i];
 
         // 普通路径：CSR producer 已在注册的 wb_front_valid 中排除
@@ -461,8 +462,8 @@ generate
                                           (EXE2_valid & ~exe2_can_not_front_push[1] & (exe2_front_addr[1] == rf_raddr1[i])) ? exe2_front_data[1] :
                                           (MEM_valid  & ~mem_can_not_front_push[0]  & (mem_front_addr[0]  == rf_raddr1[i])) ? mem_front_data[0]  :
                                           (MEM_valid  & ~mem_can_not_front_push[1]  & (mem_front_addr[1]  == rf_raddr1[i])) ? mem_front_data[1]  :
-                                      (WB_valid & wb_front_valid[0] & (wb_front_addr[0] == rf_raddr1[i])) ? wb_front_data[0] :
-                                      (WB_valid & wb_front_valid[1] & (wb_front_addr[1] == rf_raddr1[i])) ? wb_front_data[1] :
+                                          (WB_valid & wb_front_valid[0] & (wb_front_addr[0] == rf_raddr1[i])) ? wb_front_data[0] :
+                                          (WB_valid & wb_front_valid[1] & (wb_front_addr[1] == rf_raddr1[i])) ? wb_front_data[1] :
                                           rf_rdata1[i];
         assign  front_push_rdata2[i]    =
                                           (rf_raddr2[i] == 5'b0) ? 32'b0 :
@@ -470,8 +471,8 @@ generate
                                           (EXE2_valid & ~exe2_can_not_front_push[1] & (exe2_front_addr[1] == rf_raddr2[i])) ? exe2_front_data[1] :
                                           (MEM_valid  & ~mem_can_not_front_push[0]  & (mem_front_addr[0]  == rf_raddr2[i])) ? mem_front_data[0]  :
                                           (MEM_valid  & ~mem_can_not_front_push[1]  & (mem_front_addr[1]  == rf_raddr2[i])) ? mem_front_data[1]  :
-                                      (WB_valid & wb_front_valid[0] & (wb_front_addr[0] == rf_raddr2[i])) ? wb_front_data[0] :
-                                      (WB_valid & wb_front_valid[1] & (wb_front_addr[1] == rf_raddr2[i])) ? wb_front_data[1] :
+                                          (WB_valid & wb_front_valid[0] & (wb_front_addr[0] == rf_raddr2[i])) ? wb_front_data[0] :
+                                          (WB_valid & wb_front_valid[1] & (wb_front_addr[1] == rf_raddr2[i])) ? wb_front_data[1] :
                                           rf_rdata2[i];
     end
 endgenerate 
@@ -1106,6 +1107,7 @@ exe1 #(
     .s1_v               (s1_v                ),
     .csr_TLBEHI         (csr_TLBEHI          ),
     //invtlb
+    .invtlb_None_ex     (invtlb_None_ex      ),
     .invtlb_valid       (invtlb_valid        ),
     .invtlb_index       (invtlb_index        ),
     .invtlb_op          (invtlb_op           ),
@@ -1255,7 +1257,7 @@ wb #(
     .WB_rf_dest             (WB_rf_dest             ),
     .need_stall_csr         (wb_need_stall_csr      ),
     //front_push
-    .wb_front_valid           (wb_front_valid           ),
+    .wb_front_valid         (wb_front_valid         ),
     .wb_front_data          (wb_front_data          ),
     .wb_front_addr          (wb_front_addr          ),
      //can_not_front_push

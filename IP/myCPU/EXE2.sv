@@ -271,18 +271,18 @@ assign  EXE2_ex = EXE2_slot_ex[0] | EXE2_slot_ex[1];
 //------------------------{ready_go}begin-------------------------//
 // 只有仍然有效的访存 owner 才需要等待请求握手。slot1 的年轻异常不能跳过
 // slot0 的访存；slot0 的年老异常则会杀掉 slot1 的访存。
-wire selected_mem_need_wait;
-assign selected_mem_need_wait = dram_hit_any & (res_from_mem[dram_index] | (mem_we[dram_index] & ~(inst_sc_w[dram_index] & ~sc_success))) &
-                                ~EXE2_slot_ex[dram_index] &
-                                ~(dram_index & EXE2_slot_ex[0]) &
-                                ~older_ex_for_exe2 &
-                                ~EXE2_need_cancel;
+wire    selected_mem_need_wait;
+assign  selected_mem_need_wait = dram_hit_any & (res_from_mem[dram_index] | (mem_we[dram_index] & ~(inst_sc_w[dram_index] & ~sc_success))) &
+                                 ~EXE2_slot_ex[dram_index] &
+                                 ~(dram_index & EXE2_slot_ex[0]) &
+                                 ~older_ex_for_exe2 &
+                                 ~EXE2_need_cancel;
 
 // cacop_valid 已包含相同的 owner 年龄/异常门控。不能使用聚合的 EXE2_ex
 // 旁路整个 bundle，否则年轻 slot 的异常会放过年老的 Store/CACOP。
-assign EXE2_ready_go = cacop_valid            ? cacop_done                          :
-                       selected_mem_need_wait ? (data_sram_req & data_sram_addr_ok) :
-                                                1'b1;//不需要等的直接放行(包括ex)
+assign  EXE2_ready_go          = cacop_valid            ? cacop_done                          :
+                                 selected_mem_need_wait ? (data_sram_req & data_sram_addr_ok) :
+                                                          1'b1; //不需要等的直接放行(包括ex)
 
 always @(posedge clk) begin
     if(!resetn)begin
