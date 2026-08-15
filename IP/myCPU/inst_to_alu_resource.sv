@@ -395,18 +395,50 @@ assign  src2_is_imm      = inst_slli_w |
                        
 //------------------------{one hot}end-------------------------//
 
+//------------------------{br类的剩去addr的复杂运算}begin-------------------------//
+wire fast_cond;
+wire fast_jirl;
+wire fast_b;
+wire fast_bl;
+
+assign fast_cond =  (inst[31:26] == 6'h16) |
+                    (inst[31:26] == 6'h17) |
+                    (inst[31:26] == 6'h18) |
+                    (inst[31:26] == 6'h19) |
+                    (inst[31:26] == 6'h1a) |
+                    (inst[31:26] == 6'h1b);
+assign fast_jirl =  (inst[31:26] == 6'h13);
+assign fast_b    =  (inst[31:26] == 6'h14);
+assign fast_bl   =  (inst[31:26] == 6'h15);
+
+
+// src1/2不会同时使用
+wire    src1_unused  = inst_b | inst_bl | inst_lu12i_w | inst_pcaddu12i_w;
+wire    src2_unused  = (src2_is_imm && !mem_we) | inst_b;
+wire       branch_fast_enable;
+wire [4:0] branch_fast_raddr1;
+wire [4:0] branch_fast_raddr2;
+wire [4:0] normal_raddr1;
+wire [4:0] normal_raddr2;
+assign branch_fast_enable = fast_cond | fast_jirl | fast_b | fast_bl;
+
+assign branch_fast_raddr1 = (fast_cond | fast_jirl) ? rj : 5'b0;
+
+assign branch_fast_raddr2 = fast_cond ? rd : 5'b0;
+
+assign  normal_raddr1    = src1_unused ? 5'b0 : rj;
+assign  normal_raddr2    = src2_unused   ? 5'b0 :
+                       src_reg_is_rd ? rd   :rk;
+assign rf_raddr1 = branch_fast_enable ? branch_fast_raddr1 : normal_raddr1;
+
+assign rf_raddr2 = branch_fast_enable ? branch_fast_raddr2 : normal_raddr2;
+//------------------------{br类的剩去addr的复杂运算}end-------------------------//
+
 //------------------------{summary}begin-------------------------//
 assign  dst_is_r1    = inst_bl;
 assign  res_from_mem = inst_ld_w | inst_ld_b | inst_ld_h | inst_ld_bu | inst_ld_hu | inst_ll_w;
 assign  mem_we       = inst_st_w | inst_st_b | inst_st_h | inst_sc_w;
 assign  rf_dest      = dst_is_r1 ? 5'd1 : (inst_rdcntid ? rj : rd);
-// src1/2不会同时使用
-wire    src1_unused  = inst_b | inst_bl | inst_lu12i_w | inst_pcaddu12i_w;
-wire    src2_unused  = (src2_is_imm && !mem_we) | inst_b;
-
-assign  rf_raddr1    = src1_unused ? 5'b0 : rj;
-assign  rf_raddr2    = src2_unused   ? 5'b0 :
-                       src_reg_is_rd ? rd   :rk;
 
 assign  rj_value     = rf_rdata1;
 assign  rkd_value    = rf_rdata2;
