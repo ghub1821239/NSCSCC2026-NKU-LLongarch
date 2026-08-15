@@ -181,6 +181,34 @@ assign  data_wr         = data_wr_b[dram_index];
 assign  cache_code      = cache_code_b[dram_index];
 //------------------------{mux 选择 dram signal}end-------------------------//
 
+//------------------------{读写req&addr_ok}begin-------------------------//
+reg  req_without_dataok;
+always @ (posedge clk)begin
+    if(!resetn)begin
+        req_without_dataok <= 1'b0;
+    end 
+    else if (data_sram_data_ok)begin
+        req_without_dataok <= 1'b0;
+    end
+    else if(data_sram_req & data_sram_addr_ok)begin
+        req_without_dataok <= 1'b1;
+    end
+end
+//------------------------{读写req&addr_ok}end-------------------------//
+
+//------------------------{dataRAM handshake}begin-------------------------//
+wire    EXE2_slot_ex [ISSUE - 1 : 0];
+assign  data_sram_req = dram_hit_any & (res_from_mem[dram_index] | mem_we[dram_index])
+                                     & ~req_without_dataok & MEM_allow_in & ~(inst_sc_w[dram_index] & ~sc_success)
+                                     & ~EXE2_slot_ex[dram_index] & ~(dram_index & EXE2_slot_ex[0]) & ~older_ex_for_exe2 & ~EXE2_need_cancel & EXE2_valid;
+assign  data_sram_wr  = |data_sram_wstrb;
+
+assign  cacop_valid   = EXE2_valid & inst_cacop[dram_index] & ~EXE2_slot_ex[dram_index] & ~older_ex_for_exe2 & slot_valid_from_exe1[dram_index] &
+                        (cache_code[4:3] == 2'b10 | csr_CRMD_PLV == 2'b00) & ~(dram_index & EXE2_slot_ex[0]) & ~EXE2_need_cancel; // 在 slot1 是 cacop slot0 不能异常
+assign  cacop_pc      = pc[dram_index] + 4;
+assign  idbar_pc      = pc[0] + 4;
+//------------------------{dataRAM handshake}end-------------------------//
+
 //------------------------{ll&sc}begin-------------------------//
 reg    [29:0] LLaddr;
 wire          sc_success;
@@ -209,21 +237,6 @@ assign  LLbit_wb    = ll_finish | sc_finish;
 assign  LLbit_wdata = ll_finish;  // LL置1写完后SC清零
 //------------------------{ll&sc}end-------------------------//\
 
-//------------------------{读写req&addr_ok}begin-------------------------//
-reg  req_without_dataok;
-always @ (posedge clk)begin
-    if(!resetn)begin
-        req_without_dataok <= 1'b0;
-    end 
-    else if (data_sram_data_ok)begin
-        req_without_dataok <= 1'b0;
-    end
-    else if(data_sram_req & data_sram_addr_ok)begin
-        req_without_dataok <= 1'b1;
-    end
-end
-//------------------------{读写req&addr_ok}end-------------------------//
-
 //------------------------{need_stall_inst}begins-------------------------//
 generate
     for(i = 0; i < ISSUE; i = i + 1) begin : gen_need_stall_inst
@@ -238,19 +251,6 @@ endgenerate
 assign  ibar_cancel = inst_ibar[0] & slot_valid_from_exe1[0] & EXE2_valid & ~older_ex_for_exe2 & ~flush;
 assign  dbar_cancel = inst_dbar[0] & slot_valid_from_exe1[0] & EXE2_valid & ~older_ex_for_exe2 & ~flush;
 //------------------------{i/dbar need cancel}end-------------------------//
-
-//------------------------{dataRAM handshake}begin-------------------------//
-wire    EXE2_slot_ex [ISSUE - 1 : 0];
-assign  data_sram_req = dram_hit_any & (res_from_mem[dram_index] | mem_we[dram_index])
-                                     & ~req_without_dataok & MEM_allow_in & ~(inst_sc_w[dram_index] & ~sc_success)
-                                     & ~EXE2_slot_ex[dram_index] & ~(dram_index & EXE2_slot_ex[0]) & ~older_ex_for_exe2 & ~EXE2_need_cancel & EXE2_valid;
-assign  data_sram_wr  = |data_sram_wstrb;
-
-assign  cacop_valid   = EXE2_valid & inst_cacop[dram_index] & ~EXE2_slot_ex[dram_index] & ~older_ex_for_exe2 & slot_valid_from_exe1[dram_index] &
-                        (cache_code[4:3] == 2'b10 | csr_CRMD_PLV == 2'b00) & ~(dram_index & EXE2_slot_ex[0]) & ~EXE2_need_cancel; // 在 slot1 是 cacop slot0 不能异常
-assign  cacop_pc      = pc[dram_index] + 4;
-assign  idbar_pc      = pc[0] + 4;
-//------------------------{dataRAM handshake}end-------------------------//
 
 //------------------------{front_push}begin-------------------------//
 generate

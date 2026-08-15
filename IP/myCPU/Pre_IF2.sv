@@ -144,6 +144,9 @@ assign  inst_sram_wdata              = 32'b0;
 //3. 为了防止多个req之后才响应dataok所以需要在一次req之后手动拉低
 
 //------------------------{instRAM handshake}end-------------------------//
+wire    slot0_has_ex    = ex_ADEF[0]              | ex_tlb_reload0[0] |
+                          ex_tlb_preif_unvalid[0] | ex_tlb_plv0[0]   ;
+
 wire    can_issue_inst = !req_without_dataok || inst_sram_data_ok;
 assign  inst_sram_req  = preIF2_valid & slot_valid[0]
                                       & ~slot0_has_ex
@@ -155,9 +158,6 @@ assign  inst_wr        = 1'b0;
 //------------------------{instRAM handshake}end-------------------------//
 
 //------------------------{ready_go}begin-------------------------//
-wire    slot0_has_ex    = ex_ADEF[0]              | ex_tlb_reload0[0] |
-                          ex_tlb_preif_unvalid[0] | ex_tlb_plv0[0]   ;
-
 assign  preIF2_ready_go = need_stall ? 1'b0 :
                           !slot_valid[0] ? 1'b1 :
                           slot0_has_ex   ? 1'b1 :
