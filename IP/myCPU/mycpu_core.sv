@@ -417,6 +417,7 @@ wire   [31:0] front_push_br_rdata2   [ISSUE - 1 : 0];
 wire   [31:0] exe2_front_data        [ISSUE - 1 : 0];
 wire   [31:0] mem_front_data         [ISSUE - 1 : 0];
 wire   [31:0] mem_front_data_nonld   [ISSUE - 1 : 0];
+wire          wb_front_valid           [ISSUE - 1 : 0];
 wire   [31:0] wb_front_data          [ISSUE - 1 : 0];
 wire   [ 4:0] exe2_front_addr        [ISSUE - 1 : 0];
 wire   [ 4:0] mem_front_addr         [ISSUE - 1 : 0];
@@ -438,10 +439,8 @@ generate
                                           & (mem_front_addr[0] == rf_raddr1[i])) ? mem_front_data_nonld[0] :
                                           (MEM_valid  & ~mem_can_not_front_push[1] & ~mem_need_stall_inst[1]
                                           & (mem_front_addr[1] == rf_raddr1[i])) ? mem_front_data_nonld[1] :
-                                          (WB_valid & ~flush & ~wb_can_not_front_push[0] & ~wb_need_stall_csr[0]
-                                          & (wb_front_addr[0] == rf_raddr1[i])) ? wb_front_data[0] :
-                                          (WB_valid & ~flush & ~wb_can_not_front_push[1] & ~wb_need_stall_csr[1]
-                                          & (wb_front_addr[1] == rf_raddr1[i])) ? wb_front_data[1] :
+                                      (WB_valid & wb_front_valid[0] & (wb_front_addr[0] == rf_raddr1[i])) ? wb_front_data[0] :
+                                      (WB_valid & wb_front_valid[1] & (wb_front_addr[1] == rf_raddr1[i])) ? wb_front_data[1] :
                                           rf_rdata1[i];
         assign  front_push_br_rdata2[i] =
                                           (rf_raddr2[i] == 5'b0) ? 32'b0 :
@@ -451,23 +450,19 @@ generate
                                           & (mem_front_addr[0] == rf_raddr2[i])) ? mem_front_data_nonld[0] :
                                           (MEM_valid  & ~mem_can_not_front_push[1] & ~mem_need_stall_inst[1]
                                           & (mem_front_addr[1] == rf_raddr2[i])) ? mem_front_data_nonld[1] :
-                                          (WB_valid & ~flush & ~wb_can_not_front_push[0] & ~wb_need_stall_csr[0]
-                                          & (wb_front_addr[0] == rf_raddr2[i])) ? wb_front_data[0] :
-                                          (WB_valid & ~flush & ~wb_can_not_front_push[1] & ~wb_need_stall_csr[1]
-                                          & (wb_front_addr[1] == rf_raddr2[i])) ? wb_front_data[1] :
+                                      (WB_valid & wb_front_valid[0] & (wb_front_addr[0] == rf_raddr2[i])) ? wb_front_data[0] :
+                                      (WB_valid & wb_front_valid[1] & (wb_front_addr[1] == rf_raddr2[i])) ? wb_front_data[1] :
                                           rf_rdata2[i];
 
-        // 普通路径：WB 前递必须挡 CSR（wb_front_data 不是 csr_rvalue）
+        // 普通路径：CSR producer 已在注册的 wb_front_valid 中排除
         assign  front_push_rdata1[i]    =
                                           (rf_raddr1[i] == 5'b0) ? 32'b0 :
                                           (EXE2_valid & ~exe2_can_not_front_push[0] & (exe2_front_addr[0] == rf_raddr1[i])) ? exe2_front_data[0] :
                                           (EXE2_valid & ~exe2_can_not_front_push[1] & (exe2_front_addr[1] == rf_raddr1[i])) ? exe2_front_data[1] :
                                           (MEM_valid  & ~mem_can_not_front_push[0]  & (mem_front_addr[0]  == rf_raddr1[i])) ? mem_front_data[0]  :
                                           (MEM_valid  & ~mem_can_not_front_push[1]  & (mem_front_addr[1]  == rf_raddr1[i])) ? mem_front_data[1]  :
-                                          (WB_valid & ~flush & ~wb_can_not_front_push[0] & ~wb_need_stall_csr[0]
-                                          & (wb_front_addr[0] == rf_raddr1[i])) ? wb_front_data[0] :
-                                          (WB_valid & ~flush & ~wb_can_not_front_push[1] & ~wb_need_stall_csr[1]
-                                          & (wb_front_addr[1] == rf_raddr1[i])) ? wb_front_data[1] :
+                                      (WB_valid & wb_front_valid[0] & (wb_front_addr[0] == rf_raddr1[i])) ? wb_front_data[0] :
+                                      (WB_valid & wb_front_valid[1] & (wb_front_addr[1] == rf_raddr1[i])) ? wb_front_data[1] :
                                           rf_rdata1[i];
         assign  front_push_rdata2[i]    =
                                           (rf_raddr2[i] == 5'b0) ? 32'b0 :
@@ -475,10 +470,8 @@ generate
                                           (EXE2_valid & ~exe2_can_not_front_push[1] & (exe2_front_addr[1] == rf_raddr2[i])) ? exe2_front_data[1] :
                                           (MEM_valid  & ~mem_can_not_front_push[0]  & (mem_front_addr[0]  == rf_raddr2[i])) ? mem_front_data[0]  :
                                           (MEM_valid  & ~mem_can_not_front_push[1]  & (mem_front_addr[1]  == rf_raddr2[i])) ? mem_front_data[1]  :
-                                          (WB_valid & ~flush & ~wb_can_not_front_push[0] & ~wb_need_stall_csr[0]
-                                          & (wb_front_addr[0] == rf_raddr2[i])) ? wb_front_data[0] :
-                                          (WB_valid & ~flush & ~wb_can_not_front_push[1] & ~wb_need_stall_csr[1]
-                                          & (wb_front_addr[1] == rf_raddr2[i])) ? wb_front_data[1] :
+                                      (WB_valid & wb_front_valid[0] & (wb_front_addr[0] == rf_raddr2[i])) ? wb_front_data[0] :
+                                      (WB_valid & wb_front_valid[1] & (wb_front_addr[1] == rf_raddr2[i])) ? wb_front_data[1] :
                                           rf_rdata2[i];
     end
 endgenerate 
@@ -720,11 +713,11 @@ assign        WB_need_cancel          = flush;
 localparam                                     preIF1_preIF2_slot0_bus_width = 144;
 localparam                                     preIF1_preIF2_bus_width       = 142;
 localparam                                     preIF2_IF_bus_width           = 106;
-localparam                                     IF_ID_bus_width               = 138;
+localparam                                     IF_ID_bus_width               = 148;
 localparam                                     ID_EXE1_bus_width             = 244; // +1: slot_valid
 localparam                                     EXE1_EXE2_bus_width           = 279; // +1: EXE1_ex
 localparam                                     EXE2_MEM_bus_width            = 199;
-localparam                                     MEM_WB_bus_width              = 222;
+localparam                                     MEM_WB_bus_width              = 223;
 
 wire       [preIF1_preIF2_slot0_bus_width-1:0] preIF1_preIF2_bus_slot0;
 wire       [preIF1_preIF2_bus_width-1:0]       preIF1_preIF2_bus            [ISSUE-1:1];
@@ -1262,6 +1255,7 @@ wb #(
     .WB_rf_dest             (WB_rf_dest             ),
     .need_stall_csr         (wb_need_stall_csr      ),
     //front_push
+    .wb_front_valid           (wb_front_valid           ),
     .wb_front_data          (wb_front_data          ),
     .wb_front_addr          (wb_front_addr          ),
      //can_not_front_push
