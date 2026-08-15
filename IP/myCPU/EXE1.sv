@@ -105,6 +105,8 @@ wire                     ex_ALE                [ISSUE - 1 : 0];
 wire                     has_int               [ISSUE - 1 : 0];
 
 wire                     EXE1_ex               [ISSUE - 1 : 0];
+// divider IP专用的ex
+wire                     ex_div_need_notice    [ISSUE - 1 : 0];
 
 // timer_inst
 wire                     inst_rdcntvl_w        [ISSUE - 1 : 0];
@@ -170,6 +172,7 @@ generate
             .clk               (clk                ),
             .resetn            (resetn             ),
             .EXE1_ex           (EXE1_ex[i]         ),
+            .ex_div_need_notice(ex_div_need_notice[i]),
             .older_ex_for_exe1 (older_ex_for_exe1  ),
             .EXE1_slot_valid   (EXE1_slot_valid[i] ),
             .EXE1_need_cancel  (EXE1_need_cancel   ),
@@ -348,7 +351,6 @@ assign EXE1_ready_go =  ex_other | ~div_mod | divide_ready_go;
 其他异常也类似，ex_other这些异常都是根据inst的opcode判断，不会被~div_mod屏蔽。
 其中inst_syscall | inst_ertn | inst_break | ex_INE等判断省去。
 */
-wire  ex_div_need_notice[ISSUE - 1 : 0];
 wire  EXE1_slot_ready_go[ISSUE-1:0];
 generate
     for(i = 0; i < ISSUE; i = i + 1) begin : gen_ex_div_need_notice

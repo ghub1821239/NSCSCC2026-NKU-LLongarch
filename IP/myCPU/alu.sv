@@ -2,6 +2,7 @@ module alu(
   input  wire        clk,
   input  wire        resetn,
   input  wire        EXE1_ex,
+  input  wire        ex_div_need_notice,
   input  wire        older_ex_for_exe1,
   input  wire        EXE1_slot_valid,
   input  wire        EXE1_need_cancel,
@@ -123,7 +124,7 @@ reg           dividend_tvalid;
 reg           is_dividing;
 wire          div_ready_go;
 wire          divide_begin;
-assign        divide_begin               = (op_div | op_mod) & ~EXE1_need_cancel & ~EXE1_ex & ~older_ex_for_exe1 & ~is_dividing; // 已含 EXE1_valid（经 alu_op_m）
+assign        divide_begin               = (op_div | op_mod) & ~EXE1_need_cancel & ~ex_div_need_notice & ~older_ex_for_exe1 & ~is_dividing; // 已含 EXE1_valid（经 alu_op_m）
 wire          div_calculating_cancel     = (EXE1_need_cancel | older_ex_for_exe1) & is_dividing;
 wire          div_without_handshake      = dividend_tvalid & divisor_tvalid & ~dividend_tready & ~divisor_tready;
 reg           kill;//如果有flush掉的div等指令需要取消错误的返回
@@ -199,7 +200,7 @@ reg           dividend_tvalid_u;
 reg           is_dividing_u;
 wire          div_ready_go_u;
 wire          divide_begin_u;
-assign        divide_begin_u           = (op_divu | op_modu) & ~EXE1_need_cancel & ~EXE1_ex & ~older_ex_for_exe1 & ~is_dividing_u; // 已含 EXE1_valid（经 alu_op_m）
+assign        divide_begin_u           = (op_divu | op_modu) & ~EXE1_need_cancel & ~ex_div_need_notice & ~older_ex_for_exe1 & ~is_dividing_u; // 已含 EXE1_valid（经 alu_op_m）
 wire          div_calculating_cancel_u = (EXE1_need_cancel | older_ex_for_exe1) & is_dividing_u;
 wire          div_without_handshake_u  = dividend_tvalid_u & divisor_tvalid_u & ~dividend_tready_u & ~divisor_tready_u;
 reg           kill_u;
