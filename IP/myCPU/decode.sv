@@ -182,8 +182,8 @@ generate
                  query_type[gi]          ,
                  query_taken[gi]
                 } = bus_eff[gi];
-         assign rf_raddr1[gi] = pre_raddr1_eff[gi];
-         assign rf_raddr2[gi] = pre_raddr2_eff[gi];
+         assign  rf_raddr1[gi] = pre_raddr1_eff[gi];
+         assign  rf_raddr2[gi] = pre_raddr2_eff[gi];
     end 
 endgenerate
 
