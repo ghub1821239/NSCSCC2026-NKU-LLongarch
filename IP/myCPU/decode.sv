@@ -1,5 +1,5 @@
 module decode #(
-    parameter  inbus_width  = 138,
+    parameter  inbus_width  = 148,
     parameter  outbus_width = 244,
     parameter  ISSUE        = 2   
 )(
@@ -88,6 +88,8 @@ end
 wire        slot_valid          [ISSUE - 1 : 0];
 wire [31:0] pc                  [ISSUE - 1 : 0];
 wire [31:0] inst                [ISSUE - 1 : 0];
+wire [ 4:0] pre_raddr1_eff      [ISSUE - 1 : 0];
+wire [ 4:0] pre_raddr2_eff      [ISSUE - 1 : 0];
 wire        ex_ADEF             [ISSUE - 1 : 0];
 wire        ex_tlb_reload0      [ISSUE - 1 : 0];//tlb重填异常
 wire        ex_tlb_preif_unvalid[ISSUE - 1 : 0];//tlb的取指页无效
@@ -167,6 +169,8 @@ generate
                  slot_valid[gi]          ,
                  pc[gi]                  ,
                  inst[gi]                ,
+                 pre_raddr1_eff[gi]      ,
+                 pre_raddr2_eff[gi]      ,
                  ex_ADEF[gi]             ,
                  ex_tlb_reload0[gi]      ,
                  ex_tlb_preif_unvalid[gi],
@@ -178,6 +182,8 @@ generate
                  query_type[gi]          ,
                  query_taken[gi]
                 } = bus_eff[gi];
+         assign rf_raddr1[gi] = pre_raddr1_eff[gi];
+         assign rf_raddr2[gi] = pre_raddr2_eff[gi];
     end 
 endgenerate
 
@@ -246,8 +252,6 @@ generate
       .csr_CRMD_PLV         (csr_CRMD_PLV               ),
       .has_int              ((gi == 0) ? has_int : 1'b0 ),//只在slot0判中断
       //.id_fire              (id_fire & slot_valid[gi]), 
-      .rf_raddr1            (rf_raddr1[gi]              ),
-      .rf_raddr2            (rf_raddr2[gi]              ),
       .exe_payload          (exe_payload[gi]            ),
       .real_taken           (real_taken[gi]             ),
       .real_target          (real_target[gi]            ),
@@ -377,4 +381,3 @@ always @(posedge clk) begin
 end
 //------------------------{ready_go}end-------------------------//
 endmodule
-

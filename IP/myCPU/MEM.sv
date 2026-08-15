@@ -51,6 +51,8 @@ wire   [31:0]            rf_wdata            [ISSUE - 1 : 0];
 wire   [4:0]             rf_dest             [ISSUE - 1 : 0];
 wire                     rf_gr_we            [ISSUE - 1 : 0];
 wire                     rf_gr_we_ex         [ISSUE - 1 : 0];
+// MEM 阶段生成的下一拍 WB 能不能作为普通 GPR 前递源
+wire                     wb_front_valid_d      [ISSUE - 1 : 0];
 // ex enum
 wire                     inst_ertn           [ISSUE - 1 : 0];
 wire                     inst_syscall        [ISSUE - 1 : 0];
@@ -87,6 +89,8 @@ wire                     sc_success          [ISSUE - 1 : 0];
 
 //[todo 异常记得与上]
 wire                     inst_idle           [ISSUE - 1 : 0];
+
+wire                     MEM_slot_ex         [ISSUE - 1 : 0];
 
 wire   [31:0]            rkd_value           [ISSUE - 1 : 0];
 reg    [inbus_width-1:0] bus                 [ISSUE - 1 : 0];
@@ -157,10 +161,13 @@ generate
                                  ~ex_tlb_reload0[i] & ~ex_tlb_reload1[i]    & ~ex_tlb_preif_unvalid[i] & ~ex_tlb_plv0[i]        &
                                  ~ex_tlb_plv1[i]    & ~ex_tlb_ld_unvalid[i] & ~ex_tlb_st_unvalid[i]    & ~ex_tlb_page_modify[i] &
                                  ~ex_IPE[i];
+        assign  wb_front_valid_d[i] = MEM_valid & slot_valid_from_exe2[i] & rf_gr_we_ex[i] &
+                                    (rf_dest[i] != 5'b0) & ~need_stall_csr_b[i] &
+                                    ~((i != 0) & MEM_slot_ex[0]);// slot0/1 异常处理
         assign  MEM_WB_bus[i]  = {
                                   slot_valid_from_exe2[i],
                                   pc[i]                  , need_stall_csr_b[i]    , alu_result_with_rdct[i],
-                                  inst_csrrd[i]          , inst_csrwr[i]          , inst_csrxchg[i]        , inst_ertn[i]     , inst_syscall[i]     , inst_break[i]       , ex_INE[i]     , ex_IPE[i]            , ex_ADEF[i]  , ex_ALE[i], has_int[i], inst_rdcntvl_w[i], inst_rdcntvh_w[i], inst_rdcntid[i], csr_num[i], mem_we[i], rj_value[i], rkd_value[i], rf_dest[i], rf_wdata[i], rf_gr_we_ex[i],
+                                  inst_csrrd[i]          , inst_csrwr[i]          , inst_csrxchg[i]        , inst_ertn[i]     , inst_syscall[i]     , inst_break[i]       , ex_INE[i]     , ex_IPE[i]            , ex_ADEF[i]  , ex_ALE[i], has_int[i], inst_rdcntvl_w[i], inst_rdcntvh_w[i], inst_rdcntid[i], csr_num[i], mem_we[i], rj_value[i], rkd_value[i], rf_dest[i], rf_wdata[i], rf_gr_we_ex[i], wb_front_valid_d[i],
                                   inst_tlbsrch[i]        , TLBIDX_new_tlbsrch[i]  , inst_tlbrd[i]          , inst_tlbwr[i]    , inst_tlbfill[i]     , inst_invtlb[i]      ,//WB
                                   ex_tlb_reload0[i]      , ex_tlb_preif_unvalid[i], ex_tlb_plv0[i]         , ex_tlb_reload1[i], ex_tlb_ld_unvalid[i], ex_tlb_st_unvalid[i], ex_tlb_plv1[i], ex_tlb_page_modify[i], inst_idle[i]
                                  };
@@ -194,7 +201,6 @@ end
 //------------------------{exp_front}end-------------------------//
 
 //------------------------{front_push}begin-------------------------//
-wire  MEM_slot_ex[ISSUE - 1 : 0];
 generate
     for(i = 0; i < ISSUE; i = i + 1) begin : gen_MEM_slot_ex
         assign  MEM_slot_ex[i]     = MEM_valid & slot_valid_from_exe2[i] &
