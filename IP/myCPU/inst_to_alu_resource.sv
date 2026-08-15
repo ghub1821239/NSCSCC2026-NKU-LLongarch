@@ -19,8 +19,6 @@ module inst_to_alu_resource #(
     input  wire [1:0]              csr_CRMD_PLV,
     input  wire                    has_int,          // 建议仅 lane0 接真 has_int，lane1=0
 
-    output wire [4:0]              rf_raddr1,
-    output wire [4:0]              rf_raddr2,
     // br相关前递之后的数据（没有ld)
     input  wire [31:0]             br_rdata1,
     input  wire [31:0]             br_rdata2,
@@ -64,7 +62,6 @@ wire        res_from_mem;
 wire        dst_is_r1;
 
 wire        mem_we;
-wire        src_reg_is_rd;
 //wire [4: 0] rf_dest;
 wire [31:0] rj_value;
 wire [31:0] rkd_value;
@@ -81,13 +78,12 @@ wire [ 3:0] op_25_22;
 wire [ 1:0] op_21_20;
 wire [ 4:0] op_19_15;
 wire [ 1:0] op_25_24;
-wire [ 4:0] op_14_10;
 
 wire [ 4:0] rd;
 wire [ 4:0] rj;
 wire [ 4:0] rk;
 wire [13:0] csr_num;
-wire [ 4:0] hint;
+//wire [ 4:0] hint;
 
 
 wire [11:0] i12;
@@ -102,7 +98,6 @@ wire [ 3:0] op_21_20_d;
 wire [31:0] op_19_15_d;
 wire        op_25_d;
 wire [3:0]  op_25_24_d;
-wire [31:0] op_14_10_d;
 
 wire        inst_add_w;
 wire        inst_sub_w;
@@ -183,11 +178,11 @@ wire        inst_idle;
 // preld
 wire        inst_preld;
 
-wire        need_ui5;
+//wire        need_ui5;
 wire        need_ui12;
-wire        need_si12;
+//wire        need_si12;
 wire        need_si14;
-wire        need_si16;
+//wire        need_si16;
 wire        need_si20;
 wire        need_si26;
 wire        src2_is_4;
@@ -204,13 +199,12 @@ assign  op_21_20 = inst[21:20];
 assign  op_19_15 = inst[19:15];
 assign  op_25_d  = inst[25];
 assign  op_25_24 = inst[25:24];
-assign  op_14_10 = inst[14:10];
 
 assign  rd       = inst[ 4: 0];
 assign  rj       = inst[ 9: 5];
 assign  rk       = inst[14:10];
 assign  csr_num  = inst[23:10];
-assign  hint     = inst[ 4: 0];
+//assign  hint     = inst[ 4: 0];
 
 assign  i12      = inst[21:10];
 assign  i14      = inst[23:10];
@@ -223,7 +217,6 @@ decoder_4_16 u_dec1(.in(op_25_22 ), .out(op_25_22_d ));
 decoder_2_4  u_dec2(.in(op_21_20 ), .out(op_21_20_d ));
 decoder_5_32 u_dec3(.in(op_19_15 ), .out(op_19_15_d ));
 decoder_2_4  u_dec4(.in(op_25_24 ), .out(op_25_24_d ));
-decoder_5_32 u_dec5(.in(op_14_10 ), .out(op_14_10_d ));
 //------------------------{Decode match}end-------------------------//
 
 //------------------------{one hot}begin-------------------------//
@@ -338,14 +331,14 @@ assign  rf_gr_we         = ~inst_st_w    & ~inst_beq   & ~inst_bne   & ~inst_b  
                            ~inst_tlbsrch & ~inst_tlbrd & ~inst_tlbwr & ~inst_tlbfill & ~inst_invtlb &
                            ~inst_cacop   & ~inst_ibar  & ~inst_dbar  & ~inst_idle    & ~inst_preld;
 
-assign  need_ui5         = inst_slli_w | inst_srli_w | inst_srai_w;
+//assign  need_ui5         = inst_slli_w | inst_srli_w | inst_srai_w;
 assign  need_ui12        = inst_andi   | inst_ori    | inst_xori;
-assign  need_si12        = inst_addi_w | inst_ld_w  | inst_st_w  | inst_slti  | inst_sltui |
+/*assign  need_si12        = inst_addi_w | inst_ld_w  | inst_st_w  | inst_slti  | inst_sltui |
                            inst_ld_b   | inst_ld_h  | inst_ld_bu | inst_ld_hu | inst_st_b  |
-                           inst_st_h   | inst_cacop | inst_preld;
+                           inst_st_h   | inst_cacop | inst_preld;*/
 assign  need_si14        = inst_ll_w | inst_sc_w;
-assign  need_si16        = inst_jirl | inst_beq | inst_bne
-                                     | inst_blt | inst_bge | inst_bltu | inst_bgeu;
+/*assign  need_si16        = inst_jirl | inst_beq | inst_bne
+                                     | inst_blt | inst_bge | inst_bltu | inst_bgeu;*/
 assign  need_si20        = inst_lu12i_w | inst_pcaddu12i_w;
 assign  need_si26        = inst_b | inst_bl;
 assign  src2_is_4        = inst_jirl | inst_bl;
@@ -361,9 +354,6 @@ assign  br_offs          = need_si26 ? {{ 4{i26[25]}}, i26[25:0], 2'b0} :
                                        {{14{i16[15]}}, i16[15:0], 2'b0} ;
 
 assign  jirl_offs        = {{14{i16[15]}}, i16[15:0], 2'b0};
-
-assign  src_reg_is_rd    = inst_beq  | inst_bne  | inst_st_w  | inst_blt     | inst_bge  | inst_bltu | inst_bgeu |
-                           inst_st_b | inst_st_h | inst_csrwr | inst_csrxchg | inst_sc_w;
 
 assign  src1_is_pc       = inst_jirl | inst_bl | inst_pcaddu12i_w;
 
@@ -394,45 +384,6 @@ assign  src2_is_imm      = inst_slli_w |
                            inst_preld;
                        
 //------------------------{one hot}end-------------------------//
-
-//------------------------{br类的剩去addr的复杂运算}begin-------------------------//
-wire fast_cond;
-wire fast_jirl;
-wire fast_b;
-wire fast_bl;
-
-assign fast_cond =  (inst[31:26] == 6'h16) |
-                    (inst[31:26] == 6'h17) |
-                    (inst[31:26] == 6'h18) |
-                    (inst[31:26] == 6'h19) |
-                    (inst[31:26] == 6'h1a) |
-                    (inst[31:26] == 6'h1b);
-assign fast_jirl =  (inst[31:26] == 6'h13);
-assign fast_b    =  (inst[31:26] == 6'h14);
-assign fast_bl   =  (inst[31:26] == 6'h15);
-
-
-// src1/2不会同时使用
-wire    src1_unused  = inst_b | inst_bl | inst_lu12i_w | inst_pcaddu12i_w;
-wire    src2_unused  = (src2_is_imm && !mem_we) | inst_b;
-wire       branch_fast_enable;
-wire [4:0] branch_fast_raddr1;
-wire [4:0] branch_fast_raddr2;
-wire [4:0] normal_raddr1;
-wire [4:0] normal_raddr2;
-assign branch_fast_enable = fast_cond | fast_jirl | fast_b | fast_bl;
-
-assign branch_fast_raddr1 = (fast_cond | fast_jirl) ? rj : 5'b0;
-
-assign branch_fast_raddr2 = fast_cond ? rd : 5'b0;
-
-assign  normal_raddr1    = src1_unused ? 5'b0 : rj;
-assign  normal_raddr2    = src2_unused   ? 5'b0 :
-                       src_reg_is_rd ? rd   :rk;
-assign rf_raddr1 = branch_fast_enable ? branch_fast_raddr1 : normal_raddr1;
-
-assign rf_raddr2 = branch_fast_enable ? branch_fast_raddr2 : normal_raddr2;
-//------------------------{br类的剩去addr的复杂运算}end-------------------------//
 
 //------------------------{summary}begin-------------------------//
 assign  dst_is_r1    = inst_bl;

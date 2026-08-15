@@ -1,6 +1,6 @@
 `include "csr_def.vh"
 module wb #(
-    parameter  inbus_width = 222,
+    parameter  inbus_width = 223,
     parameter  ISSUE       = 2
 )(
     input  wire                   clk,
@@ -31,7 +31,8 @@ module wb #(
     // 数据冒险停顿相关控制
     output wire [ 4:0]            WB_rf_dest            [ISSUE - 1 : 0],
     output wire                   need_stall_csr        [ISSUE - 1 : 0],
-    // 写回级数据前推
+    // 写回级全注册 bypass tuple
+    output wire                   wb_front_valid          [ISSUE - 1 : 0],
     output wire [31:0]            wb_front_data         [ISSUE - 1 : 0],
     output wire [ 4:0]            wb_front_addr         [ISSUE - 1 : 0],
     // CSR读写接口
@@ -159,7 +160,7 @@ generate
         ex_ADEF[gi], ex_ALE[gi], has_int[gi],
         inst_rdcntvl_w[gi], inst_rdcntvh_w[gi], inst_rdcntid[gi], csr_num_wr[gi],
         mem_we[gi], rj_value[gi], rkd_value[gi],
-        rf_dest[gi], rf_alu_wdata[gi], rf_gr_we_ex[gi],
+        rf_dest[gi], rf_alu_wdata[gi], rf_gr_we_ex[gi], wb_front_valid[gi],
         inst_tlbsrch[gi], TLBIDX_new_tlbsrch[gi],
         inst_tlbrd[gi], inst_tlbwr[gi], inst_tlbfill[gi], inst_invtlb[gi],
         ex_tlb_reload0[gi], ex_tlb_preif_unvalid[gi], ex_tlb_plv0[gi],
@@ -438,9 +439,8 @@ generate
         for (gi = 0; gi < ISSUE; gi = gi + 1) begin : gen_fwd
             assign WB_rf_dest[gi]            = slot_fire[gi] ? rf_dest[gi] : 5'b0;
             assign need_stall_csr[gi]        = need_stall_csr_b[gi] & slot_fire[gi];
-            assign wb_front_addr[gi]         = slot_fire[gi] ? rf_dest[gi] : 5'b0;
-            //【优化】本身csr就stall了到了wb又因为写后读保证了csr_rvalue写入之后decode可以拿到，所以就不需要纳入前递，因此这里没有使用rf_wdata
-            assign wb_front_data[gi]         = slot_fire[gi] ? rf_alu_wdata[gi]: 32'b0;
+            assign wb_front_addr[gi]         = rf_dest[gi];
+            assign wb_front_data[gi]         = rf_alu_wdata[gi];
             assign wb_can_not_front_push[gi] = ~rf_gr_we_ex[gi] | ~slot_fire[gi] | ex_slot[gi] | ~rf_we[gi];
         end
 endgenerate
