@@ -381,6 +381,28 @@ assign  older_ex_for_exe2 = MEM_ex | WB_ex;
 assign  older_ex_for_mem  = WB_ex;
 //------------------------{csr_ex_front}end-------------------------//
 
+//------------------------{cacop}begin-------------------------//
+wire   [31:0] inst_sram_addr_without_cacop;
+assign        inst_sram_addr               = (cacop_valid && cache_code[2:0] == 3'b0) ? data_sram_addr : inst_sram_addr_without_cacop;
+// cacop_need_cancel当出现了要清除 icache 的时候说明从 preIF1->EXE1 拿到的指令都是不可信的，需要重取
+// 和 ibar 这种纯血 cancel 不同，他不应该取消 exe2
+reg           cacop_need_cancel;
+always @(posedge clk)begin
+    if(!resetn)begin
+        cacop_need_cancel <= 1'b0;
+    end
+    else if(flush | older_ex_for_exe2)begin
+        cacop_need_cancel <= 1'b0;
+    end
+    else if(cacop_done)begin
+        cacop_need_cancel <= 1'b0;
+    end
+    else if (cacop_valid & cache_code[2:0] == 3'b0)begin
+        cacop_need_cancel <= 1'b1;
+    end
+end
+//------------------------{cacop}end-------------------------//
+
 //------------------------{front_push}begin-------------------------//
 wire          flush;
 wire   [31:0] flush_target;
@@ -673,28 +695,6 @@ assign  br_taken       = br_afterpred_taken_r;
 assign  br_target      = br_afterpred_target_r;
 assign  need_br_cancel = br_afterpred_taken_r;
 //------------------------{预测输出与跳转信号处理}end-------------------------//
-
-//------------------------{cacop}begin-------------------------//
-wire   [31:0] inst_sram_addr_without_cacop;
-assign        inst_sram_addr               = (cacop_valid && cache_code[2:0] == 3'b0) ? data_sram_addr : inst_sram_addr_without_cacop;
-// cacop_need_cancel当出现了要清除 icache 的时候说明从 preIF1->EXE1 拿到的指令都是不可信的，需要重取
-// 和 ibar 这种纯血 cancel 不同，他不应该取消 exe2
-reg           cacop_need_cancel;
-always @(posedge clk)begin
-    if(!resetn)begin
-        cacop_need_cancel <= 1'b0;
-    end
-    else if(flush | older_ex_for_exe2)begin
-        cacop_need_cancel <= 1'b0;
-    end
-    else if(cacop_done)begin
-        cacop_need_cancel <= 1'b0;
-    end
-    else if (cacop_valid & cache_code[2:0] == 3'b0)begin
-        cacop_need_cancel <= 1'b1;
-    end
-end
-//------------------------{cacop}end-------------------------//
 
 //------------------------{i/dbar need cancel}begins-------------------------//
 wire          ibar_cancel;
