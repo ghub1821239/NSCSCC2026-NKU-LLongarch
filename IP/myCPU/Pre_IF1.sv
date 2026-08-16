@@ -130,9 +130,11 @@ wire       uncache_fetch = (inst_mat == 2'b00);//uncache只发一个
 //------------------------{uncache}end-------------------------//
 
 //------------------------{branch prediction}begin------------------//
-assign  query_valid[0] = preIF1_valid & ~preIF1_need_cancel;//preIF1_valid表示指令有效
+//【优·EXP11 查表的可以不用cancel信号取消，减少前递】
+assign  query_valid[0] = preIF1_valid;//preIF1_valid表示指令有效
 assign  query_pc[0]    = slot_pc[0];          //拿pc
-assign  query_valid[1] = preIF1_valid & ~preIF1_need_cancel & same_cacheline & ~uncache_fetch & ~preIF1_ex;//preIF1_valid表示指令有效
+//【优·EXP11 查表的可以不用cancel信号取消，减少前递】
+assign  query_valid[1] = preIF1_valid & same_cacheline & ~uncache_fetch & ~preIF1_ex;//preIF1_valid表示指令有效
 assign  query_pc[1]    = slot_pc[1];          //拿pc
 //------------------------{branch prediction}end------------------//
 
@@ -167,7 +169,8 @@ generate
     end
 endgenerate
 wire   [31:0] tlb_paddr   [ISSUE - 1 : 0];
-assign        tlb_inst_req = preIF1_valid && !preIF1_need_cancel && !csr_CRMD_DA &&  csr_CRMD_PG && !dmw_found0[0];
+//【优·EXP11 查表的可以不用cancel信号取消，减少前递】
+assign        tlb_inst_req = preIF1_valid && !csr_CRMD_DA &&  csr_CRMD_PG && !dmw_found0[0];
 generate
     for (i = 0;i < ISSUE;i = i + 1) begin : gen_tlb_paddr
         assign  tlb_paddr[i] = (s0_ps[i] == 6'd21) ? {s0_ppn[i][19:9], slot_pc[i][20:0]}// 4MB页
