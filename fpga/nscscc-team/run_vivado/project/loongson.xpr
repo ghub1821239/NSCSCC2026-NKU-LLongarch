@@ -518,6 +518,11 @@
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
+      <File Path="$PPRDIR/../../testbench/ipc_profile_monitor.sv">
+        <FileInfo>
+          <Attr Name="UsedIn" Val="simulation"/>
+        </FileInfo>
+      </File>
       <File Path="$PPRDIR/../../testbench/mycpu_tb.sv">
         <FileInfo>
           <Attr Name="UsedIn" Val="synthesis"/>

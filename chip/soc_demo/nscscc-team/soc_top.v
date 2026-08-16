@@ -93,6 +93,7 @@ module soc_top #(parameter SIMULATION=1'b0)
 );
 
 wire [31:0] num_data;
+wire [31:0] confreg_num_data;
 wire resetn_vio;
 wire resetn;
 wire [7:0] switch_vio;
@@ -129,6 +130,36 @@ wire [31:0] debug_wb_pc;
 wire [3 :0] debug_wb_rf_wen;
 wire [4 :0] debug_wb_rf_wnum;
 wire [31:0] debug_wb_rf_wdata;
+reg         perf_done_sticky;
+reg  [1:0] perf_done_sync;
+wire        perf_test_end = (debug_wb_pc == 32'h1c000200) |
+                            perf_done_sync[1];
+wire [383:0] perf_counters;
+
+// C0~CB 复用现有 num_data VIO probe，避免新增 384bit VIO。
+reg [31:0] perf_counter_read_data;
+always @(*) begin
+    case (switch_vio[3:0])
+        4'h0: perf_counter_read_data = perf_counters[0*32 +: 32];
+        4'h1: perf_counter_read_data = perf_counters[1*32 +: 32];
+        4'h2: perf_counter_read_data = perf_counters[2*32 +: 32];
+        4'h3: perf_counter_read_data = perf_counters[3*32 +: 32];
+        4'h4: perf_counter_read_data = perf_counters[4*32 +: 32];
+        4'h5: perf_counter_read_data = perf_counters[5*32 +: 32];
+        4'h6: perf_counter_read_data = perf_counters[6*32 +: 32];
+        4'h7: perf_counter_read_data = perf_counters[7*32 +: 32];
+        4'h8: perf_counter_read_data = perf_counters[8*32 +: 32];
+        4'h9: perf_counter_read_data = perf_counters[9*32 +: 32];
+        4'hA: perf_counter_read_data = perf_counters[10*32 +: 32];
+        4'hB: perf_counter_read_data = perf_counters[11*32 +: 32];
+        default: perf_counter_read_data = 32'b0;
+    endcase
+end
+
+wire perf_counter_read_enable = (switch_vio[7:4] == 4'hC) &
+                                (switch_vio[3:0] <= 4'hB);
+assign num_data = perf_counter_read_enable ? perf_counter_read_data :
+                                             confreg_num_data;
 
 //clk and resetn
 reg clk_91m;
@@ -170,6 +201,21 @@ end
 assign ddr_status_vio = {sys_resetn_vio_sync[1],
                          ddr_calib_vio_sync[1],
                          clock_pll_locked_vio_sync[1]};
+
+// 性能程序先发布 led_rg0 完成标志；用它冻结 counter，排除结果服务循环。
+always @(posedge sys_clk) begin
+    if (!sys_resetn)
+        perf_done_sticky <= 1'b0;
+    else if (|led_rg0)
+        perf_done_sticky <= 1'b1;
+end
+
+always @(posedge cpu_clk) begin
+    if (!cpu_resetn)
+        perf_done_sync <= 2'b00;
+    else
+        perf_done_sync <= {perf_done_sync[0], perf_done_sticky};
+end
 
 generate if(SIMULATION && `SIMU_USE_PLL==0) begin: sim_clk
     //simulation clk.
@@ -601,7 +647,9 @@ core_top u_cpu(
     .debug0_wb_pc       (debug_wb_pc        ),
     .debug0_wb_rf_wen   (debug_wb_rf_wen    ),
     .debug0_wb_rf_wnum  (debug_wb_rf_wnum   ),
-    .debug0_wb_rf_wdata (debug_wb_rf_wdata  )
+    .debug0_wb_rf_wdata (debug_wb_rf_wdata  ),
+    .perf_test_end      (perf_test_end      ),
+    .perf_counters      (perf_counters      )
 );
 
 axi3_to_axi4_bridge #(
@@ -1060,7 +1108,7 @@ confreg #(.SIMULATION(SIMULATION)) u_confreg
     .led_rg1     ( led_rg1    ),  // o, 2      
     .num_csn     ( num_csn    ),  // o, 8      
     .num_a_g     ( num_a_g    ),  // o, 7
-    .num_data    ( num_data   ),  // o, 32      
+    .num_data    ( confreg_num_data),  // o, 32
     .switch      ( switch     ),  // i, 8     
     .btn_key_col ( btn_key_col),  // o, 4          
     .btn_key_row ( btn_key_row),  // i, 4           

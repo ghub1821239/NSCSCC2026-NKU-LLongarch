@@ -46,6 +46,9 @@ module mycpu_core #(
     output wire [ISSUE*4-1:0]  debug_commit_rf_wen,
     output wire [ISSUE*5-1:0]  debug_commit_rf_wnum,
     output wire [ISSUE*32-1:0] debug_commit_rf_wdata,
+    // read-only IPC profiling interface
+    input  wire                perf_test_end,
+    output wire [12*32-1:0]    perf_counters,
     //硬件中断输入
     input  wire [ 7:0]         hw_int_in
 );
@@ -799,6 +802,111 @@ wire       [EXE2_MEM_bus_width-1:0]            EXE2_MEM_bus                 [ISS
 wire       [MEM_WB_bus_width-1:0]              MEM_WB_bus                   [ISSUE-1:0];
 //------------------------{5-stage pipeline bus + inst ram control}end------------------------//
 
+//------------------------{IPC profile}begin-------------------------//
+// decode 只导出已有结果；所有事件先在这里打拍，再进入 32bit counter。
+wire [ISSUE-1:0] perf_slot_issue;
+wire             perf_pair_conflict_raw;
+wire             perf_id_fire_raw = ID_valid & ID_ready_go &
+                                    ~preIF_IF_ID_need_cancel & ID_allow_in;
+wire             perf_load_branch_stall_raw = rj_same_ld[0] | rj_same_ld[1] |
+                                                  rk_same_ld[0] | rk_same_ld[1];
+wire             perf_other_dependency_raw = src1_stall[0] | src1_stall[1] |
+                                                  src2_stall[0] | src2_stall[1];
+wire             perf_recoverable_load_branch_raw = ID_valid &
+                                                     perf_load_branch_stall_raw &
+                                                     ~perf_other_dependency_raw &
+                                                     EXE1_allow_in &
+                                                     ~ID_ready_go &
+                                                     ~preIF_IF_ID_need_cancel;
+wire             perf_dependency_stall_raw = ID_valid & ~ID_ready_go &
+                                              ~perf_recoverable_load_branch_raw;
+wire             perf_backend_stall_raw = ID_valid & ID_ready_go &
+                                           ~EXE1_allow_in;
+wire             perf_dcache_load_wait_raw = MEM_valid &
+                                              (mem_load_wait[0] | mem_load_wait[1]);
+
+// redirect 后，到新的 ID bundle 出现前，都算真正的 refill 空拍。
+reg              perf_redirect_window;
+wire             perf_redirect_penalty_raw = perf_redirect_window & ~ID_valid;
+wire             perf_frontend_starve_raw = ~ID_valid & ~perf_redirect_window;
+
+always @(posedge clk) begin
+    if (!resetn) begin
+        perf_redirect_window <= 1'b0;
+    end
+    else if (br_afterpred_taken) begin
+        perf_redirect_window <= 1'b1;
+    end
+    else if (ID_valid) begin
+        perf_redirect_window <= 1'b0;
+    end
+end
+
+reg              perf_cycle_event_r;
+reg [ISSUE-1:0]  perf_retired_event_r;
+reg [ISSUE-1:0]  perf_issue_event_r;
+reg              perf_recoverable_load_branch_event_r;
+reg              perf_dependency_stall_event_r;
+reg              perf_backend_stall_event_r;
+reg              perf_frontend_starve_event_r;
+reg              perf_pair_conflict_event_r;
+reg              perf_redirect_penalty_event_r;
+reg              perf_dcache_load_wait_event_r;
+
+always @(posedge clk) begin
+    if (!resetn) begin
+        perf_cycle_event_r                   <= 1'b0;
+        perf_retired_event_r                 <= {ISSUE{1'b0}};
+        perf_issue_event_r                   <= {ISSUE{1'b0}};
+        perf_recoverable_load_branch_event_r <= 1'b0;
+        perf_dependency_stall_event_r        <= 1'b0;
+        perf_backend_stall_event_r           <= 1'b0;
+        perf_frontend_starve_event_r         <= 1'b0;
+        perf_pair_conflict_event_r           <= 1'b0;
+        perf_redirect_penalty_event_r        <= 1'b0;
+        perf_dcache_load_wait_event_r        <= 1'b0;
+    end
+    else begin
+        perf_cycle_event_r                   <= 1'b1;
+        perf_retired_event_r                 <= debug_commit_valid;
+        perf_issue_event_r                   <= perf_slot_issue & {ISSUE{perf_id_fire_raw}};
+        perf_recoverable_load_branch_event_r <= perf_recoverable_load_branch_raw;
+        perf_dependency_stall_event_r        <= perf_dependency_stall_raw;
+        perf_backend_stall_event_r           <= perf_backend_stall_raw;
+        perf_frontend_starve_event_r         <= perf_frontend_starve_raw;
+        perf_pair_conflict_event_r           <= perf_pair_conflict_raw;
+        perf_redirect_penalty_event_r        <= perf_redirect_penalty_raw;
+        perf_dcache_load_wait_event_r        <= perf_dcache_load_wait_raw;
+    end
+end
+
+// test_end 只冻结 profiling，不反馈到 CPU。
+reg perf_frozen;
+always @(posedge clk) begin
+    if (!resetn)
+        perf_frozen <= 1'b0;
+    else if (perf_test_end)
+        perf_frozen <= 1'b1;
+end
+
+ipc_profile_counters u_ipc_profile_counters (
+    .clk                           (clk                                  ),
+    .resetn                        (resetn                               ),
+    .freeze                        (perf_frozen                          ),
+    .cycle_event                   (perf_cycle_event_r                   ),
+    .retired_event                 (perf_retired_event_r                 ),
+    .issue_event                   (perf_issue_event_r                   ),
+    .recoverable_load_branch_event (perf_recoverable_load_branch_event_r),
+    .dependency_stall_event        (perf_dependency_stall_event_r        ),
+    .backend_stall_event           (perf_backend_stall_event_r           ),
+    .frontend_starve_event         (perf_frontend_starve_event_r         ),
+    .pair_conflict_event           (perf_pair_conflict_event_r           ),
+    .redirect_penalty_event        (perf_redirect_penalty_event_r        ),
+    .dcache_load_wait_event        (perf_dcache_load_wait_event_r        ),
+    .counters                      (perf_counters                         )
+);
+//------------------------{IPC profile}end-------------------------//
+
 //------------------------{csr_regfile}begin-------------------------//
 wire   [13:0] csr_num;
 wire   [31:0] csr_rvalue;
@@ -1137,7 +1245,10 @@ decode #(
     //PLV
     .csr_CRMD_PLV        (csr_CRMD_PLV            ),
     //ID_can_accept_IF
-    .ID_can_accept_IF    (ID_can_accept_IF        )
+    .ID_can_accept_IF    (ID_can_accept_IF        ),
+    // read-only performance events
+    .perf_slot_issue     (perf_slot_issue         ),
+    .perf_pair_conflict  (perf_pair_conflict_raw  )
 );
 
 exe1 #(
@@ -1373,5 +1484,99 @@ wb #(
     .IDLE_stall             (IDLE_stall             )
 );
 //------------------------{5-stage pipeline instantiation}end-------------------------//
+
+endmodule
+
+// Counter bank is intentionally one-way: registered events in, read-only data out.
+`timescale 1ns/1ps
+module ipc_profile_counters (
+    input  wire          clk,
+    input  wire          resetn,
+    input  wire          freeze,
+    input  wire          cycle_event,
+    input  wire [1:0]    retired_event,
+    input  wire [1:0]    issue_event,
+    input  wire          recoverable_load_branch_event,
+    input  wire          dependency_stall_event,
+    input  wire          backend_stall_event,
+    input  wire          frontend_starve_event,
+    input  wire          pair_conflict_event,
+    input  wire          redirect_penalty_event,
+    input  wire          dcache_load_wait_event,
+    output wire [383:0]  counters
+);
+
+reg [31:0] cycle_count;
+reg [31:0] inst_retired_count;
+reg [31:0] issue_inst_count;
+reg [31:0] dual_issue_cycle;
+reg [31:0] single_issue_cycle;
+reg [31:0] recoverable_load_branch_cycle;
+reg [31:0] dependency_stall_cycle;
+reg [31:0] backend_stall_cycle;
+reg [31:0] frontend_starve_cycle;
+reg [31:0] pair_conflict_cycle;
+reg [31:0] redirect_penalty_cycle;
+reg [31:0] dcache_load_wait_cycle;
+
+always @(posedge clk) begin
+    if (!resetn) begin
+        cycle_count                   <= 32'b0;
+        inst_retired_count            <= 32'b0;
+        issue_inst_count              <= 32'b0;
+        dual_issue_cycle              <= 32'b0;
+        single_issue_cycle            <= 32'b0;
+        recoverable_load_branch_cycle <= 32'b0;
+        dependency_stall_cycle        <= 32'b0;
+        backend_stall_cycle           <= 32'b0;
+        frontend_starve_cycle         <= 32'b0;
+        pair_conflict_cycle           <= 32'b0;
+        redirect_penalty_cycle        <= 32'b0;
+        dcache_load_wait_cycle        <= 32'b0;
+    end
+    else if (!freeze) begin
+        cycle_count        <= cycle_count + {{31{1'b0}}, cycle_event};
+        inst_retired_count <= inst_retired_count +
+                              {{31{1'b0}}, retired_event[0]} +
+                              {{31{1'b0}}, retired_event[1]};
+        issue_inst_count   <= issue_inst_count +
+                              {{31{1'b0}}, issue_event[0]} +
+                              {{31{1'b0}}, issue_event[1]};
+        dual_issue_cycle   <= dual_issue_cycle +
+                              {{31{1'b0}}, (issue_event[0] & issue_event[1])};
+        single_issue_cycle <= single_issue_cycle +
+                              {{31{1'b0}}, (issue_event[0] ^ issue_event[1])};
+        recoverable_load_branch_cycle <= recoverable_load_branch_cycle +
+                                          {{31{1'b0}}, recoverable_load_branch_event};
+        dependency_stall_cycle <= dependency_stall_cycle +
+                                  {{31{1'b0}}, dependency_stall_event};
+        backend_stall_cycle <= backend_stall_cycle +
+                               {{31{1'b0}}, backend_stall_event};
+        frontend_starve_cycle <= frontend_starve_cycle +
+                                 {{31{1'b0}}, frontend_starve_event};
+        pair_conflict_cycle <= pair_conflict_cycle +
+                               {{31{1'b0}}, pair_conflict_event};
+        redirect_penalty_cycle <= redirect_penalty_cycle +
+                                  {{31{1'b0}}, redirect_penalty_event};
+        dcache_load_wait_cycle <= dcache_load_wait_cycle +
+                                  {{31{1'b0}}, dcache_load_wait_event};
+    end
+end
+
+// counter 0 is in the least-significant 32 bits.
+assign counters = {
+    dcache_load_wait_cycle,
+    redirect_penalty_cycle,
+    pair_conflict_cycle,
+    frontend_starve_cycle,
+    backend_stall_cycle,
+    dependency_stall_cycle,
+    recoverable_load_branch_cycle,
+    single_issue_cycle,
+    dual_issue_cycle,
+    issue_inst_count,
+    inst_retired_count,
+    cycle_count
+};
 
 endmodule

@@ -166,12 +166,23 @@ switch $test {
         set total_runs [expr {$benchmark_count * $runs_per_benchmark}]
         set perf_timeout_ms 30000
         set result_settle_ms 500
+        set counter_select_settle_ms 20
+        set perf_counter_names [list \
+            cycle_count inst_retired_count issue_inst_count \
+            dual_issue_cycle single_issue_cycle \
+            recoverable_load_branch_cycle dependency_stall_cycle \
+            backend_stall_cycle frontend_starve_cycle \
+            pair_conflict_cycle redirect_penalty_cycle \
+            dcache_load_wait_cycle]
 
         set selected_outfile [open "perf_vio.csv" w]
         puts $selected_outfile "correct_flag,soc_count,cpu_count"
         set runs_outfile [open "perf_vio_runs.csv" w]
-        puts $runs_outfile \
-            "benchmark_index,benchmark,run,switch,correct_flag,soc_count,cpu_count,valid,selected"
+        puts $runs_outfile [join [concat \
+            [list benchmark_index benchmark run switch correct_flag \
+                soc_count cpu_count] \
+            $perf_counter_names \
+            [list valid selected]] ","]
 
         for {set benchmark_number 1} {
             $benchmark_number <= $benchmark_count
@@ -212,6 +223,7 @@ switch $test {
 
                 set soc_count 0
                 set cpu_count 0
+                set perf_values [lrepeat [llength $perf_counter_names] 0]
                 if {$perf_status ne "timeout"} {
                     # The performance software currently publishes LED_RG0
                     # before writing CR0/CR1 and entering test_finish, where it
@@ -237,13 +249,37 @@ switch $test {
                     if {[scan $cpu_count_raw %x cpu_count] != 1} {
                         error "Invalid performance CPU count '$cpu_count_raw'"
                     }
+
+                    # C0~CB select the twelve frozen IPC counters through the
+                    # existing 32bit num_data VIO probe.
+                    set perf_values {}
+                    for {set counter_index 0} {
+                        $counter_index < [llength $perf_counter_names]
+                    } {incr counter_index} {
+                        set counter_selector [expr {0xC0 + $counter_index}]
+                        set_property OUTPUT_VALUE \
+                            [format %02X $counter_selector] $switch_probe
+                        commit_hw_vio $switch_probe
+                        after $counter_select_settle_ms
+                        refresh_hw_vio $vio
+                        set counter_raw \
+                            [get_property INPUT_VALUE $result_probe]
+                        if {[scan $counter_raw %x counter_value] != 1} {
+                            error [format \
+                                "Invalid IPC counter %s value '%s'" \
+                                [lindex $perf_counter_names $counter_index] \
+                                $counter_raw]
+                        }
+                        lappend perf_values $counter_value
+                    }
                 }
 
                 set run_valid [expr {
                     $correct_flag == 1 && $soc_count > 0 && $cpu_count > 0
                 }]
                 lappend run_records [list \
-                    $run_number $correct_flag $soc_count $cpu_count $run_valid]
+                    $run_number $correct_flag $soc_count $cpu_count \
+                    $run_valid $perf_values]
             }
 
             # A benchmark is repeatable only if both independent runs pass.
@@ -255,7 +291,8 @@ switch $test {
             set first_invalid_record {}
             foreach record $run_records {
                 lassign $record \
-                    run_number correct_flag soc_count cpu_count run_valid
+                    run_number correct_flag soc_count cpu_count run_valid \
+                    perf_values
                 if {!$run_valid} {
                     set benchmark_valid 0
                     if {$first_invalid_record eq ""} {
@@ -274,16 +311,25 @@ switch $test {
 
             lassign $selected_record \
                 selected_run selected_flag selected_soc selected_cpu \
-                selected_valid
+                selected_valid selected_perf_values
             foreach record $run_records {
                 lassign $record \
-                    run_number correct_flag soc_count cpu_count run_valid
-                puts $runs_outfile [format \
-                    "%d,%s,%d,%02X,%X,%08X,%08X,%s,%d" \
-                    $benchmark_number $benchmark $run_number $switch_value \
-                    $correct_flag $soc_count $cpu_count \
-                    [expr {$run_valid ? "pass" : "fail"}] \
-                    [expr {$run_number == $selected_run}]]
+                    run_number correct_flag soc_count cpu_count run_valid \
+                    perf_values
+                set perf_value_fields {}
+                foreach perf_value $perf_values {
+                    lappend perf_value_fields [format "%08X" $perf_value]
+                }
+                set run_fields [concat \
+                    [list $benchmark_number $benchmark $run_number \
+                        [format "%02X" $switch_value] \
+                        [format "%X" $correct_flag] \
+                        [format "%08X" $soc_count] \
+                        [format "%08X" $cpu_count]] \
+                    $perf_value_fields \
+                    [list [expr {$run_valid ? "pass" : "fail"}] \
+                        [expr {$run_number == $selected_run}]]]
+                puts $runs_outfile [join $run_fields ","]
             }
             flush $runs_outfile
 
@@ -294,7 +340,8 @@ switch $test {
             set run_summaries {}
             foreach record $run_records {
                 lassign $record \
-                    run_number correct_flag soc_count cpu_count run_valid
+                    run_number correct_flag soc_count cpu_count run_valid \
+                    perf_values
                 if {$run_valid} {
                     lappend run_summaries [format \
                         "r%d=PASS cpu=0x%08X" \

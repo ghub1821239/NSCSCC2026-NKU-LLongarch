@@ -52,7 +52,10 @@ module decode #(
     //PLV
     input  wire [1:0]              csr_CRMD_PLV,
     //ID_can_accept_IF
-    output wire                    ID_can_accept_IF
+    output wire                    ID_can_accept_IF,
+    // read-only performance events
+    output wire [ISSUE-1:0]        perf_slot_issue,
+    output wire                    perf_pair_conflict
 );
 wire                    id_fire         = ID_valid & ID_ready_go & ~ID_need_cancel & ID_allow_in;
 //------------------------{bus decode}begin-------------------------//
@@ -308,6 +311,10 @@ wire       soft_kill_slot1           = slot_valid[0] & slot_valid[1] & ~hard_kil
 wire       kill_slot1                = hard_kill_slot1 | soft_kill_slot1;
 //wire kill_slot1 = slot0_fetch_ex | RAW_s1_s0 | WAW_s1_s0 | struct_comflict | pred_not_neighbor_kill_s1 | pred_is_neighbor_kill_s1 | (is_br[0] & is_br[1]);//注意这里不要走双分支
 wire [1:0] slot_issue                = {slot_valid[1] & ~kill_slot1, slot_valid[0]};
+
+// 只把现有 issue 结果送去采样，不参与任何控制。
+assign     perf_slot_issue           = slot_issue;
+assign     perf_pair_conflict        = id_fire & slot_issue[0] & soft_kill_slot1;
 
 // slot0有异常，强制杀
 wire       hard_kill_no_br           = slot0_trap;
