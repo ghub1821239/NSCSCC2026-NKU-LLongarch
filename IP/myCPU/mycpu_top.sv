@@ -70,7 +70,6 @@ module core_top(
     output wire [ 9:0] debug_commit_rf_wnum,
     output wire [63:0] debug_commit_rf_wdata,
     // read-only IPC profiling interface
-    input  wire        perf_test_end,
     output wire [383:0] perf_counters
 );
 
@@ -209,7 +208,6 @@ mycpu_core u_mycpu_core(
     .debug_commit_rf_wen    (debug_commit_rf_wen    ),
     .debug_commit_rf_wnum   (debug_commit_rf_wnum   ),
     .debug_commit_rf_wdata  (debug_commit_rf_wdata  ),
-    .perf_test_end          (perf_test_end          ),
     .perf_counters          (perf_counters          ),
 
     .hw_int_in              (intrpt                 )

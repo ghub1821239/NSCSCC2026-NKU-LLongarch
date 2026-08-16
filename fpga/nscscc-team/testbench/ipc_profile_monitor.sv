@@ -33,8 +33,7 @@ always @(posedge clk) begin
     end
     else if (test_end && !printed) begin
         printed <= 1'b1;
-        // 仿真 test_end 立即冻结；硬件中 PC/UART sticky freeze 仍独立存在。
-        force tb_top.u_soc_top.u_cpu.u_mycpu_core.perf_frozen = 1'b1;
+        // 只打印；计数窗口由 benchmark 自己的两次 CPU-count marker 控制。
         #10;
         $display("==============================================================");
         $display("IPC profile: cycle                    = %0d", cycle_count);

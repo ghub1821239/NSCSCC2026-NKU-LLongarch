@@ -130,10 +130,6 @@ wire [31:0] debug_wb_pc;
 wire [3 :0] debug_wb_rf_wen;
 wire [4 :0] debug_wb_rf_wnum;
 wire [31:0] debug_wb_rf_wdata;
-reg         perf_done_sticky;
-reg  [1:0] perf_done_sync;
-wire        perf_test_end = (debug_wb_pc == 32'h1c000200) |
-                            perf_done_sync[1];
 wire [383:0] perf_counters;
 
 // C0~CB 复用现有 num_data VIO probe，避免新增 384bit VIO。
@@ -201,21 +197,6 @@ end
 assign ddr_status_vio = {sys_resetn_vio_sync[1],
                          ddr_calib_vio_sync[1],
                          clock_pll_locked_vio_sync[1]};
-
-// 性能程序先发布 led_rg0 完成标志；用它冻结 counter，排除结果服务循环。
-always @(posedge sys_clk) begin
-    if (!sys_resetn)
-        perf_done_sticky <= 1'b0;
-    else if (|led_rg0)
-        perf_done_sticky <= 1'b1;
-end
-
-always @(posedge cpu_clk) begin
-    if (!cpu_resetn)
-        perf_done_sync <= 2'b00;
-    else
-        perf_done_sync <= {perf_done_sync[0], perf_done_sticky};
-end
 
 generate if(SIMULATION && `SIMU_USE_PLL==0) begin: sim_clk
     //simulation clk.
@@ -648,7 +629,6 @@ core_top u_cpu(
     .debug0_wb_rf_wen   (debug_wb_rf_wen    ),
     .debug0_wb_rf_wnum  (debug_wb_rf_wnum   ),
     .debug0_wb_rf_wdata (debug_wb_rf_wdata  ),
-    .perf_test_end      (perf_test_end      ),
     .perf_counters      (perf_counters      )
 );
 

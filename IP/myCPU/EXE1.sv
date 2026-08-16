@@ -22,6 +22,8 @@ module exe1 #(
   input  wire                      EXE1_need_cancel,
   //stable counter
   input  wire [63:0]               stable_counter,
+  // read-only profiling marker: benchmark CPU-count rdcntvl.w has fired
+  output wire                      perf_cpu_count_marker,
   //tlb port s1
   output wire [18:0]               s1_vppn           [ISSUE - 1 : 0],
   output wire                      s1_va_bit12       [ISSUE - 1 : 0],
@@ -361,6 +363,17 @@ generate
     end
 endgenerate
 assign  EXE1_ready_go = EXE1_slot_ready_go[0] & EXE1_slot_ready_go[1];
+
+// The VIO allbench harness samples stable_counter at PC 0x1c000678 twice:
+// once before the benchmark body and once after it. Qualify the instruction
+// with the real EXE1 transfer so a downstream stall cannot create duplicates.
+assign perf_cpu_count_marker = EXE1_valid & EXE1_ready_go & EXE1_allow_in &
+                               ~EXE1_need_cancel &
+                               ((EXE1_slot_valid[0] & inst_rdcntvl_w[0] &
+                                 (pc[0] == 32'h1c000678)) |
+                                (EXE1_slot_valid[1] & inst_rdcntvl_w[1] &
+                                 (pc[1] == 32'h1c000678)));
+
 always @(posedge clk) begin
     if(!resetn)begin
         EXE1_valid <= 1'b0;

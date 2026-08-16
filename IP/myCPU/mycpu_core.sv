@@ -47,7 +47,6 @@ module mycpu_core #(
     output wire [ISSUE*5-1:0]  debug_commit_rf_wnum,
     output wire [ISSUE*32-1:0] debug_commit_rf_wdata,
     // read-only IPC profiling interface
-    input  wire                perf_test_end,
     output wire [12*32-1:0]    perf_counters,
     //硬件中断输入
     input  wire [ 7:0]         hw_int_in
@@ -824,6 +823,20 @@ wire             perf_backend_stall_raw = ID_valid & ID_ready_go &
                                            ~EXE1_allow_in;
 wire             perf_dcache_load_wait_raw = MEM_valid &
                                               (mem_load_wait[0] | mem_load_wait[1]);
+wire             perf_cpu_count_marker;
+
+// cpu_count is the difference between two executions of the marker rdcntvl.w.
+// Use those exact stable_counter sample edges as the profiling window.
+reg              perf_window_active;
+wire             perf_window_start = perf_cpu_count_marker &
+                                     ~perf_window_active;
+
+always @(posedge clk) begin
+    if (!resetn)
+        perf_window_active <= 1'b0;
+    else if (perf_cpu_count_marker)
+        perf_window_active <= ~perf_window_active;
+end
 
 // redirect 后，到新的 ID bundle 出现前，都算真正的 refill 空拍。
 reg              perf_redirect_window;
@@ -880,19 +893,11 @@ always @(posedge clk) begin
     end
 end
 
-// test_end 只冻结 profiling，不反馈到 CPU。
-reg perf_frozen;
-always @(posedge clk) begin
-    if (!resetn)
-        perf_frozen <= 1'b0;
-    else if (perf_test_end)
-        perf_frozen <= 1'b1;
-end
-
 ipc_profile_counters u_ipc_profile_counters (
     .clk                           (clk                                  ),
     .resetn                        (resetn                               ),
-    .freeze                        (perf_frozen                          ),
+    .clear                         (perf_window_start                    ),
+    .enable                        (perf_window_active                   ),
     .cycle_event                   (perf_cycle_event_r                   ),
     .retired_event                 (perf_retired_event_r                 ),
     .issue_event                   (perf_issue_event_r                   ),
@@ -1273,6 +1278,7 @@ exe1 #(
     .EXE1_need_cancel   (EXE1_need_cancel    ),
     //stable counter
     .stable_counter     (stable_counter      ),
+    .perf_cpu_count_marker(perf_cpu_count_marker),
     // search port 1 (for load/store the data)
     .s1_vppn            (s1_vppn             ),
     .s1_va_bit12        (s1_va_bit12         ),
@@ -1492,7 +1498,8 @@ endmodule
 module ipc_profile_counters (
     input  wire          clk,
     input  wire          resetn,
-    input  wire          freeze,
+    input  wire          clear,
+    input  wire          enable,
     input  wire          cycle_event,
     input  wire [1:0]    retired_event,
     input  wire [1:0]    issue_event,
@@ -1520,7 +1527,7 @@ reg [31:0] redirect_penalty_cycle;
 reg [31:0] dcache_load_wait_cycle;
 
 always @(posedge clk) begin
-    if (!resetn) begin
+    if (!resetn || clear) begin
         cycle_count                   <= 32'b0;
         inst_retired_count            <= 32'b0;
         issue_inst_count              <= 32'b0;
@@ -1534,7 +1541,7 @@ always @(posedge clk) begin
         redirect_penalty_cycle        <= 32'b0;
         dcache_load_wait_cycle        <= 32'b0;
     end
-    else if (!freeze) begin
+    else if (enable) begin
         cycle_count        <= cycle_count + {{31{1'b0}}, cycle_event};
         inst_retired_count <= inst_retired_count +
                               {{31{1'b0}}, retired_event[0]} +

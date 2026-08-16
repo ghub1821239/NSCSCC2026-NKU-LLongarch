@@ -4,7 +4,11 @@ module tb_ipc_profile_counters;
 
 reg         clk;
 reg         resetn;
-reg         freeze;
+reg         marker;
+reg         window_active;
+reg  [31:0] stable_counter;
+reg  [31:0] start_sample;
+reg  [31:0] stop_sample;
 reg         cycle_event;
 reg  [1:0]  retired_event;
 reg  [1:0]  issue_event;
@@ -29,11 +33,32 @@ wire [31:0] frontend_starve_cycle         = counters[8*32 +: 32];
 wire [31:0] pair_conflict_cycle           = counters[9*32 +: 32];
 wire [31:0] redirect_penalty_cycle        = counters[10*32 +: 32];
 wire [31:0] dcache_load_wait_cycle        = counters[11*32 +: 32];
+wire        clear = marker & ~window_active;
+wire        enable = window_active;
+
+always @(posedge clk) begin
+    if (!resetn) begin
+        window_active <= 1'b0;
+        stable_counter <= 32'b0;
+        start_sample   <= 32'b0;
+        stop_sample    <= 32'b0;
+    end
+    else begin
+        stable_counter <= stable_counter + 32'd1;
+        if (marker && !window_active)
+            start_sample <= stable_counter;
+        else if (marker && window_active)
+            stop_sample <= stable_counter;
+        if (marker)
+        window_active <= ~window_active;
+    end
+end
 
 ipc_profile_counters dut (
     .clk                           (clk                          ),
     .resetn                        (resetn                       ),
-    .freeze                        (freeze                       ),
+    .clear                         (clear                        ),
+    .enable                        (enable                       ),
     .cycle_event                   (cycle_event                  ),
     .retired_event                 (retired_event                ),
     .issue_event                   (issue_event                  ),
@@ -78,13 +103,31 @@ reg [31:0]  category_sum;
 initial begin
     clk         = 1'b0;
     resetn      = 1'b0;
-    freeze      = 1'b0;
+    marker      = 1'b0;
+    window_active = 1'b0;
+    stable_counter = 32'b0;
+    start_sample = 32'b0;
+    stop_sample = 32'b0;
     cycle_event = 1'b1;
     clear_events();
 
     repeat (2) @(posedge clk);
     @(negedge clk);
-    resetn       = 1'b1;
+    resetn        = 1'b1;
+    retired_event = 2'b11;
+    issue_event   = 2'b11;
+    repeat (100) count_one_cycle();
+    if (counters !== 384'b0) begin
+        $display("IPC PROFILE PRE-START HOLD TEST FAIL");
+        $fatal(1);
+    end
+
+    // First marker: clear and open the benchmark window.
+    @(negedge clk);
+    marker = 1'b1;
+    count_one_cycle();
+    @(negedge clk);
+    marker = 1'b0;
     retired_event = 2'b11;
     issue_event   = 2'b11;
     count_one_cycle();
@@ -120,7 +163,10 @@ initial begin
     @(negedge clk);
     clear_events();
     recoverable_load_branch_event = 1'b1;
+    marker = 1'b1;
     count_one_cycle();
+    @(negedge clk);
+    marker = 1'b0;
 
     named_category_sum = dual_issue_cycle + single_issue_cycle +
                          dependency_stall_cycle + backend_stall_cycle +
@@ -148,16 +194,44 @@ initial begin
                  dual_issue_cycle, single_issue_cycle);
         $finish;
     end
+    if (cycle_count !== (stop_sample - start_sample)) begin
+        $display("IPC PROFILE CPU-COUNT WINDOW MATCH TEST FAIL");
+        $fatal(1);
+    end
 
-    @(negedge clk);
-    freeze = 1'b1;
+    // The second marker edge above was the final counted CPU-count interval.
     retired_event = 2'b11;
     issue_event   = 2'b11;
     frozen_snapshot = counters;
-    repeat (3) count_one_cycle();
+    repeat (100) count_one_cycle();
 
     if (counters !== frozen_snapshot) begin
         $display("IPC PROFILE FREEZE TEST FAIL");
+        $fatal(1);
+    end
+
+    // A complete system reset must arm the next benchmark run from zero.
+    @(negedge clk);
+    resetn = 1'b0;
+    repeat (2) count_one_cycle();
+    @(negedge clk);
+    resetn = 1'b1;
+    repeat (2) count_one_cycle();
+    if (counters !== 384'b0) begin
+        $display("IPC PROFILE NEXT-RUN RESET TEST FAIL");
+        $fatal(1);
+    end
+
+    @(negedge clk);
+    marker = 1'b1;
+    count_one_cycle();
+    @(negedge clk);
+    marker = 1'b1;
+    count_one_cycle();
+    @(negedge clk);
+    marker = 1'b0;
+    if (cycle_count !== 32'd1) begin
+        $display("IPC PROFILE NEXT-RUN START TEST FAIL");
         $fatal(1);
     end
 
