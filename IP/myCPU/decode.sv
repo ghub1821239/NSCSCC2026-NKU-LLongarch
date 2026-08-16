@@ -54,6 +54,7 @@ module decode #(
     //ID_can_accept_IF
     output wire                    ID_can_accept_IF
 );
+wire                    id_fire         = ID_valid & ID_ready_go & ~ID_need_cancel & ID_allow_in;
 //------------------------{bus decode}begin-------------------------//
 reg     [inbus_width-1:0] bus         [ISSUE - 1 : 0];
 reg                       bus_has_inst;//bus中有未完成的IF的指令
@@ -121,6 +122,7 @@ wire                       packed_mode;
 wire                       create_hold_from_soft = id_fire & ~hold_valid & soft_kill_slot1 & slot_issue[0];//无hold指令，soft kill只发出slot0到后端，slot1住hold
 wire                       create_hold_from_tail = id_fire & hold_valid & bus_has_inst & slot_issue[0] & slot_issue[1] & bus1_valid & ~hard_kill_slot1;//重新拼包且双发成功，且原始包的slot1进hold
 wire                       pack_soft_keep_bus    = id_fire & hold_valid & slot_issue[0] & ~slot_issue[1] & soft_kill_slot1;//hold与下一条指令重新拼包后soft kill,则hold指令下一条指令留在bus
+wire                       consume_for_accept;
 
 wire                       consume_bus           = id_fire & bus_has_inst & ~pack_soft_keep_bus & (
                                                    //无hold指令并且发出slot0
@@ -128,13 +130,13 @@ wire                       consume_bus           = id_fire & bus_has_inst & ~pac
                                                    //重新拼包后next发出或者被hard丢弃
                                                    (hold_valid & (slot_issue[1] | hard_kill_slot1))
                                                    );
-wire                       accept_IF_in_bus      = IF_ID_valid & ID_allow_in & (~bus_has_inst | consume_bus);
+wire                       accept_IF_in_bus      = IF_ID_valid & ID_allow_in & (~bus_has_inst | consume_for_accept);
 wire   [inbus_width-1 : 0] hold_din              = create_hold_from_soft ? bus_eff[1] :
                                                    create_hold_from_tail ? bus[1]     :
                                                                            hold_bus;
 
 //output
-assign                     ID_can_accept_IF      = (~bus_has_inst | consume_bus) &
+assign                     ID_can_accept_IF      = (~bus_has_inst | consume_for_accept) &
                                                    ~(ID_need_cancel);
 
 always @(posedge clk) begin
@@ -190,7 +192,6 @@ wire  pred_is_neighbor  = slot_valid[0] & slot_valid[1] & (pc[1] == (pc[0] + 32'
 //------------------------{bus decode}end-------------------------//
 
 //------------------------{module}begin--------------------------//
-wire                    id_fire         = ID_valid & ID_ready_go & ~ID_need_cancel & ID_allow_in;
 
 wire [outbus_width-2:0] exe_payload    [ISSUE-1:0];
 wire                    real_taken     [ISSUE-1:0];
@@ -307,6 +308,23 @@ wire       soft_kill_slot1           = slot_valid[0] & slot_valid[1] & ~hard_kil
 wire       kill_slot1                = hard_kill_slot1 | soft_kill_slot1;
 //wire kill_slot1 = slot0_fetch_ex | RAW_s1_s0 | WAW_s1_s0 | struct_comflict | pred_not_neighbor_kill_s1 | pred_is_neighbor_kill_s1 | (is_br[0] & is_br[1]);//注意这里不要走双分支
 wire [1:0] slot_issue                = {slot_valid[1] & ~kill_slot1, slot_valid[0]};
+
+// slot0有异常，强制杀
+wire       hard_kill_no_br           = slot0_trap;
+// slot0是st/ld/cacop这种我们不让发
+wire       soft_kill_no_br           = slot_valid[0] & slot_valid[1] & ~hard_kill_no_br & (
+                                       RAW_s1_s0 | WAW_s1_s0 | struct_comflict | (is_br[0] & is_br[1]));
+// 以上两种都不是就可以发
+wire       slot_issue1_no_br         = slot_valid[1] & ~hard_kill_no_br & ~soft_kill_no_br;
+// hold_valid 时，effective slot0 来自 hold_bus；
+// slot0 发射，但 effective slot1（原 bus[0]）因 soft kill 未发射，
+// 因此原 bus 必须保留。
+wire       pack_keep_no_br           = id_fire & hold_valid & slot_issue[0] & ~slot_issue1_no_br & soft_kill_no_br;
+// bus这拍结束后能不能换成新包
+assign     consume_for_accept        = id_fire & bus_has_inst & ~pack_keep_no_br & (
+                                       (~hold_valid & slot_issue[0]) |
+                                       (hold_valid & (slot_issue1_no_br | hard_kill_no_br))
+                                       );
 //------------------------{issue}end-----------------------------//
 
 //------------------------{pred_update}begin--------------------------------------//
