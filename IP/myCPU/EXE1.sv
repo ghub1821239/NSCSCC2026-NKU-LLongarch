@@ -18,6 +18,9 @@ module exe1 #(
   //stall
   output wire [ 4:0]               EXE1_rf_dest      [1:0],
   output wire                      EXE1_rf_gr_we     [1:0],
+  output wire [31:0]               exe1_front_data   [1:0],
+  output wire                      exe1_can_not_front_push[1:0],
+  output wire                      exe1_need_stall   [1:0],
   //cancel control
   input  wire                      EXE1_need_cancel,
   //stable counter
@@ -39,6 +42,7 @@ module exe1 #(
   output wire                      invtlb_valid,
   output wire [4:0]                invtlb_op,
   output wire                      invtlb_index,
+  output wire                      invtlb_search,
   //CRMD PG DA
   input  wire                      csr_CRMD_DA,
   input  wire                      csr_CRMD_PG,
@@ -133,6 +137,10 @@ wire                     inst_sc_w             [1:0];
 wire                     inst_idle             [1:0];
 wire                     slot_valid_from_decode[1:0]; // 本槽是否发射有效指令（来自 ID bus）
 
+wire                     pair_byp_src1         [1:0];
+wire                     pair_byp_src2         [1:0];
+wire                     pair_byp_rkd          [1:0];
+
 genvar                   i;
 generate 
     for(i = 0; i < ISSUE; i = i + 1) begin : gen_bus
@@ -145,6 +153,9 @@ generate
             end
         end
         assign {slot_valid_from_decode[i],
+                pair_byp_src1[i]         ,
+                pair_byp_src2[i]         ,
+                pair_byp_rkd[i]          ,
                 pc[i]                    ,
                 rkd_value[i]             , alu_op[i]              , alu_src1[i]    , alu_src2[i]    , need_stall_inst[i], need_stall_csr[i], inst_st_b[i], inst_st_h[i], inst_st_w[i], inst_ld_w[i],//EXE
                 res_from_mem[i]          , mem_we[i]              , inst_ld_b[i]   , inst_ld_h[i]   , inst_ld_bu [i]    , inst_ld_hu[i]    ,//MEM read and write
@@ -156,11 +167,46 @@ generate
     end
 endgenerate
 //------------------------{alu}begin-------------------------//
+//为了进除法多打一拍
+reg         older_ex_for_div;
+reg         exe1_need_cancel_for_div;
+reg         exe1_ex_for_div [1:0];
+
+always @(posedge clk) begin
+    if (!resetn) begin
+        older_ex_for_div         <= 1'b0;
+        exe1_need_cancel_for_div <= 1'b0;
+        exe1_ex_for_div[0]       <= 1'b0;
+        exe1_ex_for_div[1]       <= 1'b0;
+    end
+    else begin
+        older_ex_for_div         <= older_ex_for_exe1;
+        exe1_need_cancel_for_div <= EXE1_need_cancel;
+        exe1_ex_for_div[0]       <= EXE1_ex_inst[0];
+        exe1_ex_for_div[1]       <= EXE1_ex_inst[1];
+    end
+end
+
 wire [31:0] alu_result     [1:0];
+wire [31:0] alu_result_fast[1:0];
 wire [31:0] mem_vaddr      [1:0];
 wire        div_mod        [1:0];
 wire        divide_ready_go[1:0];
 wire        EXE1_slot_valid[1:0];
+
+wire [31:0] alu_src1_eff [1:0];
+wire [31:0] alu_src2_eff [1:0];
+wire [31:0] rkd_value_eff[1:0];
+
+assign alu_src1_eff[0]  = alu_src1[0];
+assign alu_src2_eff[0]  = alu_src2[0];
+assign rkd_value_eff[0] = rkd_value[0];
+wire byp1 = pair_byp_src1[1] & EXE1_slot_valid[0] & rf_gr_we[0] & (rf_dest[0] != 5'b0);
+wire byp2 = pair_byp_src2[1] & EXE1_slot_valid[0] & rf_gr_we[0] & (rf_dest[0] != 5'b0);
+wire bypr = pair_byp_rkd[1]  & EXE1_slot_valid[0] & rf_gr_we[0] & (rf_dest[0] != 5'b0);
+assign alu_src1_eff[1]  = byp1 ? alu_result_fast[0] : alu_src1[1];
+assign alu_src2_eff[1]  = byp2 ? alu_result_fast[0] : alu_src2[1];
+assign rkd_value_eff[1] = bypr ? alu_result_fast[0] : rkd_value[1];
 generate 
     for(i = 0; i < ISSUE; i = i + 1) begin : gen_alu
         // 按槽 valid：级 valid & 本槽有指令；alu 内部会用它门控全部 alu_op（含 mul/div）
@@ -169,14 +215,15 @@ generate
         alu u_alu(
             .clk              (clk                ),
             .resetn           (resetn             ),
-            .EXE1_ex          (EXE1_ex[i]         ),
-            .older_ex_for_exe1(older_ex_for_exe1  ),
+            .EXE1_ex          (exe1_ex_for_div[i] ),
+            .older_ex_for_exe1(older_ex_for_div   ),
             .EXE1_slot_valid  (EXE1_slot_valid[i] ),
-            .EXE1_need_cancel (EXE1_need_cancel   ),
+            .EXE1_need_cancel (exe1_need_cancel_for_div   ),
             .alu_op           (alu_op[i]          ),
-            .alu_src1         (alu_src1[i]        ),
-            .alu_src2         (alu_src2[i]        ),
+            .alu_src1         (alu_src1_eff[i]        ),
+            .alu_src2         (alu_src2_eff[i]        ),
             .alu_result       (alu_result[i]      ),
+            .alu_result_fast  (alu_result_fast[i] ),
             .add_result       (mem_vaddr[i]       ),
             .divide_ready_go  (divide_ready_go[i] )
         );
@@ -191,8 +238,9 @@ wire   [10:0] TLBIDX_new_tlbsrch[1:0];
 
 // [多发记得改]
 assign        invtlb_index       = (inst_invtlb[0] & ~ex_INE[0] & ~ex_IPE[0] & EXE1_slot_valid[0]) ? 1'b0 : 1'b1;
-assign        invtlb_valid       = ((inst_invtlb[0] & ~ex_INE[0] & ~ex_IPE[0] & EXE1_slot_valid[0]) |
-                                    (inst_invtlb[1]  & ~ex_INE[1] & ~ex_IPE[1] & EXE1_slot_valid[1])) & EXE1_valid & ~EXE1_need_cancel & ~older_ex_for_exe1;
+assign        invtlb_search      = (inst_invtlb[0] & ~ex_INE[0] & ~ex_IPE[0] & EXE1_slot_valid[0]) |
+                                   (inst_invtlb[1] & ~ex_INE[1] & ~ex_IPE[1] & EXE1_slot_valid[1]);//是否查询invtlb
+assign        invtlb_valid       = invtlb_search & ~EXE1_need_cancel & ~older_ex_for_exe1;//invtlb是否有效
 assign        invtlb_op          = invtlb_index == 1'b0 ? rf_dest[0] : rf_dest[1];
 assign        tlbinv_asid        = invtlb_index == 1'b0 ? alu_src1[0][9:0] : alu_src1[1][9:0];
 
@@ -228,9 +276,9 @@ wire        data_wr        [1:0];
 wire [31:0] st_data        [1:0];
 generate
     for(i = 0; i < ISSUE; i = i + 1) begin : gen_st_data
-        assign  st_data[i]         = inst_st_b[i] ? {4{rkd_value[i][7:0]}} :
-                                     inst_st_h[i] ? {2{rkd_value[i][15:0]}} :
-                                     rkd_value[i];
+        assign  st_data[i]         = inst_st_b[i] ? {4{rkd_value_eff[i][7:0]}} :
+                                     inst_st_h[i] ? {2{rkd_value_eff[i][15:0]}} :
+                                     rkd_value_eff[i];
         assign  data_sram_wstrb[i] = (
                                         mem_we[i] ? (
                                             inst_st_b[i] ? (
@@ -300,8 +348,12 @@ endgenerate
 //------------------------{ex_ALE}end-------------------------//
 
 //------------------------{exp_front}begin-------------------------//
+wire EXE1_ex_inst [1:0];//触发不用tlb/ale
 generate 
     for(i = 0; i < ISSUE; i = i + 1) begin : gen_EXE1_ex
+         assign  EXE1_ex_inst[i] = EXE1_slot_valid[i] &
+                             (inst_syscall[i]   | inst_ertn[i]         | inst_break[i]           | ex_INE[i]             |
+                              ex_tlb_reload0[i] | ex_tlb_preif_unvalid[i] | ex_tlb_plv0[i]       | has_int[i]            | ex_IPE[i]            | ex_ADEF[i]);
         assign  EXE1_ex[i] = EXE1_slot_valid[i] &
                              (inst_syscall[i]   | inst_ertn[i]         | inst_break[i]           | ex_INE[i]             |
                               ex_tlb_reload0[i] | ex_tlb_reload1[i]    | ex_tlb_preif_unvalid[i] | ex_tlb_plv0[i]        |
@@ -317,7 +369,7 @@ generate
         assign  EXE1_EXE2_bus[i] = {
                                     EXE1_slot_valid[i],
                                     pc[i]             ,
-                                    rkd_value[i]      , res_from_mem[i]        , mem_we[i]        , need_stall_csr[i] , inst_ld_b[i]        , inst_ld_h[i]        , inst_ld_bu [i], inst_ld_hu[i]        , alu_result_with_rdct[i],//MEM
+                                    rkd_value_eff[i]  , res_from_mem[i]        , mem_we[i]        , need_stall_csr[i] , inst_ld_b[i]        , inst_ld_h[i]        , inst_ld_bu [i], inst_ld_hu[i]        , alu_result_with_rdct[i],//MEM
                                     inst_csrrd[i]     , inst_csrwr[i]          , inst_csrxchg[i]  , inst_ertn[i]      , inst_syscall[i]     , inst_break[i]       , ex_INE[i]     , ex_IPE[i]            , ex_ADEF[i]             , ex_ALE[i]   , has_int[i]  , inst_rdcntvl_w[i], inst_rdcntvh_w[i], inst_rdcntid[i], csr_num[i], rj_value[i], rf_dest[i], rf_gr_we[i],//WB
                                     inst_tlbsrch[i]   , TLBIDX_new_tlbsrch[i]  , inst_tlbrd[i]    , inst_tlbwr[i]     , inst_tlbfill[i]     , inst_invtlb[i]      ,
                                     ex_tlb_reload0[i] , ex_tlb_preif_unvalid[i], ex_tlb_plv0[i]   , ex_tlb_reload1[i] , ex_tlb_ld_unvalid[i], ex_tlb_st_unvalid[i], ex_tlb_plv1[i], ex_tlb_page_modify[i],
@@ -325,7 +377,16 @@ generate
                                     data_sram_addr[i] , data_sram_wdata[i]     , data_sram_size[i], data_sram_wstrb[i], data_mat[i]         , data_wr[i]          , inst_cacop[i] , cache_code[i]        , inst_ibar[i]           , inst_dbar[i], inst_sc_w[i], inst_ll_w[i]     , inst_idle[i]
                                    };                                                      
         assign  EXE1_rf_dest[i]  = rf_dest[i];
-        assign  EXE1_rf_gr_we[i] = rf_gr_we[i] & EXE1_slot_valid[i];     
+        assign  EXE1_rf_gr_we[i] = rf_gr_we[i] & EXE1_slot_valid[i];
+        assign  exe1_need_stall[i] = EXE1_rf_gr_we[i] & (
+                                    need_stall_inst[i]   |
+                                    need_stall_csr[i]    |
+                                    div_mod[i]           |
+                                    inst_sc_w[i]         |
+                                    alu_op[i][12] | alu_op[i][13] | alu_op[i][14]
+        );
+        assign  exe1_front_data[i] = alu_result_fast[i];
+        assign  exe1_can_not_front_push[i] = ~EXE1_rf_gr_we[i] | exe1_need_stall[i];     
     end
 endgenerate
 //------------------------{bus}end-------------------------//

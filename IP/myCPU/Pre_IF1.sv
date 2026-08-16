@@ -80,8 +80,8 @@ endgenerate
 */
 assign  slot_pc[0]     = pc;
 assign  slot_pc[1]     = pred_redirect0 ? pred_target0 : pc + 4;
-assign  slot_valid     = !preIF1_valid | preIF1_need_cancel? {ISSUE{1'b0}} :     
-                         preIF1_ex     | ~same_cacheline | uncache_fetch ? {1'b0,{ISSUE-1{1'b1}}} :
+assign  slot_valid     = !preIF1_valid ? {ISSUE{1'b0}} :     
+                         (preIF1_ex     | ~same_cacheline | uncache_fetch) ? {1'b0,{ISSUE-1{1'b1}}} :
                          {ISSUE{1'b1}};
 wire    same_cacheline = (slot_pc[0][31:ICACHE_OFFSET_W] == slot_pc[1][31:ICACHE_OFFSET_W]);//两条指令在同一个cacheline
 assign  next_PC        =  pred_redirect0 ? (slot_valid == 2'b11 ? pred_target0 + 4 : pred_target0) :
@@ -130,9 +130,9 @@ wire       uncache_fetch = (inst_mat == 2'b00);//uncache只发一个
 //------------------------{uncache}end-------------------------//
 
 //------------------------{branch prediction}begin------------------//
-assign  query_valid[0] = preIF1_valid & ~preIF1_need_cancel;//preIF1_valid表示指令有效
+assign  query_valid[0] = preIF1_valid;//preIF1_valid表示指令有效
 assign  query_pc[0]    = slot_pc[0];          //拿pc
-assign  query_valid[1] = preIF1_valid & ~preIF1_need_cancel & same_cacheline & ~uncache_fetch & ~preIF1_ex;//preIF1_valid表示指令有效
+assign  query_valid[1] = preIF1_valid & same_cacheline & ~uncache_fetch & ~preIF1_ex;//preIF1_valid表示指令有效
 assign  query_pc[1]    = slot_pc[1];          //拿pc
 //------------------------{branch prediction}end------------------//
 
@@ -152,22 +152,31 @@ wire  preIF1_ex = ex_ADEF[0] |
 //------------------------{ex}end-------------------------//
 
 //------------------------{DMW}begin-------------------------//
-generate
-    for (i = 0; i < ISSUE; i = i + 1) begin : gen_dmw_vseg
-        assign  dmw_vseg0[i] = slot_pc[i][31:29];
-    end
-endgenerate
+wire [31:0] slot1_tlb_va = slot_pc[0];
+// generate
+//     for (i = 0; i < ISSUE; i = i + 1) begin : gen_dmw_vseg
+//         assign  dmw_vseg0[i] = slot_pc[i][31:29];
+//     end
+// endgenerate
+assign  dmw_vseg0[0]   = slot_pc[0][31:29];
+assign  dmw_vseg0[1]   = slot1_tlb_va[31:29];
 //------------------------{DMW}end-------------------------//
 
 //------------------------{虚地址转物理地址}begin-------------------------//
-generate
-    for (i = 0; i < ISSUE; i = i + 1) begin : gen_tlb_query_addr
-        assign  s0_vppn[i]     = slot_pc[i][31:13];
-        assign  s0_va_bit12[i] = slot_pc[i][12];
-    end
-endgenerate
+// generate
+//     for (i = 0; i < ISSUE; i = i + 1) begin : gen_tlb_query_addr
+//         assign  s0_vppn[i]     = slot_pc[i][31:13];
+//         assign  s0_va_bit12[i] = slot_pc[i][12];
+//     end
+// endgenerate
+
+assign  s0_vppn[0]     = slot_pc[0][31:13];
+assign  s0_va_bit12[0] = slot_pc[0][12];
+assign  s0_vppn[1]     = slot1_tlb_va[31:13];
+assign  s0_va_bit12[1] = slot1_tlb_va[12];
+
 wire   [31:0] tlb_paddr   [1:0];
-assign        tlb_inst_req = preIF1_valid && !preIF1_need_cancel && !csr_CRMD_DA &&  csr_CRMD_PG && !dmw_found0[0];
+assign        tlb_inst_req = preIF1_valid && !csr_CRMD_DA &&  csr_CRMD_PG && !dmw_found0[0];
 generate
     for (i = 0;i < ISSUE;i = i + 1) begin : gen_tlb_paddr
         assign  tlb_paddr[i] = (s0_ps[i] == 6'd21) ? {s0_ppn[i][19:9], slot_pc[i][20:0]}// 4MB页
@@ -177,7 +186,10 @@ endgenerate
 //------------------------{虚地址转物理地址}end-------------------------//
 
 //------------------------{ready_go}begin-------------------------//
-assign  preIF1_ready_go = need_stall | preIF1_IDLE_stall ? 1'b0 : 1'b1;
+assign  preIF1_ready_go = preIF1_IDLE_stall ? 1'b0 : 1'b1;
+//------------------------{ready_go}end-------------------------//
+
+//------------------------{preIF1_valid}begin---------------------//
 always @(posedge clk) begin
     if(!resetn)begin
         preIF1_valid <= 1'b0;
@@ -186,7 +198,9 @@ always @(posedge clk) begin
         preIF1_valid <= valid_in;
     end
 end
+//------------------------{preIF1_valid}end---------------------//
 
+//--------------------------{preIF1_preIF2_bus}begin-------------------//
 // slot0: 144bit，字段顺序必须与 Pre_IF2 解包一致（含 inst_mat）
 assign  preIF1_preIF2_bus_slot0 = {
                                    slot_valid[0]    ,
@@ -216,5 +230,6 @@ generate
                                    };
   end
 endgenerate
-//------------------------{ready_go}end-------------------------//
+//--------------------------{preIF1_preIF2_bus}end-------------------//
+
 endmodule

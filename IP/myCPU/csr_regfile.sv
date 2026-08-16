@@ -705,8 +705,25 @@ end
 // ----------TO PIPELINE END--------------
 
 // ----------TO PIPELINE IN END--------------
-assign  has_int        = (((ESTAT[`CSR_ESTAT_IS] & ECFG[`CSR_ECFG_LIE])!=13'b0) && (CRMD[`CSR_CRMD_IE] == 1'b1));
-assign  csr_tcfg_init0 = (TCFG[`CSR_TCFG_INITVAL] == 30'b0);
+wire    has_int_comb        = (((ESTAT[`CSR_ESTAT_IS] & ECFG[`CSR_ECFG_LIE])!=13'b0) && (CRMD[`CSR_CRMD_IE] == 1'b1));
+wire    csr_tcfg_init0_comb = (TCFG[`CSR_TCFG_INITVAL] == 30'b0);
+//添加寄存器，定时器中断多打一拍，截断这条路径
+reg     has_int_r;
+reg     csr_tcfg_init0_r;
+
+always @(posedge clk) begin
+    if (!resetn) begin
+        has_int_r        <= 1'b0;
+        csr_tcfg_init0_r <= 1'b0;
+    end
+    else begin 
+        has_int_r        <= has_int_comb;
+        csr_tcfg_init0_r <= csr_tcfg_init0_comb;
+    end
+end
+
+assign  has_int        = has_int_r;
+assign  csr_tcfg_init0 = csr_tcfg_init0_r;
 assign  csr_CRMD_DA    = CRMD[`CSR_CRMD_DA];
 assign  csr_CRMD_PG    = CRMD[`CSR_CRMD_PG];
 assign  csr_CRMD_PLV   = CRMD[`CSR_CRMD_PLV];

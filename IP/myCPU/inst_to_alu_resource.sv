@@ -16,6 +16,8 @@ module inst_to_alu_resource #(
     input  wire                    query_taken,
     input  wire [31:0]             rf_rdata1,
     input  wire [31:0]             rf_rdata2,
+    input  wire [31:0]             rf_rdata1_br,
+    input  wire [31:0]             rf_rdata2_br,
     input  wire [1:0]              csr_CRMD_PLV,
     input  wire                    has_int,          // 建议仅 lane0 接真 has_int，lane1=0
     output wire [4:0]              rf_raddr1,
@@ -39,6 +41,11 @@ module inst_to_alu_resource #(
     output wire                    is_tlb,          //tlbrd/tlbfill/tlbsrch/invtlb/tlbwr
     output wire [4:0]              rf_dest,
     output wire                    rf_gr_we,
+    output wire                    result_not_fast,//本拍没有alu_result_fast
+    output wire                    src1_is_reg,
+    output wire                    src2_is_reg,
+    output wire                    is_store,
+    output wire                    is_cpucfg_inst,
     output wire                    upd_need,       // pred_valid & ~ex_ADEF & ~pred_ok
     output wire                    bht_upd_need,   // is_cond & ~ex_ADEF
     output wire                    push_need,
@@ -396,8 +403,15 @@ assign  rf_raddr1    = src1_unused ? 5'b0 : rj;
 assign  rf_raddr2    = src2_unused   ? 5'b0 :
                        src_reg_is_rd ? rd :rk;
 
+assign  src1_is_reg  = ~src1_is_pc  & ~inst_csr & ~inst_cpucfg & ~src1_unused;
+assign  src2_is_reg  = ~src2_is_imm & ~inst_cpucfg;
+assign  is_store     = mem_we;
+assign  is_cpucfg_inst = inst_cpucfg;
+
 assign  rj_value     = rf_rdata1;
 assign  rkd_value    = rf_rdata2;
+wire [31:0]    rj_value_br  = rf_rdata1_br;
+wire [31:0]    rkd_value_br = rf_rdata2_br;
 
 assign  cache_code   = rd;
 
@@ -422,6 +436,9 @@ wire    need_stall_inst;
 wire    need_stall_csr;
 assign  need_stall_inst = inst_ld_w | inst_ld_b | inst_ld_h | inst_ld_bu | inst_ld_hu | inst_ll_w;
 assign  need_stall_csr  = inst_csrrd | inst_csrwr | inst_csrxchg | inst_rdcntid | inst_rdcntvl_w | inst_rdcntvh_w;
+assign  result_not_fast = need_stall_inst | need_stall_csr | inst_sc_w |
+                          alu_op[12] | alu_op[13] | alu_op[14] | alu_op[15] |
+                          alu_op[16] | alu_op[17] | alu_op[18];
 //------------------------{stall}end-------------------------//
 
 //------------------------{ex_INE}begin-------------------------//
@@ -510,7 +527,7 @@ wire       [31:0] direct_target;
     wire   [31:0] jirl_pred_rj;
     wire          target_match;
     assign        jirl_pred_rj = pred_target - jirl_offs;
-    assign        target_match = inst_jirl ? (rj_value == jirl_pred_rj) : (direct_target == pred_target);
+    assign        target_match = inst_jirl ? (rj_value_br == jirl_pred_rj) : (direct_target == pred_target);
     assign        pred_valid   = is_cond | is_jump | is_call | is_ret;//只需要这几种的br
     assign        pred_ok      = pred_valid & (real_taken == pred_taken) & (!real_taken || target_match);//预测一致
     //---------------{跳转和对比表 有效 & 匹配}end---------------//
@@ -549,15 +566,15 @@ assign  pop_valid           = is_ret & id_fire  & ~ex_ADEF;//真实return 要 po
 //assign real_target = inst_jirl ? rf_rdata1 + jirl_offs : pc + br_offs;
 //写回时只有inst_jirl执行完之后才会使用pc+br_offs
 assign  direct_target   = pc + br_offs;
-assign  real_target     = inst_jirl ? rf_rdata1 + jirl_offs : direct_target;
+assign  real_target     = inst_jirl ? rf_rdata1_br + jirl_offs : direct_target;
 assign  real_taken      = slot_valid & (
                            inst_jirl                                                  | inst_b | inst_bl |
-                          (inst_beq & (rj_value == rkd_value))                        |
-                          (inst_bne & (rj_value != rkd_value))                        |
-                          (inst_blt & ($signed(rj_value) <  $signed(rkd_value)))      |
-                          (inst_bge & ($signed(rj_value) >= $signed(rkd_value)))      |
-                          (inst_bltu & ($unsigned(rj_value) <  $unsigned(rkd_value))) |
-                          (inst_bgeu & ($unsigned(rj_value) >= $unsigned(rkd_value))));
+                          (inst_beq & (rj_value_br == rkd_value_br))                        |
+                          (inst_bne & (rj_value_br != rkd_value_br))                        |
+                          (inst_blt & ($signed(rj_value_br) <  $signed(rkd_value_br)))      |
+                          (inst_bge & ($signed(rj_value_br) >= $signed(rkd_value_br)))      |
+                          (inst_bltu & ($unsigned(rj_value_br) <  $unsigned(rkd_value_br))) |
+                          (inst_bgeu & ($unsigned(rj_value_br) >= $unsigned(rkd_value_br))));
                            //   ) & ID_ready_go & ID_valid;
 //output
 assign  upd_need        = pred_valid & ~ex_ADEF & ~pred_ok;//预测失败

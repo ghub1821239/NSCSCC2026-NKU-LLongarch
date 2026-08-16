@@ -9,6 +9,7 @@ module alu(
   input  wire [31:0] alu_src1,
   input  wire [31:0] alu_src2,
   output wire [31:0] alu_result,
+  output wire [31:0] alu_result_fast,
   output wire [31:0] add_result,
   output wire        divide_ready_go
 );
@@ -115,7 +116,7 @@ assign        sr_result                  = sr64_result[31:0];
 
 assign        mul_result                 = $signed(mul_src1)* $signed(mul_src2);
 
-//divide
+//----------------------------------------{signed_divide}begin------------------------------------//
 wire          dividend_tready;
 wire          divisor_tready;
 reg           divisor_tvalid;
@@ -123,12 +124,25 @@ reg           dividend_tvalid;
 reg           is_dividing;
 wire          div_ready_go;
 wire          divide_begin;
-assign        divide_begin               = (op_div | op_mod) & ~EXE1_need_cancel & ~EXE1_ex & ~older_ex_for_exe1 & ~is_dividing; // 已含 EXE1_valid（经 alu_op_m）
+assign        divide_begin           = (op_div | op_mod) & ~EXE1_need_cancel & ~EXE1_ex & ~older_ex_for_exe1 & ~is_dividing; // 已含 EXE1_valid（经 alu_op_m）
 wire          div_calculating_cancel = (EXE1_need_cancel | older_ex_for_exe1) & is_dividing;
 wire          div_without_handshake  = dividend_tvalid & divisor_tvalid & ~dividend_tready & ~divisor_tready;
 reg           kill;//如果有flush掉的div等指令需要取消错误的返回
+wire          divide_op              = (op_div | op_mod) & ~EXE1_ex & ~is_dividing;
+wire          divide_issue           = divide_op & ~EXE1_need_cancel & ~older_ex_for_exe1;
 reg  [31:0]   dividend_tdata_r;
 reg  [31:0]   divisor_tdata_r;
+
+always @(posedge clk) begin
+    if (!resetn) begin
+        dividend_tdata_r <= 32'b0;
+        divisor_tdata_r  <= 32'b0;
+    end
+    else if (divide_op) begin
+        dividend_tdata_r <= alu_src1;
+        divisor_tdata_r  <= alu_src2;
+    end
+end
 
 always @(posedge clk) begin
     if (!resetn) begin
@@ -136,16 +150,12 @@ always @(posedge clk) begin
         divisor_tvalid   <= 1'b0;
         is_dividing      <= 1'b0;
         kill            <= 1'b0;
-        dividend_tdata_r <= 32'b0;
-        divisor_tdata_r  <= 32'b0;
     end
-    else if (divide_begin) begin
+    else if (divide_issue) begin
         dividend_tvalid  <= 1'b1;
         divisor_tvalid   <= 1'b1;
         is_dividing      <= 1'b1;
-        kill            <= 1'b0;
-        dividend_tdata_r <= alu_src1;
-        divisor_tdata_r  <= alu_src2;
+        kill             <= 1'b0;
     end
     else if (div_calculating_cancel & ~kill) begin
         // 本拍完成握手的通道照常清掉
@@ -190,8 +200,9 @@ divider u_divider(
     .m_axis_dout_tvalid     (div_ready_go    ),          // output wire m_axis_dout_tvalid
     .m_axis_dout_tdata      (div_result      )            // output wire [63 : 0] m_axis_dout_tdata
 );
-//unsigned divider 
-//unsigned divider
+//----------------------------------------{signed_divide}end------------------------------------//
+
+//----------------------------------------{unsigned_divide}begin------------------------------------//
 wire          dividend_tready_u;
 wire          divisor_tready_u;
 reg           divisor_tvalid_u;
@@ -202,9 +213,22 @@ wire          divide_begin_u;
 assign        divide_begin_u           = (op_divu | op_modu) & ~EXE1_need_cancel & ~EXE1_ex & ~older_ex_for_exe1 & ~is_dividing_u; // 已含 EXE1_valid（经 alu_op_m）
 wire          div_calculating_cancel_u = (EXE1_need_cancel | older_ex_for_exe1) & is_dividing_u;
 wire          div_without_handshake_u  = dividend_tvalid_u & divisor_tvalid_u & ~dividend_tready_u & ~divisor_tready_u;
+wire          divide_op_u              = (op_divu | op_modu) & ~EXE1_ex & ~is_dividing_u;
+wire          divide_issue_u           = divide_op_u & ~EXE1_need_cancel & ~older_ex_for_exe1;
 reg           kill_u;
 reg  [31:0]   dividend_tdata_u_r;
 reg  [31:0]   divisor_tdata_u_r;
+
+always @(posedge clk) begin
+    if (!resetn) begin
+        dividend_tdata_u_r <= 32'b0;
+        divisor_tdata_u_r  <= 32'b0;
+    end
+    else if (divide_op_u) begin
+        dividend_tdata_u_r <= alu_src1;
+        divisor_tdata_u_r  <= alu_src2;
+    end
+end
 
 always @(posedge clk) begin
     if (!resetn) begin
@@ -212,16 +236,12 @@ always @(posedge clk) begin
         divisor_tvalid_u   <= 1'b0;
         is_dividing_u      <= 1'b0;
         kill_u             <= 1'b0;
-        dividend_tdata_u_r <= 32'b0;
-        divisor_tdata_u_r  <= 32'b0;
     end
-    else if (divide_begin_u) begin
+    else if (divide_issue_u) begin
         dividend_tvalid_u  <= 1'b1;
         divisor_tvalid_u   <= 1'b1;
         is_dividing_u      <= 1'b1;
         kill_u             <= 1'b0;
-        dividend_tdata_u_r <= alu_src1;
-        divisor_tdata_u_r  <= alu_src2;
     end
     else if (div_calculating_cancel_u & ~kill_u) begin
         // 本拍完成握手的通道照常清掉
@@ -263,13 +283,13 @@ divider_unsigned u_divideru(
   .m_axis_dout_tvalid     (div_ready_go_u    ),          // output wire m_axis_dout_tvalid
   .m_axis_dout_tdata      (div_result_u      )            // output wire [63 : 0] m_axis_dout_tdata
 );
-
-
+//----------------------------------------{unsigned_divide}end------------------------------------//
+wire  [31:0] alu_result_muldiv;//乘除法拆开
 
 assign divide_ready_go = (div_ready_go & ~kill & ~div_calculating_cancel) |
                          (div_ready_go_u & ~kill_u & ~div_calculating_cancel_u);
 // final result mux
-assign  alu_result      = ({32{op_add|op_sub}} & add_sub_result)
+assign  alu_result_fast = ({32{op_add|op_sub}} & add_sub_result)
                                      | ({32{op_slt       }} & slt_result)
                                      | ({32{op_sltu      }} & sltu_result)
                                      | ({32{op_and       }} & and_result)
@@ -278,13 +298,15 @@ assign  alu_result      = ({32{op_add|op_sub}} & add_sub_result)
                                      | ({32{op_xor       }} & xor_result)
                                      | ({32{op_lui       }} & lui_result)
                                      | ({32{op_sll       }} & sll_result)
-                                     | ({32{op_srl|op_sra}} & sr_result)
-                                     | ({32{op_mul       }} & mul_result[31: 0])
+                                     | ({32{op_srl|op_sra}} & sr_result);
+assign  alu_result_muldiv = ({32{op_mul       }} & mul_result[31: 0])
                                      | ({32{op_mulh      }} & mul_result[63:32])
                                      | ({32{op_mulh_wu   }} & mul_result[63:32])
                                      | ({32{op_div       }} & div_result[63:32])
                                      | ({32{op_mod       }} & div_result[31: 0])
                                      | ({32{op_divu      }} & div_result_u[63:32])
                                      | ({32{op_modu      }} & div_result_u[31: 0]);
+
+assign  alu_result      =  alu_result_fast | alu_result_muldiv;            
 
 endmodule

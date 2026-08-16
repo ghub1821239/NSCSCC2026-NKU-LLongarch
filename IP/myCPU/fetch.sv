@@ -25,62 +25,69 @@ module fetch #(
     input  wire                    inst_resp_discard,
     //req_to_dataok_trigger
     input  wire                    req_to_dataok_trigger,
-    input  wire                    ID_can_accept_IF
+    input  wire                    ID_can_accept_IF,
+    //skid
+    input  wire                    skid_valid
 );
-//------------------------{缓存inst}begin-------------------------//
-/*reg [31:0] inst_reg;
-reg        inst_reg_valid;
-always @ (posedge clk)begin
-    if(!resetn)begin
-        inst_reg       <= 32'b0;
-        inst_reg_valid <= 1'b0;
-    end
-    else if(IF_need_cancel)begin
-        inst_reg_valid <= 1'b0;
-    end
-    else if (inst_resp_valid & req_to_dataok_trigger & ~deliver_now) begin
-        // 或：~ID_allow_in 时锁存
-        inst_reg       <= inst_sram_rdata;
-        inst_reg_valid <= 1'b1;
-    end
-    else if(ID_allow_in | preIF2_IF_valid)begin
-        inst_reg_valid <= 1'b0;
-    end
-end*/
-reg [127:0] inst_line_reg;//line的数据
-reg         inst_line_reg_valid;//line数据是否有效
+//------------------------{ICache line queue}begin-------------------------//
+// IFQ(2) + IF(1) 最多 3 条已返回、尚未交给 ID 的 cache line。
+// data_ok 入队；IF 交出真正取指包时出队；空槽/例外包不出队。
+localparam LINE_Q_DEPTH = 3;
+localparam LINE_Q_PTR_W = 2;
+
+reg  [127:0]              line_q      [LINE_Q_DEPTH-1:0];
+reg  [LINE_Q_PTR_W:0]     line_q_count; // 已缓存、未交付的 line 数
+reg  [LINE_Q_PTR_W-1:0]   line_q_wr;
+reg  [LINE_Q_PTR_W-1:0]   line_q_rd;
+
+wire line_q_push  = inst_resp_valid & req_to_dataok_trigger; // ICache 返回有效 line
+wire line_q_pop   = deliver_now & ~no_need_mem;             // 取指包从 IF 交到 ID
+wire line_q_empty = (line_q_count == {LINE_Q_PTR_W+1{1'b0}});
+
+wire [LINE_Q_PTR_W-1:0] line_q_wr_next = (line_q_wr == (LINE_Q_DEPTH-1)) ? {LINE_Q_PTR_W{1'b0}} : (line_q_wr + 1'b1);
+wire [LINE_Q_PTR_W-1:0] line_q_rd_next = (line_q_rd == (LINE_Q_DEPTH-1)) ? {LINE_Q_PTR_W{1'b0}} : (line_q_rd + 1'b1);
 
 always @(posedge clk) begin
     if (!resetn) begin
-        inst_line_reg_valid <= 1'b0;
+        line_q_count <= {LINE_Q_PTR_W+1{1'b0}};
+        line_q_wr    <= {LINE_Q_PTR_W{1'b0}};
+        line_q_rd    <= {LINE_Q_PTR_W{1'b0}};
     end
     else if (IF_need_cancel) begin
-        inst_line_reg_valid <= 1'b0;
+        line_q_count <= {LINE_Q_PTR_W+1{1'b0}};
+        line_q_wr    <= {LINE_Q_PTR_W{1'b0}};
+        line_q_rd    <= {LINE_Q_PTR_W{1'b0}};
     end
-    else if (inst_resp_valid & req_to_dataok_trigger & ~deliver_now) begin
-        inst_line_reg       <= inst_sram_rdata;
-        inst_line_reg_valid <= 1'b1;
-    end
-    else if (deliver_now) begin
-        inst_line_reg_valid <= 1'b0;
+    else begin
+        if (line_q_push) begin
+            line_q[line_q_wr] <= inst_sram_rdata;
+            line_q_wr         <= line_q_wr_next;
+        end
+        if (line_q_pop) begin
+            line_q_rd <= line_q_rd_next;
+        end
+        case ({line_q_push, line_q_pop})
+            2'b10:   line_q_count <= line_q_count + 1'b1;
+            2'b01:   line_q_count <= line_q_count - 1'b1;
+            default: line_q_count <= line_q_count;
+        endcase
     end
 end
-
-//------------------------{缓存inst}end-------------------------//
+//------------------------{ICache line queue}end-------------------------//
 
 //------------------------{bus}begin-------------------------//
 wire                      slot_valid          [1:0];
 wire    [31:0]            pc                  [1:0];
 wire                      ex_ADEF             [1:0];
-wire                      ex_tlb_reload0      [1:0];//tlb重填例外
-wire                      ex_tlb_preif_unvalid[1:0];//tlb中取指页无效
-wire                      ex_tlb_plv0         [1:0];//tlb中页特权不合规
-wire                      btb_query_hit       [1:0];//valid且tag
-wire    [31:0]            btb_query_target    [1:0];        
-wire                      ras_query_hit       [1:0];//valid且tag
-wire    [31:0]            ras_query_target    [1:0];        
-wire    [ 1:0]            query_type          [1:0];              
-wire                      query_taken         [1:0];//预测是否跳转 
+wire                      ex_tlb_reload0      [1:0]; // tlb 重填例外
+wire                      ex_tlb_preif_unvalid[1:0]; // tlb 取指页无效
+wire                      ex_tlb_plv0         [1:0]; // tlb 页特权不合规
+wire                      btb_query_hit       [1:0]; // valid 且 tag 命中
+wire    [31:0]            btb_query_target    [1:0];
+wire                      ras_query_hit       [1:0]; // valid 且 tag 命中
+wire    [31:0]            ras_query_target    [1:0];
+wire    [ 1:0]            query_type          [1:0];
+wire                      query_taken         [1:0]; // 预测是否跳转 
         
 reg     [inbus_width-1:0] bus                 [1:0];
 integer                   k;
@@ -111,17 +118,16 @@ endgenerate
 //------------------------{bus}end-------------------------//
 
 //------------------------{ready_go}begin-------------------------//
-wire    inst_resp_valid = inst_sram_data_ok & ~inst_resp_discard;//request 是有效的,discard表示已经发起req但是被取消，那么其返回的data_ok应是无效的,所以用discard取消
-wire    deliver_now     = IF_valid & IF_ready_go & ID_allow_in & ~need_stall & ~IF_need_cancel & ID_can_accept_IF;
+wire    inst_resp_valid = inst_sram_data_ok & ~inst_resp_discard; // 已发起的 req 被取消时，其 data_ok 无效
+wire    deliver_now     = IF_valid & IF_ready_go & ~skid_valid;
 wire    slot0_has_ex    = ex_ADEF[0]              | ex_tlb_reload0[0] |
                           ex_tlb_preif_unvalid[0] | ex_tlb_plv0[0]   ;
 // 与 Pre_IF2 一致：空槽 / 例外不访存
 wire    no_need_mem     = (~slot_valid[0]) | slot0_has_ex;
-// 正常取指：data_ok（本拍）或 line 已锁存
-wire    mem_ready       = (inst_resp_valid & req_to_dataok_trigger) | inst_line_reg_valid;
+// 队列已有本包 line，或本拍 data_ok（队列空时走组合 rdata）
+wire    mem_ready       = ~line_q_empty | (inst_sram_data_ok & req_to_dataok_trigger);
 
-assign  IF_ready_go     = (need_stall | IF_need_cancel) ? 1'b0 :
-                          no_need_mem                   ? 1'b1 :
+assign  IF_ready_go     = no_need_mem    ? 1'b1 :
                           mem_ready;
 //------------------------{ready_go}end-------------------------//
 
@@ -136,11 +142,10 @@ always @(posedge clk) begin
         IF_valid <= preIF2_IF_valid;
     end
 end
-//------------------------{ready_go}end-------------------------//
 
-wire [127 : 0] inst_line_use  = inst_line_reg_valid ? inst_line_reg : inst_sram_rdata;
-wire [31:0]    inst_from_line[1:0];//从line中拿到的inst
-wire [31:0]    inst_out      [1:0];//从IF传递到ID的inst
+wire [127:0]   inst_line_use = ~line_q_empty ? line_q[line_q_rd] : inst_sram_rdata;
+wire [31:0]    inst_from_line[1:0]; // 按 PC[3:2] 从 line 中取出指令
+wire [31:0]    inst_out      [1:0]; // 送到 ID 的指令字
 generate
     for (i = 0; i < ISSUE; i = i + 1) begin :gen_inst_out
         assign  inst_from_line[i] = (pc[i][3:2] == 2'b00) ? inst_line_use[31:0]   :

@@ -45,7 +45,7 @@ module mycpu_core #(
 wire  valid_in;
 wire  preIF1_preIF2_valid;
 wire  preIF2_IF_valid;
-wire  IF_ID_valid;
+//wire  IF_ID_valid;
 wire  ID_EXE1_valid;
 wire  EXE1_EXE2_valid;
 wire  EXE2_MEM_valid;
@@ -64,6 +64,7 @@ wire  preIF1_valid;
 wire  preIF2_valid;
 wire  IF_valid;
 wire  ID_valid;
+wire  rr_valid;
 wire  EXE1_valid;
 wire  EXE2_valid;
 wire  MEM_valid;
@@ -81,11 +82,14 @@ wire  WB_ready_go;
 
 //------------------------{5-stage pipeline control signals assignment}begin-------------------------//
 wire ID_can_accept_IF;
+wire IFQ_allow_in;
+wire IFQ_IF_valid;
+wire [preIF2_IF_bus_width-1:0] IFQ_IF_bus[ISSUE-1:0];
 
 assign  preIF1_allow_in     = !preIF1_valid || (preIF2_allow_in && preIF1_ready_go);
-assign  preIF2_allow_in     = !preIF2_valid || (IF_allow_in && preIF2_ready_go);
-assign  IF_allow_in         = !IF_valid || (ID_allow_in && IF_ready_go && ID_can_accept_IF);
-assign  ID_allow_in         = !ID_valid || (EXE1_allow_in && ID_ready_go);
+assign  preIF2_allow_in     = !preIF2_valid || (IFQ_allow_in && preIF2_ready_go);
+assign  IF_allow_in         = !IF_valid || (IF_ready_go && !skid_valid);
+assign  ID_allow_in         = !rr_valid || (EXE1_allow_in && ID_ready_go);
 assign  EXE1_allow_in       = !EXE1_valid || (EXE2_allow_in && EXE1_ready_go);
 assign  EXE2_allow_in       = !EXE2_valid || (MEM_allow_in && EXE2_ready_go);
 assign  MEM_allow_in        = !MEM_valid || (WB_allow_in && MEM_ready_go);
@@ -94,7 +98,7 @@ assign  WB_allow_in         = !WB_valid || (WB_ready_go);
 assign  valid_in            = 1'b1;
 assign  preIF1_preIF2_valid = preIF1_valid & preIF1_ready_go;
 assign  preIF2_IF_valid     = preIF2_valid & preIF2_ready_go;
-assign  IF_ID_valid         = IF_valid & IF_ready_go;
+//assign  IF_ID_valid         = IF_valid & IF_ready_go;
 assign  ID_EXE1_valid       = ID_valid & ID_ready_go;
 assign  EXE1_EXE2_valid     = EXE1_valid & EXE1_ready_go & ~EXE1_need_cancel;
 assign  EXE2_MEM_valid      = EXE2_valid & EXE2_ready_go;
@@ -199,12 +203,13 @@ wire                        s1_v                  [1:0];
 wire                        invtlb_valid;
 wire                        invtlb_index;
 wire   [4:0]                invtlb_op;
+wire                        invtlb_search;
 
 genvar                      s1_asid_i;
 generate
     for(s1_asid_i = 0; s1_asid_i < ISSUE; s1_asid_i = s1_asid_i + 1) begin : gen_s1_asid
         // invtlb 当拍各 search 槽共用同一 ASID（同行无 mem）
-        assign  s1_asid[s1_asid_i] = invtlb_valid ? tlbinv_asid : s1_asid_without_invtlb;
+        assign  s1_asid[s1_asid_i] = invtlb_search ? tlbinv_asid : s1_asid_without_invtlb;
     end
 endgenerate
 
@@ -383,6 +388,9 @@ wire   [31:0] front_push_rdata2        [1:0];
 wire   [31:0] exe2_front_data          [1:0];
 wire   [31:0] mem_front_data           [1:0];
 wire   [31:0] wb_front_data            [1:0];
+wire   [31:0] exe1_front_data          [1:0];
+wire          exe1_can_not_front_push  [1:0];
+wire          exe1_need_stall          [1:0];
 wire   [ 4:0] exe2_front_addr          [1:0];
 wire   [ 4:0] mem_front_addr           [1:0];
 wire   [ 4:0] wb_front_addr            [1:0];
@@ -390,27 +398,54 @@ wire          exe2_can_not_front_push  [1:0];
 wire          mem_can_not_front_push   [1:0];
 wire          wb_can_not_front_push    [1:0];
 
+wire          rr_is_br                 [1:0];
+wire   [31:0] fwd_with_exe1_rdata1     [1:0];//前递并加上exe1部分（不跳转的）
+wire   [31:0] fwd_with_exe1_rdate2     [1:0];
+wire   [31:0] fwd_no_exe1_rdata1       [1:0];//前递不加exe1部分（要跳转的)
+wire   [31:0] fwd_no_exe1_rdata2       [1:0];
+
 genvar        i;
 generate
     for (i = 0; i < ISSUE; i = i + 1) begin : gen_front_push
-        assign  front_push_rdata1[i] =
-                                       (rf_raddr1[i] == 5'b0) ? 32'b0 :
+        assign  fwd_with_exe1_rdata1[i] = (rf_raddr1[i] == 5'b0) ? 32'b0 :
+                                       (EXE1_valid & ~exe1_can_not_front_push[0] & (EXE1_rf_dest[0] == rf_raddr1[i])) ? exe1_front_data[0]    :
+                                       (EXE1_valid & ~exe1_can_not_front_push[1] & (EXE1_rf_dest[1] == rf_raddr1[i])) ? exe1_front_data[1]    :
                                        (EXE2_valid & ~exe2_can_not_front_push[0] & (exe2_front_addr[0] == rf_raddr1[i])) ? exe2_front_data[0] :
                                        (EXE2_valid & ~exe2_can_not_front_push[1] & (exe2_front_addr[1] == rf_raddr1[i])) ? exe2_front_data[1] :
                                        (MEM_valid  & ~mem_can_not_front_push[0]  & (mem_front_addr[0]  == rf_raddr1[i])) ? mem_front_data[0]  :
                                        (MEM_valid  & ~mem_can_not_front_push[1]  & (mem_front_addr[1]  == rf_raddr1[i])) ? mem_front_data[1]  :
-                                    //   (WB_valid & !flush & ~wb_can_not_front_push[0] & (wb_front_addr[0] == rf_raddr1[i])) ? wb_front_data[0] :
-                                    //   (WB_valid & !flush & ~wb_can_not_front_push[1] & (wb_front_addr[1] == rf_raddr1[i])) ? wb_front_data[1] :
+                                       (WB_valid & ~wb_can_not_front_push[0]  & ~wb_need_stall_csr[0] & (wb_front_addr[0] == rf_raddr1[i])) ? wb_front_data[0] :
+                                       (WB_valid & ~wb_can_not_front_push[1]  & ~wb_need_stall_csr[1] & (wb_front_addr[1] == rf_raddr1[i])) ? wb_front_data[1] :
                                        rf_rdata1[i];
-        assign  front_push_rdata2[i] =
-                                       (rf_raddr2[i] == 5'b0) ? 32'b0 :
+        assign  fwd_with_exe1_rdate2[i] = (rf_raddr2[i] == 5'b0) ? 32'b0 :
+                                       (EXE1_valid & ~exe1_can_not_front_push[0] & (EXE1_rf_dest[0] == rf_raddr2[i])) ? exe1_front_data[0]    :
+                                       (EXE1_valid & ~exe1_can_not_front_push[1] & (EXE1_rf_dest[1] == rf_raddr2[i])) ? exe1_front_data[1]    :
                                        (EXE2_valid & ~exe2_can_not_front_push[0] & (exe2_front_addr[0] == rf_raddr2[i])) ? exe2_front_data[0] :
                                        (EXE2_valid & ~exe2_can_not_front_push[1] & (exe2_front_addr[1] == rf_raddr2[i])) ? exe2_front_data[1] :
                                        (MEM_valid  & ~mem_can_not_front_push[0]  & (mem_front_addr[0]  == rf_raddr2[i])) ? mem_front_data[0]  :
                                        (MEM_valid  & ~mem_can_not_front_push[1]  & (mem_front_addr[1]  == rf_raddr2[i])) ? mem_front_data[1]  :
-                                    //   (WB_valid & !flush & ~wb_can_not_front_push[0] & (wb_front_addr[0] == rf_raddr2[i])) ? wb_front_data[0] :
-                                    //  (WB_valid & !flush & ~wb_can_not_front_push[1] & (wb_front_addr[1] == rf_raddr2[i])) ? wb_front_data[1] :
+                                       (WB_valid & ~wb_can_not_front_push[0] & ~wb_need_stall_csr[0] & (wb_front_addr[0] == rf_raddr2[i])) ? wb_front_data[0] :
+                                       (WB_valid & ~wb_can_not_front_push[1] & ~wb_need_stall_csr[1] & (wb_front_addr[1] == rf_raddr2[i])) ? wb_front_data[1] :
                                        rf_rdata2[i];
+        assign  fwd_no_exe1_rdata1[i] = (rf_raddr1[i] == 5'b0) ? 32'b0 :
+                                       (EXE2_valid & ~exe2_can_not_front_push[0] & (exe2_front_addr[0] == rf_raddr1[i])) ? exe2_front_data[0] :
+                                       (EXE2_valid & ~exe2_can_not_front_push[1] & (exe2_front_addr[1] == rf_raddr1[i])) ? exe2_front_data[1] :
+                                       (MEM_valid  & ~mem_can_not_front_push[0]  & (mem_front_addr[0]  == rf_raddr1[i])) ? mem_front_data[0]  :
+                                       (MEM_valid  & ~mem_can_not_front_push[1]  & (mem_front_addr[1]  == rf_raddr1[i])) ? mem_front_data[1]  :
+                                       (WB_valid & ~wb_can_not_front_push[0]  & ~wb_need_stall_csr[0] & (wb_front_addr[0] == rf_raddr1[i])) ? wb_front_data[0] :
+                                       (WB_valid & ~wb_can_not_front_push[1]  & ~wb_need_stall_csr[1] & (wb_front_addr[1] == rf_raddr1[i])) ? wb_front_data[1] :
+                                       rf_rdata1[i];
+        assign  fwd_no_exe1_rdata2[i] = (rf_raddr2[i] == 5'b0) ? 32'b0 :
+                                       (EXE2_valid & ~exe2_can_not_front_push[0] & (exe2_front_addr[0] == rf_raddr2[i])) ? exe2_front_data[0] :
+                                       (EXE2_valid & ~exe2_can_not_front_push[1] & (exe2_front_addr[1] == rf_raddr2[i])) ? exe2_front_data[1] :
+                                       (MEM_valid  & ~mem_can_not_front_push[0]  & (mem_front_addr[0]  == rf_raddr2[i])) ? mem_front_data[0]  :
+                                       (MEM_valid  & ~mem_can_not_front_push[1]  & (mem_front_addr[1]  == rf_raddr2[i])) ? mem_front_data[1]  :
+                                       (WB_valid & ~wb_can_not_front_push[0] & ~wb_need_stall_csr[0] & (wb_front_addr[0] == rf_raddr2[i])) ? wb_front_data[0] :
+                                       (WB_valid & ~wb_can_not_front_push[1] & ~wb_need_stall_csr[1] & (wb_front_addr[1] == rf_raddr2[i])) ? wb_front_data[1] :
+                                       rf_rdata2[i];
+
+        assign  front_push_rdata1[i] = fwd_with_exe1_rdata1[i];
+        assign  front_push_rdata2[i] = fwd_with_exe1_rdate2[i];
     end
 endgenerate 
 //ibar也在EXE2 所以可以直接赋值cacop_pc
@@ -435,34 +470,45 @@ wire        mem_need_stall_inst [1:0];
 wire        mem_need_stall_csr  [1:0];
 wire        wb_need_stall_csr   [1:0];
 wire        mem_load_wait       [1:0];
+wire        br_exe1_stall       [1:0];
 
 generate
     for (i = 0; i < ISSUE; i = i + 1) begin : gen_stall
         assign  mem_load_wait[i] = mem_need_stall_inst[i] & ~data_sram_data_ok;
         assign  src1_stall[i]    =
-                                   (rf_raddr1[i] != 5'd0) && ID_valid &&
-                                   (((rf_raddr1[i] == EXE1_rf_dest[0]) && EXE1_valid && EXE1_rf_gr_we[0]) ||
-                                   ((rf_raddr1[i] == EXE1_rf_dest[1]) && EXE1_valid && EXE1_rf_gr_we[1]) ||
+                                   (rf_raddr1[i] != 5'd0) && rr_valid &&
+                                   (((rf_raddr1[i] == EXE1_rf_dest[0]) && exe1_need_stall[0]) ||
+                                   ((rf_raddr1[i] == EXE1_rf_dest[1]) && exe1_need_stall[1]) ||
                                    ((rf_raddr1[i] == EXE2_rf_dest[0]) && EXE2_valid && (exe2_need_stall_inst[0] || exe2_need_stall_csr[0])) ||
                                    ((rf_raddr1[i] == EXE2_rf_dest[1]) && EXE2_valid && (exe2_need_stall_inst[1] || exe2_need_stall_csr[1])) ||
                                    ((rf_raddr1[i] == MEM_rf_dest[0])  && MEM_valid  && (mem_load_wait[0] || mem_need_stall_csr[0])) ||
                                    ((rf_raddr1[i] == MEM_rf_dest[1])  && MEM_valid  && (mem_load_wait[1] || mem_need_stall_csr[1])) ||
-                                   ((rf_raddr1[i] == WB_rf_dest[0])   && WB_valid   && !flush & ~wb_can_not_front_push[0]) ||
-                                   ((rf_raddr1[i] == WB_rf_dest[1])   && WB_valid   && !flush & ~wb_can_not_front_push[1]));
+                                   ((rf_raddr1[i] == WB_rf_dest[0])   && WB_valid   && wb_need_stall_csr[0]) ||
+                                   ((rf_raddr1[i] == WB_rf_dest[1])   && WB_valid   && wb_need_stall_csr[1]));
         assign  src2_stall[i]    =
-                                   (rf_raddr2[i] != 5'd0) && ID_valid &&
-                                   (((rf_raddr2[i] == EXE1_rf_dest[0]) && EXE1_valid && EXE1_rf_gr_we[0]) ||
-                                   ((rf_raddr2[i] == EXE1_rf_dest[1]) && EXE1_valid && EXE1_rf_gr_we[1]) ||
+                                   (rf_raddr2[i] != 5'd0) && rr_valid &&
+                                   (((rf_raddr2[i] == EXE1_rf_dest[0]) && exe1_need_stall[0]) ||
+                                   ((rf_raddr2[i] == EXE1_rf_dest[1]) && exe1_need_stall[1]) ||
                                    ((rf_raddr2[i] == EXE2_rf_dest[0]) && EXE2_valid && (exe2_need_stall_inst[0] || exe2_need_stall_csr[0])) ||
                                    ((rf_raddr2[i] == EXE2_rf_dest[1]) && EXE2_valid && (exe2_need_stall_inst[1] || exe2_need_stall_csr[1])) ||
                                    ((rf_raddr2[i] == MEM_rf_dest[0])  && MEM_valid  && (mem_load_wait[0] || mem_need_stall_csr[0])) ||
                                    ((rf_raddr2[i] == MEM_rf_dest[1])  && MEM_valid  && (mem_load_wait[1] || mem_need_stall_csr[1])) ||
-                                   ((rf_raddr2[i] == WB_rf_dest[0])   && WB_valid   && !flush & ~wb_can_not_front_push[0]) ||
-                                   ((rf_raddr2[i] == WB_rf_dest[1])   && WB_valid   && !flush & ~wb_can_not_front_push[1]));
+                                   ((rf_raddr2[i] == WB_rf_dest[0])   && WB_valid   && wb_need_stall_csr[0]) ||
+                                   ((rf_raddr2[i] == WB_rf_dest[1])   && WB_valid   && wb_need_stall_csr[1]));
+        assign   br_exe1_stall[i] = rr_valid && rr_is_br[i] && (
+                                    ((rf_raddr1[i] != 5'b0) && (
+                                      ((rf_raddr1[i] == EXE1_rf_dest[0]) & EXE1_rf_gr_we[0]) ||
+                                      ((rf_raddr1[i] == EXE1_rf_dest[1]) & EXE1_rf_gr_we[1])
+                                    )) ||
+                                    ((rf_raddr2[i] != 5'b0) && (
+                                      ((rf_raddr2[i] == EXE1_rf_dest[0]) & EXE1_rf_gr_we[0]) ||
+                                      ((rf_raddr2[i] == EXE1_rf_dest[1]) & EXE1_rf_gr_we[1])
+                                    )));
     end
 endgenerate
 
-assign  need_stall        = src1_stall[0] | src1_stall[1] | src2_stall[0] | src2_stall[1];
+assign  need_stall        = src1_stall[0] | src1_stall[1] | src2_stall[0] | src2_stall[1] |
+                            br_exe1_stall[0] | br_exe1_stall[1];
 
 wire    IDLE_stall;
 reg     preIF1_IDLE_stall;
@@ -549,6 +595,28 @@ bht u_bht(
 wire        push_valid;
 wire [31:0] push_target;
 wire        pop_valid;
+
+reg         push_valid_r;
+reg  [31:0] push_target_r;
+reg         pop_valid_r;
+
+always @(posedge clk) begin
+    if (!resetn) begin
+        push_valid_r  <= 1'b0;
+        push_target_r <= 32'b0;
+        pop_valid_r   <= 1'b0;
+    end
+    else if (cacop_need_cancel) begin
+        push_valid_r  <= 1'b0;
+        pop_valid_r   <= 1'b0;
+    end
+    else begin
+        push_valid_r  <= push_valid;
+        push_target_r <= push_target;
+        pop_valid_r   <= pop_valid;
+    end
+end
+
 wire        ras_query_hit   [1:0];
 wire [31:0] ras_query_target[1:0];
 ras u_ras(
@@ -563,10 +631,10 @@ ras u_ras(
     .query_hit1    (ras_query_hit[1]    ),
     .query_target1 (ras_query_target[1] ),
     // backend real call update
-    .push_valid    (push_valid          ),
-    .push_target   (push_target         ),
+    .push_valid    (push_valid_r        ),
+    .push_target   (push_target_r       ),
     // backend real return update
-    .pop_valid     (pop_valid           )
+    .pop_valid     (pop_valid_r         )
 );
 //------------------------{branch prediction}end---------------------------//
 
@@ -591,11 +659,14 @@ always @(posedge clk) begin
         br_afterpred_taken_r  <= 1'b0;
         br_afterpred_target_r <= 32'b0;
     end
+    else if (flush || cacop_need_cancel) begin
+        br_afterpred_taken_r  <= 1'b0;
+    end
     else begin
-        br_afterpred_taken_r  <= (flush || cacop_need_cancel) ? 1'b0
-                                 : br_afterpred_taken;
-
-        br_afterpred_target_r <= br_afterpred_target;
+        br_afterpred_taken_r  <= br_afterpred_taken;
+        if (br_afterpred_taken) begin
+            br_afterpred_target_r <= br_afterpred_target;
+        end
     end
 end
 
@@ -651,7 +722,7 @@ localparam                                     preIF1_preIF2_slot0_bus_width = 1
 localparam                                     preIF1_preIF2_bus_width       = 142;
 localparam                                     preIF2_IF_bus_width           = 106;
 localparam                                     IF_ID_bus_width               = 138;
-localparam                                     ID_EXE1_bus_width             = 244; // +1: slot_valid
+localparam                                     ID_EXE1_bus_width             = 247; // +1: slot_valid
 localparam                                     EXE1_EXE2_bus_width           = 279; // +1: EXE1_ex
 localparam                                     EXE2_MEM_bus_width            = 199;
 localparam                                     MEM_WB_bus_width              = 222;
@@ -664,6 +735,48 @@ wire       [ID_EXE1_bus_width-1:0]             ID_EXE1_bus                  [1:0
 wire       [EXE1_EXE2_bus_width-1:0]           EXE1_EXE2_bus                [1:0];
 wire       [EXE2_MEM_bus_width-1:0]            EXE2_MEM_bus                 [1:0];
 wire       [MEM_WB_bus_width-1:0]              MEM_WB_bus                   [1:0];
+
+//-----------------------------{skid}begin----------------------------------//
+//这里是IF到ID要打一拍，切断ID前递到IF的路径，这样就不需要ID_can_accept_IF,ID_allow_in前递信号
+reg                         skid_valid;
+reg [IF_ID_bus_width-1:0]   skid_bus[1:0];
+
+wire IF_advance = IF_valid    & IF_ready_go      ;//IF可以给ID指令
+wire ID_take    = ID_allow_in & ID_can_accept_IF ;//ID可以接受IF的指令
+
+wire skid_push  = IF_advance & ~ID_take & ~skid_valid;//skid寄存器可以压入：当IF要传指令且skid为空时
+wire skid_pop   = skid_valid & ID_take;//skid寄存器可以冒出：当寄存器有值并且ID可以接受时
+
+integer sk;
+always @(posedge clk) begin
+    if (!resetn) begin
+        skid_valid <= 1'b0;
+        for (sk = 0; sk < ISSUE; sk = sk + 1) begin
+            skid_bus[sk] <= {IF_ID_bus_width{1'b0}};
+        end
+    end
+    else if (preIF_IF_ID_need_cancel) begin
+        skid_valid <= 1'b0;
+    end
+    else if (skid_push) begin
+        skid_valid <= 1'b1;
+        for (sk = 0; sk < ISSUE; sk = sk + 1) begin
+            skid_bus[sk] <= IF_ID_bus[sk];
+        end
+    end
+    else if (skid_pop) begin
+        skid_valid <= 1'b0;
+    end
+end
+
+//要传给ID的bus_valid和bus，如果没有进skid寄存器那么就需要选择IF_ID_bus
+wire                        IF_ID_valid_to_ID = skid_valid | (IF_valid & IF_ready_go & ~skid_valid);
+wire [IF_ID_bus_width-1:0]  IF_ID_bus_to_ID[1:0];
+
+assign IF_ID_bus_to_ID[0]   = skid_valid ? skid_bus[0] : IF_ID_bus[0];
+assign IF_ID_bus_to_ID[1]   = skid_valid ? skid_bus[1] : IF_ID_bus[1];
+//-----------------------------{skid}end----------------------------------//
+
 //------------------------{5-stage pipeline bus + inst ram control}end------------------------//
 
 //------------------------{csr_regfile}begin-------------------------//
@@ -920,7 +1033,7 @@ pre_IF2 #(
     .inst_sram_addr_without_cacop (inst_sram_addr_without_cacop  ),
     .inst_sram_wdata              (inst_sram_wdata               ),
     .inst_sram_addr_ok            (inst_sram_addr_ok             ),
-    .IF_allow_in                  (IF_allow_in                   ),
+    .IF_allow_in                  (IFQ_allow_in                   ),
     .inst_sram_data_ok            (inst_sram_data_ok             ),
     .req_to_dataok_trigger        (req_to_dataok_trigger         ),
     .inst_resp_discard            (inst_resp_discard             ),
@@ -932,6 +1045,22 @@ pre_IF2 #(
     .inst_wr                      (inst_wr                       )
 );
 
+ifq #(
+    .BUS_WIDTH (preIF2_IF_bus_width),
+    .ISSUE     (ISSUE),
+    .DEPTH     (2)
+) u_ifq (
+    .clk       (clk),
+    .resetn    (resetn),
+    .flush     (preIF_IF_ID_need_cancel),
+    .in_valid  (preIF2_IF_valid),
+    .in_allow  (IFQ_allow_in),
+    .in_bus    (preIF2_IF_bus),
+    .out_valid (IFQ_IF_valid),
+    .out_allow (IF_allow_in),
+    .out_bus   (IFQ_IF_bus)
+);
+
 fetch #(
     .inbus_width           (preIF2_IF_bus_width   ),
     .outbus_width          (IF_ID_bus_width       ),
@@ -940,12 +1069,12 @@ fetch #(
     .clk                   (clk                   ),
     .resetn                (resetn                ),
     //control signal
-    .preIF2_IF_valid       (preIF2_IF_valid       ),
+    .preIF2_IF_valid       (IFQ_IF_valid       ),
     .IF_valid              (IF_valid              ),
     .IF_allow_in           (IF_allow_in           ),
     .IF_ready_go           (IF_ready_go           ),
     //bus
-    .preIF2_IF_bus         (preIF2_IF_bus         ),
+    .preIF2_IF_bus         (IFQ_IF_bus         ),
     .IF_ID_bus             (IF_ID_bus             ),
     //cancel
     .IF_need_cancel        (preIF_IF_ID_need_cancel        ),
@@ -958,8 +1087,11 @@ fetch #(
     .inst_resp_discard     (inst_resp_discard     ),
     .req_to_dataok_trigger (req_to_dataok_trigger ),
     //ID_can_accept_IF
-    .ID_can_accept_IF      (ID_can_accept_IF      )
+    .ID_can_accept_IF      (ID_can_accept_IF      ),
+    //skid
+    .skid_valid            (skid_valid            )
 );
+
 decode #(
     .inbus_width         (IF_ID_bus_width     ),
     .outbus_width        (ID_EXE1_bus_width   ),
@@ -969,11 +1101,12 @@ decode #(
     .resetn              (resetn              ),
     //control signal
     .ID_valid            (ID_valid            ),
-    .IF_ID_valid         (IF_ID_valid         ),
+    .rr_valid            (rr_valid            ),
+    .IF_ID_valid         (IF_ID_valid_to_ID   ),
     .ID_allow_in         (ID_allow_in         ),
     .ID_ready_go         (ID_ready_go         ),
     
-    .IF_ID_bus           (IF_ID_bus           ),//bus
+    .IF_ID_bus           (IF_ID_bus_to_ID     ),//bus
     .ID_EXE1_bus         (ID_EXE1_bus         ),
     //br_prediction
     .br_afterpred_taken  (br_afterpred_taken  ),
@@ -983,6 +1116,10 @@ decode #(
     .rf_raddr2           (rf_raddr2           ),
     .rf_rdata1           (front_push_rdata1   ),
     .rf_rdata2           (front_push_rdata2   ),//have been front_push 
+    .rf_rdata1_br        (fwd_no_exe1_rdata1  ),
+    .rf_rdata2_br        (fwd_no_exe1_rdata2  ),//专门用来跳转的读数据
+    //br前递
+    .is_br               (rr_is_br            ),
     //cancel
     .ID_need_cancel      (preIF_IF_ID_need_cancel      ),
     //stall
@@ -1005,7 +1142,9 @@ decode #(
     //PLV
     .csr_CRMD_PLV        (csr_CRMD_PLV        ),
     //ID_can_accept_IF
-    .ID_can_accept_IF    (ID_can_accept_IF    )
+    .ID_can_accept_IF    (ID_can_accept_IF    ),
+    //skid
+    .skid_valid          (skid_valid          )
 );
 
 exe1 #(
@@ -1026,6 +1165,9 @@ exe1 #(
     //stall
     .EXE1_rf_dest       (EXE1_rf_dest        ),
     .EXE1_rf_gr_we      (EXE1_rf_gr_we       ),
+    .exe1_front_data           (exe1_front_data          ),
+    .exe1_can_not_front_push   (exe1_can_not_front_push  ),
+    .exe1_need_stall           (exe1_need_stall          ),
     //cancel
     .EXE1_need_cancel   (EXE1_need_cancel    ),
     //stable counter
@@ -1047,6 +1189,7 @@ exe1 #(
     .invtlb_valid       (invtlb_valid        ),
     .invtlb_index       (invtlb_index        ),
     .invtlb_op          (invtlb_op           ),
+    .invtlb_search      (invtlb_search       ),
     //CRMD PG DA
     .csr_CRMD_DA        (csr_CRMD_DA         ),
     .csr_CRMD_PG        (csr_CRMD_PG         ),
