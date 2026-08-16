@@ -117,6 +117,8 @@ wire                     ex_tlb_st_unvalid   [ISSUE - 1 : 0];//tlb的store页无
 wire                     ex_tlb_plv1         [ISSUE - 1 : 0];//tlb的页权限上访
 wire                     ex_tlb_page_modify  [ISSUE - 1 : 0];//tlb的页修改
 wire                     EXE1_ex             [ISSUE - 1 : 0]; // EXE1 已汇总的异常，经流水线寄存器打一拍
+wire                     EXE2_slot_ex        [ISSUE - 1 : 0];
+
 
 // 总线侧按槽暂存，后级 mux 到 data_sram_* / data_mat / data_wr / cache_code
 wire   [31:0]            data_sram_addr_b    [ISSUE - 1 : 0];
@@ -196,19 +198,6 @@ always @ (posedge clk)begin
 end
 //------------------------{读写req&addr_ok}end-------------------------//
 
-//------------------------{dataRAM handshake}begin-------------------------//
-wire    EXE2_slot_ex [ISSUE - 1 : 0];
-assign  data_sram_req = dram_hit_any & (res_from_mem[dram_index] | mem_we[dram_index])
-                                     & ~req_without_dataok & MEM_allow_in & ~(inst_sc_w[dram_index] & ~sc_success)
-                                     & ~EXE2_slot_ex[dram_index] & ~(dram_index & EXE2_slot_ex[0]) & ~older_ex_for_exe2 & ~EXE2_need_cancel & EXE2_valid;
-assign  data_sram_wr  = |data_sram_wstrb;
-
-assign  cacop_valid   = EXE2_valid & inst_cacop[dram_index] & ~EXE2_slot_ex[dram_index] & ~older_ex_for_exe2 & slot_valid_from_exe1[dram_index] &
-                        (cache_code[4:3] == 2'b10 | csr_CRMD_PLV == 2'b00) & ~(dram_index & EXE2_slot_ex[0]) & ~EXE2_need_cancel; // 在 slot1 是 cacop slot0 不能异常
-assign  cacop_pc      = pc[dram_index] + 4;
-assign  idbar_pc      = pc[0] + 4;
-//------------------------{dataRAM handshake}end-------------------------//
-
 //------------------------{ll&sc}begin-------------------------//
 reg    [29:0] LLaddr;
 wire          sc_success;
@@ -236,6 +225,18 @@ end
 assign  LLbit_wb    = ll_finish | sc_finish;
 assign  LLbit_wdata = ll_finish;  // LL置1写完后SC清零
 //------------------------{ll&sc}end-------------------------//\
+
+//------------------------{dataRAM handshake}begin-------------------------//
+assign  data_sram_req = dram_hit_any & (res_from_mem[dram_index] | mem_we[dram_index])
+                                     & ~req_without_dataok & MEM_allow_in & ~(inst_sc_w[dram_index] & ~sc_success)
+                                     & ~EXE2_slot_ex[dram_index] & ~(dram_index & EXE2_slot_ex[0]) & ~older_ex_for_exe2 & ~EXE2_need_cancel & EXE2_valid;
+assign  data_sram_wr  = |data_sram_wstrb;
+
+assign  cacop_valid   = EXE2_valid & inst_cacop[dram_index] & ~EXE2_slot_ex[dram_index] & ~older_ex_for_exe2 & slot_valid_from_exe1[dram_index] &
+                        (cache_code[4:3] == 2'b10 | csr_CRMD_PLV == 2'b00) & ~(dram_index & EXE2_slot_ex[0]) & ~EXE2_need_cancel; // 在 slot1 是 cacop slot0 不能异常
+assign  cacop_pc      = pc[dram_index] + 4;
+assign  idbar_pc      = pc[0] + 4;
+//------------------------{dataRAM handshake}end-------------------------//
 
 //------------------------{need_stall_inst}begins-------------------------//
 generate

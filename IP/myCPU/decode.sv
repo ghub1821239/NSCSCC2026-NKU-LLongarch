@@ -128,15 +128,13 @@ wire                       consume_bus           = id_fire & bus_has_inst & ~pac
                                                    //重新拼包后next发出或者被hard丢弃
                                                    (hold_valid & (slot_issue[1] | hard_kill_slot1))
                                                    );
-wire                       accept_IF_in_bus      = IF_ID_valid & ID_allow_in & (~bus_has_inst | consume_bus) &
-                                                   ~(id_fire & (redirect0                     | redirect1)    );
+wire                       accept_IF_in_bus      = IF_ID_valid & ID_allow_in & (~bus_has_inst | consume_bus);
 wire   [inbus_width-1 : 0] hold_din              = create_hold_from_soft ? bus_eff[1] :
                                                    create_hold_from_tail ? bus[1]     :
                                                                            hold_bus;
 
 //output
-assign                     ID_can_accept_IF      = (~bus_has_inst          | consume_bus) &
-                                                    ~(id_fire & (redirect0 | redirect1)) & 
+assign                     ID_can_accept_IF      = (~bus_has_inst | consume_bus) &
                                                    ~(ID_need_cancel);
 
 always @(posedge clk) begin
