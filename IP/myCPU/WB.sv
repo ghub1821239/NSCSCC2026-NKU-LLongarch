@@ -491,7 +491,7 @@ generate
         assign debug_commit_valid[gi] = slot_fire[gi] & ~idle_ex;
         assign debug_commit_exception[gi] = slot_fire[gi] & ex_slot[gi];
         assign debug_commit_pc[gi*32 +: 32] = pc[gi];
-        assign debug_commit_rf_wen[gi*4 +: 4] = {4{rf_we[gi]}};
+        assign debug_commit_rf_wen[gi*4 +: 4] = {4{rf_we[gi] & (rf_waddr[gi] != 5'b0)}};
         assign debug_commit_rf_wnum[gi*5 +: 5] = rf_waddr[gi];
         assign debug_commit_rf_wdata[gi*32 +: 32] = rf_wdata[gi];
     end
