@@ -429,105 +429,98 @@ wire          wb_can_not_front_push  [ISSUE - 1 : 0];
 
 genvar        i;
 
-//【优·EXP8:直接让前递数据 & 选择条件在一起的mux太长，所以分开为了让mux稍微小点好布线】
-// match[5:0] = {EXE2 slot0, EXE2 slot1, MEM slot0, MEM slot1, WB slot0, WB slot1}
-wire   [5:0]  front_br_match_rdata1  [ISSUE-1:0];
-wire   [5:0]  front_br_match_rdata2  [ISSUE-1:0];
-reg    [2:0]  front_br_sel_rdata1    [ISSUE-1:0];
-reg    [2:0]  front_br_sel_rdata2    [ISSUE-1:0];
-localparam [2:0]
-            BR_SEL_EXE2_0 = 3'd0,
-            BR_SEL_EXE2_1 = 3'd1,
-            BR_SEL_MEM_0  = 3'd2,
-            BR_SEL_MEM_1  = 3'd3,
-            BR_SEL_WB_0   = 3'd4,
-            BR_SEL_WB_1   = 3'd5,
-            BR_SEL_RF     = 3'd6,
-            BR_SEL_ZERO   = 3'd7;
+//【优·EXP8B-HIER：branch forwarding 先在各流水级内缩减 slot，再在流水级间选择】
+// stage match[1:0] = {slot0, slot1}
+wire   [1:0]  exe2_br_match_rdata1   [ISSUE-1:0];
+wire   [1:0]  mem_br_match_rdata1    [ISSUE-1:0];
+wire   [1:0]  wb_br_match_rdata1     [ISSUE-1:0];
+wire          exe2_br_hit_rdata1     [ISSUE-1:0];
+wire          mem_br_hit_rdata1      [ISSUE-1:0];
+wire          wb_br_hit_rdata1       [ISSUE-1:0];
+wire   [31:0] exe2_br_data_rdata1    [ISSUE-1:0];
+wire   [31:0] mem_br_data_rdata1     [ISSUE-1:0];
+wire   [31:0] wb_br_data_rdata1      [ISSUE-1:0];
+
+wire   [1:0]  exe2_br_match_rdata2   [ISSUE-1:0];
+wire   [1:0]  mem_br_match_rdata2    [ISSUE-1:0];
+wire   [1:0]  wb_br_match_rdata2     [ISSUE-1:0];
+wire          exe2_br_hit_rdata2     [ISSUE-1:0];
+wire          mem_br_hit_rdata2      [ISSUE-1:0];
+wire          wb_br_hit_rdata2       [ISSUE-1:0];
+wire   [31:0] exe2_br_data_rdata2    [ISSUE-1:0];
+wire   [31:0] mem_br_data_rdata2     [ISSUE-1:0];
+wire   [31:0] wb_br_data_rdata2      [ISSUE-1:0];
 
 generate
     for (i = 0; i < ISSUE; i = i + 1) begin : gen_front_push
         // 给br的都不是从dcache来的ld拿回来的
         // 专门给br开了一个wb可以前递的
 
-        //【直接让前递数据 & 选择条件在一起的mux太长，所以分开为了让mux稍微小点好布线】
-        // 把原来的条件变成六位（！不一定独热，因此才需要casez映射)
-        assign  front_br_match_rdata1[i] = {
-                                            EXE2_valid & ~exe2_can_not_front_push[0] & (exe2_front_addr[0] == rf_raddr1[i])                         ,
-                                            EXE2_valid & ~exe2_can_not_front_push[1] & (exe2_front_addr[1] == rf_raddr1[i])                         ,
-                                            MEM_valid  & ~mem_can_not_front_push[0]  & ~mem_need_stall_inst[0] & (mem_front_addr[0] == rf_raddr1[i]),
-                                            MEM_valid  & ~mem_can_not_front_push[1]  & ~mem_need_stall_inst[1] & (mem_front_addr[1] == rf_raddr1[i]),
-                                            WB_valid   & wb_front_valid[0] & (wb_front_addr[0] == rf_raddr1[i])                                     ,
-                                            WB_valid   & wb_front_valid[1] & (wb_front_addr[1] == rf_raddr1[i])
+        assign  exe2_br_match_rdata1[i] = {
+                                                   EXE2_valid & ~exe2_can_not_front_push[0] & (exe2_front_addr[0] == rf_raddr1[i]),
+                                                   EXE2_valid & ~exe2_can_not_front_push[1] & (exe2_front_addr[1] == rf_raddr1[i])
+                                          };
+        assign  mem_br_match_rdata1[i]  = {
+                                                   MEM_valid & ~mem_can_not_front_push[0] & ~mem_need_stall_inst[0] & (mem_front_addr[0] == rf_raddr1[i]),
+                                                   MEM_valid & ~mem_can_not_front_push[1] & ~mem_need_stall_inst[1] & (mem_front_addr[1] == rf_raddr1[i])
                                            };
-        assign  front_br_match_rdata2[i] = {
-                                            EXE2_valid & ~exe2_can_not_front_push[0] & (exe2_front_addr[0] == rf_raddr2[i])                         ,
-                                            EXE2_valid & ~exe2_can_not_front_push[1] & (exe2_front_addr[1] == rf_raddr2[i])                         ,
-                                            MEM_valid  & ~mem_can_not_front_push[0]  & ~mem_need_stall_inst[0] & (mem_front_addr[0] == rf_raddr2[i]),
-                                            MEM_valid  & ~mem_can_not_front_push[1]  & ~mem_need_stall_inst[1] & (mem_front_addr[1] == rf_raddr2[i]),
-                                            WB_valid   & wb_front_valid[0] & (wb_front_addr[0] == rf_raddr2[i])                                     ,
-                                            WB_valid   & wb_front_valid[1] & (wb_front_addr[1] == rf_raddr2[i])
-                                           };
-        // 必须先用casez映射到对应模式，因为case没有优先级 并且 可能出现exe&mem的dest相同情况
-        // casez可以使用?表示不关心，但是case不能使用?通配符
+        assign  wb_br_match_rdata1[i]   = {
+                                                   WB_valid & wb_front_valid[0] & (wb_front_addr[0] == rf_raddr1[i]),
+                                                   WB_valid & wb_front_valid[1] & (wb_front_addr[1] == rf_raddr1[i])
+                                          };
+
+        assign  exe2_br_match_rdata2[i] = {
+                                                   EXE2_valid & ~exe2_can_not_front_push[0] & (exe2_front_addr[0] == rf_raddr2[i]),
+                                                   EXE2_valid & ~exe2_can_not_front_push[1] & (exe2_front_addr[1] == rf_raddr2[i])
+                                          };
+        assign  mem_br_match_rdata2[i]  = {
+                                                   MEM_valid & ~mem_can_not_front_push[0] & ~mem_need_stall_inst[0] & (mem_front_addr[0] == rf_raddr2[i]),
+                                                   MEM_valid & ~mem_can_not_front_push[1] & ~mem_need_stall_inst[1] & (mem_front_addr[1] == rf_raddr2[i])
+                                          };
+        assign  wb_br_match_rdata2[i]   = {
+                                                   WB_valid & wb_front_valid[0] & (wb_front_addr[0] == rf_raddr2[i]),
+                                                   WB_valid & wb_front_valid[1] & (wb_front_addr[1] == rf_raddr2[i])
+                                          };
+
+        assign  exe2_br_hit_rdata1[i]  = |exe2_br_match_rdata1[i];
+        assign  mem_br_hit_rdata1[i]   = |mem_br_match_rdata1[i];
+        assign  wb_br_hit_rdata1[i]    = |wb_br_match_rdata1[i];
+        assign  exe2_br_data_rdata1[i] = exe2_br_match_rdata1[i][1] ? exe2_front_data[0]      : exe2_front_data[1];
+        assign  mem_br_data_rdata1[i]  = mem_br_match_rdata1[i][1]  ? mem_front_data_nonld[0] : mem_front_data_nonld[1];
+        assign  wb_br_data_rdata1[i]   = wb_br_match_rdata1[i][1]   ? wb_front_data[0]        : wb_front_data[1];
+
+        assign  exe2_br_hit_rdata2[i]  = |exe2_br_match_rdata2[i];
+        assign  mem_br_hit_rdata2[i]   = |mem_br_match_rdata2[i];
+        assign  wb_br_hit_rdata2[i]    = |wb_br_match_rdata2[i];
+        assign  exe2_br_data_rdata2[i] = exe2_br_match_rdata2[i][1] ? exe2_front_data[0]      : exe2_front_data[1];
+        assign  mem_br_data_rdata2[i]  = mem_br_match_rdata2[i][1]  ? mem_front_data_nonld[0] : mem_front_data_nonld[1];
+        assign  wb_br_data_rdata2[i]   = wb_br_match_rdata2[i][1]   ? wb_front_data[0]        : wb_front_data[1];
+
         always @(*) begin
             if (rf_raddr1[i] == 5'd0) begin
-                front_br_sel_rdata1[i] = BR_SEL_ZERO;
+                front_push_br_rdata1[i] = 32'd0;
             end
             else begin
-                casez (front_br_match_rdata1[i])
-                    6'b1?????: front_br_sel_rdata1[i] = BR_SEL_EXE2_0;
-                    6'b01????: front_br_sel_rdata1[i] = BR_SEL_EXE2_1;
-                    6'b001???: front_br_sel_rdata1[i] = BR_SEL_MEM_0;
-                    6'b0001??: front_br_sel_rdata1[i] = BR_SEL_MEM_1;
-                    6'b00001?: front_br_sel_rdata1[i] = BR_SEL_WB_0;
-                    6'b000001: front_br_sel_rdata1[i] = BR_SEL_WB_1;
-                    default:   front_br_sel_rdata1[i] = BR_SEL_RF;
+                casez ({exe2_br_hit_rdata1[i], mem_br_hit_rdata1[i], wb_br_hit_rdata1[i]})
+                    3'b1??:  front_push_br_rdata1[i] = exe2_br_data_rdata1[i];
+                    3'b01?:  front_push_br_rdata1[i] = mem_br_data_rdata1[i];
+                    3'b001:  front_push_br_rdata1[i] = wb_br_data_rdata1[i];
+                    default: front_push_br_rdata1[i] = rf_rdata1[i];
                 endcase
             end
         end
         always @(*) begin
             if (rf_raddr2[i] == 5'd0) begin
-                front_br_sel_rdata2[i] = BR_SEL_ZERO;
+                front_push_br_rdata2[i] = 32'd0;
             end
             else begin
-                casez (front_br_match_rdata2[i])
-                    6'b1?????: front_br_sel_rdata2[i] = BR_SEL_EXE2_0;
-                    6'b01????: front_br_sel_rdata2[i] = BR_SEL_EXE2_1;
-                    6'b001???: front_br_sel_rdata2[i] = BR_SEL_MEM_0;
-                    6'b0001??: front_br_sel_rdata2[i] = BR_SEL_MEM_1;
-                    6'b00001?: front_br_sel_rdata2[i] = BR_SEL_WB_0;
-                    6'b000001: front_br_sel_rdata2[i] = BR_SEL_WB_1;
-                    default:   front_br_sel_rdata2[i] = BR_SEL_RF;
+                casez ({exe2_br_hit_rdata2[i], mem_br_hit_rdata2[i], wb_br_hit_rdata2[i]})
+                    3'b1??:  front_push_br_rdata2[i] = exe2_br_data_rdata2[i];
+                    3'b01?:  front_push_br_rdata2[i] = mem_br_data_rdata2[i];
+                    3'b001:  front_push_br_rdata2[i] = wb_br_data_rdata2[i];
+                    default: front_push_br_rdata2[i] = rf_rdata2[i];
                 endcase
             end
-        end
-        // 成功映射之后就可以进行数据选择了
-        always @(*) begin
-            case (front_br_sel_rdata1[i])
-                BR_SEL_EXE2_0: front_push_br_rdata1[i] = exe2_front_data[0];
-                BR_SEL_EXE2_1: front_push_br_rdata1[i] = exe2_front_data[1];
-                BR_SEL_MEM_0:  front_push_br_rdata1[i] = mem_front_data_nonld[0];
-                BR_SEL_MEM_1:  front_push_br_rdata1[i] = mem_front_data_nonld[1];
-                BR_SEL_WB_0:   front_push_br_rdata1[i] = wb_front_data[0];
-                BR_SEL_WB_1:   front_push_br_rdata1[i] = wb_front_data[1];
-                BR_SEL_RF:     front_push_br_rdata1[i] = rf_rdata1[i];
-                BR_SEL_ZERO:   front_push_br_rdata1[i] = 32'd0;
-                default:       front_push_br_rdata1[i] = rf_rdata1[i];
-            endcase
-        end
-        always @(*) begin
-            case (front_br_sel_rdata2[i])
-                BR_SEL_EXE2_0: front_push_br_rdata2[i] = exe2_front_data[0];
-                BR_SEL_EXE2_1: front_push_br_rdata2[i] = exe2_front_data[1];
-                BR_SEL_MEM_0:  front_push_br_rdata2[i] = mem_front_data_nonld[0];
-                BR_SEL_MEM_1:  front_push_br_rdata2[i] = mem_front_data_nonld[1];
-                BR_SEL_WB_0:   front_push_br_rdata2[i] = wb_front_data[0];
-                BR_SEL_WB_1:   front_push_br_rdata2[i] = wb_front_data[1];
-                BR_SEL_RF:     front_push_br_rdata2[i] = rf_rdata2[i];
-                BR_SEL_ZERO:   front_push_br_rdata2[i] = 32'd0;
-                default:       front_push_br_rdata2[i] = rf_rdata2[i];
-            endcase
         end
 
 
