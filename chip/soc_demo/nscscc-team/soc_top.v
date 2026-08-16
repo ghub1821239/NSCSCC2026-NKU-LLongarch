@@ -129,6 +129,14 @@ wire [31:0] debug_wb_pc;
 wire [3 :0] debug_wb_rf_wen;
 wire [4 :0] debug_wb_rf_wnum;
 wire [31:0] debug_wb_rf_wdata;
+wire [1 :0] debug_commit_valid;
+wire [1 :0] debug_commit_exception;
+wire [5 :0] debug_commit_ecode;
+wire [8 :0] debug_commit_esubcode;
+wire [63:0] debug_commit_pc;
+wire [7 :0] debug_commit_rf_wen;
+wire [9 :0] debug_commit_rf_wnum;
+wire [63:0] debug_commit_rf_wdata;
 
 //clk and resetn
 reg clk_91m;
@@ -601,7 +609,15 @@ core_top u_cpu(
     .debug0_wb_pc       (debug_wb_pc        ),
     .debug0_wb_rf_wen   (debug_wb_rf_wen    ),
     .debug0_wb_rf_wnum  (debug_wb_rf_wnum   ),
-    .debug0_wb_rf_wdata (debug_wb_rf_wdata  )
+    .debug0_wb_rf_wdata (debug_wb_rf_wdata  ),
+    .debug_commit_valid     (debug_commit_valid     ),
+    .debug_commit_exception (debug_commit_exception ),
+    .debug_commit_ecode     (debug_commit_ecode     ),
+    .debug_commit_esubcode  (debug_commit_esubcode  ),
+    .debug_commit_pc        (debug_commit_pc        ),
+    .debug_commit_rf_wen    (debug_commit_rf_wen    ),
+    .debug_commit_rf_wnum   (debug_commit_rf_wnum   ),
+    .debug_commit_rf_wdata  (debug_commit_rf_wdata  )
 );
 
 axi3_to_axi4_bridge #(
