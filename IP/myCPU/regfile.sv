@@ -36,6 +36,32 @@ always @(posedge clk) begin
     end
 end
 
+// bank内先选择
+function automatic [31:0] rf_bank_mux8(
+    input [ 2:0] sel,
+    input [31:0] data0,
+    input [31:0] data1,
+    input [31:0] data2,
+    input [31:0] data3,
+    input [31:0] data4,
+    input [31:0] data5,
+    input [31:0] data6,
+    input [31:0] data7
+);
+begin
+    case (sel)
+        3'd0:    rf_bank_mux8 = data0;
+        3'd1:    rf_bank_mux8 = data1;
+        3'd2:    rf_bank_mux8 = data2;
+        3'd3:    rf_bank_mux8 = data3;
+        3'd4:    rf_bank_mux8 = data4;
+        3'd5:    rf_bank_mux8 = data5;
+        3'd6:    rf_bank_mux8 = data6;
+        default: rf_bank_mux8 = data7;
+    endcase
+end
+endfunction
+
 genvar  gi;
 generate
     for (gi = 0; gi < ISSUE; gi = gi + 1)begin : gen_rd 
@@ -54,8 +80,34 @@ generate
         //                      hit_w0_r2            ? wdata[0]  :
         //                      rf[raddr2[gi]];
 
-        assign  rdata1[gi] = (raddr1[gi] == 5'b0) ? 32'b0 : rf[raddr1[gi]];
-        assign  rdata2[gi] = (raddr2[gi] == 5'b0) ? 32'b0 : rf[raddr2[gi]];
+        wire [31:0] rdata1_bank0 = rf_bank_mux8(raddr1[gi][2:0], rf[ 0], rf[ 1], rf[ 2], rf[ 3],
+                                                                      rf[ 4], rf[ 5], rf[ 6], rf[ 7]);
+        wire [31:0] rdata1_bank1 = rf_bank_mux8(raddr1[gi][2:0], rf[ 8], rf[ 9], rf[10], rf[11],
+                                                                      rf[12], rf[13], rf[14], rf[15]);
+        wire [31:0] rdata1_bank2 = rf_bank_mux8(raddr1[gi][2:0], rf[16], rf[17], rf[18], rf[19],
+                                                                      rf[20], rf[21], rf[22], rf[23]);
+        wire [31:0] rdata1_bank3 = rf_bank_mux8(raddr1[gi][2:0], rf[24], rf[25], rf[26], rf[27],
+                                                                      rf[28], rf[29], rf[30], rf[31]);
+        wire [31:0] rdata1_selected = (raddr1[gi][4:3] == 2'b00) ? rdata1_bank0 :
+                                      (raddr1[gi][4:3] == 2'b01) ? rdata1_bank1 :
+                                      (raddr1[gi][4:3] == 2'b10) ? rdata1_bank2 :
+                                                                  rdata1_bank3;
+        
+        wire [31:0] rdata2_bank0 = rf_bank_mux8(raddr2[gi][2:0], rf[ 0], rf[ 1], rf[ 2], rf[ 3],
+                                                                      rf[ 4], rf[ 5], rf[ 6], rf[ 7]);
+        wire [31:0] rdata2_bank1 = rf_bank_mux8(raddr2[gi][2:0], rf[ 8], rf[ 9], rf[10], rf[11],
+                                                                      rf[12], rf[13], rf[14], rf[15]);
+        wire [31:0] rdata2_bank2 = rf_bank_mux8(raddr2[gi][2:0], rf[16], rf[17], rf[18], rf[19],
+                                                                      rf[20], rf[21], rf[22], rf[23]);
+        wire [31:0] rdata2_bank3 = rf_bank_mux8(raddr2[gi][2:0], rf[24], rf[25], rf[26], rf[27],
+                                                                      rf[28], rf[29], rf[30], rf[31]);
+        wire [31:0] rdata2_selected = (raddr2[gi][4:3] == 2'b00) ? rdata2_bank0 :
+                                      (raddr2[gi][4:3] == 2'b01) ? rdata2_bank1 :
+                                      (raddr2[gi][4:3] == 2'b10) ? rdata2_bank2 :
+                                                                  rdata2_bank3;
+
+        assign  rdata1[gi] = (raddr1[gi] == 5'b0) ? 32'b0 : rdata1_selected;
+        assign  rdata2[gi] = (raddr2[gi] == 5'b0) ? 32'b0 : rdata2_selected;
     end 
 endgenerate
 
