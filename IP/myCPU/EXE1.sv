@@ -16,7 +16,7 @@ module exe1 #(
   input  wire [inbus_width-1:0]    ID_EXE1_bus       [ISSUE - 1 : 0],//bus
   input  wire [1:0]                src1_capture_sel   [ISSUE - 1 : 0],
   input  wire [1:0]                src2_capture_sel   [ISSUE - 1 : 0],
-  input  wire                      ID_need_alu2[ISSUE - 1 : 0],
+  input  wire                      ID_need_alu2_rk[ISSUE - 1 : 0],
   output wire [outbus_width-1:0]   EXE1_EXE2_bus     [ISSUE - 1 : 0],
   //stall
   output wire [ 4:0]               EXE1_rf_dest      [ISSUE - 1 : 0],
@@ -168,14 +168,14 @@ generate
                 2'b01: begin                                      
                     // bus[210:179] = rkd_value
                     bus_capture_d[i][210:179] = alu_result_with_rdct[0];
-                    if (ID_need_alu2[i]) begin//如果需要进入alu2当作操作数计算的才会更新对应的alu_src2部分
+                    if (ID_need_alu2_rk[i]) begin//如果需要进入alu2当作操作数计算的才会更新对应的alu_src2部分
                         // bus[127:96]  = alu_src2
                         bus_capture_d[i][127:96] = alu_result_with_rdct[0];
                     end
                 end
                 2'b10: begin
                     bus_capture_d[i][210:179] = alu_result_with_rdct[1];
-                    if (ID_need_alu2[i]) begin
+                    if (ID_need_alu2_rk[i]) begin
                         bus_capture_d[i][127:96] = alu_result_with_rdct[1];
                     end
                 end
