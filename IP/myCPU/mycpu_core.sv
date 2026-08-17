@@ -485,16 +485,16 @@ generate
         assign  exe2_br_hit_rdata1[i]  = |exe2_br_match_rdata1[i];
         assign  mem_br_hit_rdata1[i]   = |mem_br_match_rdata1[i];
         assign  wb_br_hit_rdata1[i]    = |wb_br_match_rdata1[i];
-        assign  exe2_br_data_rdata1[i] = exe2_br_match_rdata1[i][1] ? exe2_front_data[0]      : exe2_front_data[1];
-        assign  mem_br_data_rdata1[i]  = mem_br_match_rdata1[i][1]  ? mem_front_data_nonld[0] : mem_front_data_nonld[1];
-        assign  wb_br_data_rdata1[i]   = wb_br_match_rdata1[i][1]   ? wb_front_data[0]        : wb_front_data[1];
+        assign  exe2_br_data_rdata1[i] = exe2_br_match_rdata1[i][0] ? exe2_front_data[1]      : exe2_front_data[0];
+        assign  mem_br_data_rdata1[i]  = mem_br_match_rdata1[i][0]  ? mem_front_data_nonld[1] : mem_front_data_nonld[0];
+        assign  wb_br_data_rdata1[i]   = wb_br_match_rdata1[i][0]   ? wb_front_data[1]        : wb_front_data[0];
 
         assign  exe2_br_hit_rdata2[i]  = |exe2_br_match_rdata2[i];
         assign  mem_br_hit_rdata2[i]   = |mem_br_match_rdata2[i];
         assign  wb_br_hit_rdata2[i]    = |wb_br_match_rdata2[i];
-        assign  exe2_br_data_rdata2[i] = exe2_br_match_rdata2[i][1] ? exe2_front_data[0]      : exe2_front_data[1];
-        assign  mem_br_data_rdata2[i]  = mem_br_match_rdata2[i][1]  ? mem_front_data_nonld[0] : mem_front_data_nonld[1];
-        assign  wb_br_data_rdata2[i]   = wb_br_match_rdata2[i][1]   ? wb_front_data[0]        : wb_front_data[1];
+        assign  exe2_br_data_rdata2[i] = exe2_br_match_rdata2[i][0] ? exe2_front_data[1]      : exe2_front_data[0];
+        assign  mem_br_data_rdata2[i]  = mem_br_match_rdata2[i][0]  ? mem_front_data_nonld[1] : mem_front_data_nonld[0];
+        assign  wb_br_data_rdata2[i]   = wb_br_match_rdata2[i][0]   ? wb_front_data[1]        : wb_front_data[0];
 
         always @(*) begin
             if (rf_raddr1[i] == 5'd0) begin
@@ -527,21 +527,21 @@ generate
         // 普通路径：CSR producer 已在注册的 wb_front_valid 中排除
         assign  front_push_rdata1[i] =
                                        (rf_raddr1[i] == 5'b0) ? 32'b0 :
-                                       (EXE2_valid & ~exe2_can_not_front_push[0] & (exe2_front_addr[0] == rf_raddr1[i])) ? exe2_front_data[0] :
                                        (EXE2_valid & ~exe2_can_not_front_push[1] & (exe2_front_addr[1] == rf_raddr1[i])) ? exe2_front_data[1] :
-                                       (MEM_valid  & ~mem_can_not_front_push[0]  & (mem_front_addr[0]  == rf_raddr1[i])) ? mem_front_data[0]  :
+                                       (EXE2_valid & ~exe2_can_not_front_push[0] & (exe2_front_addr[0] == rf_raddr1[i])) ? exe2_front_data[0] :
                                        (MEM_valid  & ~mem_can_not_front_push[1]  & (mem_front_addr[1]  == rf_raddr1[i])) ? mem_front_data[1]  :
-                                       (WB_valid & wb_front_valid[0] & (wb_front_addr[0] == rf_raddr1[i])) ? wb_front_data[0] :
+                                       (MEM_valid  & ~mem_can_not_front_push[0]  & (mem_front_addr[0]  == rf_raddr1[i])) ? mem_front_data[0]  :
                                        (WB_valid & wb_front_valid[1] & (wb_front_addr[1] == rf_raddr1[i])) ? wb_front_data[1] :
+                                       (WB_valid & wb_front_valid[0] & (wb_front_addr[0] == rf_raddr1[i])) ? wb_front_data[0] :
                                        rf_rdata1[i];
         assign  front_push_rdata2[i] =
                                        (rf_raddr2[i] == 5'b0) ? 32'b0 :
-                                       (EXE2_valid & ~exe2_can_not_front_push[0] & (exe2_front_addr[0] == rf_raddr2[i])) ? exe2_front_data[0] :
                                        (EXE2_valid & ~exe2_can_not_front_push[1] & (exe2_front_addr[1] == rf_raddr2[i])) ? exe2_front_data[1] :
-                                       (MEM_valid  & ~mem_can_not_front_push[0]  & (mem_front_addr[0]  == rf_raddr2[i])) ? mem_front_data[0]  :
+                                       (EXE2_valid & ~exe2_can_not_front_push[0] & (exe2_front_addr[0] == rf_raddr2[i])) ? exe2_front_data[0] :
                                        (MEM_valid  & ~mem_can_not_front_push[1]  & (mem_front_addr[1]  == rf_raddr2[i])) ? mem_front_data[1]  :
-                                       (WB_valid & wb_front_valid[0] & (wb_front_addr[0] == rf_raddr2[i])) ? wb_front_data[0] :
+                                       (MEM_valid  & ~mem_can_not_front_push[0]  & (mem_front_addr[0]  == rf_raddr2[i])) ? mem_front_data[0]  :
                                        (WB_valid & wb_front_valid[1] & (wb_front_addr[1] == rf_raddr2[i])) ? wb_front_data[1] :
+                                       (WB_valid & wb_front_valid[0] & (wb_front_addr[0] == rf_raddr2[i])) ? wb_front_data[0] :
                                        rf_rdata2[i];
     end
 endgenerate 
