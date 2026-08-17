@@ -26,6 +26,9 @@ module decode #(
     input  wire [31:0]             br_rdata2          [ISSUE - 1 : 0],
     output wire                    br_use_rj          [ISSUE - 1 : 0],
     output wire                    br_use_rk          [ISSUE - 1 : 0],
+    output wire                    EID_need_alu1_rj   [ISSUE - 1 : 0],
+    output wire                    ID_need_src2_withST   [ISSUE - 1 : 0],
+    output wire                    ID_need_alu2_rk_rk_rk_rk[ISSUE - 1 : 0],
     //cancel control
     input  wire                    ID_need_cancel,
     //prediction
@@ -221,6 +224,9 @@ wire                    pop_need       [ISSUE-1:0];
 wire [1:0]              br_type        [ISSUE-1:0];
 wire                    ex_INE         [ISSUE-1:0];
 wire                    ex_IPE         [ISSUE-1:0];
+wire                    EID_need_alu1_rj_raw   [ISSUE-1:0];
+wire                    ID_need_src2_withST_raw   [ISSUE-1:0];
+wire                    ID_need_alu2_rk_rk_rk_rk_raw[ISSUE-1:0];
 
 generate
   for (gi = 0; gi < ISSUE; gi = gi + 1) begin : gen_alu_res
@@ -247,6 +253,9 @@ generate
       .br_rdata2            (br_rdata2[gi]              ),
       .br_use_rj            (br_use_rj[gi]              ),
       .br_use_rk            (br_use_rk[gi]              ),
+      .EID_need_alu1_rj     (EID_need_alu1_rj_raw[gi]    ),
+      .ID_need_src2_withST     (ID_need_src2_withST_raw[gi]    ),
+      .ID_need_alu2_rk_rk_rk_rk  (ID_need_alu2_rk_rk_rk_rk_raw[gi] ),
 
       .csr_CRMD_PLV         (csr_CRMD_PLV               ),
       .has_int              ((gi == 0) ? has_int : 1'b0 ),//只在slot0判中断
@@ -304,7 +313,7 @@ wire       slot0_trap                = slot_valid[0] & (ex_ADEF[0] | ex_tlb_relo
                                        ex_INE[0]                   | ex_IPE[0]         | has_int);//会让slot1被杀的情况，名字叫slot0陷阱
 wire       hard_kill_slot1           = slot0_trap | pred_not_neighbor_kill_s1 | pred_is_neighbor_kill_s1;//直接不要slot1,这里的逻辑是如果预测正确则至多soft kill,只有预测错误或者异常才会是hard kill被直接丢弃
 wire       soft_kill_slot1           = slot_valid[0] & slot_valid[1] & ~hard_kill_slot1 & (
-                                       RAW_s1_s0 | struct_comflict | (is_br[0] & is_br[1]));//slot1只是暂时发不了，不能丢弃
+                                       RAW_s1_s0 | WAW_s1_s0 | struct_comflict | (is_br[0] & is_br[1]));//slot1只是暂时发不了，不能丢弃
 wire       kill_slot1                = hard_kill_slot1 | soft_kill_slot1;
 //wire kill_slot1 = slot0_fetch_ex | RAW_s1_s0 | WAW_s1_s0 | struct_comflict | pred_not_neighbor_kill_s1 | pred_is_neighbor_kill_s1 | (is_br[0] & is_br[1]);//注意这里不要走双分支
 wire [1:0] slot_issue                = {slot_valid[1] & ~kill_slot1, slot_valid[0]};
@@ -313,7 +322,7 @@ wire [1:0] slot_issue                = {slot_valid[1] & ~kill_slot1, slot_valid[
 wire       hard_kill_no_br           = slot0_trap;
 // slot0是st/ld/cacop这种我们不让发
 wire       soft_kill_no_br           = slot_valid[0] & slot_valid[1] & ~hard_kill_no_br & (
-                                       RAW_s1_s0 | struct_comflict | (is_br[0] & is_br[1]));
+                                       RAW_s1_s0 | WAW_s1_s0 | struct_comflict | (is_br[0] & is_br[1]));
 // 以上两种都不是就可以发
 wire       slot_issue1_no_br         = slot_valid[1] & ~hard_kill_no_br & ~soft_kill_no_br;
 // hold_valid 时，effective slot0 来自 hold_bus；
@@ -367,6 +376,9 @@ assign  pop_valid           = id_fire       & (slot_issue[0] & pop_need[0] |
 generate
     for (gi = 0; gi < ISSUE; gi = gi + 1) begin : gen_id_exe
         assign  ID_EXE1_bus[gi] = slot_issue[gi] ? {1'b1,exe_payload[gi]} : {outbus_width{1'b0}};
+        assign  EID_need_alu1_rj[gi]    = slot_issue[gi] & EID_need_alu1_rj_raw[gi];
+        assign  ID_need_src2_withST[gi]    = slot_issue[gi] & ID_need_src2_withST_raw[gi];
+        assign  ID_need_alu2_rk_rk_rk_rk[gi] = slot_issue[gi] & ID_need_alu2_rk_rk_rk_rk_raw[gi];
     end
 endgenerate
 //------------------------{bus}end-------------------------//

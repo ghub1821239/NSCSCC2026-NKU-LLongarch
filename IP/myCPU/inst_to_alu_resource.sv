@@ -26,6 +26,12 @@ module inst_to_alu_resource #(
     output wire                    br_use_rj,  
     output wire                    br_use_rk,  
 
+    // 当前指令的这个源能不能在进入EXE1时，用current EXE1结果修复
+    // 这些都只是组合判断，不会跟着ID_EXE1 bus打拍
+    output wire                    EID_need_alu1_rj,
+    output wire                    ID_need_src2_withST,
+    output wire                    ID_need_alu2_rk,
+
     output wire [outbus_width-2:0] exe_payload, // 与现 ID_EXE1_bus 同序
     output wire                    real_taken,
     output wire [31:0]             real_target,
@@ -421,6 +427,36 @@ wire    need_stall_inst;
 wire    need_stall_csr;
 assign  need_stall_inst = inst_ld_w | inst_ld_b | inst_ld_h | inst_ld_bu | inst_ld_hu | inst_ll_w;
 assign  need_stall_csr  = inst_csrrd | inst_csrwr | inst_csrxchg | inst_rdcntid | inst_rdcntvl_w | inst_rdcntvh_w;
+
+// 只有进入EXE1之后才使用的源，才能capture
+// branch/jirl在ID就要用；CSR/TLB/CPUCFG/CACOP/PRELD本轮保守不做
+wire need_is_valid = slot_valid & ~ex_ADEF & ~ex_tlb_reload0 &
+                             ~ex_tlb_preif_unvalid & ~ex_tlb_plv0 &
+                             ~ex_INE & ~ex_IPE & ~has_int;
+// 只请求src1是rj的
+assign EID_need_alu1_rj = need_is_valid & (
+                         inst_add_w | inst_sub_w | inst_slt | inst_sltu | 
+                         inst_nor | inst_and | inst_or | inst_xor |
+                         inst_slli_w | inst_srli_w | inst_srai_w |
+                         inst_addi_w | inst_slti | inst_sltui |
+                         inst_andi | inst_ori | inst_xori |
+                         inst_sll_w | inst_srl_w | inst_sra_w |
+                         inst_mul_w | inst_mulh_w | inst_mulh_wu |
+                         inst_div | inst_divu | inst_mod | inst_modu |
+                         inst_ld_w | inst_ld_b | inst_ld_h | 
+                         inst_ld_bu | inst_ld_hu |
+                         inst_st_w | inst_st_b | inst_st_h |
+                         inst_ll_w | inst_sc_w);
+// 只请求src2是rk的
+assign ID_need_alu2_rk = need_is_valid & (
+                          inst_add_w | inst_sub_w | inst_slt | inst_sltu |
+                          inst_nor | inst_and | inst_or | inst_xor |
+                          inst_sll_w | inst_srl_w | inst_sra_w |
+                          inst_mul_w | inst_mulh_w | inst_mulh_wu |
+                          inst_div | inst_divu | inst_mod | inst_modu);
+assign ID_need_src2_withST = ID_need_alu2_rk |
+                         (need_is_valid &
+                          (inst_st_w | inst_st_b | inst_st_h | inst_sc_w));
 //------------------------{stall}end-------------------------//
 
 //------------------------{ex_INE}begin-------------------------//

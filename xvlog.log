@@ -1,0 +1,41 @@
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "D:/NSCSCC2026-LLongarch/IP/myCPU/inst_to_alu_resource.sv" into library work
+INFO: [VRFC 10-311] analyzing module inst_to_alu_resource
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "D:/NSCSCC2026-LLongarch/IP/myCPU/decode.sv" into library work
+INFO: [VRFC 10-311] analyzing module decode
+WARNING: [VRFC 10-3380] identifier 'redirect0' is used before its declaration [D:/NSCSCC2026-LLongarch/IP/myCPU/decode.sv:82]
+WARNING: [VRFC 10-3380] identifier 'accept_IF_in_bus' is used before its declaration [D:/NSCSCC2026-LLongarch/IP/myCPU/decode.sv:88]
+WARNING: [VRFC 10-3380] identifier 'consume_bus' is used before its declaration [D:/NSCSCC2026-LLongarch/IP/myCPU/decode.sv:94]
+WARNING: [VRFC 10-3380] identifier 'soft_kill_slot1' is used before its declaration [D:/NSCSCC2026-LLongarch/IP/myCPU/decode.sv:134]
+WARNING: [VRFC 10-3380] identifier 'slot_issue' is used before its declaration [D:/NSCSCC2026-LLongarch/IP/myCPU/decode.sv:135]
+WARNING: [VRFC 10-3380] identifier 'slot_issue' is used before its declaration [D:/NSCSCC2026-LLongarch/IP/myCPU/decode.sv:136]
+WARNING: [VRFC 10-3380] identifier 'slot_issue' is used before its declaration [D:/NSCSCC2026-LLongarch/IP/myCPU/decode.sv:141]
+WARNING: [VRFC 10-3380] identifier 'slot_issue' is used before its declaration [D:/NSCSCC2026-LLongarch/IP/myCPU/decode.sv:143]
+WARNING: [VRFC 10-3380] identifier 'redirect0' is used before its declaration [D:/NSCSCC2026-LLongarch/IP/myCPU/decode.sv:162]
+WARNING: [VRFC 10-3380] identifier 'slot_issue' is used before its declaration [D:/NSCSCC2026-LLongarch/IP/myCPU/decode.sv:169]
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "D:/NSCSCC2026-LLongarch/IP/myCPU/EXE1.sv" into library work
+INFO: [VRFC 10-311] analyzing module exe1
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "D:/NSCSCC2026-LLongarch/IP/myCPU/mycpu_core.sv" into library work
+INFO: [VRFC 10-311] analyzing module mycpu_core
+WARNING: [VRFC 10-3380] identifier 'EXE1_need_cancel' is used before its declaration [D:/NSCSCC2026-LLongarch/IP/myCPU/mycpu_core.sv:109]
+WARNING: [VRFC 10-3380] identifier 'flush' is used before its declaration [D:/NSCSCC2026-LLongarch/IP/myCPU/mycpu_core.sv:397]
+WARNING: [VRFC 10-3380] identifier 'mem_need_stall_inst' is used before its declaration [D:/NSCSCC2026-LLongarch/IP/myCPU/mycpu_core.sv:466]
+WARNING: [VRFC 10-3380] identifier 'mem_need_stall_inst' is used before its declaration [D:/NSCSCC2026-LLongarch/IP/myCPU/mycpu_core.sv:467]
+WARNING: [VRFC 10-3380] identifier 'mem_need_stall_inst' is used before its declaration [D:/NSCSCC2026-LLongarch/IP/myCPU/mycpu_core.sv:479]
+WARNING: [VRFC 10-3380] identifier 'mem_need_stall_inst' is used before its declaration [D:/NSCSCC2026-LLongarch/IP/myCPU/mycpu_core.sv:480]
+WARNING: [VRFC 10-3380] identifier 'ibar_cancel' is used before its declaration [D:/NSCSCC2026-LLongarch/IP/myCPU/mycpu_core.sv:552]
+WARNING: [VRFC 10-3380] identifier 'cacop_pc' is used before its declaration [D:/NSCSCC2026-LLongarch/IP/myCPU/mycpu_core.sv:553]
+WARNING: [VRFC 10-3380] identifier 'br_taken' is used before its declaration [D:/NSCSCC2026-LLongarch/IP/myCPU/mycpu_core.sv:554]
+WARNING: [VRFC 10-3380] identifier 'mem_need_stall_inst' is used before its declaration [D:/NSCSCC2026-LLongarch/IP/myCPU/mycpu_core.sv:565]
+WARNING: [VRFC 10-3380] identifier 'MEM_rf_dest' is used before its declaration [D:/NSCSCC2026-LLongarch/IP/myCPU/mycpu_core.sv:566]
+WARNING: [VRFC 10-3380] identifier 'MEM_rf_dest' is used before its declaration [D:/NSCSCC2026-LLongarch/IP/myCPU/mycpu_core.sv:568]
+WARNING: [VRFC 10-3380] identifier 'MEM_rf_dest' is used before its declaration [D:/NSCSCC2026-LLongarch/IP/myCPU/mycpu_core.sv:569]
+WARNING: [VRFC 10-3380] identifier 'MEM_rf_dest' is used before its declaration [D:/NSCSCC2026-LLongarch/IP/myCPU/mycpu_core.sv:571]
+WARNING: [VRFC 10-3380] identifier 'MEM_rf_dest' is used before its declaration [D:/NSCSCC2026-LLongarch/IP/myCPU/mycpu_core.sv:572]
+WARNING: [VRFC 10-3380] identifier 'has_int' is used before its declaration [D:/NSCSCC2026-LLongarch/IP/myCPU/mycpu_core.sv:634]
+INFO: [VRFC 10-311] analyzing module ipc_profile_counters
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "D:/NSCSCC2026-LLongarch/IP/myCPU/mycpu_top.sv" into library work
+INFO: [VRFC 10-311] analyzing module core_top
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "D:/NSCSCC2026-LLongarch/chip/soc_demo/nscscc-team/soc_top.v" into library work
+INFO: [VRFC 10-311] analyzing module soc_top
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "D:/NSCSCC2026-LLongarch/mytool/tb_ipc_profile_counters.sv" into library work
+INFO: [VRFC 10-311] analyzing module tb_ipc_profile_counters

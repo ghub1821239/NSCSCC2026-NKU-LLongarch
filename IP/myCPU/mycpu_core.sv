@@ -485,16 +485,16 @@ generate
         assign  exe2_br_hit_rdata1[i]  = |exe2_br_match_rdata1[i];
         assign  mem_br_hit_rdata1[i]   = |mem_br_match_rdata1[i];
         assign  wb_br_hit_rdata1[i]    = |wb_br_match_rdata1[i];
-        assign  exe2_br_data_rdata1[i] = exe2_br_match_rdata1[i][0] ? exe2_front_data[1]      : exe2_front_data[0];
-        assign  mem_br_data_rdata1[i]  = mem_br_match_rdata1[i][0]  ? mem_front_data_nonld[1] : mem_front_data_nonld[0];
-        assign  wb_br_data_rdata1[i]   = wb_br_match_rdata1[i][0]   ? wb_front_data[1]        : wb_front_data[0];
+        assign  exe2_br_data_rdata1[i] = exe2_br_match_rdata1[i][1] ? exe2_front_data[0]      : exe2_front_data[1];
+        assign  mem_br_data_rdata1[i]  = mem_br_match_rdata1[i][1]  ? mem_front_data_nonld[0] : mem_front_data_nonld[1];
+        assign  wb_br_data_rdata1[i]   = wb_br_match_rdata1[i][1]   ? wb_front_data[0]        : wb_front_data[1];
 
         assign  exe2_br_hit_rdata2[i]  = |exe2_br_match_rdata2[i];
         assign  mem_br_hit_rdata2[i]   = |mem_br_match_rdata2[i];
         assign  wb_br_hit_rdata2[i]    = |wb_br_match_rdata2[i];
-        assign  exe2_br_data_rdata2[i] = exe2_br_match_rdata2[i][0] ? exe2_front_data[1]      : exe2_front_data[0];
-        assign  mem_br_data_rdata2[i]  = mem_br_match_rdata2[i][0]  ? mem_front_data_nonld[1] : mem_front_data_nonld[0];
-        assign  wb_br_data_rdata2[i]   = wb_br_match_rdata2[i][0]   ? wb_front_data[1]        : wb_front_data[0];
+        assign  exe2_br_data_rdata2[i] = exe2_br_match_rdata2[i][1] ? exe2_front_data[0]      : exe2_front_data[1];
+        assign  mem_br_data_rdata2[i]  = mem_br_match_rdata2[i][1]  ? mem_front_data_nonld[0] : mem_front_data_nonld[1];
+        assign  wb_br_data_rdata2[i]   = wb_br_match_rdata2[i][1]   ? wb_front_data[0]        : wb_front_data[1];
 
         always @(*) begin
             if (rf_raddr1[i] == 5'd0) begin
@@ -527,21 +527,21 @@ generate
         // 普通路径：CSR producer 已在注册的 wb_front_valid 中排除
         assign  front_push_rdata1[i] =
                                        (rf_raddr1[i] == 5'b0) ? 32'b0 :
-                                       (EXE2_valid & ~exe2_can_not_front_push[1] & (exe2_front_addr[1] == rf_raddr1[i])) ? exe2_front_data[1] :
                                        (EXE2_valid & ~exe2_can_not_front_push[0] & (exe2_front_addr[0] == rf_raddr1[i])) ? exe2_front_data[0] :
-                                       (MEM_valid  & ~mem_can_not_front_push[1]  & (mem_front_addr[1]  == rf_raddr1[i])) ? mem_front_data[1]  :
+                                       (EXE2_valid & ~exe2_can_not_front_push[1] & (exe2_front_addr[1] == rf_raddr1[i])) ? exe2_front_data[1] :
                                        (MEM_valid  & ~mem_can_not_front_push[0]  & (mem_front_addr[0]  == rf_raddr1[i])) ? mem_front_data[0]  :
-                                       (WB_valid & wb_front_valid[1] & (wb_front_addr[1] == rf_raddr1[i])) ? wb_front_data[1] :
+                                       (MEM_valid  & ~mem_can_not_front_push[1]  & (mem_front_addr[1]  == rf_raddr1[i])) ? mem_front_data[1]  :
                                        (WB_valid & wb_front_valid[0] & (wb_front_addr[0] == rf_raddr1[i])) ? wb_front_data[0] :
+                                       (WB_valid & wb_front_valid[1] & (wb_front_addr[1] == rf_raddr1[i])) ? wb_front_data[1] :
                                        rf_rdata1[i];
         assign  front_push_rdata2[i] =
                                        (rf_raddr2[i] == 5'b0) ? 32'b0 :
-                                       (EXE2_valid & ~exe2_can_not_front_push[1] & (exe2_front_addr[1] == rf_raddr2[i])) ? exe2_front_data[1] :
                                        (EXE2_valid & ~exe2_can_not_front_push[0] & (exe2_front_addr[0] == rf_raddr2[i])) ? exe2_front_data[0] :
-                                       (MEM_valid  & ~mem_can_not_front_push[1]  & (mem_front_addr[1]  == rf_raddr2[i])) ? mem_front_data[1]  :
+                                       (EXE2_valid & ~exe2_can_not_front_push[1] & (exe2_front_addr[1] == rf_raddr2[i])) ? exe2_front_data[1] :
                                        (MEM_valid  & ~mem_can_not_front_push[0]  & (mem_front_addr[0]  == rf_raddr2[i])) ? mem_front_data[0]  :
-                                       (WB_valid & wb_front_valid[1] & (wb_front_addr[1] == rf_raddr2[i])) ? wb_front_data[1] :
+                                       (MEM_valid  & ~mem_can_not_front_push[1]  & (mem_front_addr[1]  == rf_raddr2[i])) ? mem_front_data[1]  :
                                        (WB_valid & wb_front_valid[0] & (wb_front_addr[0] == rf_raddr2[i])) ? wb_front_data[0] :
+                                       (WB_valid & wb_front_valid[1] & (wb_front_addr[1] == rf_raddr2[i])) ? wb_front_data[1] :
                                        rf_rdata2[i];
     end
 endgenerate 
@@ -574,6 +574,7 @@ endgenerate
 
 wire        EXE1_rf_gr_we       [ISSUE - 1 : 0];
 wire [ 4:0] EXE1_rf_dest        [ISSUE - 1 : 0];
+wire        EXE1_can_front    [ISSUE - 1 : 0];
 wire [ 4:0] EXE2_rf_dest        [ISSUE - 1 : 0];
 wire [ 4:0] MEM_rf_dest         [ISSUE - 1 : 0];
 wire [ 4:0] WB_rf_dest          [ISSUE - 1 : 0];
@@ -587,14 +588,69 @@ wire        mem_need_stall_csr  [ISSUE - 1 : 0];
 wire        wb_need_stall_csr   [ISSUE - 1 : 0];
 wire        mem_load_wait       [ISSUE - 1 : 0];
 
+// =========================  decode 先发起请求，然后进入exe1再进行替换  ==========================
+wire        EID_need_alu1_rj    [ISSUE - 1 : 0];
+wire        ID_need_src2_withST    [ISSUE - 1 : 0];
+wire        ID_need_alu2_rk [ISSUE - 1 : 0];
+wire [ 1:0] src1_capture_sel    [ISSUE - 1 : 0];
+wire [ 1:0] src2_capture_sel    [ISSUE - 1 : 0];
+// 和前面front_push的match格式一致：[1:0] = {slot0, slot1}
+wire [ 1:0] exe1_capture_match_rdata1[ISSUE - 1 : 0];
+wire [ 1:0] exe1_capture_match_rdata2[ISSUE - 1 : 0];
+wire        src1_capture_valid  [ISSUE - 1 : 0];
+wire        src2_capture_valid  [ISSUE - 1 : 0];
+
+generate
+    for(i=0;i<ISSUE;i=i+1)begin:gen_ID_EXE1_similar_front
+        // 也就是exe1的dest刚好是decode的src的match
+        //1. decode有两个slot
+        //2. 一个有两个src
+        //3. 一个src需要与exe1中两个slot计算出来的对比
+        assign  exe1_capture_match_rdata1[i] = {
+                    (rf_raddr1[i] != 5'd0) && ID_valid && EXE1_valid && EXE1_rf_gr_we[0] &&
+                    (rf_raddr1[i] == EXE1_rf_dest[0]),//slot0
+                    (rf_raddr1[i] != 5'd0) && ID_valid && EXE1_valid && EXE1_rf_gr_we[1] &&
+                    (rf_raddr1[i] == EXE1_rf_dest[1])//slot1
+                };
+        assign  exe1_capture_match_rdata2[i] = {
+                    (rf_raddr2[i] != 5'd0) && ID_valid && EXE1_valid && EXE1_rf_gr_we[0] &&
+                    (rf_raddr2[i] == EXE1_rf_dest[0]),
+                    (rf_raddr2[i] != 5'd0) && ID_valid && EXE1_valid && EXE1_rf_gr_we[1] &&
+                    (rf_raddr2[i] == EXE1_rf_dest[1])
+                };
+
+        // 正常issue不会让两个EXE1 lane同时写同一个寄存器
+        // 这里仍写完整：两个都命中时必须两个都能capture，并优先更年轻的lane1
+        assign  src1_capture_valid[i] = EID_need_alu1_rj[i] & EXE1_allow_in &
+                                        ~EXE1_need_cancel &
+                                        // 匹配成功 & 对应槽可以前递
+                                        (|exe1_capture_match_rdata1[i]) &
+                                        (~exe1_capture_match_rdata1[i][1] | EXE1_can_front[0]) &
+                                        (~exe1_capture_match_rdata1[i][0] | EXE1_can_front[1]);
+        assign  src2_capture_valid[i] = ID_need_src2_withST[i] & EXE1_allow_in &
+                                        ~EXE1_need_cancel &
+                                        (|exe1_capture_match_rdata2[i]) &
+                                        (~exe1_capture_match_rdata2[i][1] | EXE1_can_front[0]) &
+                                        (~exe1_capture_match_rdata2[i][0] | EXE1_can_front[1]);
+        // slot0 : 10 
+        // slot1 : 01
+        assign  src1_capture_sel[i] = ~src1_capture_valid[i]             ? 2'b00 :
+                                       exe1_capture_match_rdata1[i][0]   ? 2'b10 : 2'b01;
+        assign  src2_capture_sel[i] = ~src2_capture_valid[i]             ? 2'b00 :
+                                       exe1_capture_match_rdata2[i][0]   ? 2'b10 : 2'b01;
+    end
+endgenerate
+        
+// =========================  decode 先发起请求，然后进入exe1再进行替换  ==========================
+
 
 generate
     for (i = 0; i < ISSUE; i = i + 1) begin : gen_stall
         assign  mem_load_wait[i] = mem_need_stall_inst[i] & ~data_sram_data_ok;
         assign  src1_stall[i]    =
                                    (rf_raddr1[i] != 5'd0) && ID_valid &&
-                                   (((rf_raddr1[i] == EXE1_rf_dest[0]) && EXE1_valid && EXE1_rf_gr_we[0]) ||
-                                   ((rf_raddr1[i] == EXE1_rf_dest[1]) && EXE1_valid && EXE1_rf_gr_we[1]) ||
+                                   ~src1_capture_valid[i] &&//无法exe1类前递就要stall
+                                   ((|exe1_capture_match_rdata1[i]) ||
                                    ((rf_raddr1[i] == EXE2_rf_dest[0]) && EXE2_valid && (exe2_need_stall_inst[0] || exe2_need_stall_csr[0])) ||
                                    ((rf_raddr1[i] == EXE2_rf_dest[1]) && EXE2_valid && (exe2_need_stall_inst[1] || exe2_need_stall_csr[1])) ||
                                    ((rf_raddr1[i] == MEM_rf_dest[0])  && MEM_valid  && (mem_load_wait[0] || mem_need_stall_csr[0])) ||
@@ -603,8 +659,8 @@ generate
                                    ((rf_raddr1[i] == WB_rf_dest[1])   && WB_valid   && !flush & ~wb_can_not_front_push[1] && wb_need_stall_csr[1]));
         assign  src2_stall[i]    =
                                    (rf_raddr2[i] != 5'd0) && ID_valid &&
-                                   (((rf_raddr2[i] == EXE1_rf_dest[0]) && EXE1_valid && EXE1_rf_gr_we[0]) ||
-                                   ((rf_raddr2[i] == EXE1_rf_dest[1]) && EXE1_valid && EXE1_rf_gr_we[1]) ||
+                                   ~src2_capture_valid[i] &&
+                                   ((|exe1_capture_match_rdata2[i]) ||
                                    ((rf_raddr2[i] == EXE2_rf_dest[0]) && EXE2_valid && (exe2_need_stall_inst[0] || exe2_need_stall_csr[0])) ||
                                    ((rf_raddr2[i] == EXE2_rf_dest[1]) && EXE2_valid && (exe2_need_stall_inst[1] || exe2_need_stall_csr[1])) ||
                                    ((rf_raddr2[i] == MEM_rf_dest[0])  && MEM_valid  && (mem_load_wait[0] || mem_need_stall_csr[0])) ||
@@ -1113,6 +1169,9 @@ decode #(
     .br_rdata2           (front_push_br_rdata2    ),
     .br_use_rj           (br_use_rj               ),
     .br_use_rk           (br_use_rk               ),
+    .EID_need_alu1_rj    (EID_need_alu1_rj         ),
+    .ID_need_src2_withST    (ID_need_src2_withST         ),
+    .ID_need_alu2_rk (ID_need_alu2_rk      ),
     //cancel
     .ID_need_cancel      (preIF_IF_ID_need_cancel ),
     //stall
@@ -1154,10 +1213,14 @@ exe1 #(
     .EXE1_allow_in      (EXE1_allow_in       ),
     
     .ID_EXE1_bus        (ID_EXE1_bus         ),//bus
+    .src1_capture_sel   (src1_capture_sel     ),
+    .src2_capture_sel   (src2_capture_sel     ),
+    .ID_need_alu2_rk(ID_need_alu2_rk  ),
     .EXE1_EXE2_bus      (EXE1_EXE2_bus       ),
     //stall
     .EXE1_rf_dest       (EXE1_rf_dest        ),
     .EXE1_rf_gr_we      (EXE1_rf_gr_we       ),
+    .EXE1_can_front   (EXE1_can_front    ),
     //cancel
     .EXE1_need_cancel   (EXE1_need_cancel    ),
     //stable counter

@@ -14,10 +14,14 @@ module exe1 #(
   input  wire                      EXE1_allow_in,
   
   input  wire [inbus_width-1:0]    ID_EXE1_bus       [ISSUE - 1 : 0],//bus
+  input  wire [1:0]                src1_capture_sel   [ISSUE - 1 : 0],
+  input  wire [1:0]                src2_capture_sel   [ISSUE - 1 : 0],
+  input  wire                      ID_need_alu2[ISSUE - 1 : 0],
   output wire [outbus_width-1:0]   EXE1_EXE2_bus     [ISSUE - 1 : 0],
   //stall
   output wire [ 4:0]               EXE1_rf_dest      [ISSUE - 1 : 0],
   output wire                      EXE1_rf_gr_we     [ISSUE - 1 : 0],
+  output wire                      EXE1_can_front   [ISSUE - 1 : 0],
   //cancel control
   input  wire                      EXE1_need_cancel,
   //stable counter
@@ -82,8 +86,10 @@ wire                     inst_st_h             [ISSUE - 1 : 0];
 wire                     inst_st_w             [ISSUE - 1 : 0];
 wire                     inst_ld_w             [ISSUE - 1 : 0];
 reg    [inbus_width-1:0] bus                   [ISSUE - 1 : 0];
+reg    [inbus_width-1:0] bus_capture_d         [ISSUE - 1 : 0];
 wire   [31:0]            rkd_value             [ISSUE - 1 : 0];
 wire   [31:0]            rj_value              [ISSUE - 1 : 0];
+wire   [31:0]            alu_result_with_rdct  [ISSUE - 1 : 0];
 
 //chapter 7 exp 12:new_add
 wire                     inst_csrrd            [ISSUE - 1 : 0];
@@ -106,6 +112,7 @@ wire                     ex_ALE                [ISSUE - 1 : 0];
 wire                     has_int               [ISSUE - 1 : 0];
 
 wire                     EXE1_ex               [ISSUE - 1 : 0];
+wire                     EXE1_front_ex       [ISSUE - 1 : 0];
 // divider IP专用的ex
 wire                     ex_div_need_notice    [ISSUE - 1 : 0];
 
@@ -139,12 +146,51 @@ wire                     slot_valid_from_decode[ISSUE - 1 : 0]; // 本槽是否�
 genvar                   i;
 generate 
     for(i = 0; i < ISSUE; i = i + 1) begin : gen_bus
+        //============== exe1替换decode的换成真实值，类front ============
+        always @(*) begin
+            bus_capture_d[i] = ID_EXE1_bus[i]; 
+            // src1-----rj                  
+            case (src1_capture_sel[i])                           
+                2'b01: begin// 要更改src1以及对应的rj                                      
+                    // bus[159:128] 对应总线 alu_src1
+                    bus_capture_d[i][159:128] = alu_result_with_rdct[0];
+                    // bus[56:25]   = rj_value
+                    bus_capture_d[i][56:25]   = alu_result_with_rdct[0];
+                end
+                2'b10: begin
+                    bus_capture_d[i][159:128] = alu_result_with_rdct[1];
+                    bus_capture_d[i][56:25]   = alu_result_with_rdct[1];
+                end
+                default: ;                                        // 00：不捕获
+            endcase
+            // src2----rk
+            case (src2_capture_sel[i])                            
+                2'b01: begin                                      
+                    // bus[210:179] = rkd_value
+                    bus_capture_d[i][210:179] = alu_result_with_rdct[0];
+                    if (ID_need_alu2[i]) begin//如果需要进入alu2当作操作数计算的才会更新对应的alu_src2部分
+                        // bus[127:96]  = alu_src2
+                        bus_capture_d[i][127:96] = alu_result_with_rdct[0];
+                    end
+                end
+                2'b10: begin
+                    bus_capture_d[i][210:179] = alu_result_with_rdct[1];
+                    if (ID_need_alu2[i]) begin
+                        bus_capture_d[i][127:96] = alu_result_with_rdct[1];
+                    end
+                end
+                default: ;
+            endcase
+        end
+        //============== exe1替换decode的换成真实值，类front ============
+
+
         always @(posedge clk)begin
             if(!resetn)begin
                 bus[i] <= {inbus_width{1'b0}};
             end
             else if (ID_EXE1_valid && EXE1_allow_in)begin
-                bus[i] <= ID_EXE1_bus[i];
+                bus[i] <= bus_capture_d[i];
             end
         end
         assign {slot_valid_from_decode[i],
@@ -282,7 +328,6 @@ endgenerate
 //------------------------{DMW}end-------------------------//
 
 //------------------------{front_push}begin-------------------------//
-wire [31:0] alu_result_with_rdct[ISSUE-1:0];
 generate 
     for(i = 0; i < ISSUE; i = i + 1) begin : gen_alu_result_with_rdct
         assign  alu_result_with_rdct[i] = inst_rdcntvl_w[i] ? stable_counter[31:0]  :
@@ -331,6 +376,24 @@ generate
                                    };                                                      
         assign  EXE1_rf_dest[i]  = rf_dest[i];
         assign  EXE1_rf_gr_we[i] = rf_gr_we[i] & EXE1_slot_valid[i];     
+        // 本轮producer已经排除了访存/SC，所以这里只需要看它真正可能带来的异常
+        // 不把DTLB/ALE结果接进capture select，避免无关的长控制路径
+        assign  EXE1_front_ex[i] = EXE1_slot_valid[i] &
+                                      (inst_syscall[i] | inst_ertn[i] |
+                                       inst_break[i] | ex_INE[i] | ex_IPE[i] |
+                                       ex_ADEF[i] | has_int[i] |
+                                       ex_tlb_reload0[i] |
+                                       ex_tlb_preif_unvalid[i] | ex_tlb_plv0[i]);
+        // alu_op[11:0]是本轮允许的单拍结果；load/CSR/SC再单独排除
+        // op0里的JIRL/BL link和CPUCFG也是最终ALU值，与下一拍EXE2前递值相同
+        assign  EXE1_can_front[i] = EXE1_rf_gr_we[i] &
+                                       (|alu_op[i][11:0]) &
+                                       ~need_stall_inst[i] &
+                                       ~need_stall_csr[i] &
+                                       ~inst_sc_w[i] &
+                                       ~EXE1_front_ex[i] &
+                                       ~EXE1_need_cancel &
+                                       ~older_ex_for_exe1;
     end
 endgenerate
 //------------------------{bus}end-------------------------//
