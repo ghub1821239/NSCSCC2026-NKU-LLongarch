@@ -130,30 +130,39 @@ wire [31:0] debug_wb_pc;
 wire [3 :0] debug_wb_rf_wen;
 wire [4 :0] debug_wb_rf_wnum;
 wire [31:0] debug_wb_rf_wdata;
-wire [383:0] perf_counters;
+wire [607:0] perf_counters;
 
-// C0~CB 复用现有 num_data VIO probe，避免新增 384bit VIO。
+// C0~CB and D0~D6 reuse the existing num_data VIO probe.
 reg [31:0] perf_counter_read_data;
 always @(*) begin
-    case (switch_vio[3:0])
-        4'h0: perf_counter_read_data = perf_counters[0*32 +: 32];
-        4'h1: perf_counter_read_data = perf_counters[1*32 +: 32];
-        4'h2: perf_counter_read_data = perf_counters[2*32 +: 32];
-        4'h3: perf_counter_read_data = perf_counters[3*32 +: 32];
-        4'h4: perf_counter_read_data = perf_counters[4*32 +: 32];
-        4'h5: perf_counter_read_data = perf_counters[5*32 +: 32];
-        4'h6: perf_counter_read_data = perf_counters[6*32 +: 32];
-        4'h7: perf_counter_read_data = perf_counters[7*32 +: 32];
-        4'h8: perf_counter_read_data = perf_counters[8*32 +: 32];
-        4'h9: perf_counter_read_data = perf_counters[9*32 +: 32];
-        4'hA: perf_counter_read_data = perf_counters[10*32 +: 32];
-        4'hB: perf_counter_read_data = perf_counters[11*32 +: 32];
+    case (switch_vio)
+        8'hC0: perf_counter_read_data = perf_counters[0*32 +: 32];
+        8'hC1: perf_counter_read_data = perf_counters[1*32 +: 32];
+        8'hC2: perf_counter_read_data = perf_counters[2*32 +: 32];
+        8'hC3: perf_counter_read_data = perf_counters[3*32 +: 32];
+        8'hC4: perf_counter_read_data = perf_counters[4*32 +: 32];
+        8'hC5: perf_counter_read_data = perf_counters[5*32 +: 32];
+        8'hC6: perf_counter_read_data = perf_counters[6*32 +: 32];
+        8'hC7: perf_counter_read_data = perf_counters[7*32 +: 32];
+        8'hC8: perf_counter_read_data = perf_counters[8*32 +: 32];
+        8'hC9: perf_counter_read_data = perf_counters[9*32 +: 32];
+        8'hCA: perf_counter_read_data = perf_counters[10*32 +: 32];
+        8'hCB: perf_counter_read_data = perf_counters[11*32 +: 32];
+        8'hD0: perf_counter_read_data = perf_counters[12*32 +: 32];
+        8'hD1: perf_counter_read_data = perf_counters[13*32 +: 32];
+        8'hD2: perf_counter_read_data = perf_counters[14*32 +: 32];
+        8'hD3: perf_counter_read_data = perf_counters[15*32 +: 32];
+        8'hD4: perf_counter_read_data = perf_counters[16*32 +: 32];
+        8'hD5: perf_counter_read_data = perf_counters[17*32 +: 32];
+        8'hD6: perf_counter_read_data = perf_counters[18*32 +: 32];
         default: perf_counter_read_data = 32'b0;
     endcase
 end
 
-wire perf_counter_read_enable = (switch_vio[7:4] == 4'hC) &
-                                (switch_vio[3:0] <= 4'hB);
+wire perf_counter_read_enable = ((switch_vio[7:4] == 4'hC) &
+                                 (switch_vio[3:0] <= 4'hB)) |
+                                ((switch_vio[7:4] == 4'hD) &
+                                 (switch_vio[3:0] <= 4'h6));
 assign num_data = perf_counter_read_enable ? perf_counter_read_data :
                                              confreg_num_data;
 

@@ -70,7 +70,7 @@ module core_top(
     output wire [ 9:0] debug_commit_rf_wnum,
     output wire [63:0] debug_commit_rf_wdata,
     // read-only IPC profiling interface
-    output wire [383:0] perf_counters
+    output wire [607:0] perf_counters
 );
 
 // cpu inst sram

@@ -47,7 +47,7 @@ module mycpu_core #(
     output wire [ISSUE*5-1:0]  debug_commit_rf_wnum,
     output wire [ISSUE*32-1:0] debug_commit_rf_wdata,
     // read-only IPC profiling interface
-    output wire [12*32-1:0]    perf_counters,
+    output wire [19*32-1:0]    perf_counters,
     //硬件中断输入
     input  wire [ 7:0]         hw_int_in
 );
@@ -805,6 +805,13 @@ wire       [MEM_WB_bus_width-1:0]              MEM_WB_bus                   [ISS
 // decode 只导出已有结果；所有事件先在这里打拍，再进入 32bit counter。
 wire [ISSUE-1:0] perf_slot_issue;
 wire             perf_pair_conflict_raw;
+wire             perf_pair_raw_simple_const_raw;
+wire             perf_pair_raw_other_raw;
+wire             perf_pair_waw_raw;
+wire             perf_pair_struct_raw;
+wire             perf_pair_dual_branch_raw;
+wire             perf_pair_multi_reason_raw;
+wire             perf_pair_raw_pcaddu12i_raw;
 wire             perf_id_fire_raw = ID_valid & ID_ready_go &
                                     ~preIF_IF_ID_need_cancel & ID_allow_in;
 wire             perf_load_branch_stall_raw = rj_same_ld[0] | rj_same_ld[1] |
@@ -863,6 +870,13 @@ reg              perf_dependency_stall_event_r;
 reg              perf_backend_stall_event_r;
 reg              perf_frontend_starve_event_r;
 reg              perf_pair_conflict_event_r;
+reg              perf_pair_raw_simple_const_event_r;
+reg              perf_pair_raw_other_event_r;
+reg              perf_pair_waw_event_r;
+reg              perf_pair_struct_event_r;
+reg              perf_pair_dual_branch_event_r;
+reg              perf_pair_multi_reason_event_r;
+reg              perf_pair_raw_pcaddu12i_event_r;
 reg              perf_redirect_penalty_event_r;
 reg              perf_dcache_load_wait_event_r;
 
@@ -876,6 +890,13 @@ always @(posedge clk) begin
         perf_backend_stall_event_r           <= 1'b0;
         perf_frontend_starve_event_r         <= 1'b0;
         perf_pair_conflict_event_r           <= 1'b0;
+        perf_pair_raw_simple_const_event_r    <= 1'b0;
+        perf_pair_raw_other_event_r           <= 1'b0;
+        perf_pair_waw_event_r                 <= 1'b0;
+        perf_pair_struct_event_r              <= 1'b0;
+        perf_pair_dual_branch_event_r         <= 1'b0;
+        perf_pair_multi_reason_event_r        <= 1'b0;
+        perf_pair_raw_pcaddu12i_event_r       <= 1'b0;
         perf_redirect_penalty_event_r        <= 1'b0;
         perf_dcache_load_wait_event_r        <= 1'b0;
     end
@@ -888,6 +909,13 @@ always @(posedge clk) begin
         perf_backend_stall_event_r           <= perf_backend_stall_raw;
         perf_frontend_starve_event_r         <= perf_frontend_starve_raw;
         perf_pair_conflict_event_r           <= perf_pair_conflict_raw;
+        perf_pair_raw_simple_const_event_r    <= perf_pair_raw_simple_const_raw;
+        perf_pair_raw_other_event_r           <= perf_pair_raw_other_raw;
+        perf_pair_waw_event_r                 <= perf_pair_waw_raw;
+        perf_pair_struct_event_r              <= perf_pair_struct_raw;
+        perf_pair_dual_branch_event_r         <= perf_pair_dual_branch_raw;
+        perf_pair_multi_reason_event_r        <= perf_pair_multi_reason_raw;
+        perf_pair_raw_pcaddu12i_event_r       <= perf_pair_raw_pcaddu12i_raw;
         perf_redirect_penalty_event_r        <= perf_redirect_penalty_raw;
         perf_dcache_load_wait_event_r        <= perf_dcache_load_wait_raw;
     end
@@ -906,6 +934,13 @@ ipc_profile_counters u_ipc_profile_counters (
     .backend_stall_event           (perf_backend_stall_event_r           ),
     .frontend_starve_event         (perf_frontend_starve_event_r         ),
     .pair_conflict_event           (perf_pair_conflict_event_r           ),
+    .pair_raw_simple_const_event   (perf_pair_raw_simple_const_event_r   ),
+    .pair_raw_other_event          (perf_pair_raw_other_event_r          ),
+    .pair_waw_event                (perf_pair_waw_event_r                ),
+    .pair_struct_event             (perf_pair_struct_event_r             ),
+    .pair_dual_branch_event        (perf_pair_dual_branch_event_r        ),
+    .pair_multi_reason_event       (perf_pair_multi_reason_event_r       ),
+    .pair_raw_pcaddu12i_event      (perf_pair_raw_pcaddu12i_event_r      ),
     .redirect_penalty_event        (perf_redirect_penalty_event_r        ),
     .dcache_load_wait_event        (perf_dcache_load_wait_event_r        ),
     .counters                      (perf_counters                         )
@@ -1253,7 +1288,14 @@ decode #(
     .ID_can_accept_IF    (ID_can_accept_IF        ),
     // read-only performance events
     .perf_slot_issue     (perf_slot_issue         ),
-    .perf_pair_conflict  (perf_pair_conflict_raw  )
+    .perf_pair_conflict  (perf_pair_conflict_raw  ),
+    .perf_pair_raw_simple_const(perf_pair_raw_simple_const_raw),
+    .perf_pair_raw_other (perf_pair_raw_other_raw ),
+    .perf_pair_waw       (perf_pair_waw_raw       ),
+    .perf_pair_struct    (perf_pair_struct_raw    ),
+    .perf_pair_dual_branch(perf_pair_dual_branch_raw),
+    .perf_pair_multi_reason(perf_pair_multi_reason_raw),
+    .perf_pair_raw_pcaddu12i(perf_pair_raw_pcaddu12i_raw)
 );
 
 exe1 #(
@@ -1508,9 +1550,16 @@ module ipc_profile_counters (
     input  wire          backend_stall_event,
     input  wire          frontend_starve_event,
     input  wire          pair_conflict_event,
+    input  wire          pair_raw_simple_const_event,
+    input  wire          pair_raw_other_event,
+    input  wire          pair_waw_event,
+    input  wire          pair_struct_event,
+    input  wire          pair_dual_branch_event,
+    input  wire          pair_multi_reason_event,
+    input  wire          pair_raw_pcaddu12i_event,
     input  wire          redirect_penalty_event,
     input  wire          dcache_load_wait_event,
-    output wire [383:0]  counters
+    output wire [607:0]  counters
 );
 
 reg [31:0] cycle_count;
@@ -1525,6 +1574,13 @@ reg [31:0] frontend_starve_cycle;
 reg [31:0] pair_conflict_cycle;
 reg [31:0] redirect_penalty_cycle;
 reg [31:0] dcache_load_wait_cycle;
+reg [31:0] pair_raw_simple_const_cycle;
+reg [31:0] pair_raw_other_cycle;
+reg [31:0] pair_waw_cycle;
+reg [31:0] pair_struct_cycle;
+reg [31:0] pair_dual_branch_cycle;
+reg [31:0] pair_multi_reason_cycle;
+reg [31:0] pair_raw_pcaddu12i_cycle;
 
 always @(posedge clk) begin
     if (!resetn || clear) begin
@@ -1540,6 +1596,13 @@ always @(posedge clk) begin
         pair_conflict_cycle           <= 32'b0;
         redirect_penalty_cycle        <= 32'b0;
         dcache_load_wait_cycle        <= 32'b0;
+        pair_raw_simple_const_cycle   <= 32'b0;
+        pair_raw_other_cycle          <= 32'b0;
+        pair_waw_cycle                <= 32'b0;
+        pair_struct_cycle             <= 32'b0;
+        pair_dual_branch_cycle        <= 32'b0;
+        pair_multi_reason_cycle       <= 32'b0;
+        pair_raw_pcaddu12i_cycle      <= 32'b0;
     end
     else if (enable) begin
         cycle_count        <= cycle_count + {{31{1'b0}}, cycle_event};
@@ -1567,11 +1630,32 @@ always @(posedge clk) begin
                                   {{31{1'b0}}, redirect_penalty_event};
         dcache_load_wait_cycle <= dcache_load_wait_cycle +
                                   {{31{1'b0}}, dcache_load_wait_event};
+        pair_raw_simple_const_cycle <= pair_raw_simple_const_cycle +
+                                       {{31{1'b0}}, pair_raw_simple_const_event};
+        pair_raw_other_cycle <= pair_raw_other_cycle +
+                                {{31{1'b0}}, pair_raw_other_event};
+        pair_waw_cycle <= pair_waw_cycle +
+                          {{31{1'b0}}, pair_waw_event};
+        pair_struct_cycle <= pair_struct_cycle +
+                             {{31{1'b0}}, pair_struct_event};
+        pair_dual_branch_cycle <= pair_dual_branch_cycle +
+                                  {{31{1'b0}}, pair_dual_branch_event};
+        pair_multi_reason_cycle <= pair_multi_reason_cycle +
+                                   {{31{1'b0}}, pair_multi_reason_event};
+        pair_raw_pcaddu12i_cycle <= pair_raw_pcaddu12i_cycle +
+                                    {{31{1'b0}}, pair_raw_pcaddu12i_event};
     end
 end
 
 // counter 0 is in the least-significant 32 bits.
 assign counters = {
+    pair_raw_pcaddu12i_cycle,
+    pair_multi_reason_cycle,
+    pair_dual_branch_cycle,
+    pair_struct_cycle,
+    pair_waw_cycle,
+    pair_raw_other_cycle,
+    pair_raw_simple_const_cycle,
     dcache_load_wait_cycle,
     redirect_penalty_cycle,
     pair_conflict_cycle,

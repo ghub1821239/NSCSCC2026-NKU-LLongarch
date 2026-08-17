@@ -4,7 +4,7 @@ module ipc_profile_monitor (
     input wire         clk,
     input wire         resetn,
     input wire         test_end,
-    input wire [383:0] counters
+    input wire [607:0] counters
 );
 
 wire [31:0] cycle_count                   = counters[0*32 +: 32];
@@ -19,12 +19,23 @@ wire [31:0] frontend_starve_cycle         = counters[8*32 +: 32];
 wire [31:0] pair_conflict_cycle           = counters[9*32 +: 32];
 wire [31:0] redirect_penalty_cycle        = counters[10*32 +: 32];
 wire [31:0] dcache_load_wait_cycle        = counters[11*32 +: 32];
+wire [31:0] pair_raw_simple_const_cycle   = counters[12*32 +: 32];
+wire [31:0] pair_raw_other_cycle          = counters[13*32 +: 32];
+wire [31:0] pair_waw_cycle                = counters[14*32 +: 32];
+wire [31:0] pair_struct_cycle             = counters[15*32 +: 32];
+wire [31:0] pair_dual_branch_cycle        = counters[16*32 +: 32];
+wire [31:0] pair_multi_reason_cycle       = counters[17*32 +: 32];
+wire [31:0] pair_raw_pcaddu12i_cycle      = counters[18*32 +: 32];
 
 wire [31:0] issue_cycle = dual_issue_cycle + single_issue_cycle;
 wire [31:0] named_category_sum = issue_cycle + dependency_stall_cycle +
                                  backend_stall_cycle + redirect_penalty_cycle +
                                  frontend_starve_cycle;
 wire [31:0] other_cycle = cycle_count - named_category_sum;
+wire [31:0] pair_reason_sum = pair_raw_simple_const_cycle +
+                              pair_raw_other_cycle + pair_waw_cycle +
+                              pair_struct_cycle + pair_dual_branch_cycle +
+                              pair_raw_pcaddu12i_cycle;
 
 reg printed;
 always @(posedge clk) begin
@@ -48,6 +59,13 @@ always @(posedge clk) begin
         $display("IPC profile: pair conflict cycles      = %0d", pair_conflict_cycle);
         $display("IPC profile: redirect penalty cycles   = %0d", redirect_penalty_cycle);
         $display("IPC profile: dcache load wait cycles   = %0d", dcache_load_wait_cycle);
+        $display("IPC profile: pair RAW simple constant = %0d", pair_raw_simple_const_cycle);
+        $display("IPC profile: pair RAW other           = %0d", pair_raw_other_cycle);
+        $display("IPC profile: pair WAW                 = %0d", pair_waw_cycle);
+        $display("IPC profile: pair structural          = %0d", pair_struct_cycle);
+        $display("IPC profile: pair dual branch         = %0d", pair_dual_branch_cycle);
+        $display("IPC profile: pair multiple reasons    = %0d", pair_multi_reason_cycle);
+        $display("IPC profile: pair RAW pcaddu12i       = %0d", pair_raw_pcaddu12i_cycle);
         $display("IPC profile: derived other cycles      = %0d", other_cycle);
         $display("IPC profile: exclusive category sum    = %0d",
                  named_category_sum + other_cycle);
@@ -55,6 +73,10 @@ always @(posedge clk) begin
             $error("IPC profile categories overlap");
         if (pair_conflict_cycle > single_issue_cycle)
             $error("pair_conflict is not a subset of single_issue");
+        if (pair_reason_sum != pair_conflict_cycle)
+            $error("exclusive pair reasons do not sum to pair_conflict");
+        if (pair_multi_reason_cycle > pair_conflict_cycle)
+            $error("pair_multi_reason is not a subset of pair_conflict");
     end
 end
 

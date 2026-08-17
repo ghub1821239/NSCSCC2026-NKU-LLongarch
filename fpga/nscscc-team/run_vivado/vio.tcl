@@ -173,7 +173,10 @@ switch $test {
             recoverable_load_branch_cycle dependency_stall_cycle \
             backend_stall_cycle frontend_starve_cycle \
             pair_conflict_cycle redirect_penalty_cycle \
-            dcache_load_wait_cycle]
+            dcache_load_wait_cycle pair_raw_simple_const_cycle \
+            pair_raw_other_cycle pair_waw_cycle pair_struct_cycle \
+            pair_dual_branch_cycle pair_multi_reason_cycle \
+            pair_raw_pcaddu12i_cycle]
 
         set selected_outfile [open "perf_vio.csv" w]
         puts $selected_outfile "correct_flag,soc_count,cpu_count"
@@ -250,13 +253,19 @@ switch $test {
                         error "Invalid performance CPU count '$cpu_count_raw'"
                     }
 
-                    # C0~CB select the twelve frozen IPC counters through the
-                    # existing 32bit num_data VIO probe.
+                    # C0~CB and D0~D6 select the nineteen frozen IPC counters
+                    # through the existing 32bit num_data VIO probe.
                     set perf_values {}
                     for {set counter_index 0} {
                         $counter_index < [llength $perf_counter_names]
                     } {incr counter_index} {
-                        set counter_selector [expr {0xC0 + $counter_index}]
+                        if {$counter_index < 12} {
+                            set counter_selector [expr {0xC0 + $counter_index}]
+                        } else {
+                            set counter_selector [expr {
+                                0xD0 + $counter_index - 12
+                            }]
+                        }
                         set_property OUTPUT_VALUE \
                             [format %02X $counter_selector] $switch_probe
                         commit_hw_vio $switch_probe

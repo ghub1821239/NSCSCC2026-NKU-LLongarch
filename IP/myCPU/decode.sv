@@ -55,7 +55,14 @@ module decode #(
     output wire                    ID_can_accept_IF,
     // read-only performance events
     output wire [ISSUE-1:0]        perf_slot_issue,
-    output wire                    perf_pair_conflict
+    output wire                    perf_pair_conflict,
+    output wire                    perf_pair_raw_simple_const,
+    output wire                    perf_pair_raw_other,
+    output wire                    perf_pair_waw,
+    output wire                    perf_pair_struct,
+    output wire                    perf_pair_dual_branch,
+    output wire                    perf_pair_multi_reason,
+    output wire                    perf_pair_raw_pcaddu12i
 );
 wire                    id_fire         = ID_valid & ID_ready_go & ~ID_need_cancel & ID_allow_in;
 //------------------------{bus decode}begin-------------------------//
@@ -216,6 +223,8 @@ wire                    is_csr_read    [ISSUE-1:0];
 wire                    is_tlb         [ISSUE-1:0];
 wire [4:0]              rf_dest        [ISSUE-1:0];
 wire                    rf_gr_we       [ISSUE-1:0];
+wire                    is_simple_const_producer[ISSUE-1:0];
+wire                    is_pcaddu12i_producer[ISSUE-1:0];
 // 若按上面加了可选端口：
 wire                    upd_need       [ISSUE-1:0];
 wire                    bht_upd_need   [ISSUE-1:0];
@@ -274,6 +283,8 @@ generate
       .is_tlb               (is_tlb[gi]                 ),          //tlbrd/tlbfill/tlbsrch/invtlb/tlbwr
       .rf_dest              (rf_dest[gi]                ),
       .rf_gr_we             (rf_gr_we[gi]               ),
+      .is_simple_const_producer(is_simple_const_producer[gi]),
+      .is_pcaddu12i_producer(is_pcaddu12i_producer[gi]  ),
       // .upd_need(upd_need[gi]), ...
       .upd_need             (upd_need[gi]               ),       // pred_valid & ~ex_ADEF & ~pred_ok
       .bht_upd_need         (bht_upd_need[gi]           ),   // is_cond & ~ex_ADEF
@@ -312,9 +323,54 @@ wire       kill_slot1                = hard_kill_slot1 | soft_kill_slot1;
 //wire kill_slot1 = slot0_fetch_ex | RAW_s1_s0 | WAW_s1_s0 | struct_comflict | pred_not_neighbor_kill_s1 | pred_is_neighbor_kill_s1 | (is_br[0] & is_br[1]);//注意这里不要走双分支
 wire [1:0] slot_issue                = {slot_valid[1] & ~kill_slot1, slot_valid[0]};
 
-// 只把现有 issue 结果送去采样，不参与任何控制。
+// Profiling only: an effective two-instruction pair really issued slot0,
+// while slot1 was retained solely by a soft pair policy.
+wire       perf_pair_base            = id_fire & slot_valid[0] & slot_valid[1] &
+                                       slot_issue[0] & ~slot_issue[1] &
+                                       ~hard_kill_slot1 & soft_kill_slot1;
+wire       perf_reason_raw_simple    = RAW_s1_s0 & is_simple_const_producer[0];
+wire       perf_reason_raw_pcaddu12i = RAW_s1_s0 & is_pcaddu12i_producer[0];
+wire       perf_reason_raw_other     = RAW_s1_s0 &
+                                       ~is_simple_const_producer[0] &
+                                       ~is_pcaddu12i_producer[0];
+wire       perf_reason_waw           = WAW_s1_s0;
+wire       perf_reason_struct        = struct_comflict;
+wire       perf_reason_dual_branch   = is_br[0] & is_br[1];
+
+// Exclusive priority: WAW > simple-constant RAW > pcaddu12i RAW > other RAW
+// > structural conflict > dual branch. The supplemental event records
+// original-reason overlap.
 assign     perf_slot_issue           = slot_issue;
-assign     perf_pair_conflict        = id_fire & slot_issue[0] & soft_kill_slot1;
+assign     perf_pair_conflict        = perf_pair_base;
+assign     perf_pair_waw             = perf_pair_base & perf_reason_waw;
+assign     perf_pair_raw_simple_const = perf_pair_base & ~perf_reason_waw &
+                                        perf_reason_raw_simple;
+assign     perf_pair_raw_pcaddu12i   = perf_pair_base & ~perf_reason_waw &
+                                       ~perf_reason_raw_simple &
+                                       perf_reason_raw_pcaddu12i;
+assign     perf_pair_raw_other       = perf_pair_base & ~perf_reason_waw &
+                                       ~perf_reason_raw_simple &
+                                       ~perf_reason_raw_pcaddu12i &
+                                       perf_reason_raw_other;
+assign     perf_pair_struct          = perf_pair_base & ~perf_reason_waw &
+                                       ~perf_reason_raw_simple &
+                                       ~perf_reason_raw_pcaddu12i &
+                                       ~perf_reason_raw_other &
+                                       perf_reason_struct;
+assign     perf_pair_dual_branch     = perf_pair_base & ~perf_reason_waw &
+                                       ~perf_reason_raw_simple &
+                                       ~perf_reason_raw_pcaddu12i &
+                                       ~perf_reason_raw_other &
+                                       ~perf_reason_struct & perf_reason_dual_branch;
+assign     perf_pair_multi_reason    = perf_pair_base &
+                                       ((perf_reason_waw &
+                                         (RAW_s1_s0 | perf_reason_struct |
+                                          perf_reason_dual_branch)) |
+                                        (RAW_s1_s0 &
+                                         (perf_reason_struct |
+                                          perf_reason_dual_branch)) |
+                                        (perf_reason_struct &
+                                         perf_reason_dual_branch));
 
 // slot0有异常，强制杀
 wire       hard_kill_no_br           = slot0_trap;

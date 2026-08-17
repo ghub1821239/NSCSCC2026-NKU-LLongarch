@@ -46,6 +46,8 @@ module inst_to_alu_resource #(
     output wire                    is_tlb,          //tlbrd/tlbfill/tlbsrch/invtlb/tlbwr
     output wire [4:0]              rf_dest,
     output wire                    rf_gr_we,
+    output wire                    is_simple_const_producer,
+    output wire                    is_pcaddu12i_producer,
     output wire                    upd_need,       // pred_valid & ~ex_ADEF & ~pred_ok
     output wire                    bht_upd_need,   // is_cond & ~ex_ADEF
     output wire                    push_need,
@@ -298,6 +300,13 @@ assign  inst_sc_w        = op_31_26_d[6'h08] & op_25_24_d[2'h1];
 assign  inst_idle        = op_31_26_d[6'h01] & op_25_22_d[4'h9] & op_21_20_d[2'h0] & op_19_15_d[5'h11];
 //preld
 assign  inst_preld       = op_31_26_d[6'h0a] & op_25_22_d[4'hb];
+
+// Cheap Candidate-B producers need only instruction bits.  Keep the PC-plus-
+// immediate producer separate because a bypass for it requires an adder.
+assign  is_simple_const_producer = inst_lu12i_w |
+                                    ((inst_addi_w | inst_ori | inst_andi |
+                                      inst_xori) & (rj == 5'b0));
+assign  is_pcaddu12i_producer    = inst_pcaddu12i_w;
 
 
 assign  alu_op[ 0]       = inst_add_w | inst_addi_w | inst_ld_w        | inst_st_w |

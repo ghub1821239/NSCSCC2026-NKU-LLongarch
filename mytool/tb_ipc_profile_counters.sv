@@ -17,9 +17,16 @@ reg         dependency_stall_event;
 reg         backend_stall_event;
 reg         frontend_starve_event;
 reg         pair_conflict_event;
+reg         pair_raw_simple_const_event;
+reg         pair_raw_other_event;
+reg         pair_waw_event;
+reg         pair_struct_event;
+reg         pair_dual_branch_event;
+reg         pair_multi_reason_event;
+reg         pair_raw_pcaddu12i_event;
 reg         redirect_penalty_event;
 reg         dcache_load_wait_event;
-wire [383:0] counters;
+wire [607:0] counters;
 
 wire [31:0] cycle_count                   = counters[0*32 +: 32];
 wire [31:0] inst_retired_count            = counters[1*32 +: 32];
@@ -33,6 +40,13 @@ wire [31:0] frontend_starve_cycle         = counters[8*32 +: 32];
 wire [31:0] pair_conflict_cycle           = counters[9*32 +: 32];
 wire [31:0] redirect_penalty_cycle        = counters[10*32 +: 32];
 wire [31:0] dcache_load_wait_cycle        = counters[11*32 +: 32];
+wire [31:0] pair_raw_simple_const_cycle   = counters[12*32 +: 32];
+wire [31:0] pair_raw_other_cycle          = counters[13*32 +: 32];
+wire [31:0] pair_waw_cycle                = counters[14*32 +: 32];
+wire [31:0] pair_struct_cycle             = counters[15*32 +: 32];
+wire [31:0] pair_dual_branch_cycle        = counters[16*32 +: 32];
+wire [31:0] pair_multi_reason_cycle       = counters[17*32 +: 32];
+wire [31:0] pair_raw_pcaddu12i_cycle      = counters[18*32 +: 32];
 wire        clear = marker & ~window_active;
 wire        enable = window_active;
 
@@ -67,6 +81,13 @@ ipc_profile_counters dut (
     .backend_stall_event           (backend_stall_event          ),
     .frontend_starve_event         (frontend_starve_event        ),
     .pair_conflict_event           (pair_conflict_event          ),
+    .pair_raw_simple_const_event   (pair_raw_simple_const_event  ),
+    .pair_raw_other_event          (pair_raw_other_event         ),
+    .pair_waw_event                (pair_waw_event               ),
+    .pair_struct_event             (pair_struct_event            ),
+    .pair_dual_branch_event        (pair_dual_branch_event       ),
+    .pair_multi_reason_event       (pair_multi_reason_event      ),
+    .pair_raw_pcaddu12i_event      (pair_raw_pcaddu12i_event     ),
     .redirect_penalty_event        (redirect_penalty_event       ),
     .dcache_load_wait_event        (dcache_load_wait_event       ),
     .counters                      (counters                     )
@@ -83,6 +104,13 @@ begin
     backend_stall_event           = 1'b0;
     frontend_starve_event         = 1'b0;
     pair_conflict_event           = 1'b0;
+    pair_raw_simple_const_event   = 1'b0;
+    pair_raw_other_event          = 1'b0;
+    pair_waw_event                = 1'b0;
+    pair_struct_event             = 1'b0;
+    pair_dual_branch_event        = 1'b0;
+    pair_multi_reason_event       = 1'b0;
+    pair_raw_pcaddu12i_event      = 1'b0;
     redirect_penalty_event        = 1'b0;
     dcache_load_wait_event        = 1'b0;
 end
@@ -95,10 +123,11 @@ begin
 end
 endtask
 
-reg [383:0] frozen_snapshot;
+reg [607:0] frozen_snapshot;
 reg [31:0]  named_category_sum;
 reg [31:0]  other_cycle;
 reg [31:0]  category_sum;
+reg [31:0]  pair_reason_sum;
 
 initial begin
     clk         = 1'b0;
@@ -117,7 +146,7 @@ initial begin
     retired_event = 2'b11;
     issue_event   = 2'b11;
     repeat (100) count_one_cycle();
-    if (counters !== 384'b0) begin
+    if (counters !== 608'b0) begin
         $display("IPC PROFILE PRE-START HOLD TEST FAIL");
         $fatal(1);
     end
@@ -137,6 +166,7 @@ initial begin
     retired_event       = 2'b01;
     issue_event         = 2'b01;
     pair_conflict_event = 1'b1;
+    pair_raw_simple_const_event = 1'b1;
     count_one_cycle();
 
     @(negedge clk);
@@ -163,6 +193,51 @@ initial begin
     @(negedge clk);
     clear_events();
     recoverable_load_branch_event = 1'b1;
+    count_one_cycle();
+
+    // Exercise the remaining exclusive pair reasons.  The final WAW sample
+    // also carries the supplemental multi-reason indication.
+    @(negedge clk);
+    clear_events();
+    issue_event = 2'b01;
+    pair_conflict_event = 1'b1;
+    pair_raw_other_event = 1'b1;
+    count_one_cycle();
+
+    @(negedge clk);
+    clear_events();
+    issue_event = 2'b01;
+    pair_conflict_event = 1'b1;
+    pair_waw_event = 1'b1;
+    count_one_cycle();
+
+    @(negedge clk);
+    clear_events();
+    issue_event = 2'b01;
+    pair_conflict_event = 1'b1;
+    pair_struct_event = 1'b1;
+    count_one_cycle();
+
+    @(negedge clk);
+    clear_events();
+    issue_event = 2'b01;
+    pair_conflict_event = 1'b1;
+    pair_dual_branch_event = 1'b1;
+    count_one_cycle();
+
+    @(negedge clk);
+    clear_events();
+    issue_event = 2'b01;
+    pair_conflict_event = 1'b1;
+    pair_waw_event = 1'b1;
+    pair_multi_reason_event = 1'b1;
+    count_one_cycle();
+
+    @(negedge clk);
+    clear_events();
+    issue_event = 2'b01;
+    pair_conflict_event = 1'b1;
+    pair_raw_pcaddu12i_event = 1'b1;
     marker = 1'b1;
     count_one_cycle();
     @(negedge clk);
@@ -173,19 +248,30 @@ initial begin
                          redirect_penalty_cycle + frontend_starve_cycle;
     other_cycle = cycle_count - named_category_sum;
     category_sum = named_category_sum + other_cycle;
+    pair_reason_sum = pair_raw_simple_const_cycle + pair_raw_other_cycle +
+                      pair_waw_cycle + pair_struct_cycle +
+                      pair_dual_branch_cycle + pair_raw_pcaddu12i_cycle;
 
-    if (cycle_count                   !== 32'd7 ||
+    if (cycle_count                   !== 32'd13 ||
         inst_retired_count            !== 32'd3 ||
-        issue_inst_count              !== 32'd3 ||
+        issue_inst_count              !== 32'd9 ||
         dual_issue_cycle              !== 32'd1 ||
-        single_issue_cycle            !== 32'd1 ||
+        single_issue_cycle            !== 32'd7 ||
         recoverable_load_branch_cycle !== 32'd1 ||
         dependency_stall_cycle        !== 32'd1 ||
         backend_stall_cycle           !== 32'd1 ||
         frontend_starve_cycle         !== 32'd1 ||
-        pair_conflict_cycle           !== 32'd1 ||
+        pair_conflict_cycle           !== 32'd7 ||
         redirect_penalty_cycle        !== 32'd1 ||
         dcache_load_wait_cycle        !== 32'd1 ||
+        pair_raw_simple_const_cycle   !== 32'd1 ||
+        pair_raw_other_cycle          !== 32'd1 ||
+        pair_waw_cycle                !== 32'd2 ||
+        pair_struct_cycle             !== 32'd1 ||
+        pair_dual_branch_cycle        !== 32'd1 ||
+        pair_multi_reason_cycle       !== 32'd1 ||
+        pair_raw_pcaddu12i_cycle      !== 32'd1 ||
+        pair_reason_sum               !== pair_conflict_cycle ||
         other_cycle                   !== 32'd1 ||
         category_sum                  !== cycle_count) begin
         $display("IPC PROFILE COUNTER TEST FAIL");
@@ -217,7 +303,7 @@ initial begin
     @(negedge clk);
     resetn = 1'b1;
     repeat (2) count_one_cycle();
-    if (counters !== 384'b0) begin
+    if (counters !== 608'b0) begin
         $display("IPC PROFILE NEXT-RUN RESET TEST FAIL");
         $fatal(1);
     end
