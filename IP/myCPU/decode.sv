@@ -28,7 +28,7 @@ module decode #(
     output wire                    br_use_rk          [ISSUE - 1 : 0],
     output wire                    EID_need_alu1_rj   [ISSUE - 1 : 0],
     output wire                    ID_need_src2_withST   [ISSUE - 1 : 0],
-    output wire                    ID_need_alu2_rk_rk_rk_rk[ISSUE - 1 : 0],
+    output wire                    ID_need_alu2_rk[ISSUE - 1 : 0],
     //cancel control
     input  wire                    ID_need_cancel,
     //prediction
@@ -226,7 +226,7 @@ wire                    ex_INE         [ISSUE-1:0];
 wire                    ex_IPE         [ISSUE-1:0];
 wire                    EID_need_alu1_rj_raw   [ISSUE-1:0];
 wire                    ID_need_src2_withST_raw   [ISSUE-1:0];
-wire                    ID_need_alu2_rk_rk_rk_rk_raw[ISSUE-1:0];
+wire                    ID_need_alu2_rk_raw[ISSUE-1:0];
 
 generate
   for (gi = 0; gi < ISSUE; gi = gi + 1) begin : gen_alu_res
@@ -255,7 +255,7 @@ generate
       .br_use_rk            (br_use_rk[gi]              ),
       .EID_need_alu1_rj     (EID_need_alu1_rj_raw[gi]    ),
       .ID_need_src2_withST     (ID_need_src2_withST_raw[gi]    ),
-      .ID_need_alu2_rk_rk_rk_rk  (ID_need_alu2_rk_rk_rk_rk_raw[gi] ),
+      .ID_need_alu2_rk  (ID_need_alu2_rk_raw[gi] ),
 
       .csr_CRMD_PLV         (csr_CRMD_PLV               ),
       .has_int              ((gi == 0) ? has_int : 1'b0 ),//只在slot0判中断
@@ -378,7 +378,7 @@ generate
         assign  ID_EXE1_bus[gi] = slot_issue[gi] ? {1'b1,exe_payload[gi]} : {outbus_width{1'b0}};
         assign  EID_need_alu1_rj[gi]    = slot_issue[gi] & EID_need_alu1_rj_raw[gi];
         assign  ID_need_src2_withST[gi]    = slot_issue[gi] & ID_need_src2_withST_raw[gi];
-        assign  ID_need_alu2_rk_rk_rk_rk[gi] = slot_issue[gi] & ID_need_alu2_rk_rk_rk_rk_raw[gi];
+        assign  ID_need_alu2_rk[gi] = slot_issue[gi] & ID_need_alu2_rk_raw[gi];
     end
 endgenerate
 //------------------------{bus}end-------------------------//
