@@ -29,6 +29,10 @@ module decode #(
     output wire                    ID_need_alu1_rj   [ISSUE - 1 : 0],
     output wire                    ID_need_src2_withST   [ISSUE - 1 : 0],
     output wire                    ID_need_alu2_rk[ISSUE - 1 : 0],
+
+    //使用late_alu
+    output wire                    ID_late_alu_ok[ISSUE-1:0],
+
     //cancel control
     input  wire                    ID_need_cancel,
     //prediction
@@ -253,9 +257,12 @@ generate
       .br_rdata2            (br_rdata2[gi]              ),
       .br_use_rj            (br_use_rj[gi]              ),
       .br_use_rk            (br_use_rk[gi]              ),
-      .ID_need_alu1_rj     (ID_need_alu1_rj[gi]    ),
-      .ID_need_src2_withST     (ID_need_src2_withST[gi]    ),
-      .ID_need_alu2_rk  (ID_need_alu2_rk[gi] ),
+      .ID_need_alu1_rj      (ID_need_alu1_rj[gi]        ),
+      .ID_need_src2_withST  (ID_need_src2_withST[gi]    ),
+      .ID_need_alu2_rk      (ID_need_alu2_rk[gi]        ),
+
+      //从late_alu中拿
+      .ID_late_alu_ok       (ID_late_alu_ok[gi]         ),
 
       .csr_CRMD_PLV         (csr_CRMD_PLV               ),
       .has_int              ((gi == 0) ? has_int : 1'b0 ),//只在slot0判中断

@@ -151,15 +151,14 @@ wire    can_issue_inst = !req_without_dataok || inst_sram_data_ok;
 assign  inst_sram_req  = preIF2_valid & slot_valid[0]
                                       & ~slot0_has_ex
                                       & IF_allow_in
-                                      & ~preIF2_need_cancel & ~need_stall
+                                      & ~preIF2_need_cancel
                                       & can_issue_inst;
 assign  inst_sram_size = 2'b10;
 assign  inst_wr        = 1'b0;
 //------------------------{instRAM handshake}end-------------------------//
 
 //------------------------{ready_go}begin-------------------------//
-assign  preIF2_ready_go = need_stall ? 1'b0 :
-                          !slot_valid[0] ? 1'b1 :
+assign  preIF2_ready_go = !slot_valid[0] ? 1'b1 :
                           slot0_has_ex   ? 1'b1 :
                           //握手成功
                           (inst_sram_req & inst_sram_addr_ok);

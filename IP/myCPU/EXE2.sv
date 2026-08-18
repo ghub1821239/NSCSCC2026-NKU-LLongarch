@@ -140,6 +140,11 @@ wire                     inst_ll_w           [ISSUE - 1 : 0];
 //IDLE
 wire                     inst_idle           [ISSUE - 1 : 0];
 
+//marker声明
+wire late_exec                               [ISSUE - 1 : 0];
+wire [31:0] late_alu_result                  [ISSUE - 1 : 0];
+wire [31:0] final_alu_result                 [ISSUE - 1 : 0];
+
 genvar                   i;
 generate
     for(i = 0; i < ISSUE; i = i + 1) begin : gen_EXE2_bus
@@ -152,6 +157,7 @@ generate
             end
         end
         assign {slot_valid_from_exe1[i],
+                late_exec[i]           ,
                 pc[i]                  ,
                 rkd_value[i]           , res_from_mem[i]        , mem_we[i]          , need_stall_csr_b[i] , inst_ld_b[i]        , inst_ld_h[i]        , inst_ld_bu[i] , inst_ld_hu[i]        , alu_result_with_rdct[i],//MEM
                 inst_csrrd[i]          , inst_csrwr[i]          , inst_csrxchg[i]    , inst_ertn[i]        , inst_syscall[i]     , inst_break[i]       , ex_INE[i]     , ex_IPE[i]            , ex_ADEF[i]             , ex_ALE[i]   , has_int[i]  , inst_rdcntvl_w[i], inst_rdcntvh_w[i], inst_rdcntid[i], csr_num[i], rj_value[i], rf_dest[i], rf_gr_we[i],//WB
@@ -160,8 +166,25 @@ generate
                 EXE1_ex[i]             ,
                 data_sram_addr_b[i]    , data_sram_wdata_b[i]   , data_sram_size_b[i], data_sram_wstrb_b[i], data_mat_b[i]       , data_wr_b[i]        , inst_cacop[i] , cache_code_b[i]      , inst_ibar[i]           , inst_dbar[i], inst_sc_w[i], inst_ll_w[i]     , inst_idle[i]
                } = bus[i];
+        
     end
 endgenerate
+
+generate
+    for (i = 0; i < ISSUE; i = i + 1) begin : gen_late_alu
+        late_alu u_late_alu (
+            .op     (cache_code_b[i][3:0]),
+            .src1   (data_sram_addr_b[i]),
+            .src2   (data_sram_wdata_b[i]),
+            .result (late_alu_result[i])
+        );
+
+        assign final_alu_result[i] =
+            late_exec[i] ? late_alu_result[i]
+                         : alu_result_with_rdct[i];
+    end
+endgenerate
+
 //------------------------{bus解析&传递}end-------------------------//
 
 //------------------------{mux 选择 dram signal}begin-------------------------//
@@ -259,7 +282,7 @@ generate
     for(i = 0; i < ISSUE; i = i + 1) begin : gen_EXE2_ex
         assign  exe2_front_data[i]         = inst_sc_w[i] ? {31'b0, sc_success} :
                                              mem_we[i]    ? rkd_value[i]        :
-                                                            alu_result_with_rdct[i];
+                                                            final_alu_result[i];
         assign  exe2_front_addr[i]         = rf_dest[i];
         assign  exe2_can_not_front_push[i] = ~rf_gr_we[i]       | ~slot_valid_from_exe1[i] |
                                              need_stall_inst[i] | need_stall_csr[i]       ;
@@ -305,7 +328,7 @@ generate
         assign  EXE2_MEM_bus[i] = {
                                    slot_valid_from_exe1[i],
                                    pc[i]                  ,
-                                   rkd_value[i]           , res_from_mem[i]            , mem_we[i]      , need_stall_csr_b[i], inst_ld_b[i]        , inst_ld_h[i]        , inst_ld_bu[i] , inst_ld_hu[i]        , data_sram_addr_b[i][1:0], alu_result_with_rdct[i],//MEM
+                                   rkd_value[i]           , res_from_mem[i]            , mem_we[i]      , need_stall_csr_b[i], inst_ld_b[i]        , inst_ld_h[i]        , inst_ld_bu[i] , inst_ld_hu[i]        , data_sram_addr_b[i][1:0], final_alu_result[i],//MEM
                                    inst_csrrd[i]          , inst_csrwr[i]              , inst_csrxchg[i], inst_ertn[i]       , inst_syscall[i]     , inst_break[i]       , ex_INE[i]     , ex_IPE[i]            , ex_ADEF[i]              , ex_ALE[i]              , has_int[i], inst_rdcntvl_w[i], inst_rdcntvh_w[i], inst_rdcntid[i], csr_num[i], rj_value[i], rf_dest[i], rf_gr_we[i],//WB
                                    inst_tlbsrch[i]        , TLBIDX_new_tlbsrch[i]      , inst_tlbrd[i]  , inst_tlbwr[i]      , inst_tlbfill[i]     , inst_invtlb[i]      ,
                                    ex_tlb_reload0[i]      , ex_tlb_preif_unvalid[i]    , ex_tlb_plv0[i] , ex_tlb_reload1[i]  , ex_tlb_ld_unvalid[i], ex_tlb_st_unvalid[i], ex_tlb_plv1[i], ex_tlb_page_modify[i],
