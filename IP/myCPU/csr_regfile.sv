@@ -132,6 +132,8 @@ reg [31:0] ECFG;
 reg [31:0] BADV;
 reg [31:0] TID;
 reg [31:0] TCFG;
+// TCFG.InitVal==0 摘要：只随 CSR_TCFG 写更新，避免 30bit 零比较进入关键路径
+reg        tcfg_initval_zero;
 reg [31:0] TVAL;
 reg [31:0] TLBIDX;
 reg [31:0] TLBEHI;
@@ -358,6 +360,9 @@ always @ (posedge clk)begin
                                    (~csr_wmask[`CSR_TCFG_PERIOD] & TCFG[`CSR_TCFG_PERIOD]);
         TCFG[`CSR_TCFG_INITVAL] <= (csr_wmask[`CSR_TCFG_INITVAL] & csr_wvalue[`CSR_TCFG_INITVAL]) |
                                    (~csr_wmask[`CSR_TCFG_INITVAL] & TCFG[`CSR_TCFG_INITVAL]);
+        // InitVal 摘要：使用完整 masked next value，与 TCFG.InitVal 写入严格一致
+        // reset 分支不清零 TCFG.InitVal，因此摘要也不在 reset 清零（独立 if，与 PERIOD/INITVAL 写入结构一致）
+        tcfg_initval_zero        <= (TCFG_next_val[`CSR_TCFG_INITVAL] == 30'b0);
     end
 end
 //【timer――cnt】
@@ -708,7 +713,7 @@ end
 
 // ----------TO PIPELINE IN END--------------
 assign  has_int        = (((ESTAT[`CSR_ESTAT_IS] & ECFG[`CSR_ECFG_LIE])!=13'b0) && (CRMD[`CSR_CRMD_IE] == 1'b1));
-assign  csr_tcfg_init0 = (TCFG[`CSR_TCFG_INITVAL] == 30'b0);
+assign  csr_tcfg_init0 = tcfg_initval_zero;
 assign  csr_CRMD_DA    = CRMD[`CSR_CRMD_DA];
 assign  csr_CRMD_PG    = CRMD[`CSR_CRMD_PG];
 assign  csr_CRMD_PLV   = CRMD[`CSR_CRMD_PLV];

@@ -64,15 +64,21 @@ reg                       bus_has_inst;//bus中有未完成的IF的指令
 
 integer                   k;
 always @(posedge clk)begin
-    if(!resetn || ID_need_cancel)begin
+    if(!resetn)begin
         for (k = 0; k < ISSUE; k = k + 1) begin
             bus[k]       <= {inbus_width{1'b0}};
         end
         bus_has_inst <= 1'b0;
     end
+    else if (ID_need_cancel)begin
+        for (k = 0; k < ISSUE; k = k + 1) begin
+            bus[k][inbus_width-1] <= 1'b0;//只清valid位，payload保持（无效周期为don't-care）
+        end
+        bus_has_inst <= 1'b0;
+    end
     else if (id_fire & (redirect0 | redirect1))begin
         for (k = 0; k < ISSUE; k = k + 1) begin
-            bus[k]       <= {inbus_width{1'b0}};
+            bus[k][inbus_width-1] <= 1'b0;
         end
         bus_has_inst <= 1'b0;
     end
@@ -84,7 +90,7 @@ always @(posedge clk)begin
     end
     else if(consume_bus) begin
         for (k = 0; k < ISSUE; k = k + 1) begin
-            bus[k]       <= {inbus_width{1'b0}};
+            bus[k][inbus_width-1] <= 1'b0;
         end
         bus_has_inst <= 1'b0;
     end
