@@ -283,21 +283,38 @@ assign  rf_raddr2[0] = hold_valid_raddr2_slot0 ? hold_raddr2     : bus[0][77:73]
 assign  rf_raddr1[1] = hold_valid_raddr1_slot1 ? bus[0][82:78]  : bus[1][82:78];
 assign  rf_raddr2[1] = hold_valid_raddr2_slot1 ? bus[0][77:73]  : bus[1][77:73];
 
-// slot0 的低 3 位读地址按 regfile bank 复制组合驱动；bank0 继续使用 rf_raddr*[0][2:0]。
-// KEEP 仅用于阻止综合器把三个等价 bank 驱动重新合并，不冻结下游 regfile 逻辑。
-(* keep = "true" *) wire [2:0] rf_raddr1_slot0_bank1_local;
-(* keep = "true" *) wire [2:0] rf_raddr1_slot0_bank2_local;
-(* keep = "true" *) wire [2:0] rf_raddr1_slot0_bank3_local;
-(* keep = "true" *) wire [2:0] rf_raddr2_slot0_bank1_local;
-(* keep = "true" *) wire [2:0] rf_raddr2_slot0_bank2_local;
-(* keep = "true" *) wire [2:0] rf_raddr2_slot0_bank3_local;
+// slot0 的低 3 位读地址按 regfile bank 显式复制 mux；bank0 继续使用 rf_raddr*[0][2:0]。
+// 仅冻结这 18 个 LUT，防止综合器把等价 mux 再次合并成单个高扇出驱动。
+wire [2:0] rf_raddr1_slot0_bank1_local;
+wire [2:0] rf_raddr1_slot0_bank2_local;
+wire [2:0] rf_raddr1_slot0_bank3_local;
+wire [2:0] rf_raddr2_slot0_bank1_local;
+wire [2:0] rf_raddr2_slot0_bank2_local;
+wire [2:0] rf_raddr2_slot0_bank3_local;
 
-assign rf_raddr1_slot0_bank1_local = hold_valid_raddr1_slot0 ? hold_raddr1[2:0] : bus[0][80:78];
-assign rf_raddr1_slot0_bank2_local = hold_valid_raddr1_slot0 ? hold_raddr1[2:0] : bus[0][80:78];
-assign rf_raddr1_slot0_bank3_local = hold_valid_raddr1_slot0 ? hold_raddr1[2:0] : bus[0][80:78];
-assign rf_raddr2_slot0_bank1_local = hold_valid_raddr2_slot0 ? hold_raddr2[2:0] : bus[0][75:73];
-assign rf_raddr2_slot0_bank2_local = hold_valid_raddr2_slot0 ? hold_raddr2[2:0] : bus[0][75:73];
-assign rf_raddr2_slot0_bank3_local = hold_valid_raddr2_slot0 ? hold_raddr2[2:0] : bus[0][75:73];
+genvar rbi;
+generate
+    for (rbi = 0; rbi < 3; rbi = rbi + 1) begin : gen_slot0_bank_addr_mux
+        (* DONT_TOUCH = "TRUE" *) LUT3 #(.INIT(8'hCA)) u_raddr1_bank1_mux (
+            .O(rf_raddr1_slot0_bank1_local[rbi]), .I0(bus[0][78+rbi]),
+            .I1(hold_raddr1[rbi]), .I2(hold_valid_raddr1_slot0));
+        (* DONT_TOUCH = "TRUE" *) LUT3 #(.INIT(8'hCA)) u_raddr1_bank2_mux (
+            .O(rf_raddr1_slot0_bank2_local[rbi]), .I0(bus[0][78+rbi]),
+            .I1(hold_raddr1[rbi]), .I2(hold_valid_raddr1_slot0));
+        (* DONT_TOUCH = "TRUE" *) LUT3 #(.INIT(8'hCA)) u_raddr1_bank3_mux (
+            .O(rf_raddr1_slot0_bank3_local[rbi]), .I0(bus[0][78+rbi]),
+            .I1(hold_raddr1[rbi]), .I2(hold_valid_raddr1_slot0));
+        (* DONT_TOUCH = "TRUE" *) LUT3 #(.INIT(8'hCA)) u_raddr2_bank1_mux (
+            .O(rf_raddr2_slot0_bank1_local[rbi]), .I0(bus[0][73+rbi]),
+            .I1(hold_raddr2[rbi]), .I2(hold_valid_raddr2_slot0));
+        (* DONT_TOUCH = "TRUE" *) LUT3 #(.INIT(8'hCA)) u_raddr2_bank2_mux (
+            .O(rf_raddr2_slot0_bank2_local[rbi]), .I0(bus[0][73+rbi]),
+            .I1(hold_raddr2[rbi]), .I2(hold_valid_raddr2_slot0));
+        (* DONT_TOUCH = "TRUE" *) LUT3 #(.INIT(8'hCA)) u_raddr2_bank3_mux (
+            .O(rf_raddr2_slot0_bank3_local[rbi]), .I0(bus[0][73+rbi]),
+            .I1(hold_raddr2[rbi]), .I2(hold_valid_raddr2_slot0));
+    end
+endgenerate
 
 assign rf_raddr1_slot0_bank1 = rf_raddr1_slot0_bank1_local;
 assign rf_raddr1_slot0_bank2 = rf_raddr1_slot0_bank2_local;
