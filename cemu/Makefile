@@ -20,5 +20,14 @@ obj:
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp $(HEADERS)
 	$(CXX) $(CXXFLAGS) $(addprefix -I,${DIRS}) -c $< -o $@
 
+# clean:
+# 	rm $(OBJS)
+
+# ---- LA32R golden-trace dump ----
+LA32R_MAIN = example_main/nscscc_la32r_main.cpp
+INCLUDES   = $(addprefix -I,$(DIRS))
+.PHONY: cemu_la32r
+cemu_la32r: $(LA32R_MAIN) $(HEADERS)
+	$(CXX) $(CXXFLAGS) $(INCLUDES) $(LA32R_MAIN) -o $@
 clean:
-	rm $(OBJS)
+	rm -f $(OBJS) cemu cemu_la32r

@@ -366,7 +366,7 @@ assign  pop_valid           = id_fire       & (slot_issue[0] & pop_need[0] |
 //try to minimize the bus_size
 generate
     for (gi = 0; gi < ISSUE; gi = gi + 1) begin : gen_id_exe
-        assign  ID_EXE1_bus[gi] = slot_issue[gi] ? {1'b1,exe_payload[gi]} : {outbus_width{1'b0}};
+        assign  ID_EXE1_bus[gi] = (slot_issue[gi] === 1'b1) ? {1'b1,exe_payload[gi]} : {outbus_width{1'b0}};
     end
 endgenerate
 //------------------------{bus}end-------------------------//

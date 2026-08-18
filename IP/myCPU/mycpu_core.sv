@@ -46,9 +46,52 @@ module mycpu_core #(
     output wire [ISSUE*4-1:0]  debug_commit_rf_wen,
     output wire [ISSUE*5-1:0]  debug_commit_rf_wnum,
     output wire [ISSUE*32-1:0] debug_commit_rf_wdata,
+    //slot0
+    output wire                   debug0_commit_valid,
+    output wire [31:0]            debug0_commit_pc,
+    output wire                   debug0_commit_rf_wen,
+    output wire [4:0]             debug0_commit_rf_wnum,
+    output wire [31:0]            debug0_commit_rf_wdata,
+    output wire                   debug0_commit_csr_wen,
+    output wire [13:0]            debug0_commit_csr_num,
+    output wire [31:0]            debug0_commit_csr_wdata,
+    //slot1
+    output wire                   debug1_commit_valid,
+    output wire [31:0]            debug1_commit_pc,
+    output wire                   debug1_commit_rf_wen,
+    output wire [4:0]             debug1_commit_rf_wnum,
+    output wire [31:0]            debug1_commit_rf_wdata,
+    output wire                   debug1_commit_csr_wen,
+    output wire [13:0]            debug1_commit_csr_num,
+    output wire [31:0]            debug1_commit_csr_wdata,
     //硬件中断输入
     input  wire [ 7:0]         hw_int_in
 );
+
+//---------------------------{debug}begin--------------------------//
+wire [ISSUE-1:0]       debug_commit_csr_wen;
+wire [ISSUE*14-1:0]    debug_commit_csr_num;
+wire [ISSUE*32-1:0]    debug_commit_csr_wdata;
+
+assign debug0_commit_valid     = debug_commit_valid[0];
+assign debug0_commit_pc        = debug_commit_pc[31:0];
+assign debug0_commit_rf_wen     = |debug_commit_rf_wen[3:0];
+assign debug0_commit_rf_wnum    = debug_commit_rf_wnum[4:0];
+assign debug0_commit_rf_wdata   = debug_commit_rf_wdata[31:0];
+assign debug0_commit_csr_wen    = debug_commit_csr_wen[0];
+assign debug0_commit_csr_num     = debug_commit_csr_num[13:0];
+assign debug0_commit_csr_wdata   = debug_commit_csr_wdata[31:0];
+
+assign debug1_commit_valid     = debug_commit_valid[1];
+assign debug1_commit_pc        = debug_commit_pc[63:32];
+assign debug1_commit_rf_wen     = |debug_commit_rf_wen[7:4];
+assign debug1_commit_rf_wnum    = debug_commit_rf_wnum[9:5];
+assign debug1_commit_rf_wdata   = debug_commit_rf_wdata[63:32];
+assign debug1_commit_csr_wen    = debug_commit_csr_wen[1];
+assign debug1_commit_csr_num     = debug_commit_csr_num[27:14];
+assign debug1_commit_csr_wdata   = debug_commit_csr_wdata[63:32];
+//---------------------------{debug}end--------------------------//
+
 //------------------------{5-stage pipeline control signals define}begin-------------------------//
 wire  valid_in;
 wire  preIF1_preIF2_valid;
@@ -1319,6 +1362,9 @@ wb #(
     .debug_commit_rf_wen    (debug_commit_rf_wen    ),
     .debug_commit_rf_wnum   (debug_commit_rf_wnum   ),
     .debug_commit_rf_wdata  (debug_commit_rf_wdata  ),
+    .debug_commit_csr_wen   (debug_commit_csr_wen   ),
+    .debug_commit_csr_num    (debug_commit_csr_num  ),
+    .debug_commit_csr_wdata  (debug_commit_csr_wdata),
     .rf_waddr               (rf_waddr               ),
     .rf_wdata               (rf_wdata               ),
     .rf_we                  (rf_we                  ),

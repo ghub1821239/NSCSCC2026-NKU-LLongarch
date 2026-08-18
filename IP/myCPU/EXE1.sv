@@ -168,7 +168,7 @@ generate
     for(i = 0; i < ISSUE; i = i + 1) begin : gen_alu
         // 按槽 valid：级 valid & 本槽有指令；alu 内部会用它门控全部 alu_op（含 mul/div）
         assign  EXE1_slot_valid[i] = EXE1_valid & slot_valid_from_decode[i];
-        assign  div_mod[i]         = EXE1_slot_valid[i] & (alu_op[i][15] | alu_op[i][16] | alu_op[i][17] | alu_op[i][18]);
+        assign  div_mod[i]         = EXE1_slot_valid[i] & ((alu_op[i][15] === 1'b1) |(alu_op[i][16] === 1'b1) | (alu_op[i][17] === 1'b1) | (alu_op[i][18] === 1'b1));
         alu u_alu(
             .clk                (clk                   ),
             .resetn             (resetn                ),

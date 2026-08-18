@@ -5,9 +5,12 @@
 #include "la32r_mmu.hpp"
 #include "la32r_csr.hpp"
 
+#include <cstdint>
 #include <cstring>
 #include <cassert>
 #include <queue>
+
+#include <cstdio>
 
 template<int nr_tlb_entry = 32>
 class la32r_core {
@@ -48,6 +51,21 @@ public:
 
     bool is_end() {
         return end;
+    }
+
+    bool open_golden_trace(const char *filename) {
+        close_golden_trace();
+        golden_fp = fopen(filename, "w");
+        dump_trace = (golden_fp != nullptr);
+        return dump_trace;
+    }
+
+    void close_golden_trace() {
+        if(golden_fp) {
+            fclose(golden_fp);
+            golden_fp = nullptr;
+        }
+        dump_trace = false;
     }
 
 private:
@@ -153,6 +171,7 @@ private:
                         default: // csr exchange
                             auto mask = (instr._2ri14.rj == WR) ? ~0u : GPR[instr._2ri14.rj];
                             auto write_val = (GPR[instr._2ri14.rd] & mask) | (origin_val & ~mask);
+                            trace_csr_write(instr._2ri14.i14, GPR[instr._2ri14.rd]);
                             csr.write(instr._2ri14.i14, write_val);
                             set_GPR(instr._2ri14.rd, origin_val);
                             break;
@@ -443,23 +462,29 @@ private:
                                 if (instr._2r.rd == 0) { // RDCNTID
                                     set_GPR(instr._2r.rj, csr.get_timer_id());
                                 } else if (instr._2r.rj == 0) { // RDCNTVL.W
-                                    set_GPR(instr._2r.rd, counter & 0xffffffffu);
+                                    set_GPR(instr._2r.rd, counter & 0xffffffffu,false);
                                 } else {
                                     // la32r only has RDCNTVL.W & RDCNTVH.W & RDCNTID
                                 }
                                 break;
                             case RDTIMEH_W:
                                 if (instr._2r.rj == 0) { // RDCNTVH.W
-                                    set_GPR(instr._2r.rd, counter >> 32);
+                                    set_GPR(instr._2r.rd, counter >> 32,false);
                                 } else {
                                     // la32r only has RDCNTVL.W & RDCNTVH.W & RDCNTID
                                 }
                                 break;
+                            case CPUCFG: {
+                                uint32_t rjv = static_cast<uint32_t>(GPR[instr._2r.rj]);
+                                set_GPR(instr._2r.rd, cpucfg_read(rjv));
+                                break;
+                            }
                             case TLBSRCH:
                                 if (csr.get_cur_plv() != plv0) {
                                     csr.raise_trap(std::make_pair(IPE, 0));
                                 } else {
                                     csr.tlb_search();
+                                    trace_csr_write(TLBIDX, csr.read(TLBIDX));
                                 }
                                 break;
                             case TLBRD:
@@ -507,10 +532,81 @@ private:
         }
     }
 
-    void set_GPR(uint8_t index, uint32_t value) {
+    uint32_t cpucfg_read(uint32_t rj_value) {
+        const uint32_t word0 = 0x14800100u;//PRID
+
+         // word1: ARCH=LA32R, PGMMU=1, PALEN=32, VALEN=32, HP=1
+    const uint32_t word1 =  (0u << 0)   |  // ARCH
+                            (1u << 2)   |  // PGMMU
+                            (0u << 3)   |  // IOCSR
+                            (31u << 4)  |  // PALEN-1
+                            (31u << 12) |  // VALEN-1
+                            (0u << 20)  |  // UAL
+                            (0u << 21)  |  // RI
+                            (0u << 22)  |  // EP
+                            (0u << 23)  |  // RPLV
+                            (1u << 24)  |  // HP
+                            (0u << 25)  |  // CRC
+                            (0u << 26);    // MSG_INT
+                            // word2: FP_ver=1, LVZ_ver=1, LLFTP=1, LLFTP_ver=1, DIV32=1
+                            const uint32_t word2 =
+                            (1u << 3)   |  // FP_ver
+                            (1u << 11)  |  // LVZ_ver
+                            (1u << 14)  |  // LLFTP
+                            (1u << 15)  |  // LLFTP_ver
+                            (1u << 25);    // DIV32
+                            const uint32_t word3 = 0u;
+                            const uint32_t word4 = 75u;            // CC_FREQ
+                            const uint32_t word5 = (1u << 16) | 1u; // CC_DIV=1, CC_MUL=1
+                            const uint32_t word6 =
+                            (0u << 0)  |   // PMP
+                            (1u << 1)  |   // PMVER
+                            (0u << 4)  |   // PMNUM
+                            (31u << 8);    // PMBITS
+                            const uint32_t word10 =
+                            (1u << 0) |    // L1_IU_Present
+                            (1u << 2);     // L1_D_Present
+                            const uint32_t word11 =
+                            (1u) |         // Way-1
+                            (10u << 16) |  // Index_log2
+                            (4u << 24);    // Linesize_log2
+                            const uint32_t word12 = word11;
+                            const uint32_t word13 = 0u;
+                            const uint32_t word14 = 0u;
+                            switch (rj_value) {
+                            case 0x0:  return word0;
+                            case 0x1:  return word1;
+                            case 0x2:  return word2;
+                            case 0x3:  return word3;
+                            case 0x4:  return word4;
+                            case 0x5:  return word5;
+                            case 0x6:  return word6;
+                            case 0x10: return word10;
+                            case 0x11: return word11;
+                            case 0x12: return word12;
+                            case 0x13: return word13;
+                            case 0x14: return word14;
+                            default:   return 0u;
+}
+
+    }
+
+    void set_GPR(uint8_t index, uint32_t value, bool trace_gpr = true) {
         GPR[index] = value;
+        if (index == 0) {
+            return;
+        }
         if (trace) {
             fprintf(stderr, "pc = %08x,  reg = %02d, val = %08x\n", pc, index, value);
+        }
+        if (dump_trace && golden_fp && trace_gpr) {
+            fprintf(golden_fp,"1 %08x %02x %08x\n", pc, index, value);
+        }
+    }
+
+    void trace_csr_write(uint16_t csr_index, uint32_t wdata) {
+        if(dump_trace && golden_fp) {
+            fprintf(golden_fp, "2 %08x %04x %08x\n", pc ,csr_index, wdata);
         }
     }
 
@@ -520,6 +616,8 @@ private:
 
     bool trace;
     bool end;
+    bool dump_trace = false;
+    FILE *golden_fp = nullptr;
     std::queue <uint32_t> pc_trace;
 
     bool idle;

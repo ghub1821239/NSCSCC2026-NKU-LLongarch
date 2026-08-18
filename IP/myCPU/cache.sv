@@ -383,8 +383,8 @@ data_bank_ram data_way1_bank3 (
 //----------------------------- LOOKUP/REPLACE/REFILL 组合逻辑开始 --------------------------
 assign  way0_tag               = tagv_way0_r[18:1];
 assign  way1_tag               = tagv_way1_r[18:1];
-assign  way0_v                 = tagv_way0_r[0];
-assign  way1_v                 = tagv_way1_r[0];
+assign  way0_v                 = (tagv_way0_r[0] === 1'b1);
+assign  way1_v                 = (tagv_way1_r[0] === 1'b1);
 assign  way0_d                 = dirty_way0_r;
 assign  way1_d                 = dirty_way1_r;
 

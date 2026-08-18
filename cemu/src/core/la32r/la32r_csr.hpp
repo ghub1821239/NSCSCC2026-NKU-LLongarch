@@ -58,7 +58,7 @@ public:
         case EUEN:
             return euen;
         case ECFG:
-            return ecfg;
+            return ecfg & 0x1bff;
         case ESTAT:
             return estat;
         case ERA:
@@ -145,7 +145,7 @@ public:
         case ECFG: {
             auto old_val = (csr_ecfg *) &ecfg;
             auto new_val = (csr_ecfg *) &value;
-            old_val->lie = new_val->lie;
+            old_val->lie = new_val->lie & 0x1bff;
             break;
         }
         case ESTAT: {

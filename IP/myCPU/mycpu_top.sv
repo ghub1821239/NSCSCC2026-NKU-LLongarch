@@ -68,7 +68,26 @@ module core_top(
     output wire [63:0] debug_commit_pc,
     output wire [ 7:0] debug_commit_rf_wen,
     output wire [ 9:0] debug_commit_rf_wnum,
-    output wire [63:0] debug_commit_rf_wdata
+    output wire [63:0] debug_commit_rf_wdata,
+    // slot0
+    output wire        debug0_commit_valid,
+    output wire [31:0] debug0_commit_pc,
+    output wire        debug0_commit_rf_wen,
+    output wire [4:0]  debug0_commit_rf_wnum,
+    output wire [31:0] debug0_commit_rf_wdata,
+    output wire        debug0_commit_csr_wen,
+    output wire [13:0] debug0_commit_csr_num,
+    output wire [31:0] debug0_commit_csr_wdata,
+    //slot1
+    // slot0
+    output wire        debug1_commit_valid,
+    output wire [31:0] debug1_commit_pc,
+    output wire        debug1_commit_rf_wen,
+    output wire [4:0]  debug1_commit_rf_wnum,
+    output wire [31:0] debug1_commit_rf_wdata,
+    output wire        debug1_commit_csr_wen,
+    output wire [13:0] debug1_commit_csr_num,
+    output wire [31:0] debug1_commit_csr_wdata
 );
 
 // cpu inst sram
@@ -206,6 +225,24 @@ mycpu_core u_mycpu_core(
     .debug_commit_rf_wen    (debug_commit_rf_wen    ),
     .debug_commit_rf_wnum   (debug_commit_rf_wnum   ),
     .debug_commit_rf_wdata  (debug_commit_rf_wdata  ),
+
+    .debug0_commit_valid    (debug0_commit_valid    ),
+    .debug0_commit_pc       (debug0_commit_pc       ),
+    .debug0_commit_rf_wen   (debug0_commit_rf_wen   ),
+    .debug0_commit_rf_wnum  (debug0_commit_rf_wnum  ),
+    .debug0_commit_rf_wdata (debug0_commit_rf_wdata ),
+    .debug0_commit_csr_wen  (debug0_commit_csr_wen  ),
+    .debug0_commit_csr_num  (debug0_commit_csr_num  ),
+    .debug0_commit_csr_wdata(debug0_commit_csr_wdata),
+
+    .debug1_commit_valid    (debug1_commit_valid    ),
+    .debug1_commit_pc       (debug1_commit_pc       ),
+    .debug1_commit_rf_wen   (debug1_commit_rf_wen   ),
+    .debug1_commit_rf_wnum  (debug1_commit_rf_wnum  ),
+    .debug1_commit_rf_wdata (debug1_commit_rf_wdata ),
+    .debug1_commit_csr_wen  (debug1_commit_csr_wen  ),
+    .debug1_commit_csr_num  (debug1_commit_csr_num  ),
+    .debug1_commit_csr_wdata(debug1_commit_csr_wdata),
 
     .hw_int_in              (intrpt                 )
 );

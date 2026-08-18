@@ -327,8 +327,8 @@ data_bank_ram data_way1_bank3 (
 //----------------------------- LOOKUP/REPLACE/REFILL 组合逻辑开始 --------------------------
 assign  way0_tag            = tagv_way0_r[18:1];
 assign  way1_tag            = tagv_way1_r[18:1];
-assign  way0_v              = tagv_way0_r[0];
-assign  way1_v              = tagv_way1_r[0];
+assign  way0_v              = (tagv_way0_r[0] === 1'b1);
+assign  way1_v              = (tagv_way1_r[0] === 1'b1);
 assign  way0_hit            = req_valid_r && way0_v && (way0_tag == req_tag_r);
 assign  way1_hit            = req_valid_r && way1_v && (way1_tag == req_tag_r);
 assign  cache_hit           = way0_hit || way1_hit;

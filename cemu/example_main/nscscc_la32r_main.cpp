@@ -1,4 +1,8 @@
 #include <iostream>
+#include <cstdlib>
+#include <cstring>
+#include <cstdint>
+
 #include <bitset>
 
 #include <termios.h>
@@ -11,6 +15,84 @@
 #include "memory/memory_bus.hpp"
 #include "memory/ram.hpp"
 #include "core/la32r/la32r_core.hpp"
+
+// …… uart_input / sigint_handler / linux_run / ucore_run 可保持原样 ……
+static void print_usage(const char *prog) {
+    std::cerr
+        << "Usage:\n"
+        << "  " << prog << " [--bin <path>] [--trace <path>] [--max-steps <N>]\n"
+        << "Defaults:\n"
+        << "  --bin       ./func_lab19.bin\n"
+        << "  --trace     ./golden_trace.txt\n"
+        << "  --max-steps 200000000\n";
+}
+int nscscc_func(int argc, const char *argv[]) {
+    const char *bin_path = "./func_lab19.bin";
+    const char *trace_path = "./golden_trace.txt";
+    uint64_t max_steps = 200000000ull;
+    for (int i = 1; i < argc; i++) {
+        if (!strcmp(argv[i], "--bin") && i + 1 < argc) {
+            bin_path = argv[++i];
+        } else if (!strcmp(argv[i], "--trace") && i + 1 < argc) {
+            trace_path = argv[++i];
+        } else if (!strcmp(argv[i], "--max-steps") && i + 1 < argc) {
+            max_steps = std::strtoull(argv[++i], nullptr, 0);
+        } else if (!strcmp(argv[i], "-h") || !strcmp(argv[i], "--help")) {
+            print_usage(argv[0]);
+            return 0;
+        } else {
+            std::cerr << "Unknown arg: " << argv[i] << "\n";
+            print_usage(argv[0]);
+            return 1;
+        }
+    }
+    memory_bus mmio;
+    ram func_mem(1024 * 1024, bin_path);
+    ram data_mem0(0x1000000);
+    ram data_mem1(0x1000000);
+    ram data_mem2(0x1000000);
+    ram data_mem3(0x1000000);
+    ram data_mem4(0x1000000);
+    ram data_mem5(0x1000000);
+    func_mem.set_allow_warp(true);
+    nscscc_confreg confreg(true);
+    assert(mmio.add_dev(0x1c000000, 0x100000, &func_mem));
+    assert(mmio.add_dev(0x00000000, 0x1000000, &data_mem0));
+    assert(mmio.add_dev(0x80000000, 0x1000000, &data_mem1));
+    assert(mmio.add_dev(0x90000000, 0x1000000, &data_mem2));
+    assert(mmio.add_dev(0xa0000000, 0x1000000, &data_mem1));
+    assert(mmio.add_dev(0xc0000000, 0x1000000, &data_mem3));
+    assert(mmio.add_dev(0xd0000000, 0x1000000, &data_mem4));
+    assert(mmio.add_dev(0xe0000000, 0x1000000, &data_mem5));
+    assert(mmio.add_dev(0x1faf0000, 0x10000, &confreg));
+    assert(mmio.add_dev(0xbfaf0000, 0x10000, &confreg));
+    uart8250 uart;
+    assert(mmio.add_dev(0x1fe001e0, 0x10, &uart));
+    // 第 3 个参数是 stderr 调试打印；出迹请用 open_golden_trace，这里建议 false
+    la32r_core<32> core(0, mmio, false);
+    if (!core.open_golden_trace(trace_path)) {
+        std::cerr << "Failed to open golden trace: " << trace_path << "\n";
+        return 1;
+    }
+    uint64_t steps = 0;
+    while (!core.is_end() && steps < max_steps) {
+        core.step();
+        confreg.tick();
+        steps++;
+    }
+    core.close_golden_trace();
+    std::cerr << "CEMU done. steps=" << steps
+              << " end=" << (core.is_end() ? 1 : 0)
+              << " trace=" << trace_path << "\n";
+    if (!core.is_end() && steps >= max_steps) {
+        std::cerr << "Stopped by max-steps limit.\n";
+    }
+    return 0;
+}
+int main(int argc, const char *argv[]) {
+    // 阶段 1：默认只跑功能出迹
+    return nscscc_func(argc, argv);
+}
 
 void uart_input(uart8250 &uart) {
     termios tmp;
@@ -33,38 +115,38 @@ void sigint_handler(int x) {
     send_ctrl_c = true;
 }
 
-int nscscc_func(int argc, const char *argv[]) {
-    memory_bus mmio;
+// int nscscc_func(int argc, const char *argv[]) {
+//     memory_bus mmio;
 
-    ram func_mem(1024 * 1024, "./func_lab19.bin");
-    ram data_mem0(0x1000000);
-    ram data_mem1(0x1000000);
-    ram data_mem2(0x1000000);
-    ram data_mem3(0x1000000);
-    ram data_mem4(0x1000000);
-    ram data_mem5(0x1000000);
-    func_mem.set_allow_warp(true);
+//     ram func_mem(1024 * 1024, "./func_lab19.bin");
+//     ram data_mem0(0x1000000);
+//     ram data_mem1(0x1000000);
+//     ram data_mem2(0x1000000);
+//     ram data_mem3(0x1000000);
+//     ram data_mem4(0x1000000);
+//     ram data_mem5(0x1000000);
+//     func_mem.set_allow_warp(true);
 
-    nscscc_confreg confreg(true);
+//     nscscc_confreg confreg(true);
 
-    assert(mmio.add_dev(0x1c000000, 0x100000, &func_mem));
-    assert(mmio.add_dev(0x00000000, 0x1000000, &data_mem0));
-    assert(mmio.add_dev(0x80000000, 0x1000000, &data_mem1));
-    assert(mmio.add_dev(0x90000000, 0x1000000, &data_mem2));
-    assert(mmio.add_dev(0xa0000000, 0x1000000, &data_mem1));
-    assert(mmio.add_dev(0xc0000000, 0x1000000, &data_mem3));
-    assert(mmio.add_dev(0xd0000000, 0x1000000, &data_mem4));
-    assert(mmio.add_dev(0xe0000000, 0x1000000, &data_mem5));
-    assert(mmio.add_dev(0x1faf0000, 0x10000, &confreg));
-    assert(mmio.add_dev(0xbfaf0000, 0x10000, &confreg));
+//     assert(mmio.add_dev(0x1c000000, 0x100000, &func_mem));
+//     assert(mmio.add_dev(0x00000000, 0x1000000, &data_mem0));
+//     assert(mmio.add_dev(0x80000000, 0x1000000, &data_mem1));
+//     assert(mmio.add_dev(0x90000000, 0x1000000, &data_mem2));
+//     assert(mmio.add_dev(0xa0000000, 0x1000000, &data_mem1));
+//     assert(mmio.add_dev(0xc0000000, 0x1000000, &data_mem3));
+//     assert(mmio.add_dev(0xd0000000, 0x1000000, &data_mem4));
+//     assert(mmio.add_dev(0xe0000000, 0x1000000, &data_mem5));
+//     assert(mmio.add_dev(0x1faf0000, 0x10000, &confreg));
+//     assert(mmio.add_dev(0xbfaf0000, 0x10000, &confreg));
 
-    la32r_core<32> core(0, mmio, true);
-    while (!core.is_end()) {
-        core.step();
-        confreg.tick();
-    }
-    return 0;
-}
+//     la32r_core<32> core(0, mmio, true);
+//     while (!core.is_end()) {
+//         core.step();
+//         confreg.tick();
+//     }
+//     return 0;
+// }
 
 int linux_run(int argc, const char *argv[]) {
     signal(SIGINT, sigint_handler);
