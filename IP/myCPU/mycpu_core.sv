@@ -589,7 +589,7 @@ wire        wb_need_stall_csr   [ISSUE - 1 : 0];
 wire        mem_load_wait       [ISSUE - 1 : 0];
 
 // =========================  decode 先发起请求，然后进入exe1再进行替换  ==========================
-wire        EID_need_alu1_rj    [ISSUE - 1 : 0];
+wire        ID_need_alu1_rj    [ISSUE - 1 : 0];
 wire        ID_need_src2_withST    [ISSUE - 1 : 0];
 wire        ID_need_alu2_rk [ISSUE - 1 : 0];
 wire [ 1:0] src1_capture_sel    [ISSUE - 1 : 0];
@@ -621,7 +621,7 @@ generate
 
         // 正常issue不会让两个EXE1 lane同时写同一个寄存器
         // 这里仍写完整：两个都命中时必须两个都能capture，并优先更年轻的lane1
-        assign  src1_capture_valid[i] = EID_need_alu1_rj[i] & EXE1_allow_in &
+        assign  src1_capture_valid[i] = ID_need_alu1_rj[i] & EXE1_allow_in &
                                         ~EXE1_need_cancel &
                                         // 匹配成功 & 对应槽可以前递
                                         (|exe1_capture_match_rdata1[i]) &
@@ -1169,7 +1169,7 @@ decode #(
     .br_rdata2           (front_push_br_rdata2    ),
     .br_use_rj           (br_use_rj               ),
     .br_use_rk           (br_use_rk               ),
-    .EID_need_alu1_rj    (EID_need_alu1_rj         ),
+    .ID_need_alu1_rj    (ID_need_alu1_rj         ),
     .ID_need_src2_withST    (ID_need_src2_withST         ),
     .ID_need_alu2_rk (ID_need_alu2_rk      ),
     //cancel

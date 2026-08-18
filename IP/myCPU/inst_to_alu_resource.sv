@@ -28,7 +28,7 @@ module inst_to_alu_resource #(
 
     // 当前指令的这个源能不能在进入EXE1时，用current EXE1结果修复
     // 这些都只是组合判断，不会跟着ID_EXE1 bus打拍
-    output wire                    EID_need_alu1_rj,
+    output wire                    ID_need_alu1_rj,
     output wire                    ID_need_src2_withST,
     output wire                    ID_need_alu2_rk,
 
@@ -434,7 +434,7 @@ wire need_is_valid = slot_valid & ~ex_ADEF & ~ex_tlb_reload0 &
                              ~ex_tlb_preif_unvalid & ~ex_tlb_plv0 &
                              ~ex_INE & ~ex_IPE & ~has_int;
 // 只请求src1是rj的
-assign EID_need_alu1_rj = need_is_valid & (
+assign ID_need_alu1_rj = need_is_valid & (
                          inst_add_w | inst_sub_w | inst_slt | inst_sltu | 
                          inst_nor | inst_and | inst_or | inst_xor |
                          inst_slli_w | inst_srli_w | inst_srai_w |

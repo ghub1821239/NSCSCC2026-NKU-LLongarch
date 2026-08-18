@@ -26,7 +26,7 @@ module decode #(
     input  wire [31:0]             br_rdata2          [ISSUE - 1 : 0],
     output wire                    br_use_rj          [ISSUE - 1 : 0],
     output wire                    br_use_rk          [ISSUE - 1 : 0],
-    output wire                    EID_need_alu1_rj   [ISSUE - 1 : 0],
+    output wire                    ID_need_alu1_rj   [ISSUE - 1 : 0],
     output wire                    ID_need_src2_withST   [ISSUE - 1 : 0],
     output wire                    ID_need_alu2_rk[ISSUE - 1 : 0],
     //cancel control
@@ -122,8 +122,8 @@ wire                       packed_mode;
 //assign drain_hold  = id_fire & hold_valid;//
 //assign packed_mode = hold_valid & bus_has_inst;
 
-wire                       create_hold_from_soft = id_fire & ~hold_valid & soft_kill_slot1 & slot_issue[0];//无hold指令，soft kill只发出slot0到后端，slot1住hold
-wire                       create_hold_from_tail = id_fire & hold_valid & bus_has_inst & slot_issue[0] & slot_issue[1] & bus1_valid & ~hard_kill_slot1;//重新拼包且双发成功，且原始包的slot1进hold
+wire                       create_hold_from_soft = id_fire & ~hold_valid & soft_kill_slot1;//无hold指令，soft kill只发出slot0到后端，slot1住hold
+wire                       create_hold_from_tail = id_fire & hold_valid & bus_has_inst & slot_issue[0] & slot_issue[1] & bus1_valid;//重新拼包且双发成功，且原始包的slot1进hold
 wire                       pack_soft_keep_bus    = id_fire & hold_valid & slot_issue[0] & ~slot_issue[1] & soft_kill_slot1;//hold与下一条指令重新拼包后soft kill,则hold指令下一条指令留在bus
 wire                       consume_for_accept;
 
@@ -224,9 +224,6 @@ wire                    pop_need       [ISSUE-1:0];
 wire [1:0]              br_type        [ISSUE-1:0];
 wire                    ex_INE         [ISSUE-1:0];
 wire                    ex_IPE         [ISSUE-1:0];
-wire                    EID_need_alu1_rj_raw   [ISSUE-1:0];
-wire                    ID_need_src2_withST_raw   [ISSUE-1:0];
-wire                    ID_need_alu2_rk_raw[ISSUE-1:0];
 
 generate
   for (gi = 0; gi < ISSUE; gi = gi + 1) begin : gen_alu_res
@@ -253,9 +250,9 @@ generate
       .br_rdata2            (br_rdata2[gi]              ),
       .br_use_rj            (br_use_rj[gi]              ),
       .br_use_rk            (br_use_rk[gi]              ),
-      .EID_need_alu1_rj     (EID_need_alu1_rj_raw[gi]    ),
-      .ID_need_src2_withST     (ID_need_src2_withST_raw[gi]    ),
-      .ID_need_alu2_rk  (ID_need_alu2_rk_raw[gi] ),
+      .ID_need_alu1_rj     (ID_need_alu1_rj[gi]    ),
+      .ID_need_src2_withST     (ID_need_src2_withST[gi]    ),
+      .ID_need_alu2_rk  (ID_need_alu2_rk[gi] ),
 
       .csr_CRMD_PLV         (csr_CRMD_PLV               ),
       .has_int              ((gi == 0) ? has_int : 1'b0 ),//只在slot0判中断
@@ -337,7 +334,7 @@ assign     consume_for_accept        = id_fire & bus_has_inst & ~pack_keep_no_br
 //------------------------{issue}end-----------------------------//
 
 //------------------------{pred_update}begin--------------------------------------//
-wire    redirect0           = slot_issue[0] & redirect_lane[0];
+wire    redirect0           = redirect_lane[0];//inst_to_alu_resource中会保证valid的
 wire    redirect1           = slot_issue[1] & redirect_lane[1] & ~redirect0;//禁止双分支
 
 assign  br_afterpred_taken  = (redirect0 | redirect1) & id_fire;
@@ -376,9 +373,6 @@ assign  pop_valid           = id_fire       & (slot_issue[0] & pop_need[0] |
 generate
     for (gi = 0; gi < ISSUE; gi = gi + 1) begin : gen_id_exe
         assign  ID_EXE1_bus[gi] = slot_issue[gi] ? {1'b1,exe_payload[gi]} : {outbus_width{1'b0}};
-        assign  EID_need_alu1_rj[gi]    = slot_issue[gi] & EID_need_alu1_rj_raw[gi];
-        assign  ID_need_src2_withST[gi]    = slot_issue[gi] & ID_need_src2_withST_raw[gi];
-        assign  ID_need_alu2_rk[gi] = slot_issue[gi] & ID_need_alu2_rk_raw[gi];
     end
 endgenerate
 //------------------------{bus}end-------------------------//
