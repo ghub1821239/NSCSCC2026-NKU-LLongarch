@@ -857,9 +857,9 @@ assign  data_ok  = (data_ok_lookup_hit) ||
                    ((main_state == `MAIN_REFILL) && ret_valid && ret_last) ||
                    cacop_done;
 
-// LOOKUP 阶段始终输出两路 Data Bank 候选 word；真正命中与否由 data_ok 判定，
-// miss/无效周期 rdata 为合法 don't-care（不会被架构采样）
-assign  rdata    = (main_state == `MAIN_LOOKUP) ? (req_op_r ? merged_hit_word :
+// LOOKUP 仅在真实命中时返回 Data Bank 候选 word；其余周期由后续分支决定或输出 0
+assign  rdata    = ((main_state == `MAIN_LOOKUP) &&
+                    (lookup_read_hit || lookup_write_hit)) ? (req_op_r ? merged_hit_word :
                     hit_word) : 
                     ((main_state == `MAIN_REFILL) && ret_valid && ret_last) ? ((uncache_valid_r && !uncache_wr_r) ? ret_data : 
                     refill_final_word) : 

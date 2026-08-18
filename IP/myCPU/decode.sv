@@ -441,8 +441,8 @@ assign  pop_valid           = id_fire       & (slot_issue[0] & pop_need[0] |
 //try to minimize the bus_size
 generate
     for (gi = 0; gi < ISSUE; gi = gi + 1) begin : gen_id_exe
-        // 只门控 valid 位；payload 恒输出（无效槽 payload 被 EXE1 的 slot_valid_from_decode 门控）
-        assign  ID_EXE1_bus[gi] = {slot_issue[gi], exe_payload[gi]};
+        // 无效槽总线全零，保持原 ID→EXE1 接口语义
+        assign ID_EXE1_bus[gi] = slot_issue[gi] ? {1'b1, exe_payload[gi]} : {outbus_width{1'b0}};
     end
 endgenerate
 //------------------------{bus}end-------------------------//
