@@ -500,7 +500,7 @@ wire    lookup_read_pipe       = (is_icache | is_dcache) &&
 wire    wb_idle                = !wb_valid_r && (wb_state == `WB_IDLE);
 wire    accept_this            = wb_idle && !cacop_this_cache;
 
-assign  can_accept_req         = ((main_state == `MAIN_IDLE) && accept_this) ||
+assign  can_accept_req         = ((main_state == `MAIN_IDLE) && wb_idle) ||
                                  (lookup_read_pipe && accept_this);
 
 assign  addr_ok                = can_accept_req && (valid | cacop_this_cache);
