@@ -112,6 +112,12 @@ assign  MEM_WB_valid        = MEM_valid & MEM_ready_go;
 //------------------------{regfile}begin-------------------------//
 wire [4:0]  rf_raddr1[ISSUE - 1 : 0];
 wire [4:0]  rf_raddr2[ISSUE - 1 : 0];
+wire [2:0]  rf_raddr1_slot0_bank1;
+wire [2:0]  rf_raddr1_slot0_bank2;
+wire [2:0]  rf_raddr1_slot0_bank3;
+wire [2:0]  rf_raddr2_slot0_bank1;
+wire [2:0]  rf_raddr2_slot0_bank2;
+wire [2:0]  rf_raddr2_slot0_bank3;
 wire [4:0]  rf_waddr [ISSUE - 1 : 0];
 
 wire [31:0] rf_rdata1[ISSUE - 1 : 0];
@@ -125,8 +131,14 @@ regfile u_regfile(
     .clk    (clk       ),
     .resetn (resetn    ),
     .raddr1 (rf_raddr1 ),
+    .raddr1_slot0_bank1 (rf_raddr1_slot0_bank1),
+    .raddr1_slot0_bank2 (rf_raddr1_slot0_bank2),
+    .raddr1_slot0_bank3 (rf_raddr1_slot0_bank3),
     .rdata1 (rf_rdata1 ),
     .raddr2 (rf_raddr2 ),
+    .raddr2_slot0_bank1 (rf_raddr2_slot0_bank1),
+    .raddr2_slot0_bank2 (rf_raddr2_slot0_bank2),
+    .raddr2_slot0_bank3 (rf_raddr2_slot0_bank3),
     .rdata2 (rf_rdata2 ),
     .we     (rf_we     ),
     .waddr  (rf_waddr  ),
@@ -1162,6 +1174,12 @@ decode #(
 
     .rf_raddr1           (rf_raddr1               ),//decode src1&2 address   ---- stall need use 
     .rf_raddr2           (rf_raddr2               ),
+    .rf_raddr1_slot0_bank1 (rf_raddr1_slot0_bank1 ),
+    .rf_raddr1_slot0_bank2 (rf_raddr1_slot0_bank2 ),
+    .rf_raddr1_slot0_bank3 (rf_raddr1_slot0_bank3 ),
+    .rf_raddr2_slot0_bank1 (rf_raddr2_slot0_bank1 ),
+    .rf_raddr2_slot0_bank2 (rf_raddr2_slot0_bank2 ),
+    .rf_raddr2_slot0_bank3 (rf_raddr2_slot0_bank3 ),
     .rf_rdata1           (front_push_rdata1       ),
     .rf_rdata2           (front_push_rdata2       ),//have been front_push 
     // br前递数据没有ld相关

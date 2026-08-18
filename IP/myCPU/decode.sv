@@ -18,6 +18,12 @@ module decode #(
         // addr
     output wire [4:0]              rf_raddr1          [ISSUE - 1 : 0],
     output wire [4:0]              rf_raddr2          [ISSUE - 1 : 0],
+    output wire [2:0]              rf_raddr1_slot0_bank1,
+    output wire [2:0]              rf_raddr1_slot0_bank2,
+    output wire [2:0]              rf_raddr1_slot0_bank3,
+    output wire [2:0]              rf_raddr2_slot0_bank1,
+    output wire [2:0]              rf_raddr2_slot0_bank2,
+    output wire [2:0]              rf_raddr2_slot0_bank3,
         // data
     input  wire [31:0]             rf_rdata1          [ISSUE - 1 : 0],
     input  wire [31:0]             rf_rdata2          [ISSUE - 1 : 0],
@@ -276,6 +282,29 @@ assign  rf_raddr1[0] = hold_valid_raddr1_slot0 ? hold_raddr1     : bus[0][82:78]
 assign  rf_raddr2[0] = hold_valid_raddr2_slot0 ? hold_raddr2     : bus[0][77:73];
 assign  rf_raddr1[1] = hold_valid_raddr1_slot1 ? bus[0][82:78]  : bus[1][82:78];
 assign  rf_raddr2[1] = hold_valid_raddr2_slot1 ? bus[0][77:73]  : bus[1][77:73];
+
+// slot0 的低 3 位读地址按 regfile bank 复制组合驱动；bank0 继续使用 rf_raddr*[0][2:0]。
+// KEEP 仅用于阻止综合器把三个等价 bank 驱动重新合并，不冻结下游 regfile 逻辑。
+(* keep = "true" *) wire [2:0] rf_raddr1_slot0_bank1_local;
+(* keep = "true" *) wire [2:0] rf_raddr1_slot0_bank2_local;
+(* keep = "true" *) wire [2:0] rf_raddr1_slot0_bank3_local;
+(* keep = "true" *) wire [2:0] rf_raddr2_slot0_bank1_local;
+(* keep = "true" *) wire [2:0] rf_raddr2_slot0_bank2_local;
+(* keep = "true" *) wire [2:0] rf_raddr2_slot0_bank3_local;
+
+assign rf_raddr1_slot0_bank1_local = hold_valid_raddr1_slot0 ? hold_raddr1[2:0] : bus[0][80:78];
+assign rf_raddr1_slot0_bank2_local = hold_valid_raddr1_slot0 ? hold_raddr1[2:0] : bus[0][80:78];
+assign rf_raddr1_slot0_bank3_local = hold_valid_raddr1_slot0 ? hold_raddr1[2:0] : bus[0][80:78];
+assign rf_raddr2_slot0_bank1_local = hold_valid_raddr2_slot0 ? hold_raddr2[2:0] : bus[0][75:73];
+assign rf_raddr2_slot0_bank2_local = hold_valid_raddr2_slot0 ? hold_raddr2[2:0] : bus[0][75:73];
+assign rf_raddr2_slot0_bank3_local = hold_valid_raddr2_slot0 ? hold_raddr2[2:0] : bus[0][75:73];
+
+assign rf_raddr1_slot0_bank1 = rf_raddr1_slot0_bank1_local;
+assign rf_raddr1_slot0_bank2 = rf_raddr1_slot0_bank2_local;
+assign rf_raddr1_slot0_bank3 = rf_raddr1_slot0_bank3_local;
+assign rf_raddr2_slot0_bank1 = rf_raddr2_slot0_bank1_local;
+assign rf_raddr2_slot0_bank2 = rf_raddr2_slot0_bank2_local;
+assign rf_raddr2_slot0_bank3 = rf_raddr2_slot0_bank3_local;
 
 wire  pred_not_neighbor = slot_valid[0] & slot_valid[1] & (pc[1] != (pc[0] + 32'd4));
 wire  pred_is_neighbor  = slot_valid[0] & slot_valid[1] & (pc[1] == (pc[0] + 32'd4));
