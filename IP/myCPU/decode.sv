@@ -177,28 +177,46 @@ wire                       accept_IF_in_bus      = IF_ID_valid & ID_allow_in & (
 assign                     ID_can_accept_IF      = (~bus_has_inst | consume_for_accept) &
                                                    ~(ID_need_cancel);
 
-// 地址侧专用 hold_valid 副本：仅服务四条 rf_raddr 选择，避免原 hold_valid 高扇出进入地址锥
-(* keep = "true" *) reg hold_valid_addr;
+// 地址侧专用 hold_valid 副本：每个副本仅服务一条 rf_raddr 选择，降低地址选择锥的扇出与布线跨度
+(* keep = "true" *) reg hold_valid_raddr1_slot0;
+(* keep = "true" *) reg hold_valid_raddr2_slot0;
+(* keep = "true" *) reg hold_valid_raddr1_slot1;
+(* keep = "true" *) reg hold_valid_raddr2_slot1;
 always @(posedge clk) begin
     if (!resetn) begin
         hold_valid <= 1'b0;
-        hold_valid_addr <= 1'b0;
+        hold_valid_raddr1_slot0 <= 1'b0;
+        hold_valid_raddr2_slot0 <= 1'b0;
+        hold_valid_raddr1_slot1 <= 1'b0;
+        hold_valid_raddr2_slot1 <= 1'b0;
     end
     else if (ID_need_cancel) begin
         hold_valid <= 1'b0;
-        hold_valid_addr <= 1'b0;
+        hold_valid_raddr1_slot0 <= 1'b0;
+        hold_valid_raddr2_slot0 <= 1'b0;
+        hold_valid_raddr1_slot1 <= 1'b0;
+        hold_valid_raddr2_slot1 <= 1'b0;
     end
     else if (id_fire & (redirect0 | redirect1)) begin
         hold_valid <= 1'b0;
-        hold_valid_addr <= 1'b0;
+        hold_valid_raddr1_slot0 <= 1'b0;
+        hold_valid_raddr2_slot0 <= 1'b0;
+        hold_valid_raddr1_slot1 <= 1'b0;
+        hold_valid_raddr2_slot1 <= 1'b0;
     end
     else if (create_hold_from_soft | create_hold_from_tail) begin
         hold_valid <= 1'b1;
-        hold_valid_addr <= 1'b1;
+        hold_valid_raddr1_slot0 <= 1'b1;
+        hold_valid_raddr2_slot0 <= 1'b1;
+        hold_valid_raddr1_slot1 <= 1'b1;
+        hold_valid_raddr2_slot1 <= 1'b1;
     end
     else if (id_fire & hold_valid & slot_issue[0]) begin
         hold_valid <= 1'b0;
-        hold_valid_addr <= 1'b0;
+        hold_valid_raddr1_slot0 <= 1'b0;
+        hold_valid_raddr2_slot0 <= 1'b0;
+        hold_valid_raddr1_slot1 <= 1'b0;
+        hold_valid_raddr2_slot1 <= 1'b0;
     end
 end
 
@@ -253,11 +271,11 @@ generate
     end 
 endgenerate
 // rf_raddr 按 hold 模式直接选择，避免 hold_bus[82:73] 进入 rf_raddr 组合锥（固定下标，须在 generate 之外）
-// 选择控制使用地址侧专用 hold_valid_addr 副本
-assign  rf_raddr1[0] = hold_valid_addr ? hold_raddr1 : bus[0][82:78];
-assign  rf_raddr2[0] = hold_valid_addr ? hold_raddr2 : bus[0][77:73];
-assign  rf_raddr1[1] = hold_valid_addr ? bus[0][82:78] : bus[1][82:78];
-assign  rf_raddr2[1] = hold_valid_addr ? bus[0][77:73] : bus[1][77:73];
+// 每条地址选择使用独立的同值副本，使实现工具可将副本分别放在对应消费锥附近
+assign  rf_raddr1[0] = hold_valid_raddr1_slot0 ? hold_raddr1     : bus[0][82:78];
+assign  rf_raddr2[0] = hold_valid_raddr2_slot0 ? hold_raddr2     : bus[0][77:73];
+assign  rf_raddr1[1] = hold_valid_raddr1_slot1 ? bus[0][82:78]  : bus[1][82:78];
+assign  rf_raddr2[1] = hold_valid_raddr2_slot1 ? bus[0][77:73]  : bus[1][77:73];
 
 wire  pred_not_neighbor = slot_valid[0] & slot_valid[1] & (pc[1] != (pc[0] + 32'd4));
 wire  pred_is_neighbor  = slot_valid[0] & slot_valid[1] & (pc[1] == (pc[0] + 32'd4));
