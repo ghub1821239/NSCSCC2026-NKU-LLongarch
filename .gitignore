@@ -1,5 +1,90 @@
 .cursor/
 .codex_verify/
 .AGENTS.md/
+.DS_Store
 
-fpga/nscscc-team/run_vivado/result/for_timing_report/*.rpt
+# Python
+__pycache__/
+*.py[cod]
+
+# 备份压缩包
+*.zip
+
+# 编译出的仿真器
+cemu/cemu_la32r
+
+# Vivado / xsim 仿真生成物
+*.wdb
+*.wlf
+*.vcd
+*.jou
+*.log
+*.str
+*.pb
+*.exe
+*.Xil/
+*.cache/
+*.sim/
+*.hw/
+*.ip_user_files/
+xsim.dir/
+
+# 综合 / 实现（synth & impl）
+*.dcp
+*.bit
+*.ltx
+*.rpx
+*.mmi
+*.bmm
+*.wdf
+*.vds
+*.runs/
+**/synth_1/
+**/impl_1/
+**/*_synth_1/
+**/*_impl_1/
+*.gen/
+loongson.gen/
+
+# Xilinx IP 综合/仿真旁路产物（只跟踪 .xci）
+*_sim_netlist.v
+*_sim_netlist.vhdl
+*_stub.v
+*_stub.vhdl
+
+# 实现报告与 bitstream 旁路产物
+*_routed.rpt
+*_placed.rpt
+*_physopt.rpt
+*_opt.rpt
+*_utilization_*.rpt
+*_timing_summary_*.rpt
+*_power_*.rpt
+*_drc_*.rpt
+*_methodology_*.rpt
+*_bus_skew_*.rpt
+*_control_sets_*.rpt
+*_io_placed.rpt
+*_route_status.rpt
+debug_nets.ltx
+hs_err_pid*.log
+vivado*.backup.jou
+
+# 仿真工程整棵（可本地生成）
+cemu/sims/vivado_sim/
+
+# FPGA Vivado 工程与综合实现结果（保留 tcl / xci / 源码）
+fpga/**/run_vivado/project/
+fpga/**/run_vivado/result/
+
+# 官方 SoC 工程里综合出的 IP 网表 / dcp
+chip/**/xilinx_ip/**/gen/
+chip/**/xilinx_ip/vio/hdl/
+chip/**/xilinx_ip/vio/synth/
+chip/**/xilinx_ip/vio/*.xml
+chip/**/xilinx_ip/vio/*.xdc
+
+# 超大 trace / 二进制（CEMU 可再生成）
+cemu/sims/trace/golden_trace.txt
+cemu/sims/trace/test.s
+*.bin
