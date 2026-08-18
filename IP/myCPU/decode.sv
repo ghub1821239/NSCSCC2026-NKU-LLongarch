@@ -57,6 +57,8 @@ module decode #(
     //ID_can_accept_IF
     output wire                    ID_can_accept_IF
 );
+localparam EXE_PAYLOAD_W = 243;
+
 wire                    id_fire         = ID_valid & ID_ready_go & ~ID_need_cancel & ID_allow_in;
 //------------------------{bus decode}begin-------------------------//
 reg     [inbus_width-1:0] bus         [ISSUE - 1 : 0];
@@ -196,7 +198,7 @@ wire  pred_is_neighbor  = slot_valid[0] & slot_valid[1] & (pc[1] == (pc[0] + 32'
 
 //------------------------{module}begin--------------------------//
 
-wire [outbus_width-2:0] exe_payload    [ISSUE-1:0];
+wire [EXE_PAYLOAD_W-1:0]exe_payload    [ISSUE-1:0];
 wire                    real_taken     [ISSUE-1:0];
 wire [31:0]             real_target    [ISSUE-1:0];
 wire                    target_not_seq [ISSUE-1:0];
@@ -215,7 +217,8 @@ wire                    is_csr_write   [ISSUE-1:0];
 wire                    is_csr_read    [ISSUE-1:0];
 wire                    is_tlb         [ISSUE-1:0];
 wire [4:0]              rf_dest        [ISSUE-1:0];
-wire                    rf_gr_we       [ISSUE-1:0];
+wire                    rf_gr_we       [ISSUE-1:0];               
+
 // 若按上面加了可选端口：
 wire                    upd_need       [ISSUE-1:0];
 wire                    bht_upd_need   [ISSUE-1:0];
@@ -228,7 +231,7 @@ wire                    ex_IPE         [ISSUE-1:0];
 generate
   for (gi = 0; gi < ISSUE; gi = gi + 1) begin : gen_alu_res
     inst_to_alu_resource #(
-      .outbus_width         (outbus_width               )
+      .outbus_width         (EXE_PAYLOAD_W+1            )
     ) u_inst_to_alu (
       .pc                   (pc[gi]                     ),
       .inst                 (inst[gi]                   ),
@@ -369,10 +372,12 @@ assign  pop_valid           = id_fire       & (slot_issue[0] & pop_need[0] |
 //------------------------{pred_update}end--------------------------------------//
 
 //------------------------{bus}begin-------------------------//
+
 //try to minimize the bus_size
 generate
     for (gi = 0; gi < ISSUE; gi = gi + 1) begin : gen_id_exe
-        assign  ID_EXE1_bus[gi] = slot_issue[gi] ? {1'b1,exe_payload[gi]} : {outbus_width{1'b0}};
+        assign  ID_EXE1_bus[gi] = slot_issue[gi] ? {1'b1, 
+                                                    exe_payload[gi]} : {outbus_width{1'b0}};
     end
 endgenerate
 //------------------------{bus}end-------------------------//

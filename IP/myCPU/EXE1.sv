@@ -206,10 +206,12 @@ generate
 endgenerate
 //------------------------{alu}begin-------------------------//
 wire [31:0] alu_result     [ISSUE - 1 : 0];
+
 wire [31:0] mem_vaddr      [ISSUE - 1 : 0];
 wire        div_mod        [ISSUE - 1 : 0];
 wire        divide_ready_go[ISSUE - 1 : 0];
 wire        EXE1_slot_valid[ISSUE - 1 : 0];
+
 generate 
     for(i = 0; i < ISSUE; i = i + 1) begin : gen_alu
         // 按槽 valid：级 valid & 本槽有指令；alu 内部会用它门控全部 alu_op（含 mul/div）
@@ -224,8 +226,8 @@ generate
             .EXE1_slot_valid    (EXE1_slot_valid[i]    ),
             .EXE1_need_cancel   (EXE1_need_cancel      ),
             .alu_op             (alu_op[i]             ),
-            .alu_src1           (alu_src1[i]           ),
-            .alu_src2           (alu_src2[i]           ),
+            .alu_src1           (alu_src1[i]       ),
+            .alu_src2           (alu_src2[i]       ),
             .alu_result         (alu_result[i]         ),
             .add_result         (mem_vaddr[i]          ),
             .divide_ready_go    (divide_ready_go[i]    )
