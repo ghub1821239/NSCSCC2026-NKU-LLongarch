@@ -161,6 +161,8 @@ wire                    lookup_begin;
 wire                    lookup_read_hit;
 wire                    lookup_write_hit;
 wire                    lookup_miss;
+// data_ok 专用的 MAIN_LOOKUP hit cone（单比特最终结果；独立于 lookup_*_hit 共享网络）
+(* keep = "true" *) wire data_ok_lookup_hit;
 // refill再从I/D RAM拿回cache line之后要进入写cache阶段
 wire                    refill_write;
 wire                    wb_write;
@@ -453,6 +455,13 @@ assign  lookup_begin           = (valid | cacop_this_cache) && can_accept_req;
 assign  lookup_read_hit        = cache_hit && !req_op_r && ~(uncache_valid_r && ~uncache_wr_r) && ~code0 && ~code1;
 // 同样写也是
 assign  lookup_write_hit       = cache_hit &&  req_op_r && ~(uncache_valid_r && uncache_wr_r) && ~cacop_this_cache_r;
+// data_ok 专用 hit：直接由 way0/way1 tag 命中汇合，绕过 cache_hit→lookup_*_hit 共享高扇出网络
+// 与 (main_state==MAIN_LOOKUP) && (lookup_read_hit||lookup_write_hit) && ~cacop_this_cache_r 布尔等价
+assign  data_ok_lookup_hit     = (main_state == `MAIN_LOOKUP) &&
+                                 ~cacop_this_cache_r &&
+                                 (way0_hit || way1_hit) &&
+                                 ((!req_op_r && ~(uncache_valid_r && ~uncache_wr_r) && ~code0 && ~code1) ||
+                                  ( req_op_r && ~(uncache_valid_r && uncache_wr_r)));
 // 强制miss
 assign  lookup_miss            = !cache_hit | uncache_valid_r | code0 | code1;
 // refill_write：处于refill状态，要把cache line重填回cache
@@ -843,7 +852,7 @@ end
 
 //assign addr_ok = (main_state == `MAIN_IDLE) && can_accept_req;
 
-assign  data_ok  = ((main_state == `MAIN_LOOKUP) && (lookup_read_hit || lookup_write_hit) && ~cacop_this_cache_r) ||
+assign  data_ok  = (data_ok_lookup_hit) ||
                    ((main_state == `MAIN_REPLACE) && uncache_valid_r && uncache_wr_r && wr_rdy) ||
                    ((main_state == `MAIN_REFILL) && ret_valid && ret_last) ||
                    cacop_done;
