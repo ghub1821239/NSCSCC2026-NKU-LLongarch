@@ -1,5 +1,6 @@
 .cursor/
 .codex_verify/
 .AGENTS.md/
+.agent.md/
 
 fpga/nscscc-team/run_vivado/result/for_timing_report/*.rpt
