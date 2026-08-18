@@ -59,42 +59,67 @@ module decode #(
 );
 wire                    id_fire         = ID_valid & ID_ready_go & ~ID_need_cancel & ID_allow_in;
 //------------------------{bus decode}begin-------------------------//
-reg     [inbus_width-1:0] bus         [ISSUE - 1 : 0];
+// bus 拆成 valid 状态与 payload 存储：redirect/cancel/consume 只驱动 valid FF，
+// 不再进入 payload FF 的 CE（payload 仅在 reset/accept 时更新）
+reg     [inbus_width-2:0] bus_payload [ISSUE - 1 : 0];
+reg                       bus_valid_r [ISSUE - 1 : 0];
+wire    [inbus_width-1:0] bus         [ISSUE - 1 : 0];
 reg                       bus_has_inst;//bus中有未完成的IF的指令
 
 integer                   k;
+// payload 存储：仅 reset/accept 更新；cancel/redirect/consume 不触碰 payload
 always @(posedge clk)begin
     if(!resetn)begin
         for (k = 0; k < ISSUE; k = k + 1) begin
-            bus[k]       <= {inbus_width{1'b0}};
+            bus_payload[k] <= {inbus_width-1{1'b0}};
+        end
+    end
+    else if (accept_IF_in_bus) begin
+        for (k = 0; k < ISSUE; k = k + 1) begin
+            bus_payload[k] <= IF_ID_bus[k][inbus_width-2:0];
+        end
+    end
+end
+// valid 状态与 bus_has_inst：严格保持原优先级 reset > cancel > redirect > accept > consume
+always @(posedge clk)begin
+    if(!resetn)begin
+        for (k = 0; k < ISSUE; k = k + 1) begin
+            bus_valid_r[k] <= 1'b0;
         end
         bus_has_inst <= 1'b0;
     end
     else if (ID_need_cancel)begin
         for (k = 0; k < ISSUE; k = k + 1) begin
-            bus[k][inbus_width-1] <= 1'b0;//只清valid位，payload保持（无效周期为don't-care）
+            bus_valid_r[k] <= 1'b0;
         end
         bus_has_inst <= 1'b0;
     end
     else if (id_fire & (redirect0 | redirect1))begin
         for (k = 0; k < ISSUE; k = k + 1) begin
-            bus[k][inbus_width-1] <= 1'b0;
+            bus_valid_r[k] <= 1'b0;
         end
         bus_has_inst <= 1'b0;
     end
     else if (accept_IF_in_bus) begin
         for (k = 0; k < ISSUE; k = k + 1) begin
-            bus[k]       <= IF_ID_bus[k];
+            bus_valid_r[k] <= IF_ID_bus[k][inbus_width-1];
         end
         bus_has_inst <= 1'b1;
     end
     else if(consume_bus) begin
         for (k = 0; k < ISSUE; k = k + 1) begin
-            bus[k][inbus_width-1] <= 1'b0;
+            bus_valid_r[k] <= 1'b0;
         end
         bus_has_inst <= 1'b0;
     end
 end
+// 组合重建 bus（最高位 valid）
+genvar  bk;
+generate
+    for (bk = 0; bk < ISSUE; bk = bk + 1) begin : gen_bus_rebuild
+        assign  bus[bk] = {bus_valid_r[bk], bus_payload[bk]};
+    end
+endgenerate
 wire        slot_valid          [ISSUE - 1 : 0];
 wire [31:0] pc                  [ISSUE - 1 : 0];
 wire [31:0] inst                [ISSUE - 1 : 0];
@@ -133,6 +158,13 @@ wire                       create_hold_from_tail = id_fire & hold_valid & bus_ha
 wire                       pack_soft_keep_bus    = id_fire & hold_valid & slot_issue[0] & ~slot_issue[1] & soft_kill_slot1;//hold与下一条指令重新拼包后soft kill,则hold指令下一条指令留在bus
 wire                       consume_for_accept;
 
+// hold_bus payload 专用写入控制（branch-independent，避免 branch redirect 进入 148 个 payload FF 的 CE）
+// create_hold_from_soft 时 hold_valid=0，bus_eff[1]==bus[1]；create_hold_from_tail 原本就写 bus[1]
+wire                       capture_hold_from_soft = id_fire & ~hold_valid & soft_kill_no_br;
+wire                       capture_hold_from_tail = id_fire & hold_valid & bus_has_inst &
+                                                     slot_issue[0] & slot_issue1_no_br & bus1_valid;
+wire                       capture_hold_payload   = capture_hold_from_soft | capture_hold_from_tail;
+
 wire                       consume_bus           = id_fire & bus_has_inst & ~pack_soft_keep_bus & (
                                                    //无hold指令并且发出slot0
                                                    (~hold_valid & slot_issue[0]) |
@@ -140,31 +172,58 @@ wire                       consume_bus           = id_fire & bus_has_inst & ~pac
                                                    (hold_valid & (slot_issue[1] | hard_kill_slot1))
                                                    );
 wire                       accept_IF_in_bus      = IF_ID_valid & ID_allow_in & (~bus_has_inst | consume_for_accept);
-wire   [inbus_width-1 : 0] hold_din              = create_hold_from_soft ? bus_eff[1] :
-                                                   create_hold_from_tail ? bus[1]     :
-                                                                           hold_bus;
 
 //output
 assign                     ID_can_accept_IF      = (~bus_has_inst | consume_for_accept) &
                                                    ~(ID_need_cancel);
 
+// 地址侧专用 hold_valid 副本：仅服务四条 rf_raddr 选择，避免原 hold_valid 高扇出进入地址锥
+(* keep = "true" *) reg hold_valid_addr;
 always @(posedge clk) begin
     if (!resetn) begin
         hold_valid <= 1'b0;
-        hold_bus   <= {inbus_width{1'b0}};
+        hold_valid_addr <= 1'b0;
     end
     else if (ID_need_cancel) begin
         hold_valid <= 1'b0;
+        hold_valid_addr <= 1'b0;
     end
     else if (id_fire & (redirect0 | redirect1)) begin
         hold_valid <= 1'b0;
+        hold_valid_addr <= 1'b0;
     end
     else if (create_hold_from_soft | create_hold_from_tail) begin
         hold_valid <= 1'b1;
-        hold_bus   <= hold_din;
+        hold_valid_addr <= 1'b1;
     end
     else if (id_fire & hold_valid & slot_issue[0]) begin
         hold_valid <= 1'b0;
+        hold_valid_addr <= 1'b0;
+    end
+end
+
+// hold_bus payload 独立更新：仅 branch-independent 的 capture 控制驱动
+// 额外写入周期中下一拍 hold_valid 必为 0，payload 为 don't-care（见等价性证明）
+always @(posedge clk) begin
+    if (!resetn) begin
+        hold_bus <= {inbus_width{1'b0}};
+    end
+    else if (capture_hold_payload) begin
+        hold_bus <= bus[1];
+    end
+end
+
+// held slot0 的读地址独立寄存，使 hold_bus[82:73] 不再是 rf_raddr 的数据源
+reg [4:0] hold_raddr1;
+reg [4:0] hold_raddr2;
+always @(posedge clk) begin
+    if (!resetn) begin
+        hold_raddr1 <= 5'b0;
+        hold_raddr2 <= 5'b0;
+    end
+    else if (capture_hold_payload) begin
+        hold_raddr1 <= bus[1][82:78];
+        hold_raddr2 <= bus[1][77:73];
     end
 end
 
@@ -191,10 +250,14 @@ generate
                  query_type[gi]          ,
                  query_taken[gi]
                 } = bus_eff[gi];
-         assign  rf_raddr1[gi] = pre_raddr1_eff[gi];
-         assign  rf_raddr2[gi] = pre_raddr2_eff[gi];
     end 
 endgenerate
+// rf_raddr 按 hold 模式直接选择，避免 hold_bus[82:73] 进入 rf_raddr 组合锥（固定下标，须在 generate 之外）
+// 选择控制使用地址侧专用 hold_valid_addr 副本
+assign  rf_raddr1[0] = hold_valid_addr ? hold_raddr1 : bus[0][82:78];
+assign  rf_raddr2[0] = hold_valid_addr ? hold_raddr2 : bus[0][77:73];
+assign  rf_raddr1[1] = hold_valid_addr ? bus[0][82:78] : bus[1][82:78];
+assign  rf_raddr2[1] = hold_valid_addr ? bus[0][77:73] : bus[1][77:73];
 
 wire  pred_not_neighbor = slot_valid[0] & slot_valid[1] & (pc[1] != (pc[0] + 32'd4));
 wire  pred_is_neighbor  = slot_valid[0] & slot_valid[1] & (pc[1] == (pc[0] + 32'd4));
@@ -378,7 +441,8 @@ assign  pop_valid           = id_fire       & (slot_issue[0] & pop_need[0] |
 //try to minimize the bus_size
 generate
     for (gi = 0; gi < ISSUE; gi = gi + 1) begin : gen_id_exe
-        assign  ID_EXE1_bus[gi] = slot_issue[gi] ? {1'b1,exe_payload[gi]} : {outbus_width{1'b0}};
+        // 只门控 valid 位；payload 恒输出（无效槽 payload 被 EXE1 的 slot_valid_from_decode 门控）
+        assign  ID_EXE1_bus[gi] = {slot_issue[gi], exe_payload[gi]};
     end
 endgenerate
 //------------------------{bus}end-------------------------//
