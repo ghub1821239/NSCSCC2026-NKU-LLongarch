@@ -75,6 +75,7 @@ reg                     uncache_valid_r;
 reg                     uncache_wr_r;
 reg                     cacop_this_cache_r;
 reg [4:0]               cache_code_r;
+reg                     hit_response_enable_r;
 
 //Miss Buffer：锁存当前缺失事务的上下文
 reg                     miss_op_r;
@@ -162,6 +163,9 @@ wire                    lookup_read_hit;
 wire                    lookup_write_hit;
 wire                    lookup_miss;
 // data_ok 专用的 MAIN_LOOKUP hit cone（单比特最终结果；独立于 lookup_*_hit 共享网络）
+wire                    hit_response_enable_in;
+(* keep = "true", DONT_TOUCH = "TRUE" *) wire data_ok_way0_hit;
+(* keep = "true", DONT_TOUCH = "TRUE" *) wire data_ok_way1_hit;
 (* keep = "true" *) wire data_ok_lookup_hit;
 // refill再从I/D RAM拿回cache line之后要进入写cache阶段
 wire                    refill_write;
@@ -489,6 +493,17 @@ assign  lookup_begin           = (valid | cacop_this_cache) && can_accept_req;
 assign  lookup_read_hit        = cache_hit && !req_op_r && ~(uncache_valid_r && ~uncache_wr_r) && ~code0 && ~code1;
 // 同样写也是
 assign  lookup_write_hit       = cache_hit &&  req_op_r && ~(uncache_valid_r && uncache_wr_r) && ~cacop_this_cache_r;
+// Request-only conditions are captured with the existing request buffer.
+assign  hit_response_enable_in = ~cacop_this_cache &&
+                                 ((!op && ~(uncache_valid && ~uncache_wr)) ||
+                                  ( op && ~(uncache_valid &&  uncache_wr)));
+
+// Keep data_ok off the shared replacement/write-buffer tag-match network.
+assign  data_ok_way0_hit       = way0_v && (way0_tag == req_tag_r);
+assign  data_ok_way1_hit       = way1_v && (way1_tag == req_tag_r);
+assign  data_ok_lookup_hit     = (main_state == `MAIN_LOOKUP) && req_valid_r &&
+                                 hit_response_enable_r &&
+                                 (data_ok_way0_hit || data_ok_way1_hit);
 // 强制miss
 assign  lookup_miss            = !cache_hit | uncache_valid_r | code0 | code1;
 // refill_write：处于refill状态，要把cache line重填回cache
@@ -512,7 +527,7 @@ wire    accept_this            = wb_idle && !cacop_this_cache;
 assign  can_accept_req         = ((main_state == `MAIN_IDLE) && wb_idle) ||
                                  (lookup_read_pipe && accept_this);
 
-assign  addr_ok                = can_accept_req && (valid | cacop_this_cache);
+assign  addr_ok                = can_accept_req;
 //----------------------------- LOOKUP/REPLACE/REFILL 组合逻辑结束 --------------------------
 
 always @(posedge clk or negedge resetn) begin
@@ -554,6 +569,7 @@ always @(posedge clk or negedge resetn) begin
         uncache_wr_r             <= 1'b0;
         cacop_this_cache_r       <= 1'b0;
         cache_code_r             <= 5'b0;
+        hit_response_enable_r    <= 1'b0;
 
         // 这里只清元数据，不整片清零 Data RAM，避免破坏 BRAM 推断风格。
         for (i = 0; i < `GROUP_NUM; i = i + 1) begin
@@ -582,6 +598,7 @@ always @(posedge clk or negedge resetn) begin
                     uncache_wr_r             <= uncache_wr;
                     cacop_this_cache_r       <= cacop_this_cache;
                     cache_code_r             <= cache_code;
+                    hit_response_enable_r    <= hit_response_enable_in;
 
 
                     dirty_way0_r             <= dirty_way0[index];
@@ -635,6 +652,7 @@ always @(posedge clk or negedge resetn) begin
                         uncache_wr_r             <= uncache_wr;
                         cacop_this_cache_r       <= cacop_this_cache;
                         cache_code_r             <= cache_code;
+                        hit_response_enable_r    <= hit_response_enable_in;
                         dirty_way0_r             <= dirty_way0[index];
                         dirty_way1_r             <= dirty_way1[index];
                         main_state               <= `MAIN_LOOKUP;
