@@ -16,6 +16,9 @@ module bht(
     input  wire        update_cancel//如果取消就不同步更新
 );
 
+localparam BHT_N     = 256;
+localparam BHT_IDX_W = 8; // pc[9:2]，指令对齐后 1KB 窗口内不互相别名
+
 //------------------------{reg 锁存提升主频}begin-------------------------//
 reg        update_valid_r;
 reg [31:0] update_pc_r;
@@ -32,40 +35,37 @@ always @(posedge clk) begin
         update_taken_r <= update_taken;
     end
 end
-
 //------------------------{reg 锁存提升主频}end-------------------------//
 
-reg     [1:0] bht_counter [0:63];//BHT数组，64个2位计数器
+reg     [1:0] bht_counter [0:BHT_N-1];
 
-wire    [5:0] query_index0;
-wire    [5:0] query_index1;
-wire    [5:0] update_index;
+wire    [BHT_IDX_W-1:0] query_index0;
+wire    [BHT_IDX_W-1:0] query_index1;
+wire    [BHT_IDX_W-1:0] update_index;
 
-assign        query_index0 = query_pc0[7:2];//BHT索引
-assign        query_index1 = query_pc1[7:2];//BHT索引
+assign        query_index0 = query_pc0[9:2];
+assign        query_index1 = query_pc1[9:2];
+assign        update_index = update_pc_r[9:2];
 
-assign        update_index = update_pc_r[7:2];
-//最高位是1即可跳转
 assign        query_taken0 = query_valid0 & bht_counter[query_index0][1];
 assign        query_taken1 = query_valid1 & bht_counter[query_index1][1];
 
-//复位循环
 integer       i;
 
 always @(posedge clk) begin
     if (!resetn) begin
-        for (i = 0; i < 64; i = i + 1) begin
-            bht_counter[i] <= 2'b01;//初始化为01
+        for (i = 0; i < BHT_N; i = i + 1) begin
+            bht_counter[i] <= 2'b01;
         end
     end
-    else if (update_valid_r & ~update_cancel) begin//没有复位并且本周期更新有效时修改计数器
-        if (update_taken_r) begin//真实跳转时的更新
+    else if (update_valid_r & ~update_cancel) begin
+        if (update_taken_r) begin
             if (bht_counter[update_index] != 2'b11)
                 bht_counter[update_index]
                     <= bht_counter[update_index] + 2'b01;
         end
         else begin
-            if (bht_counter[update_index] != 2'b00)//真实不跳转时的更新
+            if (bht_counter[update_index] != 2'b00)
                 bht_counter[update_index]
                     <= bht_counter[update_index] - 2'b01;
         end
