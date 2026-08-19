@@ -104,21 +104,20 @@ end
 //------------------------{PC}end-------------------------//
 
 //----------------------pred{begin}-------------------------------------------------
-wire        pred_redirect0 = (ras_query_hit[0] && (query_type[0] == TYPE_RET)) ||
-                             (btb_query_hit[0] && (query_type[0] == TYPE_CALL || query_type[0] == TYPE_JUMP)) || 
-                             (query_taken[0] && btb_query_hit[0] && (query_type[0] == TYPE_COND));
-wire [31:0] pred_target0   = (ras_query_hit[0] && (query_type[0] == TYPE_RET))                                ? ras_query_target[0] :
-                             (btb_query_hit[0] && (query_type[0] == TYPE_CALL || query_type[0] == TYPE_JUMP)) ? btb_query_target[0] :
-                             (query_taken[0] && btb_query_hit[0] && (query_type[0] == TYPE_COND))             ? btb_query_target[0] :
-                                                                                                                32'b0; // 不会被用到
+wire        pred_ras0      = ras_query_hit[0] && (query_type[0] == TYPE_RET);
+wire        pred_btb0      = btb_query_hit[0] &&
+                             ((query_type[0] == TYPE_CALL) || (query_type[0] == TYPE_JUMP) ||
+                              ((query_type[0] == TYPE_COND) && query_taken[0]));
+wire        pred_redirect0 = pred_ras0 || pred_btb0;
+// pred_target* 仅在 pred_redirect* 为 1 时使用，未命中值无需清零。
+wire [31:0] pred_target0   = pred_ras0 ? ras_query_target[0] : btb_query_target[0];
 
-wire        pred_redirect1 = (ras_query_hit[1] && (query_type[1] == TYPE_RET)) ||
-                             (btb_query_hit[1] && (query_type[1] == TYPE_CALL || query_type[1] == TYPE_JUMP)) || 
-                             (query_taken[1] && btb_query_hit[1] && (query_type[1] == TYPE_COND));
-wire [31:0] pred_target1   = (ras_query_hit[1] && (query_type[1] == TYPE_RET))                                ? ras_query_target[1] :
-                             (btb_query_hit[1] && (query_type[1] == TYPE_CALL || query_type[1] == TYPE_JUMP)) ? btb_query_target[1] :
-                             (query_taken[1] && btb_query_hit[1] && (query_type[1] == TYPE_COND))             ? btb_query_target[1] :
-                                                                                                                32'b0; // 不会被用到
+wire        pred_ras1      = ras_query_hit[1] && (query_type[1] == TYPE_RET);
+wire        pred_btb1      = btb_query_hit[1] &&
+                             ((query_type[1] == TYPE_CALL) || (query_type[1] == TYPE_JUMP) ||
+                              ((query_type[1] == TYPE_COND) && query_taken[1]));
+wire        pred_redirect1 = pred_ras1 || pred_btb1;
+wire [31:0] pred_target1   = pred_ras1 ? ras_query_target[1] : btb_query_target[1];
 //----------------------pred{end}-------------------------------------------------
 
 //------------------------{uncache}begin-------------------------//
