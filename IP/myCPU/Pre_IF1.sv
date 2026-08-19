@@ -180,7 +180,9 @@ endgenerate
 //------------------------{虚地址转物理地址}end-------------------------//
 
 //------------------------{ready_go}begin-------------------------//
-assign  preIF1_ready_go = need_stall | preIF1_IDLE_stall ? 1'b0 : 1'b1;
+
+assign  preIF1_ready_go = (preIF1_IDLE_stall) ? 1'b0 : 1'b1;
+
 always @(posedge clk) begin
     if(!resetn)begin
         preIF1_valid <= 1'b0;

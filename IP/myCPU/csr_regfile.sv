@@ -140,8 +140,6 @@ reg [31:0] TLBEHI;
 reg [31:0] TLBELO0;
 reg [31:0] TLBELO1;
 reg [31:0] ASID;
-(* keep = "true" *) reg [9:0] ASID_tlb;
-reg [9:0] asid_next;
 reg [31:0] TLBRENTRY;
 reg [31:0] DMW0;
 reg [31:0] DMW1;
@@ -562,28 +560,23 @@ always @(posedge clk) begin
 end
 
 //【ASID】TLB指令的地址空间标识符
-always @(*) begin
-    asid_next = ASID[`CSR_ASID_ASID];
-
-    if (tlbrd_we & (r_e == 1'b0)) begin
-        asid_next = 10'b0;
-    end
-    if (tlbrd_we & (r_e == 1'b1)) begin
-        asid_next = r_asid;
-    end
-    if (csr_we && csr_num == `CSR_ASID) begin
-        asid_next = (csr_wmask[`CSR_ASID_ASID] & csr_wvalue[`CSR_ASID_ASID]) |
-                    (~csr_wmask[`CSR_ASID_ASID] & ASID[`CSR_ASID_ASID]);
-    end
-end
-
 always @(posedge clk) begin
+    //tlbrd读取的是无效项
     if (!resetn) begin
         ASID[`CSR_ASID_ASIDBITS] <= 8'ha;
     end
-
-    ASID[`CSR_ASID_ASID] <= asid_next;
-    ASID_tlb             <= asid_next;
+    //tlbrd读取数据有效
+    if (tlbrd_we & r_e == 0) begin
+        ASID[`CSR_ASID_ASID]     <= 10'b0;
+    end
+    //tlbrd读取数据有效
+    if (tlbrd_we & r_e == 1) begin
+        ASID[`CSR_ASID_ASID]     <= r_asid;
+    end
+    if (csr_we && csr_num == `CSR_ASID) begin
+        ASID[`CSR_ASID_ASID]     <= (csr_wmask[`CSR_ASID_ASID] & csr_wvalue[`CSR_ASID_ASID]) |
+                                    (~csr_wmask[`CSR_ASID_ASID] & ASID[`CSR_ASID_ASID]);
+    end
 end
 
 //【TLBRENTY PA】TLB发生重填例外时，写入这里的物理地址
@@ -819,7 +812,7 @@ assign        csr_pgd_rvalue         = BADV[31] ? csr_pgdh_rvalue : csr_pgdl_rva
 
 //write TLB接口
 assign        r_index                = TLBIDX[`CSR_TLBIDX_INDEX];
-assign        s0_asid                = ASID_tlb;
+assign        s0_asid                = ASID[`CSR_ASID_ASID];
 assign        s1_asid_without_invtlb = ASID[`CSR_ASID_ASID];
 
 //其余CSR读接口   

@@ -35,6 +35,7 @@ module decode #(
     output wire                    ID_need_alu1_rj   [ISSUE - 1 : 0],
     output wire                    ID_need_src2_withST   [ISSUE - 1 : 0],
     output wire                    ID_need_alu2_rk[ISSUE - 1 : 0],
+
     //cancel control
     input  wire                    ID_need_cancel,
     //prediction
@@ -63,6 +64,8 @@ module decode #(
     //ID_can_accept_IF
     output wire                    ID_can_accept_IF
 );
+localparam EXE_PAYLOAD_W = 243;
+
 wire                    id_fire         = ID_valid & ID_ready_go & ~ID_need_cancel & ID_allow_in;
 //------------------------{bus decode}begin-------------------------//
 // bus 拆成 valid 状态与 payload 存储：redirect/cancel/consume 只驱动 valid FF，
@@ -329,7 +332,7 @@ wire  pred_is_neighbor  = slot_valid[0] & slot_valid[1] & (pc[1] == (pc[0] + 32'
 
 //------------------------{module}begin--------------------------//
 
-wire [outbus_width-2:0] exe_payload    [ISSUE-1:0];
+wire [EXE_PAYLOAD_W-1:0]exe_payload    [ISSUE-1:0];
 wire                    real_taken     [ISSUE-1:0];
 wire [31:0]             real_target    [ISSUE-1:0];
 wire                    target_not_seq [ISSUE-1:0];
@@ -348,7 +351,8 @@ wire                    is_csr_write   [ISSUE-1:0];
 wire                    is_csr_read    [ISSUE-1:0];
 wire                    is_tlb         [ISSUE-1:0];
 wire [4:0]              rf_dest        [ISSUE-1:0];
-wire                    rf_gr_we       [ISSUE-1:0];
+wire                    rf_gr_we       [ISSUE-1:0];               
+
 // 若按上面加了可选端口：
 wire                    upd_need       [ISSUE-1:0];
 wire                    bht_upd_need   [ISSUE-1:0];
@@ -361,7 +365,7 @@ wire                    ex_IPE         [ISSUE-1:0];
 generate
   for (gi = 0; gi < ISSUE; gi = gi + 1) begin : gen_alu_res
     inst_to_alu_resource #(
-      .outbus_width         (outbus_width               )
+      .outbus_width         (EXE_PAYLOAD_W+1            )
     ) u_inst_to_alu (
       .pc                   (pc[gi]                     ),
       .inst                 (inst[gi]                   ),
@@ -383,9 +387,9 @@ generate
       .br_rdata2            (br_rdata2[gi]              ),
       .br_use_rj            (br_use_rj[gi]              ),
       .br_use_rk            (br_use_rk[gi]              ),
-      .ID_need_alu1_rj     (ID_need_alu1_rj[gi]    ),
-      .ID_need_src2_withST     (ID_need_src2_withST[gi]    ),
-      .ID_need_alu2_rk  (ID_need_alu2_rk[gi] ),
+      .ID_need_alu1_rj      (ID_need_alu1_rj[gi]        ),
+      .ID_need_src2_withST  (ID_need_src2_withST[gi]    ),
+      .ID_need_alu2_rk      (ID_need_alu2_rk[gi]        ),
 
       .csr_CRMD_PLV         (csr_CRMD_PLV               ),
       .has_int              ((gi == 0) ? has_int : 1'b0 ),//只在slot0判中断
@@ -443,7 +447,7 @@ wire       slot0_trap                = slot_valid[0] & (ex_ADEF[0] | ex_tlb_relo
                                        ex_INE[0]                   | ex_IPE[0]         | has_int);//会让slot1被杀的情况，名字叫slot0陷阱
 wire       hard_kill_slot1           = slot0_trap | pred_not_neighbor_kill_s1 | pred_is_neighbor_kill_s1;//直接不要slot1,这里的逻辑是如果预测正确则至多soft kill,只有预测错误或者异常才会是hard kill被直接丢弃
 wire       soft_kill_slot1           = slot_valid[0] & slot_valid[1] & ~hard_kill_slot1 & (
-                                       RAW_s1_s0 | WAW_s1_s0 | struct_comflict | (is_br[0] & is_br[1]));//slot1只是暂时发不了，不能丢弃
+                                      (RAW_s1_s0) | WAW_s1_s0 | struct_comflict | (is_br[0] & is_br[1]));//slot1只是暂时发不了，不能丢弃
 wire       kill_slot1                = hard_kill_slot1 | soft_kill_slot1;
 //wire kill_slot1 = slot0_fetch_ex | RAW_s1_s0 | WAW_s1_s0 | struct_comflict | pred_not_neighbor_kill_s1 | pred_is_neighbor_kill_s1 | (is_br[0] & is_br[1]);//注意这里不要走双分支
 wire [1:0] slot_issue                = {slot_valid[1] & ~kill_slot1, slot_valid[0]};
@@ -452,7 +456,7 @@ wire [1:0] slot_issue                = {slot_valid[1] & ~kill_slot1, slot_valid[
 wire       hard_kill_no_br           = slot0_trap;
 // slot0是st/ld/cacop这种我们不让发
 wire       soft_kill_no_br           = slot_valid[0] & slot_valid[1] & ~hard_kill_no_br & (
-                                       RAW_s1_s0 | WAW_s1_s0 | struct_comflict | (is_br[0] & is_br[1]));
+                                      (RAW_s1_s0) | WAW_s1_s0 | struct_comflict | (is_br[0] & is_br[1]));
 // 以上两种都不是就可以发
 wire       slot_issue1_no_br         = slot_valid[1] & ~hard_kill_no_br & ~soft_kill_no_br;
 // hold_valid 时，effective slot0 来自 hold_bus；
@@ -502,6 +506,7 @@ assign  pop_valid           = id_fire       & (slot_issue[0] & pop_need[0] |
 //------------------------{pred_update}end--------------------------------------//
 
 //------------------------{bus}begin-------------------------//
+
 //try to minimize the bus_size
 generate
     for (gi = 0; gi < ISSUE; gi = gi + 1) begin : gen_id_exe

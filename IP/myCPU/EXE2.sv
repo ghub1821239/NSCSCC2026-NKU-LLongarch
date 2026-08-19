@@ -160,8 +160,10 @@ generate
                 EXE1_ex[i]             ,
                 data_sram_addr_b[i]    , data_sram_wdata_b[i]   , data_sram_size_b[i], data_sram_wstrb_b[i], data_mat_b[i]       , data_wr_b[i]        , inst_cacop[i] , cache_code_b[i]      , inst_ibar[i]           , inst_dbar[i], inst_sc_w[i], inst_ll_w[i]     , inst_idle[i]
                } = bus[i];
+        
     end
 endgenerate
+
 //------------------------{bus解析&传递}end-------------------------//
 
 //------------------------{mux 选择 dram signal}begin-------------------------//
@@ -189,11 +191,11 @@ always @ (posedge clk)begin
     if(!resetn)begin
         req_without_dataok <= 1'b0;
     end 
-    else if (data_sram_data_ok)begin
-        req_without_dataok <= 1'b0;
-    end
     else if(data_sram_req & data_sram_addr_ok)begin
         req_without_dataok <= 1'b1;
+    end
+    else if (data_sram_data_ok)begin
+        req_without_dataok <= 1'b0;
     end
 end
 //------------------------{读写req&addr_ok}end-------------------------//
@@ -228,7 +230,8 @@ assign  LLbit_wdata = ll_finish;  // LL置1写完后SC清零
 
 //------------------------{dataRAM handshake}begin-------------------------//
 assign  data_sram_req = dram_hit_any & (res_from_mem[dram_index] | mem_we[dram_index])
-                                     & ~req_without_dataok & MEM_allow_in & ~(inst_sc_w[dram_index] & ~sc_success)
+                                     & (~req_without_dataok | data_sram_data_ok)
+                                     & MEM_allow_in & ~(inst_sc_w[dram_index] & ~sc_success)
                                      & ~EXE2_slot_ex[dram_index] & ~(dram_index & EXE2_slot_ex[0]) & ~older_ex_for_exe2 & ~EXE2_need_cancel & EXE2_valid;
 assign  data_sram_wr  = |data_sram_wstrb;
 

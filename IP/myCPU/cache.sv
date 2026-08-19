@@ -446,7 +446,7 @@ assign  refill_final_bank0     = refill_final_line[31:0];
 assign  refill_final_bank1     = refill_final_line[63:32];
 assign  refill_final_bank2     = refill_final_line[95:64];
 assign  refill_final_bank3     = refill_final_line[127:96];
-
+/*
 //只有主状态机空闲、Write Buffer 也空闲时，才接收新的缓存请求。
 //assign can_accept_req   = (main_state == `MAIN_IDLE) && (wb_state == `WB_IDLE) && !wb_valid_r;
 // cacop_this_cache也应该进入
@@ -479,7 +479,40 @@ assign  can_accept_req         =
                                  (lookup_read_pipe && (wb_state == `WB_IDLE) && !wb_valid_r);
 
 assign  addr_ok                = can_accept_req;
+*/
 
+//只有主状态机空闲、Write Buffer 也空闲时，才接收新的缓存请求。
+//assign can_accept_req   = (main_state == `MAIN_IDLE) && (wb_state == `WB_IDLE) && !wb_valid_r;
+// cacop_this_cache也应该进入
+assign  lookup_begin           = (valid | cacop_this_cache) && can_accept_req;
+// 如果是读的Hit强制uncache miss
+assign  lookup_read_hit        = cache_hit && !req_op_r && ~(uncache_valid_r && ~uncache_wr_r) && ~code0 && ~code1;
+// 同样写也是
+assign  lookup_write_hit       = cache_hit &&  req_op_r && ~(uncache_valid_r && uncache_wr_r) && ~cacop_this_cache_r;
+// 强制miss
+assign  lookup_miss            = !cache_hit | uncache_valid_r | code0 | code1;
+// refill_write：处于refill状态，要把cache line重填回cache
+assign  refill_write           = (main_state == `MAIN_REFILL) && ((ret_valid && ret_last && ~uncache_valid_r) || code0 || code1);
+assign  wb_write               = (wb_state == `WB_WRITE);
+
+wire    is_icache              = (code2_0 == 3'b000);
+wire    is_dcache              = (code2_0 == 3'b001);
+
+// I$：LOOKUP 读命中即可流水
+// D$：同样允许读命中流水；uncache/cacop 不进这条
+wire    lookup_read_pipe       = (is_icache | is_dcache) &&
+                                 (main_state == `MAIN_LOOKUP) &&
+                                 lookup_read_hit &&
+                                 !cacop_this_cache_r &&
+                                 !(is_dcache && uncache_valid_r);
+
+wire    wb_idle                = !wb_valid_r && (wb_state == `WB_IDLE);
+wire    accept_this            = wb_idle && !cacop_this_cache;
+
+assign  can_accept_req         = ((main_state == `MAIN_IDLE) && wb_idle) ||
+                                 (lookup_read_pipe && accept_this);
+
+assign  addr_ok                = can_accept_req && (valid | cacop_this_cache);
 //----------------------------- LOOKUP/REPLACE/REFILL 组合逻辑结束 --------------------------
 
 always @(posedge clk or negedge resetn) begin
@@ -560,56 +593,54 @@ always @(posedge clk or negedge resetn) begin
                 end
             end
 
-            `MAIN_LOOKUP: begin
+           `MAIN_LOOKUP: begin
                 if (lookup_read_hit) begin
                     LRU[req_index_r]         <= ~hit_way;
-                    req_valid_r              <= 1'b0;
-                    
-                    if (is_icache && valid && addr_ok) begin
-                        req_valid_r              <= 1'b1;
-                        req_op_r                 <= op;
-                        req_index_r              <= index;
-                        req_tag_r                <= tag;
-                        req_offset_r             <= offset;
-                        req_wstrb_r              <= wstrb;
-                        req_wdata_r              <= wdata;
-                        uncache_valid_r          <= uncache_valid;
-                        uncache_wr_r             <= uncache_wr;
-                        dirty_way0_r             <= dirty_way0[index];
-                        dirty_way1_r             <= dirty_way1[index];
-                        main_state               <= `MAIN_LOOKUP;
-                    end else begin
-                        req_valid_r              <= 1'b0;
-                        main_state               <= `MAIN_IDLE;
-                    end
 
                     if (code2 &&
                         (code2_0 != 3'b000) &&
                         (hit_way ? way1_d : way0_d)) begin
-
                         // D-cache code2 脏命中：锁存命中行，先写回
                         miss_index_r             <= req_index_r;
-
                         replace_way_r            <= hit_way;
                         replace_tag_r            <= hit_way ? way1_tag : way0_tag;
                         replace_valid_r          <= 1'b1;
                         replace_dirty_r          <= 1'b1;
                         replace_line_r           <= hit_way ? {data_way1_bank3_r, data_way1_bank2_r,
-                                                    data_way1_bank1_r, data_way1_bank0_r} : 
+                                                    data_way1_bank1_r, data_way1_bank0_r} :
                                                     {data_way0_bank3_r, data_way0_bank2_r,
                                                     data_way0_bank1_r, data_way0_bank0_r};
-
                         wr_req_sent_r            <= 1'b0;
+                        req_valid_r              <= 1'b0;
                         main_state               <= `MAIN_REPLACE;
                     end
+                    else if (code2) begin
+                        // I-cache命中，或者D-cache干净命中，直接清V
+                        wb_valid_r               <= 1'b1;
+                        wb_way_r                 <= hit_way;
+                        wb_index_r               <= req_index_r;
+                        req_valid_r              <= 1'b0;
+                        main_state               <= `MAIN_IDLE;
+                    end
+                    else if (lookup_read_pipe && valid && addr_ok) begin
+                        // 读命中且下一拍请求已握手：留在 LOOKUP（I$/D$）
+                        req_valid_r              <= 1'b1;
+                        req_op_r                 <= cacop_this_cache ? 1'b0 : op;
+                        req_index_r              <= index;
+                        req_tag_r                <= tag;
+                        req_offset_r             <= offset;
+                        req_wstrb_r              <= wstrb;
+                        req_wdata_r              <= wdata;
+                        uncache_valid_r          <= uncache_valid & ~cacop_this_cache;
+                        uncache_wr_r             <= uncache_wr;
+                        cacop_this_cache_r       <= cacop_this_cache;
+                        cache_code_r             <= cache_code;
+                        dirty_way0_r             <= dirty_way0[index];
+                        dirty_way1_r             <= dirty_way1[index];
+                        main_state               <= `MAIN_LOOKUP;
+                    end
                     else begin
-                        if (code2) begin
-                            // I-cache命中，或者D-cache干净命中，直接清V
-                            wb_valid_r               <= 1'b1;
-                            wb_way_r                 <= hit_way;
-                            wb_index_r               <= req_index_r;
-                        end
-
+                        req_valid_r              <= 1'b0;
                         main_state               <= `MAIN_IDLE;
                     end
                 end

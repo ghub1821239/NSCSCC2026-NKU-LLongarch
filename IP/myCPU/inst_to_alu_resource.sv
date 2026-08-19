@@ -433,6 +433,7 @@ assign  need_stall_csr  = inst_csrrd | inst_csrwr | inst_csrxchg | inst_rdcntid 
 wire need_is_valid = slot_valid & ~ex_ADEF & ~ex_tlb_reload0 &
                              ~ex_tlb_preif_unvalid & ~ex_tlb_plv0 &
                              ~ex_INE & ~ex_IPE & ~has_int;
+
 // 只请求src1是rj的
 assign ID_need_alu1_rj = need_is_valid & (
                          inst_add_w | inst_sub_w | inst_slt | inst_sltu | 
