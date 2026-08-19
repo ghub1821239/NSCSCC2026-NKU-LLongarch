@@ -56,6 +56,7 @@ module pre_IF1 #(
     input  wire [31:0]                   ras_query_target       [ISSUE - 1 : 0],
     input  wire [ 1:0]                   query_type             [ISSUE - 1 : 0],
     input  wire                          query_taken            [ISSUE - 1 : 0],//预测是否跳转
+    input  wire [7:0]                    query_ghr_snap,
     input  wire                          preIF1_IDLE_stall
 );
 localparam  TYPE_COND = 2'b00;//2'b00  COND   条件分支 beq/bne/blt/bge/bltu/bgeu
@@ -203,7 +204,8 @@ assign  preIF1_preIF2_bus_slot0 = {
                                    tlb_paddr[0]     ,
                                    btb_query_hit[0] , btb_query_target[0]    ,
                                    ras_query_hit[0] , ras_query_target[0]    ,
-                                   query_type[0]    , query_taken[0]
+                                   query_type[0]    , query_taken[0]         ,
+                                   query_ghr_snap
                                   };
 // slot1..: 142bit，无 inst_mat
 generate
@@ -217,7 +219,8 @@ generate
                                     tlb_paddr[i]     ,// 注意：这里后面不要拼 s0_mat
                                     btb_query_hit[i] , btb_query_target[i]    ,
                                     ras_query_hit[i] , ras_query_target[i]    ,
-                                    query_type[i]    , query_taken[i]
+                                    query_type[i]    , query_taken[i]         ,
+                                    query_ghr_snap
                                    };
   end
 endgenerate
