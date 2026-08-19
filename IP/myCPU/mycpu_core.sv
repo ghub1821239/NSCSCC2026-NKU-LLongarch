@@ -92,7 +92,7 @@ wire    ID_can_accept_IF;
 
 assign  preIF1_allow_in     = !preIF1_valid || (preIF2_allow_in && preIF1_ready_go);
 assign  preIF2_allow_in     = !preIF2_valid || (IF_allow_in && preIF2_ready_go);
-assign  IF_allow_in         = !IF_valid || (ID_allow_in && IF_ready_go && ID_can_accept_IF);
+assign  IF_allow_in         = !IF_valid || (ID_allow_in && ID_can_accept_IF && IF_ready_go);
 assign  ID_allow_in         = !ID_valid || (EXE1_allow_in && ID_ready_go);
 assign  EXE1_allow_in       = !EXE1_valid || (EXE2_allow_in && EXE1_ready_go);
 assign  EXE2_allow_in       = !EXE2_valid || (MEM_allow_in && EXE2_ready_go);
@@ -601,9 +601,10 @@ wire        wb_need_stall_csr   [ISSUE - 1 : 0];
 wire        mem_load_wait       [ISSUE - 1 : 0];
 
 // =========================  decode 先发起请求，然后进入exe1再进行替换  ==========================
-wire        ID_need_alu1_rj    [ISSUE - 1 : 0];
+wire        ID_need_alu1_rj        [ISSUE - 1 : 0];
 wire        ID_need_src2_withST    [ISSUE - 1 : 0];
-wire        ID_need_alu2_rk [ISSUE - 1 : 0];
+wire        ID_need_alu2_rk        [ISSUE - 1 : 0];
+
 wire [ 1:0] src1_capture_sel    [ISSUE - 1 : 0];
 wire [ 1:0] src2_capture_sel    [ISSUE - 1 : 0];
 // 和前面front_push的match格式一致：[1:0] = {slot0, slot1}
@@ -655,7 +656,6 @@ endgenerate
         
 // =========================  decode 先发起请求，然后进入exe1再进行替换  ==========================
 
-
 generate
     for (i = 0; i < ISSUE; i = i + 1) begin : gen_stall
         assign  mem_load_wait[i] = mem_need_stall_inst[i] & ~data_sram_data_ok;
@@ -663,8 +663,8 @@ generate
                                    (rf_raddr1[i] != 5'd0) && ID_valid &&
                                    ~src1_capture_valid[i] &&//无法exe1类前递就要stall
                                    ((|exe1_capture_match_rdata1[i]) ||
-                                   ((rf_raddr1[i] == EXE2_rf_dest[0]) && EXE2_valid && (exe2_need_stall_inst[0] || exe2_need_stall_csr[0])) ||
-                                   ((rf_raddr1[i] == EXE2_rf_dest[1]) && EXE2_valid && (exe2_need_stall_inst[1] || exe2_need_stall_csr[1])) ||
+                                   ((rf_raddr1[i] == EXE2_rf_dest[0]) && EXE2_valid && ((exe2_need_stall_inst[0]) || exe2_need_stall_csr[0])) ||
+                                   ((rf_raddr1[i] == EXE2_rf_dest[1]) && EXE2_valid && ((exe2_need_stall_inst[1]) || exe2_need_stall_csr[1])) ||
                                    ((rf_raddr1[i] == MEM_rf_dest[0])  && MEM_valid  && (mem_load_wait[0] || mem_need_stall_csr[0])) ||
                                    ((rf_raddr1[i] == MEM_rf_dest[1])  && MEM_valid  && (mem_load_wait[1] || mem_need_stall_csr[1])) ||
                                    ((rf_raddr1[i] == WB_rf_dest[0])   && WB_valid   && !flush & ~wb_can_not_front_push[0] && wb_need_stall_csr[0]) ||
@@ -673,8 +673,8 @@ generate
                                    (rf_raddr2[i] != 5'd0) && ID_valid &&
                                    ~src2_capture_valid[i] &&
                                    ((|exe1_capture_match_rdata2[i]) ||
-                                   ((rf_raddr2[i] == EXE2_rf_dest[0]) && EXE2_valid && (exe2_need_stall_inst[0] || exe2_need_stall_csr[0])) ||
-                                   ((rf_raddr2[i] == EXE2_rf_dest[1]) && EXE2_valid && (exe2_need_stall_inst[1] || exe2_need_stall_csr[1])) ||
+                                   ((rf_raddr2[i] == EXE2_rf_dest[0]) && EXE2_valid && ((exe2_need_stall_inst[0]) || exe2_need_stall_csr[0])) ||
+                                   ((rf_raddr2[i] == EXE2_rf_dest[1]) && EXE2_valid && ((exe2_need_stall_inst[1]) || exe2_need_stall_csr[1])) ||
                                    ((rf_raddr2[i] == MEM_rf_dest[0])  && MEM_valid  && (mem_load_wait[0] || mem_need_stall_csr[0])) ||
                                    ((rf_raddr2[i] == MEM_rf_dest[1])  && MEM_valid  && (mem_load_wait[1] || mem_need_stall_csr[1])) ||
                                    ((rf_raddr2[i] == WB_rf_dest[0])   && WB_valid   && !flush & ~wb_can_not_front_push[0] && wb_need_stall_csr[0]) ||
@@ -1153,6 +1153,7 @@ fetch #(
     //ID_can_accept_IF
     .ID_can_accept_IF      (ID_can_accept_IF        )
 );
+
 decode #(
     .inbus_width         (IF_ID_bus_width         ),
     .outbus_width        (ID_EXE1_bus_width       ),
@@ -1187,9 +1188,9 @@ decode #(
     .br_rdata2           (front_push_br_rdata2    ),
     .br_use_rj           (br_use_rj               ),
     .br_use_rk           (br_use_rk               ),
-    .ID_need_alu1_rj    (ID_need_alu1_rj         ),
-    .ID_need_src2_withST    (ID_need_src2_withST         ),
-    .ID_need_alu2_rk (ID_need_alu2_rk      ),
+    .ID_need_alu1_rj     (ID_need_alu1_rj         ),
+    .ID_need_src2_withST (ID_need_src2_withST     ),
+    .ID_need_alu2_rk     (ID_need_alu2_rk         ),
     //cancel
     .ID_need_cancel      (preIF_IF_ID_need_cancel ),
     //stall

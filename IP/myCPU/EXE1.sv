@@ -147,6 +147,8 @@ genvar                   i;
 generate 
     for(i = 0; i < ISSUE; i = i + 1) begin : gen_bus
         //============== exe1替换decode的换成真实值，类front ============
+        // 进 EXE1 当拍：生产者若同时 EXE2→MEM，下一拍 MEM 就是它，可以直接 armed
+
         always @(*) begin
             bus_capture_d[i] = ID_EXE1_bus[i]; 
             // src1-----rj                  
@@ -189,8 +191,10 @@ generate
             if(!resetn)begin
                 bus[i] <= {inbus_width{1'b0}};
             end
-            else if (ID_EXE1_valid && EXE1_allow_in)begin
-                bus[i] <= bus_capture_d[i];
+            else if (EXE1_allow_in) begin
+                if (ID_EXE1_valid) begin
+                    bus[i]                 <= bus_capture_d[i];
+                end
             end
         end
         assign {slot_valid_from_decode[i],
@@ -206,10 +210,12 @@ generate
 endgenerate
 //------------------------{alu}begin-------------------------//
 wire [31:0] alu_result     [ISSUE - 1 : 0];
+
 wire [31:0] mem_vaddr      [ISSUE - 1 : 0];
 wire        div_mod        [ISSUE - 1 : 0];
 wire        divide_ready_go[ISSUE - 1 : 0];
 wire        EXE1_slot_valid[ISSUE - 1 : 0];
+
 generate 
     for(i = 0; i < ISSUE; i = i + 1) begin : gen_alu
         // 按槽 valid：级 valid & 本槽有指令；alu 内部会用它门控全部 alu_op（含 mul/div）
@@ -224,8 +230,8 @@ generate
             .EXE1_slot_valid    (EXE1_slot_valid[i]    ),
             .EXE1_need_cancel   (EXE1_need_cancel      ),
             .alu_op             (alu_op[i]             ),
-            .alu_src1           (alu_src1[i]           ),
-            .alu_src2           (alu_src2[i]           ),
+            .alu_src1           (alu_src1[i]       ),
+            .alu_src2           (alu_src2[i]       ),
             .alu_result         (alu_result[i]         ),
             .add_result         (mem_vaddr[i]          ),
             .divide_ready_go    (divide_ready_go[i]    )
@@ -386,7 +392,7 @@ generate
                                        ex_tlb_preif_unvalid[i] | ex_tlb_plv0[i]);
         // alu_op[11:0]是本轮允许的单拍结果；load/CSR/SC再单独排除
         // op0里的JIRL/BL link和CPUCFG也是最终ALU值，与下一拍EXE2前递值相同
-        assign  EXE1_can_front[i] = EXE1_rf_gr_we[i] &
+        assign  EXE1_can_front[i] = EXE1_rf_gr_we[i] & 
                                        (|alu_op[i][11:0]) &
                                        ~need_stall_inst[i] &
                                        ~need_stall_csr[i] &
@@ -423,7 +429,9 @@ generate
         assign  EXE1_slot_ready_go[i] = ~EXE1_slot_valid[i] | ex_div_need_notice[i] | ~div_mod[i] | divide_ready_go[i];
     end
 endgenerate
+
 assign  EXE1_ready_go = EXE1_slot_ready_go[0] & EXE1_slot_ready_go[1];
+
 always @(posedge clk) begin
     if(!resetn)begin
         EXE1_valid <= 1'b0;
