@@ -73,12 +73,13 @@ assign         query_hit0    = query_valid0 & btb_valid[query_index0] &
 // target 在 miss 时是 don't-care；消费者只在 query_hit 有效时选择它。
 // 不用 query_hit 清零 32 位数据，避免命中信号驱动整条 target 总线。
 assign         query_target0 = btb_target[query_index0];
-assign         query_type0   = query_hit0 ? btb_type[query_index0] : 2'b0;
+// type 与 target 一样只在 query_hit 时被消费，miss 时无需经过清零 MUX。
+assign         query_type0   = btb_type[query_index0];
 
 assign         query_hit1    = query_valid1 & btb_valid[query_index1] &
                                (btb_tag[query_index1] == query_tag1);
 assign         query_target1 = btb_target[query_index1];
-assign         query_type1   = query_hit1 ? btb_type[query_index1] : 2'b0;
+assign         query_type1   = btb_type[query_index1];
 
 integer i;
 always @(posedge clk) begin

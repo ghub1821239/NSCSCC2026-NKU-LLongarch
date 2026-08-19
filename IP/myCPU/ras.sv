@@ -32,16 +32,23 @@ always @(posedge clk)begin
     if(!resetn)begin
         ras_sp            <= 5'd0;//复位时栈指针清0，RAS空
     end
-    else if (push_valid) begin
-        if (ras_sp < 5'd16) begin//栈未满时才能push
+    else begin
+        // ras_sp 指向下一个空槽。未满时预写空槽，使 RAM 写使能只依赖 ras_sp，
+        // 避免 Decode 的 push_valid 长组合路径直接进入分布式 RAM 的 WE。
+        if (ras_sp < 5'd16) begin
             ras_stack[ras_sp] <= push_target;
-            ras_sp            <= ras_sp + 5'd1;//有效地址数+1
         end
-    end
-    else if (pop_valid) begin
-        if (ras_sp != 5'd0) begin//栈非空时才能pop
-            ras_sp            <= ras_sp - 5'd1;
+
+        if (push_valid) begin
+            if (ras_sp < 5'd16) begin//栈未满时才能push
+                ras_sp <= ras_sp + 5'd1;//有效地址数+1
+            end
+        end
+        else if (pop_valid) begin
+            if (ras_sp != 5'd0) begin//栈非空时才能pop
+                ras_sp <= ras_sp - 5'd1;
+            end
         end
     end
 end
-endmodule 
+endmodule

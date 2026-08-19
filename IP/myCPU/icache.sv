@@ -422,13 +422,18 @@ always @(posedge clk or negedge resetn) begin
         // 伪随机使用位数查询手册可以查询低位是哪些异或
         //LFSR <= {LFSR[21:0], LFSR[22] ^ LFSR[17]};
 
+        // 地址元数据在 Cache 可接收时预写；lookup_begin/req_valid_r 仍决定请求是否有效。
+        // 这样 req_* 寄存器的 CE 不再依赖前端 req/flush 长组合路径。
+        if (can_accept_req) begin
+            req_index_r  <= index;
+            req_tag_r    <= tag;
+            req_offset_r <= offset;
+        end
+
         case (main_state)
             `MAIN_IDLE: begin
                 if (lookup_begin) begin
                     req_valid_r        <= 1'b1;
-                    req_index_r        <= index;
-                    req_tag_r          <= tag;
-                    req_offset_r       <= offset;
                     uncache_valid_r    <= uncache_valid & ~cacop_this_cache;
                     cacop_this_cache_r <= cacop_this_cache;
                     cache_code_r       <= cache_code;
@@ -447,9 +452,6 @@ always @(posedge clk or negedge resetn) begin
                         if (valid && can_accept_req) begin
                             // 锁存“下一条”，下一拍继续在 LOOKUP 用新 req 比较
                             req_valid_r        <= 1'b1;
-                            req_index_r        <= index;
-                            req_tag_r          <= tag;
-                            req_offset_r       <= offset;
                             uncache_valid_r    <= uncache_valid;
                             cacop_this_cache_r <= 1'b0;
                             main_state         <= `MAIN_LOOKUP;
