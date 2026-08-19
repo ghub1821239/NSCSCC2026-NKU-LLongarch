@@ -32,9 +32,6 @@ module inst_to_alu_resource #(
     output wire                    ID_need_src2_withST,
     output wire                    ID_need_alu2_rk,
 
-    //从late_alu中拿的
-    output wire                    ID_late_alu_ok,
-
     output wire [outbus_width-2:0] exe_payload, // 与现 ID_EXE1_bus 同序
     output wire                    real_taken,
     output wire [31:0]             real_target,
@@ -436,17 +433,6 @@ assign  need_stall_csr  = inst_csrrd | inst_csrwr | inst_csrxchg | inst_rdcntid 
 wire need_is_valid = slot_valid & ~ex_ADEF & ~ex_tlb_reload0 &
                              ~ex_tlb_preif_unvalid & ~ex_tlb_plv0 &
                              ~ex_INE & ~ex_IPE & ~has_int;
-
-// 第一版只允许无副作用的单拍普通 ALU。
-// branch/mem/CSR/TLB/system/mul/div 全部排除。
-assign ID_late_alu_ok = need_is_valid
-                    && (|alu_op[11:0])
-                    && ~is_br
-                    && ~is_mem
-                    && ~is_system_break
-                    && ~is_csr_write
-                    && ~is_csr_read
-                    && ~is_tlb;
 
 // 只请求src1是rj的
 assign ID_need_alu1_rj = need_is_valid & (

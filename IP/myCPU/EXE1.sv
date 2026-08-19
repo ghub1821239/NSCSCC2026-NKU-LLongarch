@@ -64,22 +64,7 @@ module exe1 #(
   input  wire [1:0]                csr_CRMD_DATM,//直接地址ld/st
   input  wire [1:0]                dmw_mat1          [ISSUE - 1 : 0],    //直接映
   //from exe2 mem wb
-  input  wire                      older_ex_for_exe1,
-  //等待load数据
-  input  wire                      MEM_valid,
-  input  wire                      data_sram_data_ok,
-  input  wire                      mem_need_stall_inst   [ISSUE-1:0],
-  input  wire                      mem_can_not_front_push[ISSUE-1:0],
-  input  wire [4:0]                MEM_rf_dest           [ISSUE-1:0],
-  input  wire [31:0]               mem_front_data        [ISSUE-1:0],  
-  input  wire                      late_src1_hint        [ISSUE-1:0],
-  input  wire                      late_src2_hint        [ISSUE-1:0],
-  input  wire [4:0]                late_load_dest        [ISSUE-1:0],
-  input  wire                      late_load_slot        [ISSUE-1:0],
-  input  wire                      EXE2_MEM_valid,
-  input  wire                      MEM_allow_in,
-  input  wire                      exe2_need_stall_inst  [ISSUE-1:0],
-  input  wire [4:0]                EXE2_rf_dest          [ISSUE-1:0]
+  input  wire                      older_ex_for_exe1
 );
 
 wire                     res_from_mem          [ISSUE - 1 : 0];
@@ -158,65 +143,12 @@ wire                     inst_sc_w             [ISSUE - 1 : 0];
 wire                     inst_idle             [ISSUE - 1 : 0];
 wire                     slot_valid_from_decode[ISSUE - 1 : 0]; // 本槽是否发射有效指令（来自 ID bus）
 
-//选择load数据
-reg         late_exec_r        [ISSUE-1:0];
-reg         late_src1_pending_r[ISSUE-1:0];
-reg         late_src2_pending_r[ISSUE-1:0];
-reg  [4:0]  late_load_dest_r   [ISSUE-1:0];
-reg         late_load_slot_r   [ISSUE-1:0];
-reg         late_armed_r       [ISSUE-1:0];
-
-wire        mem_ld_hit         [ISSUE-1:0];
-wire [31:0] mem_ld_data        [ISSUE-1:0];
-wire [31:0] late_src1_use      [ISSUE-1:0];
-wire [31:0] late_src2_use      [ISSUE-1:0];
-wire        late_wait          [ISSUE-1:0];
-wire [3:0]  late_alu_code      [ISSUE-1:0];
-wire [4:0]  late_cache_code    [ISSUE-1:0];
-wire        late_enter_armed   [ISSUE-1:0];
-wire        late_prod_move     [ISSUE-1:0];
-
 genvar                   i;
 generate 
     for(i = 0; i < ISSUE; i = i + 1) begin : gen_bus
         //============== exe1替换decode的换成真实值，类front ============
         // 进 EXE1 当拍：生产者若同时 EXE2→MEM，下一拍 MEM 就是它，可以直接 armed
-        assign late_enter_armed[i] =(late_src1_hint[i] | late_src2_hint[i])
-                                    && EXE2_MEM_valid && MEM_allow_in
-                                    && exe2_need_stall_inst[late_load_slot[i]]
-                                    && (late_load_dest[i] != 5'd0)
-                                    && (EXE2_rf_dest[late_load_slot[i]] == late_load_dest[i]);
-        // 已在 EXE1 等待：必须看见“当初那条 EXE2 load”真正搬走
-        assign late_prod_move[i] =  late_exec_r[i]
-                                    && EXE2_MEM_valid && MEM_allow_in
-                                    && exe2_need_stall_inst[late_load_slot_r[i]]
-                                    && (late_load_dest_r[i] != 5'd0)
-                                    && (EXE2_rf_dest[late_load_slot_r[i]] == late_load_dest_r[i]);
-        assign mem_ld_hit[i] = late_armed_r[i]
-                                && MEM_valid
-                                && data_sram_data_ok
-                                && (late_load_dest_r[i] != 5'd0)
-                                && (
-                                    (mem_need_stall_inst[0] &&
-                                    ~mem_can_not_front_push[0] &&
-                                    (MEM_rf_dest[0] == late_load_dest_r[i]))
-                                    ||
-                                    (mem_need_stall_inst[1] &&
-                                    ~mem_can_not_front_push[1] &&
-                                    (MEM_rf_dest[1] == late_load_dest_r[i]))
-                                    );
 
-        assign mem_ld_data[i] = (MEM_valid && data_sram_data_ok &&
-                                mem_need_stall_inst[0] &&
-                                ~mem_can_not_front_push[0] &&
-                                (MEM_rf_dest[0] == late_load_dest_r[i]))
-                                    ? mem_front_data[0] :
-                                (MEM_valid && data_sram_data_ok &&
-                                mem_need_stall_inst[1] &&
-                                ~mem_can_not_front_push[1] &&
-                                (MEM_rf_dest[1] == late_load_dest_r[i]))
-                                    ? mem_front_data[1] :
-                                    32'b0;
         always @(*) begin
             bus_capture_d[i] = ID_EXE1_bus[i]; 
             // src1-----rj                  
@@ -258,55 +190,10 @@ generate
         always @(posedge clk)begin
             if(!resetn)begin
                 bus[i] <= {inbus_width{1'b0}};
-                late_exec_r[i]         <= 1'b0;
-                late_src1_pending_r[i] <= 1'b0;
-                late_src2_pending_r[i] <= 1'b0;
-                late_load_dest_r[i]    <= 5'd0;
-                late_load_slot_r[i]    <= 1'b0;
-                late_armed_r[i]        <= 1'b0;
-            end
-            else if (EXE1_need_cancel) begin
-                late_exec_r[i]         <= 1'b0;
-                late_src1_pending_r[i] <= 1'b0;
-                late_src2_pending_r[i] <= 1'b0;
-                late_load_dest_r[i]    <= 5'd0;
-                late_load_slot_r[i]    <= 1'b0;
-                late_armed_r[i]        <= 1'b0;
             end
             else if (EXE1_allow_in) begin
                 if (ID_EXE1_valid) begin
                     bus[i]                 <= bus_capture_d[i];
-                    late_exec_r[i]         <= late_src1_hint[i] |
-                                            late_src2_hint[i];
-                    late_src1_pending_r[i] <= late_src1_hint[i];
-                    late_src2_pending_r[i] <= late_src2_hint[i];
-                    late_load_dest_r[i]    <= late_load_dest[i];
-                    late_load_slot_r[i]    <= late_load_slot[i];
-                    late_armed_r[i]        <= late_enter_armed[i];
-                end
-                else begin
-                    late_exec_r[i]         <= 1'b0;
-                    late_src1_pending_r[i] <= 1'b0;
-                    late_src2_pending_r[i] <= 1'b0;
-                    late_load_dest_r[i]    <= 5'd0;
-                    late_load_slot_r[i]    <= 1'b0;
-                    late_armed_r[i]        <= 1'b0;
-                end
-            end
-            // data_ok 到了但 EXE2 暂时不收：必须把数据锁住。
-           else begin
-                // 交接当拍 combinational 的 late_armed_r 仍为 0，
-                // 因此不会把仍属于旧 MEM load 的 data_ok 锁进去。
-                if (!late_armed_r[i] && late_prod_move[i])
-                    late_armed_r[i] <= 1'b1;
-                if (EXE1_valid && mem_ld_hit[i] &&
-                    (late_src1_pending_r[i] | late_src2_pending_r[i])) begin
-                    if (late_src1_pending_r[i])
-                        bus[i][159:128] <= mem_ld_data[i];
-                    if (late_src2_pending_r[i])
-                        bus[i][127:96] <= mem_ld_data[i];
-                    late_src1_pending_r[i] <= 1'b0;
-                    late_src2_pending_r[i] <= 1'b0;
                 end
             end
         end
@@ -319,33 +206,6 @@ generate
                 ex_tlb_reload0[i]        , ex_tlb_preif_unvalid[i], ex_tlb_plv0[i] ,
                 cache_code[i]            , inst_cacop[i]          , inst_ibar[i]   , inst_dbar[i]   , inst_sc_w[i]      , inst_ll_w[i]     , inst_idle[i]
                }=bus[i];
-
-        assign late_src1_use[i] =  (late_src1_pending_r[i] && mem_ld_hit[i])
-                                    ? mem_ld_data[i] : alu_src1[i];
-
-        assign late_src2_use[i] =  (late_src2_pending_r[i] && mem_ld_hit[i])
-                                    ? mem_ld_data[i] : alu_src2[i];
-
-        assign late_wait[i] =   EXE1_valid
-                                && slot_valid_from_decode[i]
-                                && late_exec_r[i]
-                                && (late_src1_pending_r[i] | late_src2_pending_r[i])
-                                && ~mem_ld_hit[i];
-
-        assign late_alu_code[i] =   alu_op[i][0]  ? 4'd0  :
-                                    alu_op[i][1]  ? 4'd1  :
-                                    alu_op[i][2]  ? 4'd2  :
-                                    alu_op[i][3]  ? 4'd3  :
-                                    alu_op[i][4]  ? 4'd4  :
-                                    alu_op[i][5]  ? 4'd5  :
-                                    alu_op[i][6]  ? 4'd6  :
-                                    alu_op[i][7]  ? 4'd7  :
-                                    alu_op[i][8]  ? 4'd8  :
-                                    alu_op[i][9]  ? 4'd9  :
-                                    alu_op[i][10] ? 4'd10 :
-                                                    4'd11;
-
-        assign late_cache_code[i] = {1'b0, late_alu_code[i]};
     end
 endgenerate
 //------------------------{alu}begin-------------------------//
@@ -512,14 +372,13 @@ generate
     for(i = 0; i < ISSUE; i = i + 1) begin : gen_EXE1_EXE2_bus
         assign  EXE1_EXE2_bus[i] = {
                                     EXE1_slot_valid[i],
-                                    late_exec_r[i]    ,
                                     pc[i]             ,
                                     rkd_value[i]      , res_from_mem[i]        , mem_we[i]        , need_stall_csr[i] , inst_ld_b[i]        , inst_ld_h[i]        , inst_ld_bu [i], inst_ld_hu[i]        , alu_result_with_rdct[i],//MEM
                                     inst_csrrd[i]     , inst_csrwr[i]          , inst_csrxchg[i]  , inst_ertn[i]      , inst_syscall[i]     , inst_break[i]       , ex_INE[i]     , ex_IPE[i]            , ex_ADEF[i]             , ex_ALE[i]   , has_int[i]  , inst_rdcntvl_w[i], inst_rdcntvh_w[i], inst_rdcntid[i], csr_num[i], rj_value[i], rf_dest[i], rf_gr_we[i],//WB
                                     inst_tlbsrch[i]   , TLBIDX_new_tlbsrch[i]  , inst_tlbrd[i]    , inst_tlbwr[i]     , inst_tlbfill[i]     , inst_invtlb[i]      ,
                                     ex_tlb_reload0[i] , ex_tlb_preif_unvalid[i], ex_tlb_plv0[i]   , ex_tlb_reload1[i] , ex_tlb_ld_unvalid[i], ex_tlb_st_unvalid[i], ex_tlb_plv1[i], ex_tlb_page_modify[i],
                                     EXE1_ex[i]        ,
-                                    late_exec_r[i] ? late_src1_use[i] : data_sram_addr[i] , late_exec_r[i] ? late_src2_use[i] : data_sram_wdata[i]     , data_sram_size[i], data_sram_wstrb[i], data_mat[i]         , data_wr[i]          , inst_cacop[i] , late_exec_r[i] ? late_cache_code[i] : cache_code[i]        , inst_ibar[i]           , inst_dbar[i], inst_sc_w[i], inst_ll_w[i]     , inst_idle[i]
+                                    data_sram_addr[i] , data_sram_wdata[i]     , data_sram_size[i], data_sram_wstrb[i], data_mat[i]         , data_wr[i]          , inst_cacop[i] , cache_code[i]        , inst_ibar[i]           , inst_dbar[i], inst_sc_w[i], inst_ll_w[i]     , inst_idle[i]
                                    };                                                      
         assign  EXE1_rf_dest[i]  = rf_dest[i];
         assign  EXE1_rf_gr_we[i] = rf_gr_we[i] & EXE1_slot_valid[i];     
@@ -533,7 +392,7 @@ generate
                                        ex_tlb_preif_unvalid[i] | ex_tlb_plv0[i]);
         // alu_op[11:0]是本轮允许的单拍结果；load/CSR/SC再单独排除
         // op0里的JIRL/BL link和CPUCFG也是最终ALU值，与下一拍EXE2前递值相同
-        assign  EXE1_can_front[i] = EXE1_rf_gr_we[i] & ~late_exec_r[i] &
+        assign  EXE1_can_front[i] = EXE1_rf_gr_we[i] & 
                                        (|alu_op[i][11:0]) &
                                        ~need_stall_inst[i] &
                                        ~need_stall_csr[i] &
@@ -571,7 +430,7 @@ generate
     end
 endgenerate
 
-assign  EXE1_ready_go = EXE1_slot_ready_go[0] & EXE1_slot_ready_go[1] & ~late_wait[0] & ~late_wait[1];
+assign  EXE1_ready_go = EXE1_slot_ready_go[0] & EXE1_slot_ready_go[1];
 
 always @(posedge clk) begin
     if(!resetn)begin
