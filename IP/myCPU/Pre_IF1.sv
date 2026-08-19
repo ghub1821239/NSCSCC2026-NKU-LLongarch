@@ -111,6 +111,7 @@ wire        pred_btb0      = btb_query_hit[0] &&
                               (query_type[0] == TYPE_JUMP) ||
                               (query_taken[0] && (query_type[0] == TYPE_COND)));
 wire        pred_redirect0 = pred_ras0 || pred_btb0;
+// pred_target* 仅在 pred_redirect* 为 1 时使用，未命中值无需清零。
 wire [31:0] pred_target0   = pred_ras0 ? ras_query_target[0] : btb_query_target[0];
 
 wire        pred_ras1      = ras_query_hit[1] && (query_type[1] == TYPE_RET);

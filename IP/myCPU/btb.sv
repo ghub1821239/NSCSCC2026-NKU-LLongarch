@@ -67,16 +67,18 @@ assign query_tag1    = query_pc1[31:10];
 assign update_index  = update_pc_r[9:2];
 assign update_tag    = update_pc_r[31:10];
 
-assign query_hit0    = query_valid0 & btb_valid[query_index0] &
-                       (btb_tag[query_index0] == query_tag0);
-// query_hit qualifies the prediction; target data is don't-care on a miss.
-assign query_target0 = btb_target[query_index0];
-assign query_type0   = query_hit0 ? btb_type[query_index0]   : 2'b0;
+//查表：查询有效&当前项有效&tag匹配
+assign         query_hit0    = query_valid0 & btb_valid[query_index0] &
+                               (btb_tag[query_index0] == query_tag0);
+// target 在 miss 时是 don't-care；消费者只在 query_hit 有效时选择它。
+// 不用 query_hit 清零 32 位数据，避免命中信号驱动整条 target 总线。
+assign         query_target0 = btb_target[query_index0];
+assign         query_type0   = query_hit0 ? btb_type[query_index0] : 2'b0;
 
-assign query_hit1    = query_valid1 & btb_valid[query_index1] &
-                       (btb_tag[query_index1] == query_tag1);
-assign query_target1 = btb_target[query_index1];
-assign query_type1   = query_hit1 ? btb_type[query_index1]   : 2'b0;
+assign         query_hit1    = query_valid1 & btb_valid[query_index1] &
+                               (btb_tag[query_index1] == query_tag1);
+assign         query_target1 = btb_target[query_index1];
+assign         query_type1   = query_hit1 ? btb_type[query_index1] : 2'b0;
 
 integer i;
 always @(posedge clk) begin
