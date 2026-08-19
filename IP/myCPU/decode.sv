@@ -236,6 +236,8 @@ wire [1:0]              br_type        [ISSUE-1:0];
 wire                    ex_INE         [ISSUE-1:0];
 wire                    ex_IPE         [ISSUE-1:0];
 
+wire can_late_fwd [ISSUE-1:0];
+
 generate
   for (gi = 0; gi < ISSUE; gi = gi + 1) begin : gen_alu_res
     inst_to_alu_resource #(
@@ -296,7 +298,9 @@ generate
       .pop_need             (pop_need[gi]               ),
       .br_type              (br_type[gi]                ),         // COND/JUMP/CALL/RET
       .ex_INE               (ex_INE[gi]                 ),
-      .ex_IPE               (ex_IPE[gi]                 )
+      .ex_IPE               (ex_IPE[gi]                 ),
+
+      .can_late_fwd         (can_late_fwd[gi])
     );
   end
 endgenerate
@@ -305,6 +309,25 @@ endgenerate
 //------------------------{issue}begin-----------------------------//
 wire       RAW_s1_s0                 = slot_valid[0] & slot_valid[1] & rf_gr_we[0] & (rf_dest[0] != 5'b0) &
                                        ((rf_raddr1[1] == rf_dest[0]) | (rf_raddr2[1] == rf_dest[0]));//发生写后读事件
+wire       RAW_s1_rj = slot_valid[0] & slot_valid[1] & rf_gr_we[0] & (rf_dest[0] != 5'b0) &
+                       (rf_raddr1[1] == rf_dest[0]);
+wire       RAW_s1_rk = slot_valid[0] & slot_valid[1] & rf_gr_we[0] & (rf_dest[0] != 5'b0) &
+                       (rf_raddr2[1] == rf_dest[0]);
+// 槽1 只把槽0 当 store 数据；地址 rj 不得依赖槽0
+wire       late_st  = can_late_fwd[0] & RAW_s1_rk & ~RAW_s1_rj &
+                      ID_need_src2_withST[1] & ~ID_need_alu2_rk[1] &
+                      is_mem[1] & ~is_llsc[1];
+// 槽1 普通 ALU 用槽0；禁止 mem/br（地址/比较已在 ID 用过旧值）
+wire       late_alu = can_late_fwd[0] & can_late_fwd[1] & ~is_mem[1] & ~is_br[1] &
+                      ((RAW_s1_rj & ID_need_alu1_rj[1]) |
+                       (RAW_s1_rk & ID_need_alu2_rk[1]));
+wire       RAW_s1_s0_kill = RAW_s1_s0 & ~late_st & ~late_alu;
+wire [2:0] late_flag [ISSUE-1:0];
+assign     late_flag[0] = 3'b0;
+assign     late_flag[1] = {late_alu & RAW_s1_rj & ID_need_alu1_rj[1],
+                           late_alu & RAW_s1_rk & ID_need_alu2_rk[1],
+                           late_st};
+
 wire       WAW_s1_s0                 = slot_valid[0] & slot_valid[1] & rf_gr_we[0] & rf_gr_we[1] & (rf_dest[0] != 5'b0) & (rf_dest[0] == rf_dest[1]);//发生写后写事件
 wire       struct_comflict           =  slot_valid[0] & slot_valid[1] & ((is_mem[0] & is_mem[1] & (is_llsc[0] | is_llsc[1])) |
                                        (is_system_break[0]                                       | is_system_break[1])         |
@@ -322,7 +345,7 @@ wire       slot0_trap                = slot_valid[0] & (ex_ADEF[0] | ex_tlb_relo
                                        ex_INE[0]                   | ex_IPE[0]         | has_int);//会让slot1被杀的情况，名字叫slot0陷阱
 wire       hard_kill_slot1           = slot0_trap | pred_not_neighbor_kill_s1 | pred_is_neighbor_kill_s1;//直接不要slot1,这里的逻辑是如果预测正确则至多soft kill,只有预测错误或者异常才会是hard kill被直接丢弃
 wire       soft_kill_slot1           = slot_valid[0] & slot_valid[1] & ~hard_kill_slot1 & (
-                                      (RAW_s1_s0) | WAW_s1_s0 | struct_comflict | (is_br[0] & is_br[1]) |
+                                      (RAW_s1_s0_kill) | WAW_s1_s0 | struct_comflict | (is_br[0] & is_br[1]) |
                                       need_stall_s1);//slot1只是暂时发不了，不能丢弃
 wire       kill_slot1                = hard_kill_slot1 | soft_kill_slot1;
 //wire kill_slot1 = slot0_fetch_ex | RAW_s1_s0 | WAW_s1_s0 | struct_comflict | pred_not_neighbor_kill_s1 | pred_is_neighbor_kill_s1 | (is_br[0] & is_br[1]);//注意这里不要走双分支
@@ -332,7 +355,7 @@ wire [1:0] slot_issue                = {slot_valid[1] & ~kill_slot1, slot_valid[
 wire       hard_kill_no_br           = slot0_trap;
 // slot0是st/ld/cacop这种我们不让发
 wire       soft_kill_no_br           = slot_valid[0] & slot_valid[1] & ~hard_kill_no_br & (
-                                      (RAW_s1_s0) | WAW_s1_s0 | struct_comflict | (is_br[0] & is_br[1]) |
+                                      (RAW_s1_s0_kill) | WAW_s1_s0 | struct_comflict | (is_br[0] & is_br[1]) |
                                       need_stall_s1);
 // 以上两种都不是就可以发
 wire       slot_issue1_no_br         = slot_valid[1] & ~hard_kill_no_br & ~soft_kill_no_br;
@@ -389,8 +412,7 @@ assign  pop_valid           = id_fire       & (slot_issue[0] & pop_need[0] |
 //try to minimize the bus_size
 generate
     for (gi = 0; gi < ISSUE; gi = gi + 1) begin : gen_id_exe
-        assign  ID_EXE1_bus[gi] = slot_issue[gi] ? {1'b1, 
-                                                    exe_payload[gi]} : {outbus_width{1'b0}};
+        assign  ID_EXE1_bus[gi] = slot_issue[gi] ? {1'b1, exe_payload[gi],late_flag[gi]} : {outbus_width{1'b0}};
     end
 endgenerate
 //------------------------{bus}end-------------------------//

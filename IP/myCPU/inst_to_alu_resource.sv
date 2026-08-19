@@ -59,7 +59,9 @@ module inst_to_alu_resource #(
     output wire                    pop_need,
     output wire [1:0]              br_type,      // COND/JUMP/CALL/RET
     output wire                    ex_INE,
-    output wire                    ex_IPE
+    output wire                    ex_IPE,
+
+    output wire                    can_late_fwd
 );
 
 wire [18:0] alu_op;
@@ -459,6 +461,11 @@ assign ID_need_alu2_rk = need_is_valid & (
 assign ID_need_src2_withST = ID_need_alu2_rk |
                          (need_is_valid &
                           (inst_st_w | inst_st_b | inst_st_h | inst_sc_w));
+
+// 单拍 GPR 结果，可给同包槽1 打拍后用。load/CSR/SC/div 除外（mul 本拍有结果，允许做生产者）
+assign can_late_fwd = need_is_valid & rf_gr_we & (rf_dest != 5'd0) &
+                      ~need_stall_inst & ~need_stall_csr & ~inst_sc_w &
+                      ~(alu_op[15] | alu_op[16] | alu_op[17] | alu_op[18]);
 //------------------------{stall}end-------------------------//
 
 //------------------------{ex_INE}begin-------------------------//

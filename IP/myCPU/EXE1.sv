@@ -143,6 +143,10 @@ wire                     inst_sc_w             [ISSUE - 1 : 0];
 wire                     inst_idle             [ISSUE - 1 : 0];
 wire                     slot_valid_from_decode[ISSUE - 1 : 0]; // 本槽是否发射有效指令（来自 ID bus）
 
+wire late_alu_rj [ISSUE-1:0];
+wire late_alu_rk [ISSUE-1:0];
+wire late_st     [ISSUE-1:0];
+
 genvar                   i;
 generate 
     for(i = 0; i < ISSUE; i = i + 1) begin : gen_bus
@@ -155,13 +159,13 @@ generate
             case (src1_capture_sel[i])                           
                 2'b01: begin// 要更改src1以及对应的rj                                      
                     // bus[159:128] 对应总线 alu_src1
-                    bus_capture_d[i][159:128] = alu_result_with_rdct[0];
+                    bus_capture_d[i][162:131] = alu_result_with_rdct[0];
                     // bus[56:25]   = rj_value
-                    bus_capture_d[i][56:25]   = alu_result_with_rdct[0];
+                    bus_capture_d[i][59:28]   = alu_result_with_rdct[0];
                 end
                 2'b10: begin
-                    bus_capture_d[i][159:128] = alu_result_with_rdct[1];
-                    bus_capture_d[i][56:25]   = alu_result_with_rdct[1];
+                    bus_capture_d[i][162:131] = alu_result_with_rdct[1];
+                    bus_capture_d[i][59:28]   = alu_result_with_rdct[1];
                 end
                 default: ;                                        // 00：不捕获
             endcase
@@ -169,16 +173,16 @@ generate
             case (src2_capture_sel[i])                            
                 2'b01: begin                                      
                     // bus[210:179] = rkd_value
-                    bus_capture_d[i][210:179] = alu_result_with_rdct[0];
+                    bus_capture_d[i][213:182] = alu_result_with_rdct[0];
                     if (ID_need_alu2_rk[i]) begin//如果需要进入alu2当作操作数计算的才会更新对应的alu_src2部分
                         // bus[127:96]  = alu_src2
-                        bus_capture_d[i][127:96] = alu_result_with_rdct[0];
+                        bus_capture_d[i][130:99] = alu_result_with_rdct[0];
                     end
                 end
                 2'b10: begin
-                    bus_capture_d[i][210:179] = alu_result_with_rdct[1];
+                    bus_capture_d[i][213:182] = alu_result_with_rdct[1];
                     if (ID_need_alu2_rk[i]) begin
-                        bus_capture_d[i][127:96] = alu_result_with_rdct[1];
+                        bus_capture_d[i][130:99] = alu_result_with_rdct[1];
                     end
                 end
                 default: ;
@@ -204,7 +208,8 @@ generate
                 inst_csrrd[i]            , inst_csrwr[i]          , inst_csrxchg[i], inst_ertn[i]   , inst_syscall[i]   , inst_break[i]    , ex_INE[i]   , ex_IPE[i]   , ex_ADEF[i]  , has_int[i]  , inst_rdcntvl_w[i], inst_rdcntvh_w[i], inst_rdcntid[i], csr_num[i], rj_value[i], rf_dest[i], rf_gr_we[i],//WB destination and write_enable
                 inst_tlbsrch[i]          , inst_tlbrd[i]          , inst_tlbwr[i]  , inst_tlbfill[i], inst_invtlb[i]    ,
                 ex_tlb_reload0[i]        , ex_tlb_preif_unvalid[i], ex_tlb_plv0[i] ,
-                cache_code[i]            , inst_cacop[i]          , inst_ibar[i]   , inst_dbar[i]   , inst_sc_w[i]      , inst_ll_w[i]     , inst_idle[i]
+                cache_code[i]            , inst_cacop[i]          , inst_ibar[i]   , inst_dbar[i]   , inst_sc_w[i]      , inst_ll_w[i]     , inst_idle[i],
+                late_alu_rj[i]           , late_alu_rk[i]         , late_st[i]
                }=bus[i];
     end
 endgenerate
@@ -216,11 +221,38 @@ wire        div_mod        [ISSUE - 1 : 0];
 wire        divide_ready_go[ISSUE - 1 : 0];
 wire        EXE1_slot_valid[ISSUE - 1 : 0];
 
+wire s1_late_alu = EXE1_valid & slot_valid_from_decode[0] & slot_valid_from_decode[1] &
+                   (late_alu_rj[1] | late_alu_rk[1]);
+wire s1_late_st  = EXE1_valid & slot_valid_from_decode[0] & slot_valid_from_decode[1] &
+                   late_st[1];
+reg        late_alu_done;
+reg [31:0] s0_alu_r;
+always @(posedge clk) begin
+    if (!resetn || EXE1_need_cancel) begin
+        late_alu_done <= 1'b0;
+        s0_alu_r      <= 32'b0;
+    end
+    else if (EXE1_allow_in) begin
+        late_alu_done <= 1'b0;
+    end
+    else if (s1_late_alu & ~late_alu_done) begin
+        late_alu_done <= 1'b1;
+        s0_alu_r      <= alu_result_with_rdct[0];
+    end
+end
+wire [31:0] alu_src1_m [ISSUE-1:0];
+wire [31:0] alu_src2_m [ISSUE-1:0];
+assign alu_src1_m[0] = alu_src1[0];
+assign alu_src2_m[0] = alu_src2[0];
+assign alu_src1_m[1] = (s1_late_alu & late_alu_done & late_alu_rj[1]) ? s0_alu_r : alu_src1[1];
+assign alu_src2_m[1] = (s1_late_alu & late_alu_done & late_alu_rk[1]) ? s0_alu_r : alu_src2[1];
+
 generate 
     for(i = 0; i < ISSUE; i = i + 1) begin : gen_alu
         // 按槽 valid：级 valid & 本槽有指令；alu 内部会用它门控全部 alu_op（含 mul/div）
         assign  EXE1_slot_valid[i] = EXE1_valid & slot_valid_from_decode[i];
         assign  div_mod[i]         = EXE1_slot_valid[i] & (alu_op[i][15] | alu_op[i][16] | alu_op[i][17] | alu_op[i][18]);
+        
         alu u_alu(
             .clk                (clk                   ),
             .resetn             (resetn                ),
@@ -230,8 +262,8 @@ generate
             .EXE1_slot_valid    (EXE1_slot_valid[i]    ),
             .EXE1_need_cancel   (EXE1_need_cancel      ),
             .alu_op             (alu_op[i]             ),
-            .alu_src1           (alu_src1[i]       ),
-            .alu_src2           (alu_src2[i]       ),
+            .alu_src1           (alu_src1_m[i]       ),
+            .alu_src2           (alu_src2_m[i]       ),
             .alu_result         (alu_result[i]         ),
             .add_result         (mem_vaddr[i]          ),
             .divide_ready_go    (divide_ready_go[i]    )
@@ -283,11 +315,16 @@ wire [1:0]  data_sram_size [ISSUE - 1 : 0];
 wire [1:0]  data_mat       [ISSUE - 1 : 0];
 wire        data_wr        [ISSUE - 1 : 0];
 wire [31:0] st_data        [ISSUE - 1 : 0];
+
+wire [31:0] rkd_use [ISSUE-1:0];
+assign rkd_use[0] = rkd_value[0];
+assign rkd_use[1] = s1_late_st ? alu_result_with_rdct[0] : rkd_value[1];
+
 generate
     for(i = 0; i < ISSUE; i = i + 1) begin : gen_st_data
-        assign  st_data[i]         = inst_st_b[i] ? {4{rkd_value[i][7:0]}}  :
-                                     inst_st_h[i] ? {2{rkd_value[i][15:0]}} :
-                                                    rkd_value[i];
+        assign  st_data[i]         = inst_st_b[i] ? {4{rkd_use[i][7:0]}}  :
+                                     inst_st_h[i] ? {2{rkd_use[i][15:0]}} :
+                                                    rkd_use[i];
         assign  data_sram_wstrb[i] = (
                                         mem_we[i] ? (
                                             inst_st_b[i] ? (
@@ -373,7 +410,7 @@ generate
         assign  EXE1_EXE2_bus[i] = {
                                     EXE1_slot_valid[i],
                                     pc[i]             ,
-                                    rkd_value[i]      , res_from_mem[i]        , mem_we[i]        , need_stall_csr[i] , inst_ld_b[i]        , inst_ld_h[i]        , inst_ld_bu [i], inst_ld_hu[i]        , alu_result_with_rdct[i],//MEM
+                                    rkd_use[i]      , res_from_mem[i]        , mem_we[i]        , need_stall_csr[i] , inst_ld_b[i]        , inst_ld_h[i]        , inst_ld_bu [i], inst_ld_hu[i]        , alu_result_with_rdct[i],//MEM
                                     inst_csrrd[i]     , inst_csrwr[i]          , inst_csrxchg[i]  , inst_ertn[i]      , inst_syscall[i]     , inst_break[i]       , ex_INE[i]     , ex_IPE[i]            , ex_ADEF[i]             , ex_ALE[i]   , has_int[i]  , inst_rdcntvl_w[i], inst_rdcntvh_w[i], inst_rdcntid[i], csr_num[i], rj_value[i], rf_dest[i], rf_gr_we[i],//WB
                                     inst_tlbsrch[i]   , TLBIDX_new_tlbsrch[i]  , inst_tlbrd[i]    , inst_tlbwr[i]     , inst_tlbfill[i]     , inst_invtlb[i]      ,
                                     ex_tlb_reload0[i] , ex_tlb_preif_unvalid[i], ex_tlb_plv0[i]   , ex_tlb_reload1[i] , ex_tlb_ld_unvalid[i], ex_tlb_st_unvalid[i], ex_tlb_plv1[i], ex_tlb_page_modify[i],
@@ -399,7 +436,7 @@ generate
                                        ~inst_sc_w[i] &
                                        ~EXE1_front_ex[i] &
                                        ~EXE1_need_cancel &
-                                       ~older_ex_for_exe1;
+                                       ~older_ex_for_exe1 & ~((i == 1) & s1_late_alu & ~late_alu_done);
     end
 endgenerate
 //------------------------{bus}end-------------------------//
@@ -430,7 +467,8 @@ generate
     end
 endgenerate
 
-assign  EXE1_ready_go = EXE1_slot_ready_go[0] & EXE1_slot_ready_go[1];
+assign EXE1_ready_go = (s1_late_alu & ~late_alu_done) ? 1'b0 :
+                       (EXE1_slot_ready_go[0] & EXE1_slot_ready_go[1]);
 
 always @(posedge clk) begin
     if(!resetn)begin
