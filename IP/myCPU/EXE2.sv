@@ -9,6 +9,7 @@ module exe2 #(
     input  wire                    resetn,
     // control signal
     output wire                    EXE2_ready_go,
+    output wire                    EXE2_MEM_fire,
     output reg                     EXE2_valid,
     input  wire                    EXE1_EXE2_valid,
     input  wire                    EXE2_allow_in,
@@ -167,14 +168,48 @@ endgenerate
 //------------------------{bus解析&传递}end-------------------------//
 
 //------------------------{mux 选择 dram signal}begin-------------------------//
-wire  dram_hit[ISSUE - 1 : 0];
+wire  mem_slot[ISSUE - 1 : 0];
 generate
-    for(i = 0; i < ISSUE; i = i + 1) begin : gen_dram_index
-        assign  dram_hit[i] = slot_valid_from_exe1[i] & (res_from_mem[i] | mem_we[i] | inst_cacop[i]);
+    for(i = 0; i < ISSUE; i = i + 1) begin : gen_mem_slot
+        assign  mem_slot[i] = slot_valid_from_exe1[i] & (res_from_mem[i] | mem_we[i] | inst_cacop[i]);
     end
 endgenerate
+wire    dual_mem = EXE2_valid & mem_slot[0] & mem_slot[1] &
+                   (res_from_mem[0] | mem_we[0]) & (res_from_mem[1] | mem_we[1]) &
+                   ~inst_cacop[0] & ~inst_cacop[1] &
+                   ~(EXE2_valid & slot_valid_from_exe1[0] & EXE1_ex[0]) &
+                   ~older_ex_for_exe2 & ~EXE2_need_cancel;
+
+reg     slot0_sent_r;
+always @(posedge clk) begin
+    if (!resetn) begin
+        slot0_sent_r <= 1'b0;
+    end
+    else if (EXE2_need_cancel) begin
+        slot0_sent_r <= 1'b0;
+    end
+    else if (EXE2_allow_in) begin
+        slot0_sent_r <= 1'b0;
+    end
+    else if (dual_mem && !slot0_sent_r && data_sram_req && data_sram_addr_ok) begin
+        slot0_sent_r <= 1'b1;
+    end
+end
+
+wire  dram_hit[ISSUE - 1 : 0];
+// generate
+//     for(i = 0; i < ISSUE; i = i + 1) begin : gen_dram_index
+//         assign  dram_hit[i] = slot_valid_from_exe1[i] & (res_from_mem[i] | mem_we[i] | inst_cacop[i]);
+//     end
+// endgenerate
+assign  dram_hit[0]     = mem_slot[0] & ~slot0_sent_r;
+assign  dram_hit[1]     = mem_slot[1];
+
 wire    dram_hit_any    = dram_hit[0] | dram_hit[1];
 wire    dram_index      = dram_hit[0] ? 1'b0 : 1'b1; // 仅在 dram_hit_any 时有意义
+
+wire    send_slot0      = ~slot0_sent_r;
+wire    send_slot1      = ~dual_mem | slot0_sent_r;
 
 assign  data_sram_addr  = data_sram_addr_b[dram_index];
 assign  data_sram_wdata = data_sram_wdata_b[dram_index];
@@ -244,7 +279,7 @@ assign  idbar_pc      = pc[0] + 4;
 //------------------------{need_stall_inst}begins-------------------------//
 generate
     for(i = 0; i < ISSUE; i = i + 1) begin : gen_need_stall_inst
-        assign  need_stall_inst[i] = EXE2_valid & slot_valid_from_exe1[i] & res_from_mem[i];
+        assign  need_stall_inst[i] = EXE2_valid & slot_valid_from_exe1[i] & res_from_mem[i] & ~((i==0) & slot0_sent_r);
         assign  need_stall_csr[i]  = EXE2_valid & slot_valid_from_exe1[i] & need_stall_csr_b[i];
     end
 endgenerate
@@ -264,9 +299,10 @@ generate
                                                             alu_result_with_rdct[i];
         assign  exe2_front_addr[i]         = rf_dest[i];
         assign  exe2_can_not_front_push[i] = ~rf_gr_we[i]       | ~slot_valid_from_exe1[i] |
-                                             need_stall_inst[i] | need_stall_csr[i]       ;
-        assign  EXE2_slot_ex[i]            = EXE2_valid & slot_valid_from_exe1[i] & EXE1_ex[i];
-        assign  EXE2_rf_dest[i]            = rf_dest[i];
+                                             need_stall_inst[i] | need_stall_csr[i]        |
+                                             ((i==0) & slot0_sent_r);
+        assign  EXE2_slot_ex[i]            = EXE2_valid & slot_valid_from_exe1[i] & EXE1_ex[i] & ~((i==0) & slot0_sent_r);
+        assign  EXE2_rf_dest[i]            = ((i==0) & slot0_sent_r) ? 5'b0 : rf_dest[i];
     end
 endgenerate
 assign  EXE2_ex = EXE2_slot_ex[0] | EXE2_slot_ex[1];
@@ -282,11 +318,15 @@ assign  selected_mem_need_wait = dram_hit_any & (res_from_mem[dram_index] | (mem
                                  ~older_ex_for_exe2 &
                                  ~EXE2_need_cancel;
 
+wire    mem_handshake = selected_mem_need_wait ? (data_sram_req & data_sram_addr_ok) : 1'b1;
+
 // cacop_valid 已包含相同的 owner 年龄/异常门控。不能使用聚合的 EXE2_ex
 // 旁路整个 bundle，否则年轻 slot 的异常会放过年老的 Store/CACOP。
-assign  EXE2_ready_go          = cacop_valid            ? cacop_done                          :
-                                 selected_mem_need_wait ? (data_sram_req & data_sram_addr_ok) :
-                                                          1'b1; //不需要等的直接放行(包括ex)
+assign  EXE2_ready_go          =   (dual_mem && ~slot0_sent_r) ? 1'b0 :
+                                    cacop_valid            ? cacop_done     :
+                                                                mem_handshake;
+assign  EXE2_MEM_fire          = (dual_mem && !slot0_sent_r) ? mem_handshake :
+                                 EXE2_ready_go;
 
 always @(posedge clk) begin
     if(!resetn)begin
@@ -304,7 +344,7 @@ end
 //------------------------{bus}begin-------------------------//
 generate
     for(i = 0; i < ISSUE; i = i + 1) begin : gen_EXE2_MEM_bus
-        assign  EXE2_MEM_bus[i] = {
+        assign  EXE2_MEM_bus[i] = ((i == 0) ? send_slot0 : send_slot1) ? {
                                    slot_valid_from_exe1[i],
                                    pc[i]                  ,
                                    rkd_value[i]           , res_from_mem[i]            , mem_we[i]      , need_stall_csr_b[i], inst_ld_b[i]        , inst_ld_h[i]        , inst_ld_bu[i] , inst_ld_hu[i]        , data_sram_addr_b[i][1:0], alu_result_with_rdct[i],//MEM
@@ -312,7 +352,7 @@ generate
                                    inst_tlbsrch[i]        , TLBIDX_new_tlbsrch[i]      , inst_tlbrd[i]  , inst_tlbwr[i]      , inst_tlbfill[i]     , inst_invtlb[i]      ,
                                    ex_tlb_reload0[i]      , ex_tlb_preif_unvalid[i]    , ex_tlb_plv0[i] , ex_tlb_reload1[i]  , ex_tlb_ld_unvalid[i], ex_tlb_st_unvalid[i], ex_tlb_plv1[i], ex_tlb_page_modify[i],
                                    inst_sc_w[i]           , (inst_sc_w[i] & sc_success), inst_idle[i]
-                                  };
+                                  } : {outbus_width{1'b0}};
     end
 endgenerate
 //------------------------{bus}end-------------------------//

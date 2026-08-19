@@ -89,6 +89,7 @@ wire  WB_ready_go;
 
 //------------------------{5-stage pipeline control signals assignment}begin-------------------------//
 wire    ID_can_accept_IF;
+wire    EXE2_MEM_fire;
 
 assign  preIF1_allow_in     = !preIF1_valid || (preIF2_allow_in && preIF1_ready_go);
 assign  preIF2_allow_in     = !preIF2_valid || (IF_allow_in && preIF2_ready_go);
@@ -105,7 +106,7 @@ assign  preIF2_IF_valid     = preIF2_valid & preIF2_ready_go;
 assign  IF_ID_valid         = IF_valid & IF_ready_go;
 assign  ID_EXE1_valid       = ID_valid & ID_ready_go;
 assign  EXE1_EXE2_valid     = EXE1_valid & EXE1_ready_go & ~EXE1_need_cancel;
-assign  EXE2_MEM_valid      = EXE2_valid & EXE2_ready_go;
+assign  EXE2_MEM_valid      = EXE2_valid & EXE2_MEM_fire;
 assign  MEM_WB_valid        = MEM_valid & MEM_ready_go;
 //------------------------{5-stage pipeline control signals assignment}end-------------------------//
 
@@ -1276,6 +1277,7 @@ exe2 #(
     .resetn                  (resetn                  ),
     //control signal
     .EXE2_ready_go           (EXE2_ready_go           ),
+    .EXE2_MEM_fire           (EXE2_MEM_fire           ),
     .EXE2_valid              (EXE2_valid              ),
     .EXE1_EXE2_valid         (EXE1_EXE2_valid         ),
     .EXE2_allow_in           (EXE2_allow_in           ),
