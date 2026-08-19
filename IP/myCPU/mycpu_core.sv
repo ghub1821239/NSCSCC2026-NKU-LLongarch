@@ -671,8 +671,15 @@ generate
     end
 endgenerate
 
-assign  need_stall        = src1_stall[0] | src1_stall[1] | src2_stall[0] | src2_stall[1] |
-                            rj_same_ld[0] | rj_same_ld[1] | rk_same_ld[0] | rk_same_ld[1];// 给br的都不是从dcache来的ld拿回来的，如果冲突就需要阻塞
+wire        need_stall_s0;
+wire        need_stall_s1;
+
+assign  need_stall_s0 = src1_stall[0] | src2_stall[0] | rj_same_ld[0] | rk_same_ld[0];
+assign  need_stall_s1 = src1_stall[1] | src2_stall[1] | rj_same_ld[1] | rk_same_ld[1];
+// 只把「最老指令」的 stall 送给 ID_ready_go / 前端空端口，槽1 改走 decode 的 soft kill
+assign  need_stall    = need_stall_s0;
+// assign  need_stall        = src1_stall[0] | src1_stall[1] | src2_stall[0] | src2_stall[1] |
+//                             rj_same_ld[0] | rj_same_ld[1] | rk_same_ld[0] | rk_same_ld[1];// 给br的都不是从dcache来的ld拿回来的，如果冲突就需要阻塞
 
 wire    IDLE_stall;
 reg     preIF1_IDLE_stall;
@@ -1178,6 +1185,7 @@ decode #(
     .ID_need_cancel      (preIF_IF_ID_need_cancel ),
     //stall
     .need_stall          (need_stall              ),
+    .need_stall_s1       (need_stall_s1           ),
     //中断
     .has_int             (has_int                 ),
     //branch prediction
