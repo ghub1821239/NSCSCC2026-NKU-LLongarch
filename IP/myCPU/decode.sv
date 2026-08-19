@@ -92,8 +92,7 @@ always @(posedge clk)begin
         end
     end
 end
-// redirect 已在 core 中寄存，并在下一拍通过 ID_need_cancel 屏蔽发射和清空前端。
-// 状态更新只使用 branch-independent 条件，避免分支比较结果返回这些状态 FF 的 D 端。
+// valid 状态与 bus_has_inst：严格保持原优先级 reset > cancel > redirect > accept > consume
 always @(posedge clk)begin
     if(!resetn)begin
         for (k = 0; k < ISSUE; k = k + 1) begin
@@ -107,13 +106,19 @@ always @(posedge clk)begin
         end
         bus_has_inst <= 1'b0;
     end
+    else if (id_fire & (redirect0 | redirect1))begin
+        for (k = 0; k < ISSUE; k = k + 1) begin
+            bus_valid_r[k] <= 1'b0;
+        end
+        bus_has_inst <= 1'b0;
+    end
     else if (accept_IF_in_bus) begin
         for (k = 0; k < ISSUE; k = k + 1) begin
             bus_valid_r[k] <= IF_ID_bus[k][inbus_width-1];
         end
         bus_has_inst <= 1'b1;
     end
-    else if(consume_for_accept) begin
+    else if(consume_bus) begin
         for (k = 0; k < ISSUE; k = k + 1) begin
             bus_valid_r[k] <= 1'b0;
         end
@@ -153,7 +158,18 @@ wire        bus1_valid           = bus[1][inbus_width-1];
 reg                        hold_valid;
 reg    [inbus_width-1:0]   hold_bus;
 wire   [inbus_width-1 : 0] bus_eff              [ISSUE - 1 : 0];//有效包，经过hold筛选后的bus
+wire                       create_hold;//hold开始信号
+wire                       update_hold;//hold更新信号
+wire                       clear_hold;//hold清空信号
+wire                       packed_mode;
 
+//assign create_hold = id_fire & soft_kill_slot1 & slot_issue[0];
+//assign drain_hold  = id_fire & hold_valid;//
+//assign packed_mode = hold_valid & bus_has_inst;
+
+wire                       create_hold_from_soft = id_fire & ~hold_valid & soft_kill_slot1;//无hold指令，soft kill只发出slot0到后端，slot1住hold
+wire                       create_hold_from_tail = id_fire & hold_valid & bus_has_inst & slot_issue[0] & slot_issue[1] & bus1_valid;//重新拼包且双发成功，且原始包的slot1进hold
+wire                       pack_soft_keep_bus    = id_fire & hold_valid & slot_issue[0] & ~slot_issue[1] & soft_kill_slot1;//hold与下一条指令重新拼包后soft kill,则hold指令下一条指令留在bus
 wire                       consume_for_accept;
 
 // hold_bus payload 专用写入控制（branch-independent，避免 branch redirect 进入 148 个 payload FF 的 CE）
@@ -163,6 +179,12 @@ wire                       capture_hold_from_tail = id_fire & hold_valid & bus_h
                                                      slot_issue[0] & slot_issue1_no_br & bus1_valid;
 wire                       capture_hold_payload   = capture_hold_from_soft | capture_hold_from_tail;
 
+wire                       consume_bus           = id_fire & bus_has_inst & ~pack_soft_keep_bus & (
+                                                   //无hold指令并且发出slot0
+                                                   (~hold_valid & slot_issue[0]) |
+                                                   //重新拼包后next发出或者被hard丢弃
+                                                   (hold_valid & (slot_issue[1] | hard_kill_slot1))
+                                                   );
 wire                       accept_IF_in_bus      = IF_ID_valid & ID_allow_in & (~bus_has_inst | consume_for_accept);
 
 //output
@@ -189,7 +211,14 @@ always @(posedge clk) begin
         hold_valid_raddr1_slot1 <= 1'b0;
         hold_valid_raddr2_slot1 <= 1'b0;
     end
-    else if (capture_hold_payload) begin
+    else if (id_fire & (redirect0 | redirect1)) begin
+        hold_valid <= 1'b0;
+        hold_valid_raddr1_slot0 <= 1'b0;
+        hold_valid_raddr2_slot0 <= 1'b0;
+        hold_valid_raddr1_slot1 <= 1'b0;
+        hold_valid_raddr2_slot1 <= 1'b0;
+    end
+    else if (create_hold_from_soft | create_hold_from_tail) begin
         hold_valid <= 1'b1;
         hold_valid_raddr1_slot0 <= 1'b1;
         hold_valid_raddr2_slot0 <= 1'b1;
@@ -512,12 +541,17 @@ always @(posedge clk) begin
         ID_valid <= 1'b0;
     end
     else if(ID_allow_in)begin
-        ID_valid <= capture_hold_payload |
-                    (hold_valid & ~(id_fire & slot_issue[0] & ~capture_hold_from_tail)) |
-                    accept_IF_in_bus |
-                    (bus_has_inst & ~consume_for_accept) |
-                    (IF_ID_valid & ~accept_IF_in_bus & ~bus_has_inst &
-                     ~(hold_valid | capture_hold_payload));
+        if (id_fire & (redirect0 | redirect1)) begin
+            ID_valid <= 1'b0;
+        end
+        else begin
+            ID_valid <= (create_hold_from_soft | create_hold_from_tail) |
+                        (hold_valid & ~(id_fire & slot_issue[0] & ~create_hold_from_tail)) |
+                        (accept_IF_in_bus) |
+                        (bus_has_inst & ~consume_bus) |
+                        (IF_ID_valid & ~accept_IF_in_bus & ~bus_has_inst &
+                        ~(hold_valid | create_hold_from_soft | create_hold_from_tail));
+        end
     end
 end
 //------------------------{ready_go}end-------------------------//
