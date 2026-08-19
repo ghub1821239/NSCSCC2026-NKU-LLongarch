@@ -704,6 +704,10 @@ wire  inst_resp_discard;
 //------------------------{req_to_dataok_trigger}end-------------------------//
 
 //------------------------{branch prediction}begin---------------------------//
+
+wire [7:0] query_ghr_snap;
+wire [7:0] bht_update_ghr;
+
 //btb
 // query port: preIF lookup
 wire        query_valid     [ISSUE-1:0];
@@ -757,6 +761,8 @@ bht u_bht(
     .query_valid1  (query_valid[1]            ),
     .query_pc1     (query_pc[1]               ),//pc being predicted
     .query_taken1  (query_taken[1]            ),//predict taken
+    .query_ghr_snap  (query_ghr_snap  ),
+    .update_ghr_snap (bht_update_ghr  ),
     // update port
     .update_valid  (bht_update_valid          ),//update BHT
     .update_pc     (bht_update_pc             ),//branch pc
@@ -844,10 +850,10 @@ assign        WB_need_cancel          = flush;
 //------------------------{i/dbar need cancel}end-------------------------//
 
 //------------------------{5 pipeline bus + inst ram control}begin-------------------------//
-localparam                                     preIF1_preIF2_slot0_bus_width = 144;
-localparam                                     preIF1_preIF2_bus_width       = 142;
-localparam                                     preIF2_IF_bus_width           = 106;
-localparam                                     IF_ID_bus_width               = 148;
+localparam  preIF1_preIF2_slot0_bus_width = 152; // 144+8
+localparam  preIF1_preIF2_bus_width       = 150; // 142+8
+localparam  preIF2_IF_bus_width           = 114; // 106+8
+localparam  IF_ID_bus_width               = 156; // 148+8
 localparam                                     ID_EXE1_bus_width             = 244; // +1: slot_valid
 localparam                                     EXE1_EXE2_bus_width           = 279; // +1: EXE1_ex
 localparam                                     EXE2_MEM_bus_width            = 199;
@@ -1075,6 +1081,9 @@ pre_IF1 #(
     .ras_query_target        (ras_query_target              ),
     .query_type              (query_type                    ),
     .query_taken             (query_taken                   ),//predict taken
+
+    .query_ghr_snap          (query_ghr_snap),
+
     //IDLE
     .preIF1_IDLE_stall       (preIF1_idle_block             )
 );
@@ -1198,6 +1207,8 @@ decode #(
     .update_target       (update_target           ),//real target
     .update_type         (update_type             ),
     .update_taken        (update_taken            ),//real taken
+
+    .bht_update_ghr (bht_update_ghr),
     // backend real call update
     .push_valid          (push_valid              ),
     .push_target         (push_target             ),

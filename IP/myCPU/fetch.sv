@@ -81,6 +81,8 @@ wire                      ras_query_hit       [ISSUE - 1 : 0];//valid且tag
 wire    [31:0]            ras_query_target    [ISSUE - 1 : 0];        
 wire    [ 1:0]            query_type          [ISSUE - 1 : 0];              
 wire                      query_taken         [ISSUE - 1 : 0];//预测是否跳转 
+
+wire [7:0] ghr_snap [ISSUE-1:0];
         
 reg     [inbus_width-1:0] bus                 [ISSUE - 1 : 0];
 integer                   k;
@@ -104,7 +106,8 @@ generate
                 ex_tlb_preif_unvalid[i], ex_tlb_plv0[i]     ,
                 btb_query_hit[i]       , btb_query_target[i],
                 ras_query_hit[i]       , ras_query_target[i],
-                query_type[i]          , query_taken[i]} = bus[i];
+                query_type[i]          , query_taken[i],
+                ghr_snap[i]} = bus[i];
     end
 endgenerate
 
@@ -221,7 +224,8 @@ generate
                                           ras_query_hit[i],
                                           ras_query_target[i],
                                           query_type[i],
-                                          query_taken[i]
+                                          query_taken[i],
+                                          ghr_snap[i]
                                           } : {outbus_width{1'b0}};
     end
 endgenerate

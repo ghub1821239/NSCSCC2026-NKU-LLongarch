@@ -49,6 +49,8 @@ module decode #(
     output wire [31:0]             update_target,//真实目标地址
     output wire [1:0]              update_type,
     output wire                    update_taken,//真实是否跳转
+
+    output wire [7:0]              bht_update_ghr,
     // 是不是 call 调用
     output wire                    push_valid,
     output wire [31:0]             push_target,
@@ -109,6 +111,8 @@ wire        ras_query_hit       [ISSUE - 1 : 0];//valid且tag
 wire [31:0] ras_query_target    [ISSUE - 1 : 0];        
 wire [ 1:0] query_type          [ISSUE - 1 : 0];              
 wire        query_taken         [ISSUE - 1 : 0];//预测是否跳转 
+
+wire [7:0] ghr_snap [ISSUE-1:0];
 
 wire        bus0_valid           = bus[0][inbus_width-1];
 wire        bus1_valid           = bus[1][inbus_width-1];
@@ -187,7 +191,8 @@ generate
                  ras_query_hit[gi]       ,
                  ras_query_target[gi]    ,
                  query_type[gi]          ,
-                 query_taken[gi]
+                 query_taken[gi]         ,
+                 ghr_snap[gi]
                 } = bus_eff[gi];
          assign  rf_raddr1[gi] = pre_raddr1_eff[gi];
          assign  rf_raddr2[gi] = pre_raddr2_eff[gi];
@@ -365,6 +370,8 @@ wire    take_bht1           = slot_issue[1] & bht_upd_need[1] & ~take_bht0;
 assign  bht_update_valid    = id_fire & (take_bht0 | take_bht1);
 assign  bht_update_pc       = take_bht0 ? pc[0]         : pc[1];
 assign  bht_update_taken    = take_bht0 ? real_taken[0] : real_taken[1];
+
+assign  bht_update_ghr      = take_bht0 ? ghr_snap[0] : ghr_snap[1];
 
 wire    take_push0          = slot_issue[0] & push_need[0];
 wire    take_push1          = slot_issue[1] & push_need[1] & ~take_push0;
