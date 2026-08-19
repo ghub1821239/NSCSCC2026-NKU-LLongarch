@@ -69,8 +69,11 @@ wire   [31:0] sll_result;
 wire   [63:0] sr64_result;
 wire   [31:0] sr_result;
 wire   [65:0] mul_result;
-wire   [32:0] mul_src1                   = op_mulh_wu ? {1'b0,alu_src1} : {alu_src1[31],alu_src1};
-wire   [32:0] mul_src2                   = op_mulh_wu ? {1'b0,alu_src2} : {alu_src2[31],alu_src2};
+// 无效槽的乘积不会被 alu_result 选中，扩展模式无需经过 EXE1_slot_valid 门控。
+// 有效 mulh.wu 仍由 alu_op[14] 选择零扩展，同时切断 valid -> DSP 输入关键路径。
+wire          mul_unsigned_mode          = alu_op[14];
+wire   [32:0] mul_src1                   = mul_unsigned_mode ? {1'b0,alu_src1} : {alu_src1[31],alu_src1};
+wire   [32:0] mul_src2                   = mul_unsigned_mode ? {1'b0,alu_src2} : {alu_src2[31],alu_src2};
 wire   [63:0] div_result;
 wire   [63:0] div_result_u;
 

@@ -554,11 +554,11 @@ wire       [31:0] direct_target;
     //---------------{跳转和对比表 有效 & 匹配}end---------------//
 
 
-assign  pred_taken  = (ras_query_hit && (query_type == TYPE_RET)) ||
+assign  pred_taken  = (ras_query_hit && btb_query_hit && (query_type == TYPE_RET)) ||
                       (btb_query_hit && (query_type == TYPE_CALL || query_type == TYPE_JUMP)) ||
                       (query_taken && btb_query_hit && (query_type == TYPE_COND));
                     
-assign  pred_target = (ras_query_hit && (query_type == TYPE_RET)) ? ras_query_target :
+assign  pred_target = (ras_query_hit && btb_query_hit && (query_type == TYPE_RET)) ? ras_query_target :
                       (btb_query_hit && (query_type == TYPE_CALL || query_type == TYPE_JUMP ||
                       (query_type == TYPE_COND && query_taken))) ? btb_query_target :
                       (pc + 32'd4);
