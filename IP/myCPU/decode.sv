@@ -1,6 +1,6 @@
 module decode #(
     parameter  inbus_width  = 148,
-    parameter  outbus_width = 244,
+    parameter  outbus_width = 247,
     parameter  ISSUE        = 2   
 )(
     input  wire                    clk,
@@ -546,7 +546,7 @@ assign  pop_valid           = id_fire       & (slot_issue[0] & pop_need[0] |
 generate
     for (gi = 0; gi < ISSUE; gi = gi + 1) begin : gen_id_exe
         // 无效槽总线全零，保持原 ID→EXE1 接口语义
-        assign ID_EXE1_bus[gi] = slot_issue[gi] ? {1'b1, exe_payload[gi]} : {outbus_width{1'b0}};
+        assign ID_EXE1_bus[gi] = slot_issue[gi] ? {1'b1, exe_payload[gi], late_flag[gi]} : {outbus_width{1'b0}};
     end
 endgenerate
 //------------------------{bus}end-------------------------//
