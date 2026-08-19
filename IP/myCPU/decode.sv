@@ -30,9 +30,6 @@ module decode #(
     output wire                    ID_need_src2_withST   [ISSUE - 1 : 0],
     output wire                    ID_need_alu2_rk[ISSUE - 1 : 0],
 
-    //使用late_alu
-    output wire                    ID_late_alu_ok[ISSUE-1:0],
-
     //cancel control
     input  wire                    ID_need_cancel,
     //prediction
@@ -261,9 +258,6 @@ generate
       .ID_need_src2_withST  (ID_need_src2_withST[gi]    ),
       .ID_need_alu2_rk      (ID_need_alu2_rk[gi]        ),
 
-      //从late_alu中拿
-      .ID_late_alu_ok       (ID_late_alu_ok[gi]         ),
-
       .csr_CRMD_PLV         (csr_CRMD_PLV               ),
       .has_int              ((gi == 0) ? has_int : 1'b0 ),//只在slot0判中断
       //.id_fire              (id_fire & slot_valid[gi]), 
@@ -320,7 +314,7 @@ wire       slot0_trap                = slot_valid[0] & (ex_ADEF[0] | ex_tlb_relo
                                        ex_INE[0]                   | ex_IPE[0]         | has_int);//会让slot1被杀的情况，名字叫slot0陷阱
 wire       hard_kill_slot1           = slot0_trap | pred_not_neighbor_kill_s1 | pred_is_neighbor_kill_s1;//直接不要slot1,这里的逻辑是如果预测正确则至多soft kill,只有预测错误或者异常才会是hard kill被直接丢弃
 wire       soft_kill_slot1           = slot_valid[0] & slot_valid[1] & ~hard_kill_slot1 & (
-                                       RAW_s1_s0 | WAW_s1_s0 | struct_comflict | (is_br[0] & is_br[1]));//slot1只是暂时发不了，不能丢弃
+                                      (RAW_s1_s0) | WAW_s1_s0 | struct_comflict | (is_br[0] & is_br[1]));//slot1只是暂时发不了，不能丢弃
 wire       kill_slot1                = hard_kill_slot1 | soft_kill_slot1;
 //wire kill_slot1 = slot0_fetch_ex | RAW_s1_s0 | WAW_s1_s0 | struct_comflict | pred_not_neighbor_kill_s1 | pred_is_neighbor_kill_s1 | (is_br[0] & is_br[1]);//注意这里不要走双分支
 wire [1:0] slot_issue                = {slot_valid[1] & ~kill_slot1, slot_valid[0]};
@@ -329,7 +323,7 @@ wire [1:0] slot_issue                = {slot_valid[1] & ~kill_slot1, slot_valid[
 wire       hard_kill_no_br           = slot0_trap;
 // slot0是st/ld/cacop这种我们不让发
 wire       soft_kill_no_br           = slot_valid[0] & slot_valid[1] & ~hard_kill_no_br & (
-                                       RAW_s1_s0 | WAW_s1_s0 | struct_comflict | (is_br[0] & is_br[1]));
+                                      (RAW_s1_s0) | WAW_s1_s0 | struct_comflict | (is_br[0] & is_br[1]));
 // 以上两种都不是就可以发
 wire       slot_issue1_no_br         = slot_valid[1] & ~hard_kill_no_br & ~soft_kill_no_br;
 // hold_valid 时，effective slot0 来自 hold_bus；

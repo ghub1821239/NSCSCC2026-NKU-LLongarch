@@ -593,17 +593,6 @@ wire        ID_need_alu1_rj        [ISSUE - 1 : 0];
 wire        ID_need_src2_withST    [ISSUE - 1 : 0];
 wire        ID_need_alu2_rk        [ISSUE - 1 : 0];
 
-//从late_alu中拿
-wire        ID_late_alu_ok     [ISSUE-1:0];
-
-wire [1:0]  exe2_ld_match_src1 [ISSUE-1:0];
-wire [1:0]  exe2_ld_match_src2 [ISSUE-1:0];
-wire        late_src1_hint     [ISSUE-1:0];
-wire        late_src2_hint     [ISSUE-1:0];
-wire [4:0]  late_load_dest     [ISSUE-1:0];
-//用来维护load比较状态
-wire        late_load_slot     [ISSUE-1:0];
-
 wire [ 1:0] src1_capture_sel    [ISSUE - 1 : 0];
 wire [ 1:0] src2_capture_sel    [ISSUE - 1 : 0];
 // 和前面front_push的match格式一致：[1:0] = {slot0, slot1}
@@ -655,65 +644,6 @@ endgenerate
         
 // =========================  decode 先发起请求，然后进入exe1再进行替换  ==========================
 
-
-generate
-    for (i = 0; i < ISSUE; i = i + 1) begin : gen_late_load_hint
-        // [1:0] = {EXE2 slot0, EXE2 slot1}
-        assign exe2_ld_match_src1[i] = {
-            EXE2_valid && exe2_need_stall_inst[0] &&
-            (EXE2_rf_dest[0] != 5'd0) &&
-            (rf_raddr1[i] == EXE2_rf_dest[0]),
-
-            EXE2_valid && exe2_need_stall_inst[1] &&
-            (EXE2_rf_dest[1] != 5'd0) &&
-            (rf_raddr1[i] == EXE2_rf_dest[1])
-        };
-
-        assign exe2_ld_match_src2[i] = {
-            EXE2_valid && exe2_need_stall_inst[0] &&
-            (EXE2_rf_dest[0] != 5'd0) &&
-            (rf_raddr2[i] == EXE2_rf_dest[0]),
-
-            EXE2_valid && exe2_need_stall_inst[1] &&
-            (EXE2_rf_dest[1] != 5'd0) &&
-            (rf_raddr2[i] == EXE2_rf_dest[1])
-        };
-
-        assign late_src1_hint[i] =
-               ID_late_alu_ok[i]
-            && ID_need_alu1_rj[i]
-            && (|exe2_ld_match_src1[i])
-            && ~EXE2_ex
-            && ~older_ex_for_exe2
-            && ~EXE2_need_cancel;
-
-        assign late_src2_hint[i] =
-               ID_late_alu_ok[i]
-            && ID_need_alu2_rk[i]
-            && (|exe2_ld_match_src2[i])
-            && ~EXE2_ex
-            && ~older_ex_for_exe2
-            && ~EXE2_need_cancel;
-
-        // 一个 bundle 最多有一个 load，因此两个源若同时命中，
-        // 必须属于同一个生产者。
-        assign late_load_dest[i] =
-                                ((late_src1_hint[i] && exe2_ld_match_src1[i][1]) ||
-                                (late_src2_hint[i] && exe2_ld_match_src2[i][1]))
-                                    ? EXE2_rf_dest[0] :
-                                ((late_src1_hint[i] && exe2_ld_match_src1[i][0]) ||
-                                (late_src2_hint[i] && exe2_ld_match_src2[i][0]))
-                                    ? EXE2_rf_dest[1] :
-                                    5'd0;
-        assign late_load_slot[i] =
-                                ((late_src1_hint[i] && exe2_ld_match_src1[i][1]) ||
-                                (late_src2_hint[i] && exe2_ld_match_src2[i][1]))
-                                    ? 1'b0 :
-                                    1'b1;
-        end
-endgenerate
-
-
 generate
     for (i = 0; i < ISSUE; i = i + 1) begin : gen_stall
         assign  mem_load_wait[i] = mem_need_stall_inst[i] & ~data_sram_data_ok;
@@ -721,8 +651,8 @@ generate
                                    (rf_raddr1[i] != 5'd0) && ID_valid &&
                                    ~src1_capture_valid[i] &&//无法exe1类前递就要stall
                                    ((|exe1_capture_match_rdata1[i]) ||
-                                   ((rf_raddr1[i] == EXE2_rf_dest[0]) && EXE2_valid && ((exe2_need_stall_inst[0] & ~late_src1_hint[i]) || exe2_need_stall_csr[0])) ||
-                                   ((rf_raddr1[i] == EXE2_rf_dest[1]) && EXE2_valid && ((exe2_need_stall_inst[1] & ~late_src1_hint[i]) || exe2_need_stall_csr[1])) ||
+                                   ((rf_raddr1[i] == EXE2_rf_dest[0]) && EXE2_valid && ((exe2_need_stall_inst[0]) || exe2_need_stall_csr[0])) ||
+                                   ((rf_raddr1[i] == EXE2_rf_dest[1]) && EXE2_valid && ((exe2_need_stall_inst[1]) || exe2_need_stall_csr[1])) ||
                                    ((rf_raddr1[i] == MEM_rf_dest[0])  && MEM_valid  && (mem_load_wait[0] || mem_need_stall_csr[0])) ||
                                    ((rf_raddr1[i] == MEM_rf_dest[1])  && MEM_valid  && (mem_load_wait[1] || mem_need_stall_csr[1])) ||
                                    ((rf_raddr1[i] == WB_rf_dest[0])   && WB_valid   && !flush & ~wb_can_not_front_push[0] && wb_need_stall_csr[0]) ||
@@ -731,8 +661,8 @@ generate
                                    (rf_raddr2[i] != 5'd0) && ID_valid &&
                                    ~src2_capture_valid[i] &&
                                    ((|exe1_capture_match_rdata2[i]) ||
-                                   ((rf_raddr2[i] == EXE2_rf_dest[0]) && EXE2_valid && ((exe2_need_stall_inst[0] & ~late_src2_hint[i]) || exe2_need_stall_csr[0])) ||
-                                   ((rf_raddr2[i] == EXE2_rf_dest[1]) && EXE2_valid && ((exe2_need_stall_inst[1] & ~late_src2_hint[i]) || exe2_need_stall_csr[1])) ||
+                                   ((rf_raddr2[i] == EXE2_rf_dest[0]) && EXE2_valid && ((exe2_need_stall_inst[0]) || exe2_need_stall_csr[0])) ||
+                                   ((rf_raddr2[i] == EXE2_rf_dest[1]) && EXE2_valid && ((exe2_need_stall_inst[1]) || exe2_need_stall_csr[1])) ||
                                    ((rf_raddr2[i] == MEM_rf_dest[0])  && MEM_valid  && (mem_load_wait[0] || mem_need_stall_csr[0])) ||
                                    ((rf_raddr2[i] == MEM_rf_dest[1])  && MEM_valid  && (mem_load_wait[1] || mem_need_stall_csr[1])) ||
                                    ((rf_raddr2[i] == WB_rf_dest[0])   && WB_valid   && !flush & ~wb_can_not_front_push[0] && wb_need_stall_csr[0]) ||
@@ -911,7 +841,7 @@ localparam                                     preIF1_preIF2_bus_width       = 1
 localparam                                     preIF2_IF_bus_width           = 106;
 localparam                                     IF_ID_bus_width               = 148;
 localparam                                     ID_EXE1_bus_width             = 244; // +1: slot_valid
-localparam                                     EXE1_EXE2_bus_width           = 280; // +1: EXE1_ex
+localparam                                     EXE1_EXE2_bus_width           = 279; // +1: EXE1_ex
 localparam                                     EXE2_MEM_bus_width            = 199;
 localparam                                     MEM_WB_bus_width              = 223;
 
@@ -1243,10 +1173,6 @@ decode #(
     .ID_need_alu1_rj     (ID_need_alu1_rj         ),
     .ID_need_src2_withST (ID_need_src2_withST     ),
     .ID_need_alu2_rk     (ID_need_alu2_rk         ),
-
-    //从late_alu中拿
-    .ID_late_alu_ok      (ID_late_alu_ok          ),
-
     //cancel
     .ID_need_cancel      (preIF_IF_ID_need_cancel ),
     //stall
@@ -1338,22 +1264,7 @@ exe1 #(
     .csr_CRMD_DATM      (csr_CRMD_DATM       ),
     .dmw_mat1           (dmw_mat1            ),
     //from exe2 mem wb
-    .older_ex_for_exe1  (older_ex_for_exe1   ),
-    //选择load数据
-    .MEM_valid               (MEM_valid               ),
-    .data_sram_data_ok       (data_sram_data_ok       ),
-    .mem_need_stall_inst     (mem_need_stall_inst     ),
-    .mem_can_not_front_push  (mem_can_not_front_push  ),
-    .MEM_rf_dest             (MEM_rf_dest             ),
-    .mem_front_data          (mem_front_data          ),
-    .late_src1_hint          (late_src1_hint          ),
-    .late_src2_hint          (late_src2_hint          ),
-    .late_load_dest          (late_load_dest          ),
-    .late_load_slot          (late_load_slot          ),
-    .EXE2_MEM_valid          (EXE2_MEM_valid          ),
-    .MEM_allow_in            (MEM_allow_in            ),
-    .exe2_need_stall_inst    (exe2_need_stall_inst    ),
-    .EXE2_rf_dest            (EXE2_rf_dest            )
+    .older_ex_for_exe1  (older_ex_for_exe1   )
 );
 
 exe2 #(
