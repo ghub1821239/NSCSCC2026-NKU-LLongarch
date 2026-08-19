@@ -1,21 +1,23 @@
 module bht(
     input              clk,
     input              resetn,
-    //查询端口
     input  wire        query_valid0,
     input  wire [31:0] query_pc0,
     output wire        query_taken0,
     input  wire        query_valid1,
     input  wire [31:0] query_pc1,
     output wire        query_taken1,
-    // 本拍查询实际用到的 GHR，随指令进流水，供 ID 按同一索引训练
     output wire [7:0]  query_ghr_snap,
-    //更新端口
+    input  wire [7:0]  update_ghr_snap,
     input  wire        update_valid,
     input  wire [31:0] update_pc,
     input  wire        update_taken,
-    input  wire [7:0]  update_ghr_snap,
-    input  wire        update_cancel
+    input  wire        update_cancel,
+    // PreIF 推测移位（allow_in 打拍，不要组合改 GHR）
+    input  wire        spec_shift_valid,
+    input  wire        spec_shift_taken,
+    // 冲刷：spec 回到 arch（不要清 0）
+    input  wire        restore
 );
 
 localparam BHT_N     = 256;
@@ -25,7 +27,11 @@ reg        update_valid_r;
 reg [31:0] update_pc_r;
 reg        update_taken_r;
 reg [7:0]  update_ghr_r;
-reg [7:0]  ghr;
+reg [7:0]  arch_ghr;
+reg [7:0]  spec_ghr;
+
+wire        arch_shift = update_valid_r & ~update_cancel;
+wire [7:0]  arch_ghr_n = {arch_ghr[6:0], update_taken_r};
 
 always @(posedge clk) begin
     if (!resetn) begin
@@ -33,20 +39,26 @@ always @(posedge clk) begin
         update_pc_r    <= 32'b0;
         update_taken_r <= 1'b0;
         update_ghr_r   <= 8'b0;
-        ghr            <= 8'b0;
+        arch_ghr       <= 8'b0;
+        spec_ghr       <= 8'b0;
     end
     else begin
         update_valid_r <= update_cancel ? 1'b0 : update_valid;
         update_pc_r    <= update_pc;
         update_taken_r <= update_taken;
         update_ghr_r   <= update_ghr_snap;
-        // 非推测：只在 ID 已发出的条件分支上移位；flush 时与计数器一样不更新
-        if (update_valid_r & ~update_cancel)
-            ghr <= {ghr[6:0], update_taken_r};
+
+        if (arch_shift)
+            arch_ghr <= arch_ghr_n;
+
+        if (restore)
+            spec_ghr <= arch_shift ? arch_ghr_n : arch_ghr;
+        else if (spec_shift_valid)
+            spec_ghr <= {spec_ghr[6:0], spec_shift_taken};
     end
 end
 
-assign query_ghr_snap = ghr;
+assign query_ghr_snap = spec_ghr;
 
 reg [1:0] bht_counter [0:BHT_N-1];
 
@@ -54,8 +66,8 @@ wire [BHT_IDX_W-1:0] query_index0;
 wire [BHT_IDX_W-1:0] query_index1;
 wire [BHT_IDX_W-1:0] update_index;
 
-assign query_index0 = query_pc0[9:2] ^ ghr;
-assign query_index1 = query_pc1[9:2] ^ ghr;
+assign query_index0 = query_pc0[9:2] ^ spec_ghr;
+assign query_index1 = query_pc1[9:2] ^ spec_ghr;
 assign update_index = update_pc_r[9:2] ^ update_ghr_r;
 
 assign query_taken0 = query_valid0 & bht_counter[query_index0][1];

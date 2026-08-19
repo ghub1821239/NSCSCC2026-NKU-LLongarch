@@ -749,6 +749,12 @@ wire        update_taken;
 wire        bht_update_valid;
 wire [31:0] bht_update_pc;
 wire        bht_update_taken;
+
+wire bht_restore;
+wire spec_ghr_fire    = preIF1_valid & preIF1_allow_in & ~bht_restore;
+wire spec_shift_valid = spec_ghr_fire & btb_query_hit[0] & (query_type[0] == 2'b00);
+wire spec_shift_taken = query_taken[0];
+
 //bht
 bht u_bht(
     .clk           (clk                       ),
@@ -767,7 +773,11 @@ bht u_bht(
     .update_valid  (bht_update_valid          ),//update BHT
     .update_pc     (bht_update_pc             ),//branch pc
     .update_taken  (bht_update_taken          ),//real taken
-    .update_cancel (flush | cacop_need_cancel )//取消取指和错误预测
+    .update_cancel (flush | cacop_need_cancel ),//取消取指和错误预测
+
+    .spec_shift_valid (spec_shift_valid),
+    .spec_shift_taken (spec_shift_taken),
+    .restore          (bht_restore     )
 );
 
 //ras
@@ -858,6 +868,9 @@ wire          MEM_need_cancel;
 wire          WB_need_cancel;
 
 assign        preIF_IF_ID_need_cancel = flush | need_br_cancel    | cacop_need_cancel | ibar_cancel;
+
+assign bht_restore = preIF_IF_ID_need_cancel;
+
 assign        EXE1_need_cancel        = flush | ibar_cancel       | cacop_need_cancel;
 // cacop_need_cancel当出现了要清除 icache 的时候说明从 preIF1->EXE1 拿到的指令都是不可信的，需要重取
 // 和 ibar 这种纯血 cancel 不同，他不应该取消 exe2
