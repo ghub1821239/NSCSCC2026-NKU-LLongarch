@@ -58,6 +58,8 @@ wire   [31:0]                  ras_query_target    [ISSUE-1:0];
 wire   [ 1:0]                  query_type          [ISSUE-1:0];              
 wire                           query_taken         [ISSUE-1:0];//预测是否跳转  
 
+wire [7:0] ghr_snap [ISSUE-1:0];
+
 reg                            req_without_dataok;   
 
 wire                           inst_req_accept      = inst_sram_req && inst_sram_addr_ok;
@@ -94,7 +96,8 @@ endgenerate
 
 assign {slot_valid[0]   , pc[0]              , ex_ADEF[0]      , ex_tlb_reload0[0]  , ex_tlb_preif_unvalid[0], ex_tlb_plv0[0],
         dmw_found0[0]   , dmw_pseg0[0]       , inst_mat        , tlb_paddr[0]       ,
-        btb_query_hit[0], btb_query_target[0], ras_query_hit[0], ras_query_target[0], query_type[0]          , query_taken[0]}=bus_slot0;
+        btb_query_hit[0], btb_query_target[0], ras_query_hit[0], ras_query_target[0], query_type[0]          , query_taken[0],
+        ghr_snap[0]}=bus_slot0;
 
 genvar i;
 genvar bus_group;
@@ -122,7 +125,8 @@ generate
         end
         assign {slot_valid[i]   , pc[i]              , ex_ADEF[i]      , ex_tlb_reload0[i]  , ex_tlb_preif_unvalid[i], ex_tlb_plv0[i],
                 dmw_found0[i]   , dmw_pseg0[i]       , tlb_paddr[i]    ,
-                btb_query_hit[i], btb_query_target[i], ras_query_hit[i], ras_query_target[i], query_type[i]          , query_taken[i]}=bus[i];
+                btb_query_hit[i], btb_query_target[i], ras_query_hit[i], ras_query_target[i], query_type[i]          , query_taken[i],
+                ghr_snap[i]}=bus[i];
     end
 endgenerate
 //------------------------{bus}end-------------------------//
@@ -209,7 +213,8 @@ genvar  i2;
 generate 
     for(i2=0;i2<ISSUE;i2=i2+1)begin:gen_preIF2_IF_bus
         assign  preIF2_IF_bus[i2] = {slot_valid[i2]   , pc[i2]              , ex_ADEF[i2]      , ex_tlb_reload0[i2]  , ex_tlb_preif_unvalid[i2], ex_tlb_plv0[i2],
-                                     btb_query_hit[i2], btb_query_target[i2], ras_query_hit[i2], ras_query_target[i2], query_type[i2]          , query_taken[i2]};
+                                     btb_query_hit[i2], btb_query_target[i2], ras_query_hit[i2], ras_query_target[i2], query_type[i2]          , query_taken[i2],
+                                     ghr_snap[i2]};
     end
 endgenerate
 
