@@ -776,22 +776,39 @@ wire [31:0] push_target;
 wire        pop_valid;
 wire        ras_query_hit   [ISSUE-1:0];
 wire [31:0] ras_query_target[ISSUE-1:0];
+
+reg         push_valid_r;
+reg  [31:0] push_target_r;
+reg         pop_valid_r;
+always @(posedge clk) begin
+    if (!resetn) begin
+        push_valid_r  <= 1'b0;
+        push_target_r <= 32'b0;
+        pop_valid_r   <= 1'b0;
+    end
+    else if (flush || cacop_need_cancel) begin
+        push_valid_r <= 1'b0;
+        pop_valid_r  <= 1'b0;
+    end
+    else begin
+        push_valid_r  <= push_valid;
+        push_target_r <= push_target;
+        pop_valid_r   <= pop_valid;
+    end
+end
+
 ras u_ras(
     .clk           (clk                 ),
     .resetn        (resetn              ),
-    // frontend query
     .query_valid0  (query_valid[0]      ),
     .query_hit0    (ras_query_hit[0]    ),
     .query_target0 (ras_query_target[0] ),
-
     .query_valid1  (query_valid[1]      ),
     .query_hit1    (ras_query_hit[1]    ),
     .query_target1 (ras_query_target[1] ),
-    // backend real call update
-    .push_valid    (push_valid          ),
-    .push_target   (push_target         ),
-    // backend real return update
-    .pop_valid     (pop_valid           )
+    .push_valid    (push_valid_r        ),
+    .push_target   (push_target_r       ),
+    .pop_valid     (pop_valid_r         )
 );
 //------------------------{branch prediction}end---------------------------//
 
