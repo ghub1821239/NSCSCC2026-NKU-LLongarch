@@ -222,10 +222,11 @@ assign  cache_code      = cache_code_b[dram_index];
 
 //------------------------{读写req&addr_ok}begin-------------------------//
 reg  req_without_dataok;
+
 always @ (posedge clk)begin
     if(!resetn)begin
         req_without_dataok <= 1'b0;
-    end 
+    end
     else if(data_sram_req & data_sram_addr_ok)begin
         req_without_dataok <= 1'b1;
     end
@@ -267,7 +268,8 @@ assign  LLbit_wdata = ll_finish;  // LL置1写完后SC清零
 assign  data_sram_req = dram_hit_any & (res_from_mem[dram_index] | mem_we[dram_index])
                                      & (~req_without_dataok | data_sram_data_ok)
                                      & MEM_allow_in & ~(inst_sc_w[dram_index] & ~sc_success)
-                                     & ~EXE2_slot_ex[dram_index] & ~(dram_index & EXE2_slot_ex[0]) & ~older_ex_for_exe2 & ~EXE2_need_cancel & EXE2_valid;
+                                     & ~EXE2_slot_ex[dram_index] & ~(dram_index & EXE2_slot_ex[0])
+                                     & ~older_ex_for_exe2 & ~EXE2_need_cancel & EXE2_valid;
 assign  data_sram_wr  = |data_sram_wstrb;
 
 assign  cacop_valid   = EXE2_valid & inst_cacop[dram_index] & ~EXE2_slot_ex[dram_index] & ~older_ex_for_exe2 & slot_valid_from_exe1[dram_index] &
