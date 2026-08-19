@@ -85,19 +85,35 @@ wire                      query_taken         [ISSUE - 1 : 0];//预测是否跳�
 wire [7:0] ghr_snap [ISSUE-1:0];
         
 reg     [inbus_width-1:0] bus                 [ISSUE - 1 : 0];
-integer                   k;
-always @(posedge clk)begin
-    if(!resetn)begin
-        for (k = 0; k < ISSUE; k = k + 1) begin
-            bus[k] <= {inbus_width{1'b0}};
+// 将原来共同驱动两路 IF bus 的高扇出 CE 拆成多个本地副本。
+// 每个 LUT2 实现相同的 valid & allow_in，仅服务约 1/4 路 bus FF。
+localparam integer IF_BUS_CE_GROUPS = 4;
+genvar bus_lane;
+genvar bus_group;
+generate
+    for (bus_lane = 0; bus_lane < ISSUE; bus_lane = bus_lane + 1) begin : gen_if_bus_lane
+        for (bus_group = 0; bus_group < IF_BUS_CE_GROUPS; bus_group = bus_group + 1) begin : gen_if_bus_ce_group
+            localparam integer GROUP_LO = (inbus_width * bus_group) / IF_BUS_CE_GROUPS;
+            localparam integer GROUP_HI = (inbus_width * (bus_group + 1)) / IF_BUS_CE_GROUPS - 1;
+            wire load_local;
+
+            (* DONT_TOUCH = "TRUE" *) LUT2 #(.INIT(4'h8)) u_load_local (
+                .O (load_local),
+                .I0(preIF2_IF_valid),
+                .I1(IF_allow_in)
+            );
+
+            always @(posedge clk) begin
+                if(!resetn)begin
+                    bus[bus_lane][GROUP_HI:GROUP_LO] <= {(GROUP_HI-GROUP_LO+1){1'b0}};
+                end
+                else if(load_local) begin
+                    bus[bus_lane][GROUP_HI:GROUP_LO] <= preIF2_IF_bus[bus_lane][GROUP_HI:GROUP_LO];
+                end
+            end
         end
     end
-    else if(preIF2_IF_valid && IF_allow_in) begin
-        for (k = 0; k < ISSUE; k = k + 1) begin
-            bus[k] <= preIF2_IF_bus[k];
-        end
-    end
-end
+endgenerate
 
 genvar  i;
 generate

@@ -18,6 +18,12 @@ module decode #(
         // addr
     output wire [4:0]              rf_raddr1          [ISSUE - 1 : 0],
     output wire [4:0]              rf_raddr2          [ISSUE - 1 : 0],
+    output wire [2:0]              rf_raddr1_slot0_bank1,
+    output wire [2:0]              rf_raddr1_slot0_bank2,
+    output wire [2:0]              rf_raddr1_slot0_bank3,
+    output wire [2:0]              rf_raddr2_slot0_bank1,
+    output wire [2:0]              rf_raddr2_slot0_bank2,
+    output wire [2:0]              rf_raddr2_slot0_bank3,
         // data
     input  wire [31:0]             rf_rdata1          [ISSUE - 1 : 0],
     input  wire [31:0]             rf_rdata2          [ISSUE - 1 : 0],
@@ -65,36 +71,67 @@ localparam EXE_PAYLOAD_W = 243;
 
 wire                    id_fire         = ID_valid & ID_ready_go & ~ID_need_cancel & ID_allow_in;
 //------------------------{bus decode}begin-------------------------//
-reg     [inbus_width-1:0] bus         [ISSUE - 1 : 0];
+// bus 拆成 valid 状态与 payload 存储：redirect/cancel/consume 只驱动 valid FF，
+// 不再进入 payload FF 的 CE（payload 仅在 reset/accept 时更新）
+reg     [inbus_width-2:0] bus_payload [ISSUE - 1 : 0];
+reg                       bus_valid_r [ISSUE - 1 : 0];
+wire    [inbus_width-1:0] bus         [ISSUE - 1 : 0];
 reg                       bus_has_inst;//bus中有未完成的IF的指令
 
 integer                   k;
+// payload 存储：仅 reset/accept 更新；cancel/redirect/consume 不触碰 payload
 always @(posedge clk)begin
-    if(!resetn || ID_need_cancel)begin
+    if(!resetn)begin
         for (k = 0; k < ISSUE; k = k + 1) begin
-            bus[k]       <= {inbus_width{1'b0}};
+            bus_payload[k] <= {inbus_width-1{1'b0}};
+        end
+    end
+    else if (accept_IF_in_bus) begin
+        for (k = 0; k < ISSUE; k = k + 1) begin
+            bus_payload[k] <= IF_ID_bus[k][inbus_width-2:0];
+        end
+    end
+end
+// valid 状态与 bus_has_inst：严格保持原优先级 reset > cancel > redirect > accept > consume
+always @(posedge clk)begin
+    if(!resetn)begin
+        for (k = 0; k < ISSUE; k = k + 1) begin
+            bus_valid_r[k] <= 1'b0;
+        end
+        bus_has_inst <= 1'b0;
+    end
+    else if (ID_need_cancel)begin
+        for (k = 0; k < ISSUE; k = k + 1) begin
+            bus_valid_r[k] <= 1'b0;
         end
         bus_has_inst <= 1'b0;
     end
     else if (id_fire & (redirect0 | redirect1))begin
         for (k = 0; k < ISSUE; k = k + 1) begin
-            bus[k]       <= {inbus_width{1'b0}};
+            bus_valid_r[k] <= 1'b0;
         end
         bus_has_inst <= 1'b0;
     end
     else if (accept_IF_in_bus) begin
         for (k = 0; k < ISSUE; k = k + 1) begin
-            bus[k]       <= IF_ID_bus[k];
+            bus_valid_r[k] <= IF_ID_bus[k][inbus_width-1];
         end
         bus_has_inst <= 1'b1;
     end
     else if(consume_bus) begin
         for (k = 0; k < ISSUE; k = k + 1) begin
-            bus[k]       <= {inbus_width{1'b0}};
+            bus_valid_r[k] <= 1'b0;
         end
         bus_has_inst <= 1'b0;
     end
 end
+// 组合重建 bus（最高位 valid）
+genvar  bk;
+generate
+    for (bk = 0; bk < ISSUE; bk = bk + 1) begin : gen_bus_rebuild
+        assign  bus[bk] = {bus_valid_r[bk], bus_payload[bk]};
+    end
+endgenerate
 wire        slot_valid          [ISSUE - 1 : 0];
 wire [31:0] pc                  [ISSUE - 1 : 0];
 wire [31:0] inst                [ISSUE - 1 : 0];
@@ -135,6 +172,13 @@ wire                       create_hold_from_tail = id_fire & hold_valid & bus_ha
 wire                       pack_soft_keep_bus    = id_fire & hold_valid & slot_issue[0] & ~slot_issue[1] & soft_kill_slot1;//hold与下一条指令重新拼包后soft kill,则hold指令下一条指令留在bus
 wire                       consume_for_accept;
 
+// hold_bus payload 专用写入控制（branch-independent，避免 branch redirect 进入 148 个 payload FF 的 CE）
+// create_hold_from_soft 时 hold_valid=0，bus_eff[1]==bus[1]；create_hold_from_tail 原本就写 bus[1]
+wire                       capture_hold_from_soft = id_fire & ~hold_valid & soft_kill_no_br;
+wire                       capture_hold_from_tail = id_fire & hold_valid & bus_has_inst &
+                                                     slot_issue[0] & slot_issue1_no_br & bus1_valid;
+wire                       capture_hold_payload   = capture_hold_from_soft | capture_hold_from_tail;
+
 wire                       consume_bus           = id_fire & bus_has_inst & ~pack_soft_keep_bus & (
                                                    //无hold指令并且发出slot0
                                                    (~hold_valid & slot_issue[0]) |
@@ -142,31 +186,79 @@ wire                       consume_bus           = id_fire & bus_has_inst & ~pac
                                                    (hold_valid & (slot_issue[1] | hard_kill_slot1))
                                                    );
 wire                       accept_IF_in_bus      = IF_ID_valid & ID_allow_in & (~bus_has_inst | consume_for_accept);
-wire   [inbus_width-1 : 0] hold_din              = create_hold_from_soft ? bus_eff[1] :
-                                                   create_hold_from_tail ? bus[1]     :
-                                                                           hold_bus;
 
 //output
 assign                     ID_can_accept_IF      = (~bus_has_inst | consume_for_accept) &
                                                    ~(ID_need_cancel);
 
+// 地址侧专用 hold_valid 副本：每个副本仅服务一条 rf_raddr 选择，降低地址选择锥的扇出与布线跨度
+(* keep = "true" *) reg hold_valid_raddr1_slot0;
+(* keep = "true" *) reg hold_valid_raddr2_slot0;
+(* keep = "true" *) reg hold_valid_raddr1_slot1;
+(* keep = "true" *) reg hold_valid_raddr2_slot1;
 always @(posedge clk) begin
     if (!resetn) begin
         hold_valid <= 1'b0;
-        hold_bus   <= {inbus_width{1'b0}};
+        hold_valid_raddr1_slot0 <= 1'b0;
+        hold_valid_raddr2_slot0 <= 1'b0;
+        hold_valid_raddr1_slot1 <= 1'b0;
+        hold_valid_raddr2_slot1 <= 1'b0;
     end
     else if (ID_need_cancel) begin
         hold_valid <= 1'b0;
+        hold_valid_raddr1_slot0 <= 1'b0;
+        hold_valid_raddr2_slot0 <= 1'b0;
+        hold_valid_raddr1_slot1 <= 1'b0;
+        hold_valid_raddr2_slot1 <= 1'b0;
     end
     else if (id_fire & (redirect0 | redirect1)) begin
         hold_valid <= 1'b0;
+        hold_valid_raddr1_slot0 <= 1'b0;
+        hold_valid_raddr2_slot0 <= 1'b0;
+        hold_valid_raddr1_slot1 <= 1'b0;
+        hold_valid_raddr2_slot1 <= 1'b0;
     end
     else if (create_hold_from_soft | create_hold_from_tail) begin
         hold_valid <= 1'b1;
-        hold_bus   <= hold_din;
+        hold_valid_raddr1_slot0 <= 1'b1;
+        hold_valid_raddr2_slot0 <= 1'b1;
+        hold_valid_raddr1_slot1 <= 1'b1;
+        hold_valid_raddr2_slot1 <= 1'b1;
     end
     else if (id_fire & hold_valid & slot_issue[0]) begin
         hold_valid <= 1'b0;
+        hold_valid_raddr1_slot0 <= 1'b0;
+        hold_valid_raddr2_slot0 <= 1'b0;
+        hold_valid_raddr1_slot1 <= 1'b0;
+        hold_valid_raddr2_slot1 <= 1'b0;
+    end
+end
+
+// hold_bus payload 独立更新：仅 branch-independent 的 capture 控制驱动
+// 额外写入周期中下一拍 hold_valid 必为 0，payload 为 don't-care（见等价性证明）
+always @(posedge clk) begin
+    if (!resetn) begin
+        hold_bus <= {inbus_width{1'b0}};
+    end
+    else if (capture_hold_payload) begin
+        hold_bus <= bus[1];
+    end
+end
+
+// 【决赛必须改】这里及下方 rf_raddr/LUT3 使用 IF_ID_bus 的硬编码位号。
+// IF_ID_bus 增删字段时，必须同步修改 hold 捕获、四路 rf_raddr 和 18 个 LUT3 输入位号；
+// 决赛前应改为由统一字段偏移 localparam 派生，避免总线扩展后静默读错寄存器地址。
+// held slot0 的读地址独立寄存，使 hold_bus[90:81] 不再是 rf_raddr 的数据源
+reg [4:0] hold_raddr1;
+reg [4:0] hold_raddr2;
+always @(posedge clk) begin
+    if (!resetn) begin
+        hold_raddr1 <= 5'b0;
+        hold_raddr2 <= 5'b0;
+    end
+    else if (capture_hold_payload) begin
+        hold_raddr1 <= bus[1][90:86];
+        hold_raddr2 <= bus[1][85:81];
     end
 end
 
@@ -194,10 +286,54 @@ generate
                  query_taken[gi]         ,
                  ghr_snap[gi]
                 } = bus_eff[gi];
-         assign  rf_raddr1[gi] = pre_raddr1_eff[gi];
-         assign  rf_raddr2[gi] = pre_raddr2_eff[gi];
     end 
 endgenerate
+// rf_raddr 按 hold 模式直接选择，避免 hold_bus[90:81] 进入 rf_raddr 组合锥（固定下标，须在 generate 之外）
+// 每条地址选择使用独立的同值副本，使实现工具可将副本分别放在对应消费锥附近
+assign  rf_raddr1[0] = hold_valid_raddr1_slot0 ? hold_raddr1     : bus[0][90:86];
+assign  rf_raddr2[0] = hold_valid_raddr2_slot0 ? hold_raddr2     : bus[0][85:81];
+assign  rf_raddr1[1] = hold_valid_raddr1_slot1 ? bus[0][90:86]  : bus[1][90:86];
+assign  rf_raddr2[1] = hold_valid_raddr2_slot1 ? bus[0][85:81]  : bus[1][85:81];
+
+// slot0 的低 3 位读地址按 regfile bank 显式复制 mux；bank0 继续使用 rf_raddr*[0][2:0]。
+// 仅冻结这 18 个 LUT，防止综合器把等价 mux 再次合并成单个高扇出驱动。
+wire [2:0] rf_raddr1_slot0_bank1_local;
+wire [2:0] rf_raddr1_slot0_bank2_local;
+wire [2:0] rf_raddr1_slot0_bank3_local;
+wire [2:0] rf_raddr2_slot0_bank1_local;
+wire [2:0] rf_raddr2_slot0_bank2_local;
+wire [2:0] rf_raddr2_slot0_bank3_local;
+
+genvar rbi;
+generate
+    for (rbi = 0; rbi < 3; rbi = rbi + 1) begin : gen_slot0_bank_addr_mux
+        (* DONT_TOUCH = "TRUE" *) LUT3 #(.INIT(8'hCA)) u_raddr1_bank1_mux (
+            .O(rf_raddr1_slot0_bank1_local[rbi]), .I0(bus[0][86+rbi]),
+            .I1(hold_raddr1[rbi]), .I2(hold_valid_raddr1_slot0));
+        (* DONT_TOUCH = "TRUE" *) LUT3 #(.INIT(8'hCA)) u_raddr1_bank2_mux (
+            .O(rf_raddr1_slot0_bank2_local[rbi]), .I0(bus[0][86+rbi]),
+            .I1(hold_raddr1[rbi]), .I2(hold_valid_raddr1_slot0));
+        (* DONT_TOUCH = "TRUE" *) LUT3 #(.INIT(8'hCA)) u_raddr1_bank3_mux (
+            .O(rf_raddr1_slot0_bank3_local[rbi]), .I0(bus[0][86+rbi]),
+            .I1(hold_raddr1[rbi]), .I2(hold_valid_raddr1_slot0));
+        (* DONT_TOUCH = "TRUE" *) LUT3 #(.INIT(8'hCA)) u_raddr2_bank1_mux (
+            .O(rf_raddr2_slot0_bank1_local[rbi]), .I0(bus[0][81+rbi]),
+            .I1(hold_raddr2[rbi]), .I2(hold_valid_raddr2_slot0));
+        (* DONT_TOUCH = "TRUE" *) LUT3 #(.INIT(8'hCA)) u_raddr2_bank2_mux (
+            .O(rf_raddr2_slot0_bank2_local[rbi]), .I0(bus[0][81+rbi]),
+            .I1(hold_raddr2[rbi]), .I2(hold_valid_raddr2_slot0));
+        (* DONT_TOUCH = "TRUE" *) LUT3 #(.INIT(8'hCA)) u_raddr2_bank3_mux (
+            .O(rf_raddr2_slot0_bank3_local[rbi]), .I0(bus[0][81+rbi]),
+            .I1(hold_raddr2[rbi]), .I2(hold_valid_raddr2_slot0));
+    end
+endgenerate
+
+assign rf_raddr1_slot0_bank1 = rf_raddr1_slot0_bank1_local;
+assign rf_raddr1_slot0_bank2 = rf_raddr1_slot0_bank2_local;
+assign rf_raddr1_slot0_bank3 = rf_raddr1_slot0_bank3_local;
+assign rf_raddr2_slot0_bank1 = rf_raddr2_slot0_bank1_local;
+assign rf_raddr2_slot0_bank2 = rf_raddr2_slot0_bank2_local;
+assign rf_raddr2_slot0_bank3 = rf_raddr2_slot0_bank3_local;
 
 wire  pred_not_neighbor = slot_valid[0] & slot_valid[1] & (pc[1] != (pc[0] + 32'd4));
 wire  pred_is_neighbor  = slot_valid[0] & slot_valid[1] & (pc[1] == (pc[0] + 32'd4));
@@ -338,8 +474,6 @@ wire       struct_comflict           =  slot_valid[0] & slot_valid[1] & ((is_mem
 
 wire       pred_not_neighbor_kill_s1 = pred_not_neighbor & (~real_taken[0] | redirect_lane[0]);//不是邻居，并且要么不是真跳转，要么要更新，即第一个跳转是错的
 wire       pred_is_neighbor_kill_s1  = pred_is_neighbor  & (real_taken[0] & target_not_seq[0] | redirect_lane[0]);//是邻居，但是要跳转或者更新
-wire       slot0_fetch_ex            = ex_ADEF[0] | ex_tlb_reload0[0] | ex_tlb_preif_unvalid[0] | ex_tlb_plv0[0] | ex_INE[0] | ex_IPE[0] | has_int;
-
 wire       slot0_trap                = slot_valid[0] & (ex_ADEF[0] | ex_tlb_reload0[0] |
                                        ex_tlb_preif_unvalid[0]     | ex_tlb_plv0[0]    |
                                        ex_INE[0]                   | ex_IPE[0]         | has_int);//会让slot1被杀的情况，名字叫slot0陷阱
@@ -348,7 +482,6 @@ wire       soft_kill_slot1           = slot_valid[0] & slot_valid[1] & ~hard_kil
                                       (RAW_s1_s0_kill) | WAW_s1_s0 | struct_comflict | (is_br[0] & is_br[1]) |
                                       need_stall_s1);//slot1只是暂时发不了，不能丢弃
 wire       kill_slot1                = hard_kill_slot1 | soft_kill_slot1;
-//wire kill_slot1 = slot0_fetch_ex | RAW_s1_s0 | WAW_s1_s0 | struct_comflict | pred_not_neighbor_kill_s1 | pred_is_neighbor_kill_s1 | (is_br[0] & is_br[1]);//注意这里不要走双分支
 wire [1:0] slot_issue                = {slot_valid[1] & ~kill_slot1, slot_valid[0]};
 
 // slot0有异常，强制杀
@@ -412,7 +545,8 @@ assign  pop_valid           = id_fire       & (slot_issue[0] & pop_need[0] |
 //try to minimize the bus_size
 generate
     for (gi = 0; gi < ISSUE; gi = gi + 1) begin : gen_id_exe
-        assign  ID_EXE1_bus[gi] = slot_issue[gi] ? {1'b1, exe_payload[gi],late_flag[gi]} : {outbus_width{1'b0}};
+        // 无效槽总线全零，保持原 ID→EXE1 接口语义
+        assign ID_EXE1_bus[gi] = slot_issue[gi] ? {1'b1, exe_payload[gi]} : {outbus_width{1'b0}};
     end
 endgenerate
 //------------------------{bus}end-------------------------//
@@ -433,12 +567,12 @@ always @(posedge clk) begin
         if (id_fire & (redirect0 | redirect1)) begin
             ID_valid <= 1'b0;
         end
-        else begin 
+        else begin
             ID_valid <= (create_hold_from_soft | create_hold_from_tail) |
                         (hold_valid & ~(id_fire & slot_issue[0] & ~create_hold_from_tail)) |
                         (accept_IF_in_bus) |
-                        (bus_has_inst & ~consume_bus) | 
-                        (IF_ID_valid & ~accept_IF_in_bus & ~bus_has_inst & 
+                        (bus_has_inst & ~consume_bus) |
+                        (IF_ID_valid & ~accept_IF_in_bus & ~bus_has_inst &
                         ~(hold_valid | create_hold_from_soft | create_hold_from_tail));
         end
     end

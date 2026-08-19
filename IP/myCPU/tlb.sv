@@ -219,188 +219,188 @@ module tlb
                                       ({4{match0[i][13]}} & 4'd13) |
                                       ({4{match0[i][14]}} & 4'd14) |
                                       ({4{match0[i][15]}} & 4'd15);
-            // 当前inst这次处理的页表项对应的是否是 4MB 的
-            assign  s0_ps4MB_sel[i] = ((s0_index[i] == 4'd0 ) & tlb_ps4MB[ 0]) |
-                                      ((s0_index[i] == 4'd1 ) & tlb_ps4MB[ 1]) |
-                                      ((s0_index[i] == 4'd2 ) & tlb_ps4MB[ 2]) |
-                                      ((s0_index[i] == 4'd3 ) & tlb_ps4MB[ 3]) |
-                                      ((s0_index[i] == 4'd4 ) & tlb_ps4MB[ 4]) |
-                                      ((s0_index[i] == 4'd5 ) & tlb_ps4MB[ 5]) |
-                                      ((s0_index[i] == 4'd6 ) & tlb_ps4MB[ 6]) |
-                                      ((s0_index[i] == 4'd7 ) & tlb_ps4MB[ 7]) |
-                                      ((s0_index[i] == 4'd8 ) & tlb_ps4MB[ 8]) |
-                                      ((s0_index[i] == 4'd9 ) & tlb_ps4MB[ 9]) |
-                                      ((s0_index[i] == 4'd10) & tlb_ps4MB[10]) |
-                                      ((s0_index[i] == 4'd11) & tlb_ps4MB[11]) |
-                                      ((s0_index[i] == 4'd12) & tlb_ps4MB[12]) |
-                                      ((s0_index[i] == 4'd13) & tlb_ps4MB[13]) |
-                                      ((s0_index[i] == 4'd14) & tlb_ps4MB[14]) |
-                                      ((s0_index[i] == 4'd15) & tlb_ps4MB[15]);
+            // 当前inst这次处理的页表项对应的是否是 4MB 的（直接由 match0 选择，绕过 s0_index 再译码）
+            assign  s0_ps4MB_sel[i] = (match0[i][ 0] & tlb_ps4MB[ 0]) |
+                                      (match0[i][ 1] & tlb_ps4MB[ 1]) |
+                                      (match0[i][ 2] & tlb_ps4MB[ 2]) |
+                                      (match0[i][ 3] & tlb_ps4MB[ 3]) |
+                                      (match0[i][ 4] & tlb_ps4MB[ 4]) |
+                                      (match0[i][ 5] & tlb_ps4MB[ 5]) |
+                                      (match0[i][ 6] & tlb_ps4MB[ 6]) |
+                                      (match0[i][ 7] & tlb_ps4MB[ 7]) |
+                                      (match0[i][ 8] & tlb_ps4MB[ 8]) |
+                                      (match0[i][ 9] & tlb_ps4MB[ 9]) |
+                                      (match0[i][10] & tlb_ps4MB[10]) |
+                                      (match0[i][11] & tlb_ps4MB[11]) |
+                                      (match0[i][12] & tlb_ps4MB[12]) |
+                                      (match0[i][13] & tlb_ps4MB[13]) |
+                                      (match0[i][14] & tlb_ps4MB[14]) |
+                                      (match0[i][15] & tlb_ps4MB[15]);
             // 如果是 4MB 那么对应的就需要看传入的[8]来判定是否是 也就是判定 PPN 0/1 的 
             // 如果是 1 的话那么就选择 PPN1
             assign  s0_odd_page[i]  = s0_ps4MB_sel[i] ? s0_vppn[i][8] : s0_va_bit12[i];
             // inst 选中的页表的索引（19：0 -- 4KB ； 19：9 -- 4MB）
             // 这里 PALEN 目前默认是 32 所以是 32-12=20
-            assign  s0_ppn0_sel[i]  = ({20{(s0_index[i] == 4'd0 )}} & tlb_ppn0[ 0]) |
-                                      ({20{(s0_index[i] == 4'd1 )}} & tlb_ppn0[ 1]) |
-                                      ({20{(s0_index[i] == 4'd2 )}} & tlb_ppn0[ 2]) |
-                                      ({20{(s0_index[i] == 4'd3 )}} & tlb_ppn0[ 3]) |
-                                      ({20{(s0_index[i] == 4'd4 )}} & tlb_ppn0[ 4]) |
-                                      ({20{(s0_index[i] == 4'd5 )}} & tlb_ppn0[ 5]) |
-                                      ({20{(s0_index[i] == 4'd6 )}} & tlb_ppn0[ 6]) |
-                                      ({20{(s0_index[i] == 4'd7 )}} & tlb_ppn0[ 7]) |
-                                      ({20{(s0_index[i] == 4'd8 )}} & tlb_ppn0[ 8]) |
-                                      ({20{(s0_index[i] == 4'd9 )}} & tlb_ppn0[ 9]) |
-                                      ({20{(s0_index[i] == 4'd10)}} & tlb_ppn0[10]) |
-                                      ({20{(s0_index[i] == 4'd11)}} & tlb_ppn0[11]) |
-                                      ({20{(s0_index[i] == 4'd12)}} & tlb_ppn0[12]) |
-                                      ({20{(s0_index[i] == 4'd13)}} & tlb_ppn0[13]) |
-                                      ({20{(s0_index[i] == 4'd14)}} & tlb_ppn0[14]) |
-                                      ({20{(s0_index[i] == 4'd15)}} & tlb_ppn0[15]);
-            assign  s0_ppn1_sel[i]  = ({20{(s0_index[i] == 4'd0 )}} & tlb_ppn1[ 0]) |
-                                      ({20{(s0_index[i] == 4'd1 )}} & tlb_ppn1[ 1]) |
-                                      ({20{(s0_index[i] == 4'd2 )}} & tlb_ppn1[ 2]) |
-                                      ({20{(s0_index[i] == 4'd3 )}} & tlb_ppn1[ 3]) |
-                                      ({20{(s0_index[i] == 4'd4 )}} & tlb_ppn1[ 4]) |
-                                      ({20{(s0_index[i] == 4'd5 )}} & tlb_ppn1[ 5]) |
-                                      ({20{(s0_index[i] == 4'd6 )}} & tlb_ppn1[ 6]) |
-                                      ({20{(s0_index[i] == 4'd7 )}} & tlb_ppn1[ 7]) |
-                                      ({20{(s0_index[i] == 4'd8 )}} & tlb_ppn1[ 8]) |
-                                      ({20{(s0_index[i] == 4'd9 )}} & tlb_ppn1[ 9]) |
-                                      ({20{(s0_index[i] == 4'd10)}} & tlb_ppn1[10]) |
-                                      ({20{(s0_index[i] == 4'd11)}} & tlb_ppn1[11]) |
-                                      ({20{(s0_index[i] == 4'd12)}} & tlb_ppn1[12]) |
-                                      ({20{(s0_index[i] == 4'd13)}} & tlb_ppn1[13]) |
-                                      ({20{(s0_index[i] == 4'd14)}} & tlb_ppn1[14]) |
-                                      ({20{(s0_index[i] == 4'd15)}} & tlb_ppn1[15]);
-            assign  s0_plv0_sel[i]  = ({2{(s0_index[i] == 4'd0 )}} & tlb_plv0[ 0]) |
-                                      ({2{(s0_index[i] == 4'd1 )}} & tlb_plv0[ 1]) |
-                                      ({2{(s0_index[i] == 4'd2 )}} & tlb_plv0[ 2]) |
-                                      ({2{(s0_index[i] == 4'd3 )}} & tlb_plv0[ 3]) |
-                                      ({2{(s0_index[i] == 4'd4 )}} & tlb_plv0[ 4]) |
-                                      ({2{(s0_index[i] == 4'd5 )}} & tlb_plv0[ 5]) |
-                                      ({2{(s0_index[i] == 4'd6 )}} & tlb_plv0[ 6]) |
-                                      ({2{(s0_index[i] == 4'd7 )}} & tlb_plv0[ 7]) |
-                                      ({2{(s0_index[i] == 4'd8 )}} & tlb_plv0[ 8]) |
-                                      ({2{(s0_index[i] == 4'd9 )}} & tlb_plv0[ 9]) |
-                                      ({2{(s0_index[i] == 4'd10)}} & tlb_plv0[10]) |
-                                      ({2{(s0_index[i] == 4'd11)}} & tlb_plv0[11]) |
-                                      ({2{(s0_index[i] == 4'd12)}} & tlb_plv0[12]) |
-                                      ({2{(s0_index[i] == 4'd13)}} & tlb_plv0[13]) |
-                                      ({2{(s0_index[i] == 4'd14)}} & tlb_plv0[14]) |
-                                      ({2{(s0_index[i] == 4'd15)}} & tlb_plv0[15]);
-            assign  s0_plv1_sel[i]  = ({2{(s0_index[i] == 4'd0 )}} & tlb_plv1[ 0]) |
-                                      ({2{(s0_index[i] == 4'd1 )}} & tlb_plv1[ 1]) |
-                                      ({2{(s0_index[i] == 4'd2 )}} & tlb_plv1[ 2]) |
-                                      ({2{(s0_index[i] == 4'd3 )}} & tlb_plv1[ 3]) |
-                                      ({2{(s0_index[i] == 4'd4 )}} & tlb_plv1[ 4]) |
-                                      ({2{(s0_index[i] == 4'd5 )}} & tlb_plv1[ 5]) |
-                                      ({2{(s0_index[i] == 4'd6 )}} & tlb_plv1[ 6]) |
-                                      ({2{(s0_index[i] == 4'd7 )}} & tlb_plv1[ 7]) |
-                                      ({2{(s0_index[i] == 4'd8 )}} & tlb_plv1[ 8]) |
-                                      ({2{(s0_index[i] == 4'd9 )}} & tlb_plv1[ 9]) |
-                                      ({2{(s0_index[i] == 4'd10)}} & tlb_plv1[10]) |
-                                      ({2{(s0_index[i] == 4'd11)}} & tlb_plv1[11]) |
-                                      ({2{(s0_index[i] == 4'd12)}} & tlb_plv1[12]) |
-                                      ({2{(s0_index[i] == 4'd13)}} & tlb_plv1[13]) |
-                                      ({2{(s0_index[i] == 4'd14)}} & tlb_plv1[14]) |
-                                      ({2{(s0_index[i] == 4'd15)}} & tlb_plv1[15]);
-            assign  s0_mat0_sel[i]  = ({2{(s0_index[i] == 4'd0 )}} & tlb_mat0[ 0]) |
-                                      ({2{(s0_index[i] == 4'd1 )}} & tlb_mat0[ 1]) |
-                                      ({2{(s0_index[i] == 4'd2 )}} & tlb_mat0[ 2]) |
-                                      ({2{(s0_index[i] == 4'd3 )}} & tlb_mat0[ 3]) |
-                                      ({2{(s0_index[i] == 4'd4 )}} & tlb_mat0[ 4]) |
-                                      ({2{(s0_index[i] == 4'd5 )}} & tlb_mat0[ 5]) |
-                                      ({2{(s0_index[i] == 4'd6 )}} & tlb_mat0[ 6]) |
-                                      ({2{(s0_index[i] == 4'd7 )}} & tlb_mat0[ 7]) |
-                                      ({2{(s0_index[i] == 4'd8 )}} & tlb_mat0[ 8]) |
-                                      ({2{(s0_index[i] == 4'd9 )}} & tlb_mat0[ 9]) |
-                                      ({2{(s0_index[i] == 4'd10)}} & tlb_mat0[10]) |
-                                      ({2{(s0_index[i] == 4'd11)}} & tlb_mat0[11]) |
-                                      ({2{(s0_index[i] == 4'd12)}} & tlb_mat0[12]) |
-                                      ({2{(s0_index[i] == 4'd13)}} & tlb_mat0[13]) |
-                                      ({2{(s0_index[i] == 4'd14)}} & tlb_mat0[14]) |
-                                      ({2{(s0_index[i] == 4'd15)}} & tlb_mat0[15]);
-            assign  s0_mat1_sel[i]  = ({2{(s0_index[i] == 4'd0 )}} & tlb_mat1[ 0]) |
-                                      ({2{(s0_index[i] == 4'd1 )}} & tlb_mat1[ 1]) |
-                                      ({2{(s0_index[i] == 4'd2 )}} & tlb_mat1[ 2]) |
-                                      ({2{(s0_index[i] == 4'd3 )}} & tlb_mat1[ 3]) |
-                                      ({2{(s0_index[i] == 4'd4 )}} & tlb_mat1[ 4]) |
-                                      ({2{(s0_index[i] == 4'd5 )}} & tlb_mat1[ 5]) |
-                                      ({2{(s0_index[i] == 4'd6 )}} & tlb_mat1[ 6]) |
-                                      ({2{(s0_index[i] == 4'd7 )}} & tlb_mat1[ 7]) |
-                                      ({2{(s0_index[i] == 4'd8 )}} & tlb_mat1[ 8]) |
-                                      ({2{(s0_index[i] == 4'd9 )}} & tlb_mat1[ 9]) |
-                                      ({2{(s0_index[i] == 4'd10)}} & tlb_mat1[10]) |
-                                      ({2{(s0_index[i] == 4'd11)}} & tlb_mat1[11]) |
-                                      ({2{(s0_index[i] == 4'd12)}} & tlb_mat1[12]) |
-                                      ({2{(s0_index[i] == 4'd13)}} & tlb_mat1[13]) |
-                                      ({2{(s0_index[i] == 4'd14)}} & tlb_mat1[14]) |
-                                      ({2{(s0_index[i] == 4'd15)}} & tlb_mat1[15]);
-            assign  s0_d0_sel[i]    = ({1{(s0_index[i] == 4'd0 )}} & tlb_d0[ 0]) |
-                                      ({1{(s0_index[i] == 4'd1 )}} & tlb_d0[ 1]) |
-                                      ({1{(s0_index[i] == 4'd2 )}} & tlb_d0[ 2]) |
-                                      ({1{(s0_index[i] == 4'd3 )}} & tlb_d0[ 3]) |
-                                      ({1{(s0_index[i] == 4'd4 )}} & tlb_d0[ 4]) |
-                                      ({1{(s0_index[i] == 4'd5 )}} & tlb_d0[ 5]) |
-                                      ({1{(s0_index[i] == 4'd6 )}} & tlb_d0[ 6]) |
-                                      ({1{(s0_index[i] == 4'd7 )}} & tlb_d0[ 7]) |
-                                      ({1{(s0_index[i] == 4'd8 )}} & tlb_d0[ 8]) |
-                                      ({1{(s0_index[i] == 4'd9 )}} & tlb_d0[ 9]) |
-                                      ({1{(s0_index[i] == 4'd10)}} & tlb_d0[10]) |
-                                      ({1{(s0_index[i] == 4'd11)}} & tlb_d0[11]) |
-                                      ({1{(s0_index[i] == 4'd12)}} & tlb_d0[12]) |
-                                      ({1{(s0_index[i] == 4'd13)}} & tlb_d0[13]) |
-                                      ({1{(s0_index[i] == 4'd14)}} & tlb_d0[14]) |
-                                      ({1{(s0_index[i] == 4'd15)}} & tlb_d0[15]);
-            assign  s0_d1_sel[i]    = ({1{(s0_index[i] == 4'd0 )}} & tlb_d1[ 0]) |
-                                      ({1{(s0_index[i] == 4'd1 )}} & tlb_d1[ 1]) |
-                                      ({1{(s0_index[i] == 4'd2 )}} & tlb_d1[ 2]) |
-                                      ({1{(s0_index[i] == 4'd3 )}} & tlb_d1[ 3]) |
-                                      ({1{(s0_index[i] == 4'd4 )}} & tlb_d1[ 4]) |
-                                      ({1{(s0_index[i] == 4'd5 )}} & tlb_d1[ 5]) |
-                                      ({1{(s0_index[i] == 4'd6 )}} & tlb_d1[ 6]) |
-                                      ({1{(s0_index[i] == 4'd7 )}} & tlb_d1[ 7]) |
-                                      ({1{(s0_index[i] == 4'd8 )}} & tlb_d1[ 8]) |
-                                      ({1{(s0_index[i] == 4'd9 )}} & tlb_d1[ 9]) |
-                                      ({1{(s0_index[i] == 4'd10)}} & tlb_d1[10]) |
-                                      ({1{(s0_index[i] == 4'd11)}} & tlb_d1[11]) |
-                                      ({1{(s0_index[i] == 4'd12)}} & tlb_d1[12]) |
-                                      ({1{(s0_index[i] == 4'd13)}} & tlb_d1[13]) |
-                                      ({1{(s0_index[i] == 4'd14)}} & tlb_d1[14]) |
-                                      ({1{(s0_index[i] == 4'd15)}} & tlb_d1[15]);
-            assign  s0_v0_sel[i]    = ({1{(s0_index[i] == 4'd0 )}} & tlb_v0[ 0]) |
-                                      ({1{(s0_index[i] == 4'd1 )}} & tlb_v0[ 1]) |
-                                      ({1{(s0_index[i] == 4'd2 )}} & tlb_v0[ 2]) |
-                                      ({1{(s0_index[i] == 4'd3 )}} & tlb_v0[ 3]) |
-                                      ({1{(s0_index[i] == 4'd4 )}} & tlb_v0[ 4]) |
-                                      ({1{(s0_index[i] == 4'd5 )}} & tlb_v0[ 5]) |
-                                      ({1{(s0_index[i] == 4'd6 )}} & tlb_v0[ 6]) |
-                                      ({1{(s0_index[i] == 4'd7 )}} & tlb_v0[ 7]) |
-                                      ({1{(s0_index[i] == 4'd8 )}} & tlb_v0[ 8]) |
-                                      ({1{(s0_index[i] == 4'd9 )}} & tlb_v0[ 9]) |
-                                      ({1{(s0_index[i] == 4'd10)}} & tlb_v0[10]) |
-                                      ({1{(s0_index[i] == 4'd11)}} & tlb_v0[11]) |
-                                      ({1{(s0_index[i] == 4'd12)}} & tlb_v0[12]) |
-                                      ({1{(s0_index[i] == 4'd13)}} & tlb_v0[13]) |
-                                      ({1{(s0_index[i] == 4'd14)}} & tlb_v0[14]) |
-                                      ({1{(s0_index[i] == 4'd15)}} & tlb_v0[15]);
-            assign  s0_v1_sel[i]    = ({1{(s0_index[i] == 4'd0 )}} & tlb_v1[ 0]) |
-                                      ({1{(s0_index[i] == 4'd1 )}} & tlb_v1[ 1]) |
-                                      ({1{(s0_index[i] == 4'd2 )}} & tlb_v1[ 2]) |
-                                      ({1{(s0_index[i] == 4'd3 )}} & tlb_v1[ 3]) |
-                                      ({1{(s0_index[i] == 4'd4 )}} & tlb_v1[ 4]) |
-                                      ({1{(s0_index[i] == 4'd5 )}} & tlb_v1[ 5]) |
-                                      ({1{(s0_index[i] == 4'd6 )}} & tlb_v1[ 6]) |
-                                      ({1{(s0_index[i] == 4'd7 )}} & tlb_v1[ 7]) |
-                                      ({1{(s0_index[i] == 4'd8 )}} & tlb_v1[ 8]) |
-                                      ({1{(s0_index[i] == 4'd9 )}} & tlb_v1[ 9]) |
-                                      ({1{(s0_index[i] == 4'd10)}} & tlb_v1[10]) |
-                                      ({1{(s0_index[i] == 4'd11)}} & tlb_v1[11]) |
-                                      ({1{(s0_index[i] == 4'd12)}} & tlb_v1[12]) |
-                                      ({1{(s0_index[i] == 4'd13)}} & tlb_v1[13]) |
-                                      ({1{(s0_index[i] == 4'd14)}} & tlb_v1[14]) |
-                                      ({1{(s0_index[i] == 4'd15)}} & tlb_v1[15]);
+            assign  s0_ppn0_sel[i]  = ({20{match0[i][0]}} & tlb_ppn0[0]) |
+                                      ({20{match0[i][1]}} & tlb_ppn0[1]) |
+                                      ({20{match0[i][2]}} & tlb_ppn0[2]) |
+                                      ({20{match0[i][3]}} & tlb_ppn0[3]) |
+                                      ({20{match0[i][4]}} & tlb_ppn0[4]) |
+                                      ({20{match0[i][5]}} & tlb_ppn0[5]) |
+                                      ({20{match0[i][6]}} & tlb_ppn0[6]) |
+                                      ({20{match0[i][7]}} & tlb_ppn0[7]) |
+                                      ({20{match0[i][8]}} & tlb_ppn0[8]) |
+                                      ({20{match0[i][9]}} & tlb_ppn0[9]) |
+                                      ({20{match0[i][10]}} & tlb_ppn0[10]) |
+                                      ({20{match0[i][11]}} & tlb_ppn0[11]) |
+                                      ({20{match0[i][12]}} & tlb_ppn0[12]) |
+                                      ({20{match0[i][13]}} & tlb_ppn0[13]) |
+                                      ({20{match0[i][14]}} & tlb_ppn0[14]) |
+                                      ({20{match0[i][15]}} & tlb_ppn0[15]);
+            assign  s0_ppn1_sel[i]  = ({20{match0[i][0]}} & tlb_ppn1[0]) |
+                                      ({20{match0[i][1]}} & tlb_ppn1[1]) |
+                                      ({20{match0[i][2]}} & tlb_ppn1[2]) |
+                                      ({20{match0[i][3]}} & tlb_ppn1[3]) |
+                                      ({20{match0[i][4]}} & tlb_ppn1[4]) |
+                                      ({20{match0[i][5]}} & tlb_ppn1[5]) |
+                                      ({20{match0[i][6]}} & tlb_ppn1[6]) |
+                                      ({20{match0[i][7]}} & tlb_ppn1[7]) |
+                                      ({20{match0[i][8]}} & tlb_ppn1[8]) |
+                                      ({20{match0[i][9]}} & tlb_ppn1[9]) |
+                                      ({20{match0[i][10]}} & tlb_ppn1[10]) |
+                                      ({20{match0[i][11]}} & tlb_ppn1[11]) |
+                                      ({20{match0[i][12]}} & tlb_ppn1[12]) |
+                                      ({20{match0[i][13]}} & tlb_ppn1[13]) |
+                                      ({20{match0[i][14]}} & tlb_ppn1[14]) |
+                                      ({20{match0[i][15]}} & tlb_ppn1[15]);
+            assign  s0_plv0_sel[i]  = ({2{match0[i][0]}} & tlb_plv0[0]) |
+                                      ({2{match0[i][1]}} & tlb_plv0[1]) |
+                                      ({2{match0[i][2]}} & tlb_plv0[2]) |
+                                      ({2{match0[i][3]}} & tlb_plv0[3]) |
+                                      ({2{match0[i][4]}} & tlb_plv0[4]) |
+                                      ({2{match0[i][5]}} & tlb_plv0[5]) |
+                                      ({2{match0[i][6]}} & tlb_plv0[6]) |
+                                      ({2{match0[i][7]}} & tlb_plv0[7]) |
+                                      ({2{match0[i][8]}} & tlb_plv0[8]) |
+                                      ({2{match0[i][9]}} & tlb_plv0[9]) |
+                                      ({2{match0[i][10]}} & tlb_plv0[10]) |
+                                      ({2{match0[i][11]}} & tlb_plv0[11]) |
+                                      ({2{match0[i][12]}} & tlb_plv0[12]) |
+                                      ({2{match0[i][13]}} & tlb_plv0[13]) |
+                                      ({2{match0[i][14]}} & tlb_plv0[14]) |
+                                      ({2{match0[i][15]}} & tlb_plv0[15]);
+            assign  s0_plv1_sel[i]  = ({2{match0[i][0]}} & tlb_plv1[0]) |
+                                      ({2{match0[i][1]}} & tlb_plv1[1]) |
+                                      ({2{match0[i][2]}} & tlb_plv1[2]) |
+                                      ({2{match0[i][3]}} & tlb_plv1[3]) |
+                                      ({2{match0[i][4]}} & tlb_plv1[4]) |
+                                      ({2{match0[i][5]}} & tlb_plv1[5]) |
+                                      ({2{match0[i][6]}} & tlb_plv1[6]) |
+                                      ({2{match0[i][7]}} & tlb_plv1[7]) |
+                                      ({2{match0[i][8]}} & tlb_plv1[8]) |
+                                      ({2{match0[i][9]}} & tlb_plv1[9]) |
+                                      ({2{match0[i][10]}} & tlb_plv1[10]) |
+                                      ({2{match0[i][11]}} & tlb_plv1[11]) |
+                                      ({2{match0[i][12]}} & tlb_plv1[12]) |
+                                      ({2{match0[i][13]}} & tlb_plv1[13]) |
+                                      ({2{match0[i][14]}} & tlb_plv1[14]) |
+                                      ({2{match0[i][15]}} & tlb_plv1[15]);
+            assign  s0_mat0_sel[i]  = ({2{match0[i][0]}} & tlb_mat0[0]) |
+                                      ({2{match0[i][1]}} & tlb_mat0[1]) |
+                                      ({2{match0[i][2]}} & tlb_mat0[2]) |
+                                      ({2{match0[i][3]}} & tlb_mat0[3]) |
+                                      ({2{match0[i][4]}} & tlb_mat0[4]) |
+                                      ({2{match0[i][5]}} & tlb_mat0[5]) |
+                                      ({2{match0[i][6]}} & tlb_mat0[6]) |
+                                      ({2{match0[i][7]}} & tlb_mat0[7]) |
+                                      ({2{match0[i][8]}} & tlb_mat0[8]) |
+                                      ({2{match0[i][9]}} & tlb_mat0[9]) |
+                                      ({2{match0[i][10]}} & tlb_mat0[10]) |
+                                      ({2{match0[i][11]}} & tlb_mat0[11]) |
+                                      ({2{match0[i][12]}} & tlb_mat0[12]) |
+                                      ({2{match0[i][13]}} & tlb_mat0[13]) |
+                                      ({2{match0[i][14]}} & tlb_mat0[14]) |
+                                      ({2{match0[i][15]}} & tlb_mat0[15]);
+            assign  s0_mat1_sel[i]  = ({2{match0[i][0]}} & tlb_mat1[0]) |
+                                      ({2{match0[i][1]}} & tlb_mat1[1]) |
+                                      ({2{match0[i][2]}} & tlb_mat1[2]) |
+                                      ({2{match0[i][3]}} & tlb_mat1[3]) |
+                                      ({2{match0[i][4]}} & tlb_mat1[4]) |
+                                      ({2{match0[i][5]}} & tlb_mat1[5]) |
+                                      ({2{match0[i][6]}} & tlb_mat1[6]) |
+                                      ({2{match0[i][7]}} & tlb_mat1[7]) |
+                                      ({2{match0[i][8]}} & tlb_mat1[8]) |
+                                      ({2{match0[i][9]}} & tlb_mat1[9]) |
+                                      ({2{match0[i][10]}} & tlb_mat1[10]) |
+                                      ({2{match0[i][11]}} & tlb_mat1[11]) |
+                                      ({2{match0[i][12]}} & tlb_mat1[12]) |
+                                      ({2{match0[i][13]}} & tlb_mat1[13]) |
+                                      ({2{match0[i][14]}} & tlb_mat1[14]) |
+                                      ({2{match0[i][15]}} & tlb_mat1[15]);
+            assign  s0_d0_sel[i]    = ({1{match0[i][0]}} & tlb_d0[0]) |
+                                      ({1{match0[i][1]}} & tlb_d0[1]) |
+                                      ({1{match0[i][2]}} & tlb_d0[2]) |
+                                      ({1{match0[i][3]}} & tlb_d0[3]) |
+                                      ({1{match0[i][4]}} & tlb_d0[4]) |
+                                      ({1{match0[i][5]}} & tlb_d0[5]) |
+                                      ({1{match0[i][6]}} & tlb_d0[6]) |
+                                      ({1{match0[i][7]}} & tlb_d0[7]) |
+                                      ({1{match0[i][8]}} & tlb_d0[8]) |
+                                      ({1{match0[i][9]}} & tlb_d0[9]) |
+                                      ({1{match0[i][10]}} & tlb_d0[10]) |
+                                      ({1{match0[i][11]}} & tlb_d0[11]) |
+                                      ({1{match0[i][12]}} & tlb_d0[12]) |
+                                      ({1{match0[i][13]}} & tlb_d0[13]) |
+                                      ({1{match0[i][14]}} & tlb_d0[14]) |
+                                      ({1{match0[i][15]}} & tlb_d0[15]);
+            assign  s0_d1_sel[i]    = ({1{match0[i][0]}} & tlb_d1[0]) |
+                                      ({1{match0[i][1]}} & tlb_d1[1]) |
+                                      ({1{match0[i][2]}} & tlb_d1[2]) |
+                                      ({1{match0[i][3]}} & tlb_d1[3]) |
+                                      ({1{match0[i][4]}} & tlb_d1[4]) |
+                                      ({1{match0[i][5]}} & tlb_d1[5]) |
+                                      ({1{match0[i][6]}} & tlb_d1[6]) |
+                                      ({1{match0[i][7]}} & tlb_d1[7]) |
+                                      ({1{match0[i][8]}} & tlb_d1[8]) |
+                                      ({1{match0[i][9]}} & tlb_d1[9]) |
+                                      ({1{match0[i][10]}} & tlb_d1[10]) |
+                                      ({1{match0[i][11]}} & tlb_d1[11]) |
+                                      ({1{match0[i][12]}} & tlb_d1[12]) |
+                                      ({1{match0[i][13]}} & tlb_d1[13]) |
+                                      ({1{match0[i][14]}} & tlb_d1[14]) |
+                                      ({1{match0[i][15]}} & tlb_d1[15]);
+            assign  s0_v0_sel[i]    = ({1{match0[i][0]}} & tlb_v0[0]) |
+                                      ({1{match0[i][1]}} & tlb_v0[1]) |
+                                      ({1{match0[i][2]}} & tlb_v0[2]) |
+                                      ({1{match0[i][3]}} & tlb_v0[3]) |
+                                      ({1{match0[i][4]}} & tlb_v0[4]) |
+                                      ({1{match0[i][5]}} & tlb_v0[5]) |
+                                      ({1{match0[i][6]}} & tlb_v0[6]) |
+                                      ({1{match0[i][7]}} & tlb_v0[7]) |
+                                      ({1{match0[i][8]}} & tlb_v0[8]) |
+                                      ({1{match0[i][9]}} & tlb_v0[9]) |
+                                      ({1{match0[i][10]}} & tlb_v0[10]) |
+                                      ({1{match0[i][11]}} & tlb_v0[11]) |
+                                      ({1{match0[i][12]}} & tlb_v0[12]) |
+                                      ({1{match0[i][13]}} & tlb_v0[13]) |
+                                      ({1{match0[i][14]}} & tlb_v0[14]) |
+                                      ({1{match0[i][15]}} & tlb_v0[15]);
+            assign  s0_v1_sel[i]    = ({1{match0[i][0]}} & tlb_v1[0]) |
+                                      ({1{match0[i][1]}} & tlb_v1[1]) |
+                                      ({1{match0[i][2]}} & tlb_v1[2]) |
+                                      ({1{match0[i][3]}} & tlb_v1[3]) |
+                                      ({1{match0[i][4]}} & tlb_v1[4]) |
+                                      ({1{match0[i][5]}} & tlb_v1[5]) |
+                                      ({1{match0[i][6]}} & tlb_v1[6]) |
+                                      ({1{match0[i][7]}} & tlb_v1[7]) |
+                                      ({1{match0[i][8]}} & tlb_v1[8]) |
+                                      ({1{match0[i][9]}} & tlb_v1[9]) |
+                                      ({1{match0[i][10]}} & tlb_v1[10]) |
+                                      ({1{match0[i][11]}} & tlb_v1[11]) |
+                                      ({1{match0[i][12]}} & tlb_v1[12]) |
+                                      ({1{match0[i][13]}} & tlb_v1[13]) |
+                                      ({1{match0[i][14]}} & tlb_v1[14]) |
+                                      ({1{match0[i][15]}} & tlb_v1[15]);
         end
     endgenerate
 
@@ -475,188 +475,188 @@ module tlb
                                       ({4{match1[i][14]}} & 4'd14) |
                                       ({4{match1[i][15]}} & 4'd15);
 
-            // 当前data这次处理的页表项对应的是否是 4MB 的
-            assign  s1_ps4MB_sel[i] = ((s1_index[i] == 4'd0 ) & tlb_ps4MB[ 0]) |
-                                      ((s1_index[i] == 4'd1 ) & tlb_ps4MB[ 1]) |
-                                      ((s1_index[i] == 4'd2 ) & tlb_ps4MB[ 2]) |
-                                      ((s1_index[i] == 4'd3 ) & tlb_ps4MB[ 3]) |
-                                      ((s1_index[i] == 4'd4 ) & tlb_ps4MB[ 4]) |
-                                      ((s1_index[i] == 4'd5 ) & tlb_ps4MB[ 5]) |
-                                      ((s1_index[i] == 4'd6 ) & tlb_ps4MB[ 6]) |
-                                      ((s1_index[i] == 4'd7 ) & tlb_ps4MB[ 7]) |
-                                      ((s1_index[i] == 4'd8 ) & tlb_ps4MB[ 8]) |
-                                      ((s1_index[i] == 4'd9 ) & tlb_ps4MB[ 9]) |
-                                      ((s1_index[i] == 4'd10) & tlb_ps4MB[10]) |
-                                      ((s1_index[i] == 4'd11) & tlb_ps4MB[11]) |
-                                      ((s1_index[i] == 4'd12) & tlb_ps4MB[12]) |
-                                      ((s1_index[i] == 4'd13) & tlb_ps4MB[13]) |
-                                      ((s1_index[i] == 4'd14) & tlb_ps4MB[14]) |
-                                      ((s1_index[i] == 4'd15) & tlb_ps4MB[15]);
+            // 当前data这次处理的页表项对应的是否是 4MB 的（直接由 match1 选择，绕过 s1_index 再译码）
+            assign  s1_ps4MB_sel[i] = (match1[i][ 0] & tlb_ps4MB[ 0]) |
+                                      (match1[i][ 1] & tlb_ps4MB[ 1]) |
+                                      (match1[i][ 2] & tlb_ps4MB[ 2]) |
+                                      (match1[i][ 3] & tlb_ps4MB[ 3]) |
+                                      (match1[i][ 4] & tlb_ps4MB[ 4]) |
+                                      (match1[i][ 5] & tlb_ps4MB[ 5]) |
+                                      (match1[i][ 6] & tlb_ps4MB[ 6]) |
+                                      (match1[i][ 7] & tlb_ps4MB[ 7]) |
+                                      (match1[i][ 8] & tlb_ps4MB[ 8]) |
+                                      (match1[i][ 9] & tlb_ps4MB[ 9]) |
+                                      (match1[i][10] & tlb_ps4MB[10]) |
+                                      (match1[i][11] & tlb_ps4MB[11]) |
+                                      (match1[i][12] & tlb_ps4MB[12]) |
+                                      (match1[i][13] & tlb_ps4MB[13]) |
+                                      (match1[i][14] & tlb_ps4MB[14]) |
+                                      (match1[i][15] & tlb_ps4MB[15]);
             // 如果是 4MB 那么对应的就需要看传入的[8]来判定是否是 也就是判定 PPN 0/1 的
             // 如果是 1 的话那么就选择 PPN1
             assign  s1_odd_page[i]  = s1_ps4MB_sel[i] ? s1_vppn[i][8] : s1_va_bit12[i];
 
             // data 开始匹配选择
-            assign  s1_ppn0_sel[i]  = ({20{(s1_index[i] == 4'd0 )}} & tlb_ppn0[ 0]) |
-                                      ({20{(s1_index[i] == 4'd1 )}} & tlb_ppn0[ 1]) |
-                                      ({20{(s1_index[i] == 4'd2 )}} & tlb_ppn0[ 2]) |
-                                      ({20{(s1_index[i] == 4'd3 )}} & tlb_ppn0[ 3]) |
-                                      ({20{(s1_index[i] == 4'd4 )}} & tlb_ppn0[ 4]) |
-                                      ({20{(s1_index[i] == 4'd5 )}} & tlb_ppn0[ 5]) |
-                                      ({20{(s1_index[i] == 4'd6 )}} & tlb_ppn0[ 6]) |
-                                      ({20{(s1_index[i] == 4'd7 )}} & tlb_ppn0[ 7]) |
-                                      ({20{(s1_index[i] == 4'd8 )}} & tlb_ppn0[ 8]) |
-                                      ({20{(s1_index[i] == 4'd9 )}} & tlb_ppn0[ 9]) |
-                                      ({20{(s1_index[i] == 4'd10)}} & tlb_ppn0[10]) |
-                                      ({20{(s1_index[i] == 4'd11)}} & tlb_ppn0[11]) |
-                                      ({20{(s1_index[i] == 4'd12)}} & tlb_ppn0[12]) |
-                                      ({20{(s1_index[i] == 4'd13)}} & tlb_ppn0[13]) |
-                                      ({20{(s1_index[i] == 4'd14)}} & tlb_ppn0[14]) |
-                                      ({20{(s1_index[i] == 4'd15)}} & tlb_ppn0[15]);
-            assign  s1_ppn1_sel[i]  = ({20{(s1_index[i] == 4'd0 )}} & tlb_ppn1[ 0]) |
-                                      ({20{(s1_index[i] == 4'd1 )}} & tlb_ppn1[ 1]) |
-                                      ({20{(s1_index[i] == 4'd2 )}} & tlb_ppn1[ 2]) |
-                                      ({20{(s1_index[i] == 4'd3 )}} & tlb_ppn1[ 3]) |
-                                      ({20{(s1_index[i] == 4'd4 )}} & tlb_ppn1[ 4]) |
-                                      ({20{(s1_index[i] == 4'd5 )}} & tlb_ppn1[ 5]) |
-                                      ({20{(s1_index[i] == 4'd6 )}} & tlb_ppn1[ 6]) |
-                                      ({20{(s1_index[i] == 4'd7 )}} & tlb_ppn1[ 7]) |
-                                      ({20{(s1_index[i] == 4'd8 )}} & tlb_ppn1[ 8]) |
-                                      ({20{(s1_index[i] == 4'd9 )}} & tlb_ppn1[ 9]) |
-                                      ({20{(s1_index[i] == 4'd10)}} & tlb_ppn1[10]) |
-                                      ({20{(s1_index[i] == 4'd11)}} & tlb_ppn1[11]) |
-                                      ({20{(s1_index[i] == 4'd12)}} & tlb_ppn1[12]) |
-                                      ({20{(s1_index[i] == 4'd13)}} & tlb_ppn1[13]) |
-                                      ({20{(s1_index[i] == 4'd14)}} & tlb_ppn1[14]) |
-                                      ({20{(s1_index[i] == 4'd15)}} & tlb_ppn1[15]);
-            assign  s1_plv0_sel[i]  = ({2{(s1_index[i] == 4'd0 )}} & tlb_plv0[ 0]) |
-                                      ({2{(s1_index[i] == 4'd1 )}} & tlb_plv0[ 1]) |
-                                      ({2{(s1_index[i] == 4'd2 )}} & tlb_plv0[ 2]) |
-                                      ({2{(s1_index[i] == 4'd3 )}} & tlb_plv0[ 3]) |
-                                      ({2{(s1_index[i] == 4'd4 )}} & tlb_plv0[ 4]) |
-                                      ({2{(s1_index[i] == 4'd5 )}} & tlb_plv0[ 5]) |
-                                      ({2{(s1_index[i] == 4'd6 )}} & tlb_plv0[ 6]) |
-                                      ({2{(s1_index[i] == 4'd7 )}} & tlb_plv0[ 7]) |
-                                      ({2{(s1_index[i] == 4'd8 )}} & tlb_plv0[ 8]) |
-                                      ({2{(s1_index[i] == 4'd9 )}} & tlb_plv0[ 9]) |
-                                      ({2{(s1_index[i] == 4'd10)}} & tlb_plv0[10]) |
-                                      ({2{(s1_index[i] == 4'd11)}} & tlb_plv0[11]) |
-                                      ({2{(s1_index[i] == 4'd12)}} & tlb_plv0[12]) |
-                                      ({2{(s1_index[i] == 4'd13)}} & tlb_plv0[13]) |
-                                      ({2{(s1_index[i] == 4'd14)}} & tlb_plv0[14]) |
-                                      ({2{(s1_index[i] == 4'd15)}} & tlb_plv0[15]);
-            assign  s1_plv1_sel[i]  = ({2{(s1_index[i] == 4'd0 )}} & tlb_plv1[ 0]) |
-                                      ({2{(s1_index[i] == 4'd1 )}} & tlb_plv1[ 1]) |
-                                      ({2{(s1_index[i] == 4'd2 )}} & tlb_plv1[ 2]) |
-                                      ({2{(s1_index[i] == 4'd3 )}} & tlb_plv1[ 3]) |
-                                      ({2{(s1_index[i] == 4'd4 )}} & tlb_plv1[ 4]) |
-                                      ({2{(s1_index[i] == 4'd5 )}} & tlb_plv1[ 5]) |
-                                      ({2{(s1_index[i] == 4'd6 )}} & tlb_plv1[ 6]) |
-                                      ({2{(s1_index[i] == 4'd7 )}} & tlb_plv1[ 7]) |
-                                      ({2{(s1_index[i] == 4'd8 )}} & tlb_plv1[ 8]) |
-                                      ({2{(s1_index[i] == 4'd9 )}} & tlb_plv1[ 9]) |
-                                      ({2{(s1_index[i] == 4'd10)}} & tlb_plv1[10]) |
-                                      ({2{(s1_index[i] == 4'd11)}} & tlb_plv1[11]) |
-                                      ({2{(s1_index[i] == 4'd12)}} & tlb_plv1[12]) |
-                                      ({2{(s1_index[i] == 4'd13)}} & tlb_plv1[13]) |
-                                      ({2{(s1_index[i] == 4'd14)}} & tlb_plv1[14]) |
-                                      ({2{(s1_index[i] == 4'd15)}} & tlb_plv1[15]);
-            assign  s1_mat0_sel[i]  = ({2{(s1_index[i] == 4'd0 )}} & tlb_mat0[ 0]) |
-                                      ({2{(s1_index[i] == 4'd1 )}} & tlb_mat0[ 1]) |
-                                      ({2{(s1_index[i] == 4'd2 )}} & tlb_mat0[ 2]) |
-                                      ({2{(s1_index[i] == 4'd3 )}} & tlb_mat0[ 3]) |
-                                      ({2{(s1_index[i] == 4'd4 )}} & tlb_mat0[ 4]) |
-                                      ({2{(s1_index[i] == 4'd5 )}} & tlb_mat0[ 5]) |
-                                      ({2{(s1_index[i] == 4'd6 )}} & tlb_mat0[ 6]) |
-                                      ({2{(s1_index[i] == 4'd7 )}} & tlb_mat0[ 7]) |
-                                      ({2{(s1_index[i] == 4'd8 )}} & tlb_mat0[ 8]) |
-                                      ({2{(s1_index[i] == 4'd9 )}} & tlb_mat0[ 9]) |
-                                      ({2{(s1_index[i] == 4'd10)}} & tlb_mat0[10]) |
-                                      ({2{(s1_index[i] == 4'd11)}} & tlb_mat0[11]) |
-                                      ({2{(s1_index[i] == 4'd12)}} & tlb_mat0[12]) |
-                                      ({2{(s1_index[i] == 4'd13)}} & tlb_mat0[13]) |
-                                      ({2{(s1_index[i] == 4'd14)}} & tlb_mat0[14]) |
-                                      ({2{(s1_index[i] == 4'd15)}} & tlb_mat0[15]);
-            assign  s1_mat1_sel[i]  = ({2{(s1_index[i] == 4'd0 )}} & tlb_mat1[ 0]) |
-                                      ({2{(s1_index[i] == 4'd1 )}} & tlb_mat1[ 1]) |
-                                      ({2{(s1_index[i] == 4'd2 )}} & tlb_mat1[ 2]) |
-                                      ({2{(s1_index[i] == 4'd3 )}} & tlb_mat1[ 3]) |
-                                      ({2{(s1_index[i] == 4'd4 )}} & tlb_mat1[ 4]) |
-                                      ({2{(s1_index[i] == 4'd5 )}} & tlb_mat1[ 5]) |
-                                      ({2{(s1_index[i] == 4'd6 )}} & tlb_mat1[ 6]) |
-                                      ({2{(s1_index[i] == 4'd7 )}} & tlb_mat1[ 7]) |
-                                      ({2{(s1_index[i] == 4'd8 )}} & tlb_mat1[ 8]) |
-                                      ({2{(s1_index[i] == 4'd9 )}} & tlb_mat1[ 9]) |
-                                      ({2{(s1_index[i] == 4'd10)}} & tlb_mat1[10]) |
-                                      ({2{(s1_index[i] == 4'd11)}} & tlb_mat1[11]) |
-                                      ({2{(s1_index[i] == 4'd12)}} & tlb_mat1[12]) |
-                                      ({2{(s1_index[i] == 4'd13)}} & tlb_mat1[13]) |
-                                      ({2{(s1_index[i] == 4'd14)}} & tlb_mat1[14]) |
-                                      ({2{(s1_index[i] == 4'd15)}} & tlb_mat1[15]);
-            assign  s1_d0_sel[i]    = ({1{(s1_index[i] == 4'd0 )}} & tlb_d0[ 0]) |
-                                      ({1{(s1_index[i] == 4'd1 )}} & tlb_d0[ 1]) |
-                                      ({1{(s1_index[i] == 4'd2 )}} & tlb_d0[ 2]) |
-                                      ({1{(s1_index[i] == 4'd3 )}} & tlb_d0[ 3]) |
-                                      ({1{(s1_index[i] == 4'd4 )}} & tlb_d0[ 4]) |
-                                      ({1{(s1_index[i] == 4'd5 )}} & tlb_d0[ 5]) |
-                                      ({1{(s1_index[i] == 4'd6 )}} & tlb_d0[ 6]) |
-                                      ({1{(s1_index[i] == 4'd7 )}} & tlb_d0[ 7]) |
-                                      ({1{(s1_index[i] == 4'd8 )}} & tlb_d0[ 8]) |
-                                      ({1{(s1_index[i] == 4'd9 )}} & tlb_d0[ 9]) |
-                                      ({1{(s1_index[i] == 4'd10)}} & tlb_d0[10]) |
-                                      ({1{(s1_index[i] == 4'd11)}} & tlb_d0[11]) |
-                                      ({1{(s1_index[i] == 4'd12)}} & tlb_d0[12]) |
-                                      ({1{(s1_index[i] == 4'd13)}} & tlb_d0[13]) |
-                                      ({1{(s1_index[i] == 4'd14)}} & tlb_d0[14]) |
-                                      ({1{(s1_index[i] == 4'd15)}} & tlb_d0[15]);
-            assign  s1_d1_sel[i]    = ({1{(s1_index[i] == 4'd0 )}} & tlb_d1[ 0]) |
-                                      ({1{(s1_index[i] == 4'd1 )}} & tlb_d1[ 1]) |
-                                      ({1{(s1_index[i] == 4'd2 )}} & tlb_d1[ 2]) |
-                                      ({1{(s1_index[i] == 4'd3 )}} & tlb_d1[ 3]) |
-                                      ({1{(s1_index[i] == 4'd4 )}} & tlb_d1[ 4]) |
-                                      ({1{(s1_index[i] == 4'd5 )}} & tlb_d1[ 5]) |
-                                      ({1{(s1_index[i] == 4'd6 )}} & tlb_d1[ 6]) |
-                                      ({1{(s1_index[i] == 4'd7 )}} & tlb_d1[ 7]) |
-                                      ({1{(s1_index[i] == 4'd8 )}} & tlb_d1[ 8]) |
-                                      ({1{(s1_index[i] == 4'd9 )}} & tlb_d1[ 9]) |
-                                      ({1{(s1_index[i] == 4'd10)}} & tlb_d1[10]) |
-                                      ({1{(s1_index[i] == 4'd11)}} & tlb_d1[11]) |
-                                      ({1{(s1_index[i] == 4'd12)}} & tlb_d1[12]) |
-                                      ({1{(s1_index[i] == 4'd13)}} & tlb_d1[13]) |
-                                      ({1{(s1_index[i] == 4'd14)}} & tlb_d1[14]) |
-                                      ({1{(s1_index[i] == 4'd15)}} & tlb_d1[15]);
-            assign  s1_v0_sel[i]    = ({1{(s1_index[i] == 4'd0 )}} & tlb_v0[ 0]) |
-                                      ({1{(s1_index[i] == 4'd1 )}} & tlb_v0[ 1]) |
-                                      ({1{(s1_index[i] == 4'd2 )}} & tlb_v0[ 2]) |
-                                      ({1{(s1_index[i] == 4'd3 )}} & tlb_v0[ 3]) |
-                                      ({1{(s1_index[i] == 4'd4 )}} & tlb_v0[ 4]) |
-                                      ({1{(s1_index[i] == 4'd5 )}} & tlb_v0[ 5]) |
-                                      ({1{(s1_index[i] == 4'd6 )}} & tlb_v0[ 6]) |
-                                      ({1{(s1_index[i] == 4'd7 )}} & tlb_v0[ 7]) |
-                                      ({1{(s1_index[i] == 4'd8 )}} & tlb_v0[ 8]) |
-                                      ({1{(s1_index[i] == 4'd9 )}} & tlb_v0[ 9]) |
-                                      ({1{(s1_index[i] == 4'd10)}} & tlb_v0[10]) |
-                                      ({1{(s1_index[i] == 4'd11)}} & tlb_v0[11]) |
-                                      ({1{(s1_index[i] == 4'd12)}} & tlb_v0[12]) |
-                                      ({1{(s1_index[i] == 4'd13)}} & tlb_v0[13]) |
-                                      ({1{(s1_index[i] == 4'd14)}} & tlb_v0[14]) |
-                                      ({1{(s1_index[i] == 4'd15)}} & tlb_v0[15]);
-            assign  s1_v1_sel[i]    = ({1{(s1_index[i] == 4'd0 )}} & tlb_v1[ 0]) |
-                                      ({1{(s1_index[i] == 4'd1 )}} & tlb_v1[ 1]) |
-                                      ({1{(s1_index[i] == 4'd2 )}} & tlb_v1[ 2]) |
-                                      ({1{(s1_index[i] == 4'd3 )}} & tlb_v1[ 3]) |
-                                      ({1{(s1_index[i] == 4'd4 )}} & tlb_v1[ 4]) |
-                                      ({1{(s1_index[i] == 4'd5 )}} & tlb_v1[ 5]) |
-                                      ({1{(s1_index[i] == 4'd6 )}} & tlb_v1[ 6]) |
-                                      ({1{(s1_index[i] == 4'd7 )}} & tlb_v1[ 7]) |
-                                      ({1{(s1_index[i] == 4'd8 )}} & tlb_v1[ 8]) |
-                                      ({1{(s1_index[i] == 4'd9 )}} & tlb_v1[ 9]) |
-                                      ({1{(s1_index[i] == 4'd10)}} & tlb_v1[10]) |
-                                      ({1{(s1_index[i] == 4'd11)}} & tlb_v1[11]) |
-                                      ({1{(s1_index[i] == 4'd12)}} & tlb_v1[12]) |
-                                      ({1{(s1_index[i] == 4'd13)}} & tlb_v1[13]) |
-                                      ({1{(s1_index[i] == 4'd14)}} & tlb_v1[14]) |
-                                      ({1{(s1_index[i] == 4'd15)}} & tlb_v1[15]);
+            assign  s1_ppn0_sel[i]  = ({20{match1[i][0]}} & tlb_ppn0[0]) |
+                                      ({20{match1[i][1]}} & tlb_ppn0[1]) |
+                                      ({20{match1[i][2]}} & tlb_ppn0[2]) |
+                                      ({20{match1[i][3]}} & tlb_ppn0[3]) |
+                                      ({20{match1[i][4]}} & tlb_ppn0[4]) |
+                                      ({20{match1[i][5]}} & tlb_ppn0[5]) |
+                                      ({20{match1[i][6]}} & tlb_ppn0[6]) |
+                                      ({20{match1[i][7]}} & tlb_ppn0[7]) |
+                                      ({20{match1[i][8]}} & tlb_ppn0[8]) |
+                                      ({20{match1[i][9]}} & tlb_ppn0[9]) |
+                                      ({20{match1[i][10]}} & tlb_ppn0[10]) |
+                                      ({20{match1[i][11]}} & tlb_ppn0[11]) |
+                                      ({20{match1[i][12]}} & tlb_ppn0[12]) |
+                                      ({20{match1[i][13]}} & tlb_ppn0[13]) |
+                                      ({20{match1[i][14]}} & tlb_ppn0[14]) |
+                                      ({20{match1[i][15]}} & tlb_ppn0[15]);
+            assign  s1_ppn1_sel[i]  = ({20{match1[i][0]}} & tlb_ppn1[0]) |
+                                      ({20{match1[i][1]}} & tlb_ppn1[1]) |
+                                      ({20{match1[i][2]}} & tlb_ppn1[2]) |
+                                      ({20{match1[i][3]}} & tlb_ppn1[3]) |
+                                      ({20{match1[i][4]}} & tlb_ppn1[4]) |
+                                      ({20{match1[i][5]}} & tlb_ppn1[5]) |
+                                      ({20{match1[i][6]}} & tlb_ppn1[6]) |
+                                      ({20{match1[i][7]}} & tlb_ppn1[7]) |
+                                      ({20{match1[i][8]}} & tlb_ppn1[8]) |
+                                      ({20{match1[i][9]}} & tlb_ppn1[9]) |
+                                      ({20{match1[i][10]}} & tlb_ppn1[10]) |
+                                      ({20{match1[i][11]}} & tlb_ppn1[11]) |
+                                      ({20{match1[i][12]}} & tlb_ppn1[12]) |
+                                      ({20{match1[i][13]}} & tlb_ppn1[13]) |
+                                      ({20{match1[i][14]}} & tlb_ppn1[14]) |
+                                      ({20{match1[i][15]}} & tlb_ppn1[15]);
+            assign  s1_plv0_sel[i]  = ({2{match1[i][0]}} & tlb_plv0[0]) |
+                                      ({2{match1[i][1]}} & tlb_plv0[1]) |
+                                      ({2{match1[i][2]}} & tlb_plv0[2]) |
+                                      ({2{match1[i][3]}} & tlb_plv0[3]) |
+                                      ({2{match1[i][4]}} & tlb_plv0[4]) |
+                                      ({2{match1[i][5]}} & tlb_plv0[5]) |
+                                      ({2{match1[i][6]}} & tlb_plv0[6]) |
+                                      ({2{match1[i][7]}} & tlb_plv0[7]) |
+                                      ({2{match1[i][8]}} & tlb_plv0[8]) |
+                                      ({2{match1[i][9]}} & tlb_plv0[9]) |
+                                      ({2{match1[i][10]}} & tlb_plv0[10]) |
+                                      ({2{match1[i][11]}} & tlb_plv0[11]) |
+                                      ({2{match1[i][12]}} & tlb_plv0[12]) |
+                                      ({2{match1[i][13]}} & tlb_plv0[13]) |
+                                      ({2{match1[i][14]}} & tlb_plv0[14]) |
+                                      ({2{match1[i][15]}} & tlb_plv0[15]);
+            assign  s1_plv1_sel[i]  = ({2{match1[i][0]}} & tlb_plv1[0]) |
+                                      ({2{match1[i][1]}} & tlb_plv1[1]) |
+                                      ({2{match1[i][2]}} & tlb_plv1[2]) |
+                                      ({2{match1[i][3]}} & tlb_plv1[3]) |
+                                      ({2{match1[i][4]}} & tlb_plv1[4]) |
+                                      ({2{match1[i][5]}} & tlb_plv1[5]) |
+                                      ({2{match1[i][6]}} & tlb_plv1[6]) |
+                                      ({2{match1[i][7]}} & tlb_plv1[7]) |
+                                      ({2{match1[i][8]}} & tlb_plv1[8]) |
+                                      ({2{match1[i][9]}} & tlb_plv1[9]) |
+                                      ({2{match1[i][10]}} & tlb_plv1[10]) |
+                                      ({2{match1[i][11]}} & tlb_plv1[11]) |
+                                      ({2{match1[i][12]}} & tlb_plv1[12]) |
+                                      ({2{match1[i][13]}} & tlb_plv1[13]) |
+                                      ({2{match1[i][14]}} & tlb_plv1[14]) |
+                                      ({2{match1[i][15]}} & tlb_plv1[15]);
+            assign  s1_mat0_sel[i]  = ({2{match1[i][0]}} & tlb_mat0[0]) |
+                                      ({2{match1[i][1]}} & tlb_mat0[1]) |
+                                      ({2{match1[i][2]}} & tlb_mat0[2]) |
+                                      ({2{match1[i][3]}} & tlb_mat0[3]) |
+                                      ({2{match1[i][4]}} & tlb_mat0[4]) |
+                                      ({2{match1[i][5]}} & tlb_mat0[5]) |
+                                      ({2{match1[i][6]}} & tlb_mat0[6]) |
+                                      ({2{match1[i][7]}} & tlb_mat0[7]) |
+                                      ({2{match1[i][8]}} & tlb_mat0[8]) |
+                                      ({2{match1[i][9]}} & tlb_mat0[9]) |
+                                      ({2{match1[i][10]}} & tlb_mat0[10]) |
+                                      ({2{match1[i][11]}} & tlb_mat0[11]) |
+                                      ({2{match1[i][12]}} & tlb_mat0[12]) |
+                                      ({2{match1[i][13]}} & tlb_mat0[13]) |
+                                      ({2{match1[i][14]}} & tlb_mat0[14]) |
+                                      ({2{match1[i][15]}} & tlb_mat0[15]);
+            assign  s1_mat1_sel[i]  = ({2{match1[i][0]}} & tlb_mat1[0]) |
+                                      ({2{match1[i][1]}} & tlb_mat1[1]) |
+                                      ({2{match1[i][2]}} & tlb_mat1[2]) |
+                                      ({2{match1[i][3]}} & tlb_mat1[3]) |
+                                      ({2{match1[i][4]}} & tlb_mat1[4]) |
+                                      ({2{match1[i][5]}} & tlb_mat1[5]) |
+                                      ({2{match1[i][6]}} & tlb_mat1[6]) |
+                                      ({2{match1[i][7]}} & tlb_mat1[7]) |
+                                      ({2{match1[i][8]}} & tlb_mat1[8]) |
+                                      ({2{match1[i][9]}} & tlb_mat1[9]) |
+                                      ({2{match1[i][10]}} & tlb_mat1[10]) |
+                                      ({2{match1[i][11]}} & tlb_mat1[11]) |
+                                      ({2{match1[i][12]}} & tlb_mat1[12]) |
+                                      ({2{match1[i][13]}} & tlb_mat1[13]) |
+                                      ({2{match1[i][14]}} & tlb_mat1[14]) |
+                                      ({2{match1[i][15]}} & tlb_mat1[15]);
+            assign  s1_d0_sel[i]    = ({1{match1[i][0]}} & tlb_d0[0]) |
+                                      ({1{match1[i][1]}} & tlb_d0[1]) |
+                                      ({1{match1[i][2]}} & tlb_d0[2]) |
+                                      ({1{match1[i][3]}} & tlb_d0[3]) |
+                                      ({1{match1[i][4]}} & tlb_d0[4]) |
+                                      ({1{match1[i][5]}} & tlb_d0[5]) |
+                                      ({1{match1[i][6]}} & tlb_d0[6]) |
+                                      ({1{match1[i][7]}} & tlb_d0[7]) |
+                                      ({1{match1[i][8]}} & tlb_d0[8]) |
+                                      ({1{match1[i][9]}} & tlb_d0[9]) |
+                                      ({1{match1[i][10]}} & tlb_d0[10]) |
+                                      ({1{match1[i][11]}} & tlb_d0[11]) |
+                                      ({1{match1[i][12]}} & tlb_d0[12]) |
+                                      ({1{match1[i][13]}} & tlb_d0[13]) |
+                                      ({1{match1[i][14]}} & tlb_d0[14]) |
+                                      ({1{match1[i][15]}} & tlb_d0[15]);
+            assign  s1_d1_sel[i]    = ({1{match1[i][0]}} & tlb_d1[0]) |
+                                      ({1{match1[i][1]}} & tlb_d1[1]) |
+                                      ({1{match1[i][2]}} & tlb_d1[2]) |
+                                      ({1{match1[i][3]}} & tlb_d1[3]) |
+                                      ({1{match1[i][4]}} & tlb_d1[4]) |
+                                      ({1{match1[i][5]}} & tlb_d1[5]) |
+                                      ({1{match1[i][6]}} & tlb_d1[6]) |
+                                      ({1{match1[i][7]}} & tlb_d1[7]) |
+                                      ({1{match1[i][8]}} & tlb_d1[8]) |
+                                      ({1{match1[i][9]}} & tlb_d1[9]) |
+                                      ({1{match1[i][10]}} & tlb_d1[10]) |
+                                      ({1{match1[i][11]}} & tlb_d1[11]) |
+                                      ({1{match1[i][12]}} & tlb_d1[12]) |
+                                      ({1{match1[i][13]}} & tlb_d1[13]) |
+                                      ({1{match1[i][14]}} & tlb_d1[14]) |
+                                      ({1{match1[i][15]}} & tlb_d1[15]);
+            assign  s1_v0_sel[i]    = ({1{match1[i][0]}} & tlb_v0[0]) |
+                                      ({1{match1[i][1]}} & tlb_v0[1]) |
+                                      ({1{match1[i][2]}} & tlb_v0[2]) |
+                                      ({1{match1[i][3]}} & tlb_v0[3]) |
+                                      ({1{match1[i][4]}} & tlb_v0[4]) |
+                                      ({1{match1[i][5]}} & tlb_v0[5]) |
+                                      ({1{match1[i][6]}} & tlb_v0[6]) |
+                                      ({1{match1[i][7]}} & tlb_v0[7]) |
+                                      ({1{match1[i][8]}} & tlb_v0[8]) |
+                                      ({1{match1[i][9]}} & tlb_v0[9]) |
+                                      ({1{match1[i][10]}} & tlb_v0[10]) |
+                                      ({1{match1[i][11]}} & tlb_v0[11]) |
+                                      ({1{match1[i][12]}} & tlb_v0[12]) |
+                                      ({1{match1[i][13]}} & tlb_v0[13]) |
+                                      ({1{match1[i][14]}} & tlb_v0[14]) |
+                                      ({1{match1[i][15]}} & tlb_v0[15]);
+            assign  s1_v1_sel[i]    = ({1{match1[i][0]}} & tlb_v1[0]) |
+                                      ({1{match1[i][1]}} & tlb_v1[1]) |
+                                      ({1{match1[i][2]}} & tlb_v1[2]) |
+                                      ({1{match1[i][3]}} & tlb_v1[3]) |
+                                      ({1{match1[i][4]}} & tlb_v1[4]) |
+                                      ({1{match1[i][5]}} & tlb_v1[5]) |
+                                      ({1{match1[i][6]}} & tlb_v1[6]) |
+                                      ({1{match1[i][7]}} & tlb_v1[7]) |
+                                      ({1{match1[i][8]}} & tlb_v1[8]) |
+                                      ({1{match1[i][9]}} & tlb_v1[9]) |
+                                      ({1{match1[i][10]}} & tlb_v1[10]) |
+                                      ({1{match1[i][11]}} & tlb_v1[11]) |
+                                      ({1{match1[i][12]}} & tlb_v1[12]) |
+                                      ({1{match1[i][13]}} & tlb_v1[13]) |
+                                      ({1{match1[i][14]}} & tlb_v1[14]) |
+                                      ({1{match1[i][15]}} & tlb_v1[15]);
         end
     endgenerate
 

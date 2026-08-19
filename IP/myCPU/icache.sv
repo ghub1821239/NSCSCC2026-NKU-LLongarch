@@ -378,7 +378,8 @@ wire    lookup_read_pipe    = (main_state == `MAIN_LOOKUP) &&
                               lookup_read_hit &&
                               !cacop_this_cache_r;
 
-wire    pipe_accept         = lookup_read_pipe && valid &&
+// addr_ok is ready-only; request validity is checked at the state update.
+wire    pipe_accept         = lookup_read_pipe &&
                               (wb_state == `WB_IDLE) && !wb_valid_r;
 
 assign  can_accept_req      = ((main_state == `MAIN_IDLE) && (wb_state == `WB_IDLE) && !wb_valid_r) ||

@@ -67,29 +67,60 @@ wire                           inst_req_accept      = inst_sram_req && inst_sram
 reg    [slot0_inbus_width-1:0] bus_slot0;
 reg    [inbus_width-1:0]       bus                 [ISSUE-1:1];
 
-genvar                         i;
-always @(posedge clk) begin
-    if (!resetn) begin
-        bus_slot0 <= {slot0_inbus_width{1'b0}};
+// 将原来共同驱动整个 preIF2 bus 的高扇出 CE 拆成多个本地副本。
+// 每个 LUT2 实现完全相同的 valid & allow_in，仅服务约 1/4 的 bus FF。
+localparam integer BUS_CE_GROUPS = 4;
+genvar slot0_group;
+generate
+    for (slot0_group = 0; slot0_group < BUS_CE_GROUPS; slot0_group = slot0_group + 1) begin : gen_bus_slot0_ce_group
+        localparam integer GROUP_LO = (slot0_inbus_width * slot0_group) / BUS_CE_GROUPS;
+        localparam integer GROUP_HI = (slot0_inbus_width * (slot0_group + 1)) / BUS_CE_GROUPS - 1;
+        wire load_local;
+
+        (* DONT_TOUCH = "TRUE" *) LUT2 #(.INIT(4'h8)) u_load_local (
+            .O (load_local),
+            .I0(preIF1_preIF2_valid),
+            .I1(preIF2_allow_in)
+        );
+
+        always @(posedge clk) begin
+            if (!resetn) begin
+                bus_slot0[GROUP_HI:GROUP_LO] <= {(GROUP_HI-GROUP_LO+1){1'b0}};
+            end
+            else if (load_local) begin
+                bus_slot0[GROUP_HI:GROUP_LO] <= preIF1_preIF2_bus_slot0[GROUP_HI:GROUP_LO];
+            end
+        end
     end
-    else if (preIF1_preIF2_valid && preIF2_allow_in) begin
-        bus_slot0 <= preIF1_preIF2_bus_slot0;
-    end
-end
+endgenerate
 
 assign {slot_valid[0]   , pc[0]              , ex_ADEF[0]      , ex_tlb_reload0[0]  , ex_tlb_preif_unvalid[0], ex_tlb_plv0[0],
         dmw_found0[0]   , dmw_pseg0[0]       , inst_mat        , tlb_paddr[0]       ,
         btb_query_hit[0], btb_query_target[0], ras_query_hit[0], ras_query_target[0], query_type[0]          , query_taken[0],
         ghr_snap[0]}=bus_slot0;
 
-generate 
+genvar i;
+genvar bus_group;
+generate
     for(i=1;i<ISSUE;i=i+1)begin:gen_bus
-        always @(posedge clk)begin
-            if(!resetn)begin
-                bus[i] <= {inbus_width{1'b0}};
-            end
-            else if(preIF1_preIF2_valid && preIF2_allow_in) begin
-                bus[i] <= preIF1_preIF2_bus[i];
+        for (bus_group = 0; bus_group < BUS_CE_GROUPS; bus_group = bus_group + 1) begin : gen_bus_ce_group
+            localparam integer GROUP_LO = (inbus_width * bus_group) / BUS_CE_GROUPS;
+            localparam integer GROUP_HI = (inbus_width * (bus_group + 1)) / BUS_CE_GROUPS - 1;
+            wire load_local;
+
+            (* DONT_TOUCH = "TRUE" *) LUT2 #(.INIT(4'h8)) u_load_local (
+                .O (load_local),
+                .I0(preIF1_preIF2_valid),
+                .I1(preIF2_allow_in)
+            );
+
+            always @(posedge clk)begin
+                if(!resetn)begin
+                    bus[i][GROUP_HI:GROUP_LO] <= {(GROUP_HI-GROUP_LO+1){1'b0}};
+                end
+                else if(load_local) begin
+                    bus[i][GROUP_HI:GROUP_LO] <= preIF1_preIF2_bus[i][GROUP_HI:GROUP_LO];
+                end
             end
         end
         assign {slot_valid[i]   , pc[i]              , ex_ADEF[i]      , ex_tlb_reload0[i]  , ex_tlb_preif_unvalid[i], ex_tlb_plv0[i],
