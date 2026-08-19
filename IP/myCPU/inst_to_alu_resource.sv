@@ -46,6 +46,7 @@ module inst_to_alu_resource #(
     output wire                    is_jump,
     output wire                    is_br,            // cond|jump|call|ret
     output wire                    is_mem,           // ld/st/ll/sc
+    output wire                    is_llsc,         //ll/sc
     output wire                    is_system_break,  //system/break/ertn/idle/ibar/dbar/cacop
     output wire                    is_csr_write,    //csrwr/csrxchg
     output wire                    is_csr_read,     //csrrd/rdcntid/rdcntvl/rdcntdvh
@@ -524,6 +525,7 @@ wire       [31:0] direct_target;
     assign  is_mem           = inst_ld_b | inst_ld_bu | inst_ld_h | inst_ld_hu | inst_ld_w |
                                inst_st_b | inst_st_h  | inst_st_w |
                                inst_ll_w | inst_sc_w ;
+    assign  is_llsc          = inst_ll_w | inst_sc_w;
 
     assign  is_system_break  = inst_ertn | inst_syscall | inst_break | inst_idle | inst_ibar | inst_dbar | inst_cacop;
     assign  is_csr_write     = inst_csrwr | inst_csrxchg;
