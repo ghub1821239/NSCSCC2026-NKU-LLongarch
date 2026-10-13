@@ -198,11 +198,8 @@ python mytool/analyze_timing_full.py \
 
 </details>
 
-## 团队与致谢
+## 团队
 
 **南开大学 · 驯龙高手队**
-
-
-
 
 设计以《CPU 设计实战：LoongArch 版》的处理器设计方法和基础实验框架为学习起点，结合比赛提供的 Chiplab 环境完成扩展与优化。SoC、外设和测试基础设施沿用龙芯杯相关工程，并使用 Xilinx Block RAM 与 Divider IP。第三方代码的版权与许可按各文件中的声明保留。
