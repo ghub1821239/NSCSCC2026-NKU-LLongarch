@@ -1,10 +1,26 @@
 .cursor/
 .codex_verify/
-.AGENTS.md/
-.agent.md/
 
 fpga/nscscc-team/run_vivado/result/for_timing_report/*.rpt
 
 cemu/
 
 IP/myCPU/IFQ.sv
+
+# 本机文件与可再生成的缓存
+.DS_Store
+._*
+.AppleDouble/
+__MACOSX/
+[Aa][Gg][Ee][Nn][Tt].[Mm][Dd]
+[Aa][Gg][Ee][Nn][Tt][Ss].[Mm][Dd]
+__pycache__/
+*.pyc
+*.pyo
+.Xil/
+xsim.dir/
+*.cache/
+*.sim/
+*.log
+*.jou
+*.pb
