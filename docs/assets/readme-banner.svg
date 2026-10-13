@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="340" viewBox="0 0 1200 340" role="img" aria-labelledby="title desc">
+<title id="title">NKU Dragon Tamers — LoongArch CPU</title>
+<desc id="desc">NSCSCC 2026, dual-issue eight-stage pipeline. Navy and teal circuit illustration.</desc>
+<defs>
+<linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#0c2036"/><stop offset="1" stop-color="#153945"/></linearGradient>
+<linearGradient id="chip" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#224760"/><stop offset="1" stop-color="#14373d"/></linearGradient>
+<pattern id="grid" width="24" height="24" patternUnits="userSpaceOnUse"><path d="M24 0H0V24" fill="none" stroke="#d7f6ef" stroke-opacity=".045"/></pattern>
+</defs>
+<rect width="1200" height="340" rx="18" fill="url(#bg)"/>
+<rect width="1200" height="340" rx="18" fill="url(#grid)"/>
+<g fill="none" stroke="#49c9b0" stroke-opacity=".22" stroke-width="2">
+<path d="M1016 116h82l42-42h60 M1016 220h80l47 47h57 M836 126h-74l-36-36h-65 M836 216h-58l-36 36h-95"/>
+<circle cx="726" cy="90" r="4"/><circle cx="742" cy="252" r="4"/>
+</g>
+<rect x="56" y="48" width="4" height="22" rx="2" fill="#55d4b6"/>
+<g font-family="Arial, Helvetica, sans-serif">
+<text x="74" y="65" fill="#b4cbd6" font-size="16" letter-spacing="3">NKU / DRAGON TAMERS</text>
+<text x="56" y="152" fill="#f3f8fc" font-size="64" font-weight="700" letter-spacing="-2">LoongArch CPU</text>
+<text x="59" y="197" fill="#93b6c7" font-size="22">Dual-issue. Eight-stage pipeline.</text>
+<path d="M59 236h48" stroke="#55d4b6" stroke-width="3"/>
+<text x="59" y="279" fill="#d3e5ee" font-size="17" letter-spacing="2">NSCSCC 2026</text>
+<text x="242" y="279" fill="#82a5b7" font-size="17">RTL · FPGA · Microarchitecture</text>
+</g>
+<g stroke="#65cfb9" stroke-opacity=".7" stroke-width="3" fill="none"><path d="M856 78v-18 M856 258v18"/><path d="M880 78v-18 M880 258v18"/><path d="M904 78v-18 M904 258v18"/><path d="M928 78v-18 M928 258v18"/><path d="M952 78v-18 M952 258v18"/><path d="M976 78v-18 M976 258v18"/><path d="M1000 78v-18 M1000 258v18"/><path d="M836 100h-18 M1016 100h18"/><path d="M836 124h-18 M1016 124h18"/><path d="M836 148h-18 M1016 148h18"/><path d="M836 172h-18 M1016 172h18"/><path d="M836 196h-18 M1016 196h18"/><path d="M836 220h-18 M1016 220h18"/><path d="M836 244h-18 M1016 244h18"/></g>
+<rect x="836" y="78" width="180" height="180" rx="18" fill="url(#chip)" stroke="#70d6c0" stroke-width="2"/>
+<rect x="852" y="94" width="148" height="148" rx="11" fill="none" stroke="#96dacb" stroke-opacity=".2"/>
+<g font-family="Arial, Helvetica, sans-serif" text-anchor="middle">
+<text x="926" y="139" fill="#9abfca" font-size="14" letter-spacing="3">ISSUE WIDTH</text>
+<text x="926" y="201" fill="#e1fff5" font-size="65" font-weight="700">2</text>
+<text x="926" y="226" fill="#a9d2cf" font-size="13" letter-spacing="2">LoongArch32</text>
+</g>
+</svg>
