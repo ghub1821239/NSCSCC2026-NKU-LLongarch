@@ -1,0 +1,10 @@
+# 預覽（不寫入）
+python3 mytool/comments_gb2312_to_utf8.py --dry-run
+python3 mytool/comments_utf8_to_gb2312.py --dry-run
+
+# 預設處理 IP/myCPU/*.v *.vh
+python3 mytool/comments_gb2312_to_utf8.py
+python3 mytool/comments_utf8_to_gb2312.py
+
+# 指定檔案
+python3 mytool/comments_gb2312_to_utf8.py IP/myCPU/icache.v IP/myCPU/cache.v

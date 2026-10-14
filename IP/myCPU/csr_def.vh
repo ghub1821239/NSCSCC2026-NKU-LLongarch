@@ -4,6 +4,7 @@
 // csr address
 `define CSR_CRMD      14'h0
 `define CSR_PRMD      14'h1
+`define CSR_EUEN      14'h2
 `define CSR_ECFG      14'h4
 `define CSR_ESTAT     14'h5
 `define CSR_ERA       14'h6
@@ -14,6 +15,9 @@
 `define CSR_TLBELO0   14'h12
 `define CSR_TLBELO1   14'h13
 `define CSR_ASID      14'h18
+`define CSR_PGDL      14'h19
+`define CSR_PGDH      14'h1a    
+`define CSR_PGD       14'h1b
 `define CSR_CPUID     14'h20
 `define CSR_SAVE0     14'h30
 `define CSR_SAVE1     14'h31
@@ -167,4 +171,15 @@
 `define CSR_LLBCTL_WCLLB 1
 `define CSR_LLBCTL_KLO 2
 
+//EUEN
+`define CSR_EUEN_FPE 0
+
+//PGDL
+`define CSR_PGDL_BASE 31:12
+
+//PGDH
+`define CSR_PGDH_BASE 31:12
+
+//PGD
+`define CSR_PGD_BASE  31:12
 `endif
